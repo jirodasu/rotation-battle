@@ -1,0 +1,19 @@
+{
+  "name": "ローテーションバトル",
+  "short_name": "ローテバトル",
+  "description": "前列は戦い、中列は支え、後列は休む。回すか、維持するかを選ぶ戦術バトル。",
+  "lang": "ja",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#63a577",
+  "theme_color": "#8fcbe3",
+  "categories": ["games"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
