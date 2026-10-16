@@ -692,6 +692,7 @@ body.is-cover .app { opacity: 0; pointer-events: none; }
 }
 .c-btns { display: flex; flex-direction: column; gap: 20px; width: min(320px, 100%); margin-top: 4px; }
 .c-btns .btn { width: 100%; }
+.c-ver { position: fixed; right: 14px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-soft); opacity: 0.75; }
 /* タイトル：最初のタップで音楽を鳴らし、メニューを出す（ブラウザは操作の前に音を出せないため） */
 .c-press { display: none; border: 0; background: none; color: var(--ink); cursor: pointer; font-family: inherit; padding: 18px 24px; min-height: 150px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
 .c-press b { font-size: 19px; letter-spacing: 0.18em; animation: pressblink 1.8s ease-in-out infinite; }
@@ -834,14 +835,15 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   .ep-h { margin-top: 6px; }
 }
 /* スタミナ・突入技 */
-.tok .sta { position: absolute; left: 50%; top: -5px; transform: translateX(-50%); display: flex; gap: 2px; padding: 2px 4px; border-radius: 6px; background: var(--paper); box-shadow: 0 1px 0 var(--paper-line); z-index: 3; }
+.tok .sta { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; padding: 3px 2px; border-radius: 6px; background: var(--paper); box-shadow: 0 1px 0 var(--paper-line); z-index: 3; }
+.slot[data-r="1"] .tok .sta { top: auto; bottom: 16px; transform: none; }
 .tok .sta i { width: 6px; height: 6px; border-radius: 50%; background: var(--paper-line); }
 .tok .sta i.on { background: var(--accent); }
 .tok.tired .disc { filter: saturate(0.35) brightness(0.92); }
 .tok.tired .sta { background: var(--danger); }
 .tok.tired .sta i { background: rgba(255, 255, 255, 0.45); }
 .dm.tired { background: var(--danger-strong); color: #fff; }
-.tok .ent { position: absolute; right: -2px; bottom: 12px; z-index: 3; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; background: var(--atk); color: #fff; box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px rgba(35, 49, 74, 0.25); }
+.tok .ent { position: absolute; right: -4px; top: -4px; z-index: 3; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; background: var(--atk); color: #fff; box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px rgba(35, 49, 74, 0.25); }
 .t-main .t-nx { margin-top: 1px; font-size: 11px; font-weight: 700; color: var(--accent-text); }
 .pk-extra { margin: 4px 0 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 1.45; color: var(--ink-soft); }
 .pk-extra b { color: var(--atk); font-size: 12px; margin-right: 4px; }
@@ -970,6 +972,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       </div>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
+    <p class="c-ver" id="cVer">ver 5.1.2</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -993,7 +996,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
       <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る列</b>敵が次に狙う列。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
-      <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>頭上の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
+      <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。先読み（目のボタン）で「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃と「その次」の行動が出る。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
@@ -1175,6 +1178,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
+  const APP_VERSION = '5.1.2';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -1796,7 +1800,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   const chapLabel = () => (tut ? 'チュートリアル' : CHAP[battleIdx]);
 
   function makeRoster() { return JOBS.map((j) => Object.assign({}, j, { max: j.hp, atkReady: true, defReady: true, sta: j.sta || 0, staMax: j.sta || 0, entered: false })); }
-  const RX = () => (tut ? NORULES : RULES);   // チュートリアルは基本ルールだけ
+  const RX = () => RULES;   // 本番・チュートリアル共通
   let entryNow = {};
   function emptyGrid() { return Array.from({ length: ROWS }, () => Array(COLS).fill(null)); }
   function defaultGrid() {
@@ -2035,7 +2039,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。目のボタンの先読みで「突」が付く。'],
-    stamina: () => ['疲れている', '攻撃列で戦うたびに<em>スタミナ</em>（頭上の点）が減り、0で攻撃が半分に。回復列で休めば全快。']
+    stamina: () => ['疲れている', '攻撃列で戦うたびに<em>スタミナ</em>（キャラ右横の点）が減り、0で攻撃が半分に。回復列で休めば全快。']
   };
   let tipKey = null;
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
@@ -2636,6 +2640,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
         u.sta = Math.max(0, u.sta - R.staCost);
       }
     }
+    if (tired) await tutNote('tired', '疲れて半減', u.name + 'はスタミナが0。攻撃が半分になる。回して回復列で休ませよう。', () => tokEl(0, c), 'bottom');
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     let total = 0;
     for (let i = 0; i < hitsN; i++) total += Math.max(1, power + (i === 0 ? sup : 0) - enemy.def);
@@ -2791,6 +2796,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       }
       renderBoard(); renderBook();
       await wait(RM ? 60 : 520);
+      await tutNote('entry', '突入技', x.u.name + 'が「' + en.name + '」を出した（' + en.desc + '）。回して攻撃列に入った仲間は、そのターンだけ職業の技を出す。', () => tokEl(0, x.c), 'bottom');
     }
   }
   function entryGuard(col) {
@@ -2971,14 +2977,16 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     { t: '回復列', x: '休んで自分のHPを回復する列。神官・僧侶は、この横の列のほかの仲間もまとめて回復する（本人は含まない）。1ターン目は回復しない。', pos: 'top', spot: () => bd().querySelector('.strip.r2'), next: true },
     { t: '補助は縦、回復は横', x: '魔女の補助は、同じ縦の列（一）の戦士に届く。神官・僧侶の回復は、回復列の横の仲間に届く。', pos: 'top', spot: () => [bd().querySelector('.ctag[data-c="0"]'), slotEl(1, 0)], next: true },
     { t: '敵の予告', x: '敵は次の行動を予告する。赤く光る列が狙われる。敵が狙うのは一番前の列の仲間だけ。', pos: 'bottom', spot: () => [$('ticket'), bd().querySelector('.ctag.hit')], next: true },
+    { t: '2手先の予兆', x: '予告の下の「その次」は、次のターンの行動。2手先を見て、回すかどうかを決めよう。', pos: 'bottom', spot: () => $('ticket').querySelector('.t-nx') || $('ticket'), next: true },
     { t: '与えるダメージ', x: '剣マークの数字は、次に与えるダメージの見込み。金色は攻撃補助が乗っている印。', pos: 'bottom', spot: () => [slotEl(0, 0), slotEl(0, 1)], next: true },
+    { t: 'スタミナ', x: 'キャラ右横の点はスタミナ。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
     { t: '仲間を動かす ①', x: 'サムライは回復列にいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 2), expect: { slot: [2, 2] }, hint: '光っているマスをタップ' },
     { t: '仲間を動かす ②', x: '次に、攻撃列の空きマス（三の列）をタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 2), expect: { slot: [0, 2] }, hint: '光っているマスをタップ' },
     { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 2), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
     { t: '1ターン終了', x: 'ここで、隊列を「ローテーション」するか「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
     { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
-    { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。敵の狙いも、回した後の配置で決まる。', pos: 'top', spot: () => bd(), next: true },
+    { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。「突」が付いた仲間は、攻撃列に入ったターンだけ突入技を出す。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
     { t: '維持のあと', x: '補助の「攻」「防」は使い切りで、維持しても戻らない。戻すにはローテーションが必要。', pos: 'top', spot: () => slotEl(1, 0), next: true },
     { t: 'ローテーション', x: '今度は「ローテーション」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
@@ -3045,7 +3053,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   function tutOnChoose() {
     if (!tut || tut.free) return;
     tut.stage += 1;
-    const map = { 1: 12, 2: 16, 3: 18 };
+    const map = { 1: 14, 2: 18, 3: 20 };
     if (map[tut.stage] != null) tutShow(map[tut.stage]);
   }
   function tutNote(key, title, text, spotFn, pos) {
