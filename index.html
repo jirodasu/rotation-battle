@@ -20,8 +20,6 @@
 :root {
   color-scheme: light dark;
   box-sizing: border-box;
-  padding-top: env(safe-area-inset-top, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
   --ink: #23314a;
   --ink-soft: #55627f;
   --sky-top: #8fcbe3;
@@ -189,7 +187,7 @@ button { font-family: inherit; }
 }
 
 /* ---------- レイアウト ---------- */
-.app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; max-width: 520px; max-width: min(520px, 58vh); max-width: min(520px, 58dvh); margin: 0 auto; padding: 0 max(12px, env(safe-area-inset-left, 0px)) 14px max(12px, env(safe-area-inset-right, 0px)); }
+.app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; max-width: 520px; max-width: min(520px, 58vh); max-width: min(520px, 58dvh); margin: 0 auto; padding: 0 max(12px, env(safe-area-inset-left, 0px)) 14px max(12px, env(safe-area-inset-right, 0px)); padding-top: env(safe-area-inset-top, 0px); }
 .app { transition: opacity 0.6s; }
 body.is-cover .app { opacity: 0; pointer-events: none; }
 .top { display: flex; align-items: center; justify-content: space-between; height: 46px; }
