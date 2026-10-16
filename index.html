@@ -692,6 +692,20 @@ body.is-cover .app { opacity: 0; pointer-events: none; }
 }
 .c-btns { display: flex; flex-direction: column; gap: 20px; width: min(320px, 100%); margin-top: 4px; }
 .c-btns .btn { width: 100%; }
+/* タイトル：最初のタップで音楽を鳴らし、メニューを出す（ブラウザは操作の前に音を出せないため） */
+.c-press { display: none; border: 0; background: none; color: var(--ink); cursor: pointer; font-family: inherit; padding: 18px 24px; min-height: 150px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.c-press b { font-size: 19px; letter-spacing: 0.18em; animation: pressblink 1.8s ease-in-out infinite; }
+.c-press small { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink-soft); }
+.cover.gate { cursor: pointer; }
+.cover.gate .c-press { display: flex; }
+.cover.gate .c-btns { display: none; }
+.cover.revealed .c-btns > * { animation: btnin 0.55s cubic-bezier(.2, 1.25, .4, 1) both; }
+.cover.revealed .c-btns > :nth-child(2) { animation-delay: 0.08s; }
+.cover.revealed .c-btns > :nth-child(3) { animation-delay: 0.14s; }
+.cover.revealed .c-btns > :nth-child(4) { animation-delay: 0.2s; }
+@keyframes pressblink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes btnin { from { opacity: 0; transform: translateY(16px) scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .c-press b, .cover.revealed .c-btns > * { animation: none; } }
 .btn.stack { flex-direction: column; gap: 3px; min-height: 72px; padding: 8px 20px; position: relative; }
 .btn.stack b { font-size: 20px; line-height: 1.2; }
 .btn.stack small { font-size: 12px; font-weight: 500; opacity: 0.85; }
@@ -931,7 +945,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   <div class="co-foot"><span class="co-hint" id="coHint"></span><button class="btn primary" id="coNext" type="button">つぎへ</button></div>
 </div>
 
-<div class="cover" id="cover">
+<div class="cover gate" id="cover">
   <div class="c-inner">
     <p class="c-kicker disp">ひとめぐりの戦術</p>
     <h2 class="c-title disp">ローテーション<br>バトル</h2>
@@ -945,6 +959,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
+    <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
       <button class="btn primary big stack" id="begin" type="button"><b class="disp">本番モード</b><small id="beginSub">3つの戦いに挑む</small></button>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
@@ -3089,6 +3104,18 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   // 最初のタップで、タイトル画面の音楽を鳴らし始める
   const firstTouch = () => { Music.warm(); if (document.body.classList.contains('is-cover')) Music.set('title'); };
   document.addEventListener('pointerdown', firstTouch, { once: true, capture: true });
+  // 最初のタップ（クリック／Enter）でタイトル曲を鳴らしてからメニューを出す
+  let gated = true;
+  function ungate(byKey) {
+    if (!gated) return;
+    gated = false;
+    actx(); Music.warm(); Music.set('title'); SFX.chapter();
+    const cv = $('cover');
+    cv.classList.remove('gate'); cv.classList.add('revealed');
+    if (byKey) { try { $('begin').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ } }
+  }
+  $('cover').addEventListener('click', (ev) => { if (gated) { ev.preventDefault(); ev.stopPropagation(); ungate(); } }, true);
+  document.addEventListener('keydown', (ev) => { if (gated && !$('cover').hidden && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ungate(true); } });
   $('begin').addEventListener('click', beginMain);
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
