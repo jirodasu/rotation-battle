@@ -27,6 +27,7 @@ export const RULES = Object.assign({
 }, grab('RULES') || {});
 
 const ROWS = 3, COLS = 4;
+const hpMap = (g) => { const m = {}; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) if (g[r][c] && g[r][c].uid) m[g[r][c].uid] = g[r][c].hp; return m; };
 
 // 乱数（シード固定）
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
@@ -40,9 +41,9 @@ const frontRow = (g) => { for (let r = 0; r < ROWS; r++) if (g[r].some(Boolean))
 export function battle(enemyDef, form, policy, opt = {}) {
   const R = Object.assign({}, RULES, opt.rules || {});
   const rand = rng(opt.seed || 1);
-  const roster = makeUnits();
   const g = empty();
-  form.forEach(([id, r, c]) => { g[r][c] = roster.find((u) => u.id === id); });
+  if (opt.party) opt.party.forEach((p) => { g[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, sta: p.staMax, entered: false }); });
+  else { const roster = makeUnits(); form.forEach(([id, r, c]) => { g[r][c] = roster.find((u) => u.id === id); }); }
   const e = Object.assign({}, enemyDef, { hpNow: enemyDef.hp, charged: false });
   let grid = g, fallen = 0, taken = 0;
   const maxTurns = opt.maxTurns || 40;
@@ -59,16 +60,16 @@ export function battle(enemyDef, form, policy, opt = {}) {
       }
     }
     // 突入技（このターンだけ）
-    const ent = {};
-    if (R.entry) unitsOf(grid).forEach(({ u, r }) => { if (r === 0 && u.entered && u.entry) ent[u.id] = u.entry; });
-    if (R.entry && ent.cleric) { for (let c = 0; c < COLS; c++) { const u = grid[0][c]; if (u) u.hp = Math.min(u.max, u.hp + (ent.cleric.heal || 0)); } }
+    const ent = new Map();
+    if (R.entry) unitsOf(grid).forEach(({ u, r }) => { if (r === 0 && u.entered && u.entry) ent.set(u, u.entry); });
+    ent.forEach((en) => { if (en.heal) for (let c = 0; c < COLS; c++) { const u = grid[0][c]; if (u) u.hp = Math.min(u.max, u.hp + en.heal); } });
     const actors = [{ kind: 'e', spd: e.spd }];
-    unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) actors.push({ kind: 'p', u, r, c, spd: u.spd + ((ent[u.id] && ent[u.id].spd) || 0) }); });
+    unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) actors.push({ kind: 'p', u, r, c, spd: u.spd + ((ent.get(u) && ent.get(u).spd) || 0) }); });
     actors.sort((x, y) => y.spd - x.spd || (x.kind === 'p' ? -1 : 1));
     const act = e.pattern[(turn - 1) % e.pattern.length];
     const guardCol = {};
-    if (R.entry) unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 && ent[u.id] && ent[u.id].guard) guardCol[c] = (guardCol[c] || 0) + ent[u.id].guard; });
-    const teamGuard = R.entry ? Object.values(ent).reduce((s, x) => s + (x.teamGuard || 0), 0) : 0;
+    if (R.entry) unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 && ent.get(u) && ent.get(u).guard) guardCol[c] = (guardCol[c] || 0) + ent.get(u).guard; });
+    const teamGuard = R.entry ? [...ent.values()].reduce((s, x) => s + (x.teamGuard || 0), 0) : 0;
     for (const a of actors) {
       if (a.kind === 'e') {
         if (act.rule === 'charge') { e.charged = true; continue; }
@@ -85,7 +86,7 @@ export function battle(enemyDef, form, policy, opt = {}) {
           d = Math.max(1, d); v.hp = Math.max(0, v.hp - d); taken += d;
           if (v.hp === 0) { grid[fr][col] = null; fallen++; }
         };
-        const fr = frontRow(grid); if (fr < 0) return { win: false, turns: turn, fallen, taken };
+        const fr = frontRow(grid); if (fr < 0) return { win: false, turns: turn, fallen, taken, hp: hpMap(grid) };
         const L = unitsOf(grid).filter((x) => x.r === fr);
         if (act.rule === 'random') { for (let i = 0; i < act.hits; i++) { const f2 = frontRow(grid); if (f2 < 0) break; const L2 = unitsOf(grid).filter((x) => x.r === f2); hit(L2[Math.floor(rand() * L2.length)].c); } }
         else if (act.rule === 'all') L.map((x) => x.c).forEach(hit);
@@ -94,7 +95,7 @@ export function battle(enemyDef, form, policy, opt = {}) {
           if (!t) t = L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p));
           for (let i = 0; i < (act.hits || 1); i++) hit(t.c);
         }
-        if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, taken };
+        if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, taken, hp: hpMap(grid) };
       } else {
         const { u, r, c } = a;
         if (grid[r][c] !== u) continue;
@@ -103,17 +104,17 @@ export function battle(enemyDef, form, policy, opt = {}) {
           power = u.atk;
           const m = grid[1][c];
           if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
-          const en = ent[u.id];
+          const en = ent.get(u);
           if (en) power += en.atk || 0;
           if (R.stamina && u.staMax > 0) {
             if (u.sta <= 0) power = Math.ceil(power * R.tiredMul);
             u.sta = Math.max(0, u.sta - R.staCost);
           }
         } else power = u.ranged;
-        const hitsN = (u.hits || 1) + ((ent[u.id] && ent[u.id].hits) || 0);
+        const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
         let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - e.def);
         e.hpNow -= tot;
-        if (e.hpNow <= 0) return { win: true, turns: turn, fallen, taken };
+        if (e.hpNow <= 0) return { win: true, turns: turn, fallen, taken, hp: hpMap(grid) };
       }
     }
     // 判断
@@ -125,7 +126,7 @@ export function battle(enemyDef, form, policy, opt = {}) {
       unitsOf(grid).forEach(({ u, r }) => { u.atkReady = true; u.defReady = true; u.entered = r === 0; });
     }
   }
-  return { win: false, turns: maxTurns, fallen, taken, timeout: true };
+  return { win: false, turns: maxTurns, fallen, taken, timeout: true, hp: hpMap(grid) };
 }
 
 // ---- 戦い方 ----
@@ -185,7 +186,7 @@ export function report(rules, nForms = 400) {
   });
 }
 
-if (process.argv[1] && process.argv[1].endsWith('sim.mjs')) {
+if (process.argv[1] && /(^|[\\/])sim\.mjs$/.test(process.argv[1])) {
   const json = process.argv.includes('--json');
   const rep = report();
   if (json) { console.log(JSON.stringify({ rules: RULES, rep }, null, 1)); }
