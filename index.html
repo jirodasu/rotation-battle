@@ -627,6 +627,12 @@ body.is-cover .app { opacity: 0; pointer-events: none; }
 .cover, .result { position: fixed; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; padding-top: max(24px, env(safe-area-inset-top, 0px)); }
 .cover { z-index: 40; transition: opacity 0.5s, transform 0.5s; }
 .cover.out { opacity: 0; transform: scale(1.04); pointer-events: none; }
+.cover { overflow-y: auto; }
+.cover.has-save .c-copy { display: none; }
+.cover.has-save .c-btns { gap: 12px; }
+@media (max-height: 760px) { .cover.has-save .orbit { transform: scale(0.74); margin: -26px 0; } }
+@media (max-height: 700px) { .book:has(.bench) .order { display: none; } }
+@media (max-height: 700px) { .runv .rv-card { padding-top: 16px; gap: 8px; } .rv-card h2 { font-size: 25px; } .rv-roster { gap: 6px 4px; } .rv-m { width: 46px; } .rv-m .uc-disc { width: 34px; height: 34px; } .rv-card .rv-ico { width: 46px; height: 46px; } }
 .cover[hidden] { display: none; }
 .c-inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .c-kicker { margin: 0; font-size: 13px; letter-spacing: 0.4em; color: var(--ink); opacity: 0.85; padding-left: 0.4em; }
@@ -863,6 +869,28 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-txt b { display: block; font-size: 16px; line-height: 1.3; }
 .rv-txt span { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.45; color: var(--ink-soft); }
 .rv-skip { margin-top: 2px; min-height: 44px; }
+.runv #rvSmall { letter-spacing: 0.12em; padding-left: 0.12em; }
+.runv .r-card.memo #rvEvents { order: 1; }
+.runv .r-card.memo #rvCards { order: 2; }
+.rv-m .hpb { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--paper-line); overflow: hidden; }
+.rv-m .hpb i { display: block; height: 100%; border-radius: 2px; background: var(--age-young); }
+.rv-m .hpb i.low { background: var(--danger); }
+.rv-log { width: 100%; text-align: left; }
+.rv-log summary { cursor: pointer; list-style: none; padding: 7px 12px; border-radius: 12px; background: var(--paper-2); color: var(--ink); font-size: 13px; line-height: 1.5; }
+.rv-log summary::-webkit-details-marker { display: none; }
+.rv-log summary em { font-style: normal; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.rv-log[open] summary em { display: none; }
+.rv-log > div { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.tok .nm u::before { content: "HP"; font-size: 8px; margin-right: 1px; }
+.bench { display: flex; align-items: center; gap: 8px; margin-top: 4px; min-height: 40px; }
+.bench .bn-l { flex: none; font-size: 10px; font-weight: 700; line-height: 1.3; color: var(--ink-soft); }
+.bench .bn-l b { display: block; font-size: 13px; color: var(--ink); }
+.bench .bn-list { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 4px 3px; overflow-x: auto; }
+.bn { position: relative; flex: none; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: var(--c); box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px var(--paper-line); cursor: pointer; transition: transform 0.15s; }
+.bn svg { display: block; width: 100%; height: 100%; }
+.bn.on { transform: translateY(-3px); box-shadow: 0 0 0 3px var(--accent), 0 3px 0 3px var(--accent-deep); }
+.bn-out { flex: none; min-height: 34px; padding: 0 10px; border: 2px dashed var(--accent); border-radius: 17px; background: transparent; color: var(--accent-text); font: 700 12px/1 inherit; font-family: inherit; cursor: pointer; }
+.bench .bn-none { font-size: 12px; color: var(--ink-soft); }
 /* スタミナ・突入技 */
 .tok .sta { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; padding: 3px 2px; border-radius: 6px; background: var(--paper); box-shadow: 0 1px 0 var(--paper-line); z-index: 3; }
 .slot[data-r="1"] .tok .sta { top: auto; bottom: 16px; transform: none; }
@@ -966,9 +994,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     <button class="btn primary" id="btnStart" type="button" hidden>戦闘開始</button>
     <button class="btn primary" id="btnRotate" type="button" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      ローテーション
+      回す
     </button>
-    <button class="btn icon" id="btnPreview" type="button" aria-pressed="false" aria-label="ローテーション後の配置を先読み" hidden>
+    <button class="btn icon" id="btnPreview" type="button" aria-pressed="false" aria-label="回した後の配置を先読み" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
     </button>
     <button class="btn" id="btnStay" type="button" hidden>維持</button>
@@ -1001,10 +1029,11 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       </div>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.3</p>
+    <p class="c-ver" id="cVer">ver 5.1.4</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
+      <button class="btn primary big stack" id="resume" type="button" hidden><b class="disp">続きから</b><small id="resumeSub"></small></button>
       <button class="btn primary big stack" id="begin" type="button"><b class="disp">本番モード</b><small id="beginSub">騎士団の30年に挑む</small></button>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
       <p class="install" id="installIos">全画面で遊ぶには、Safariの<b>共有</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>から<b>「ホーム画面に追加」</b></p>
@@ -1021,17 +1050,17 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><div><b>攻撃列</b>敵を攻撃する。素早い順に動く。剣マークの数字は次に与えるダメージの見込み（金色は攻撃補助込み）。</div></li>
       <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>同じ列の攻撃列を支える。攻撃補助と防御補助は1回で使い切り。</div></li>
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
-      <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>ローテーション</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
+      <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
       <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る列</b>敵が次に狙う列。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>騎士団の30年（本番）</b>10の場面を進み、1つ進むごとに3年たつ。団員は若手→盛り→円熟→衰えと年をとり、55歳で引退。倒れた仲間は戦死して戻らない。入団・継承・休息で世代をつなぎ、最後の大災厄を倒そう。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>騎士団の30年（本番）</b>10の地点を進み、1つ進むごとに3年たつ。団員は若手→盛り→円熟→衰えと年をとり、55歳で引退。倒れた仲間は戦死して戻らない。入団希望者は戦闘に勝ったあとと休息のときに現れる。出撃は7人まで、残りは留守番で、戦闘のあと全快する。継承・稽古で世代をつなぎ、最後の大災厄を倒そう。</div></li>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。先読み（目のボタン）で「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃と「その次」の行動が出る。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。勝ったあと「もう一度挑む」で★を取り直せる。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。本番では★3つそろうと、勝利の報酬が1つ増える。</div></li>
     </ul>
     <div class="h-foot"><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
   </div>
@@ -1042,7 +1071,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 <div class="ending" id="ending" role="dialog" aria-label="エンディング" hidden>
   <div class="en-sky" aria-hidden="true"><span class="en-sun"></span><span class="cloud" style="left:6%;top:16%;width:96px"></span><span class="cloud" style="left:62%;top:26%;width:70px"></span></div>
   <div class="en-top">
-    <p class="en-kick disp">ひとめぐりの戦術</p>
+    <p class="en-kick disp" id="enKick">ひとめぐりの戦術</p>
     <div class="en-lines" id="enLines"></div>
   </div>
   <div class="en-stage" aria-hidden="true">
@@ -1072,8 +1101,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     <h2 class="disp" id="rvTitle"></h2>
     <p id="rvSub"></p>
     <div class="rv-roster" id="rvRoster"></div>
-    <div class="rv-events" id="rvEvents"></div>
     <div class="rv-cards" id="rvCards"></div>
+    <div class="rv-events" id="rvEvents"></div>
   </div>
 </div>
 <div class="result" id="result" role="dialog" aria-live="assertive" hidden>
@@ -1218,14 +1247,15 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.3';
+  const APP_VERSION = '5.1.4';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
     { name: 'ヒュージラット', voice: 'bite', hp: 130, spd: 5, def: 1, par: 4, allowFallen: 0, pattern: [
       { name: 'かみつき', glyph: '牙', rule: 'job', job: '戦士', dmg: 17 },
-      { name: 'ひっかき', glyph: '爪', rule: 'lowhp', dmg: 13 },
-      { name: 'かみつき', glyph: '牙', rule: 'job', job: '戦士', dmg: 17 }
+      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+      { name: 'のしかかり', glyph: '圧', rule: 'lowhp', dmg: 30 },
+      { name: 'ひっかき', glyph: '爪', rule: 'lowhp', dmg: 13 }
     ] },
     { name: 'ジャイアント', voice: 'club', hp: 260, spd: 3, def: 3, par: 11, allowFallen: 1, pattern: [
       { name: 'なぎはらい', glyph: '薙', rule: 'all', dmg: 12 },
@@ -1240,6 +1270,16 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       { name: 'とっしん', glyph: '猛', rule: 'lowhp', dmg: 32, pierce: true }
     ] }
   ];
+  // 騎士団の30年の最後の敵。溜め→防無効の全体攻撃が来る前に、元気な列を前に出せるかが勝負
+  const BOSS = {
+    name: '大災厄オッドノーズ', art: 2, voice: 'horn', hp: 300, spd: 7, def: 3, par: 14, allowFallen: 2, pattern: [
+      { name: '三連突き', glyph: '突', rule: 'random', hits: 3, dmg: 11 },
+      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+      { name: '災厄の咆哮', glyph: '災', rule: 'all', dmg: 24, pierce: true },
+      { name: 'なぎはらい', glyph: '薙', rule: 'all', dmg: 12 },
+      { name: 'とっしん', glyph: '猛', rule: 'lowhp', dmg: 34, pierce: true }
+    ]
+  };
 
   /* ============ 音（Web Audio でその場で合成） ============
      世界観：切り紙絵本ののどかな丘。調は F メジャー。
@@ -2081,7 +2121,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   }
   // 初めて出会う仕掛けを、その場で一度だけ教える（本番モードのみ）
   const TIPS = {
-    stars: () => ['★3を目指そう', '勝つ・' + ((enemy.allowFallen || 0) ? '倒れる仲間を' + enemy.allowFallen + '人以下に' : '誰も倒れない') + '・<em>' + enemy.par + 'ターン以内</em>で★がそろう。倒れた仲間は戦死して隊を去る。'],
+    stars: () => ['★3を目指そう', '勝つ・' + ((enemy.allowFallen || 0) ? '倒れる仲間を' + enemy.allowFallen + '人以下に' : '誰も倒れない') + '・<em>' + enemy.par + 'ターン以内</em>で★がそろう。★3なら勝利の報酬が1つ増える。倒れた仲間は戦死して隊を去る。'],
+    bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。目のボタンの先読みで「突」が付く。'],
@@ -2099,6 +2140,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     const seen = tipSeen();
     let k = null;
     if (battleIdx === 0 && ((phase === 'prep' && swappedOnce) || phase === 'choose') && !seen.stars) k = 'stars';
+    else if (run && phase === 'prep' && benchList().length && !seen.bench) k = 'bench';
     else if (phase === 'choose' && units().some((x) => x.r === 0 && x.u.staMax > 0 && x.u.sta <= 0) && !seen.stamina) k = 'stamina';
     else if (phase === 'choose' && !seen.entry) k = 'entry';
     else if (act.rule === 'charge') k = 'charge';
@@ -2256,23 +2298,51 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     if (slot) { const sr = slot.getBoundingClientRect(), pr = pk.getBoundingClientRect(); pk.style.setProperty('--ax', Math.min(Math.max(sr.left + sr.width / 2 - pr.left, 26), pr.width - 26) + 'px'); }
     if (fresh && !RM) { pk.style.animation = 'none'; void pk.offsetWidth; pk.style.animation = ''; }
   }
+  /* --- 留守番（本番の編成タイムのみ）。出撃は RUN.sortie 人まで --- */
+  let benchSel = null;
+  function benchHTML(su) {
+    if (!run || tut || phase !== 'prep') return '';
+    const list = benchList(), n = units().length;
+    const items = list.map((m) => '<button type="button" class="bn c-' + m.cls + (benchSel === m ? ' on' : '') + '" data-bn="' + m.uid + '" aria-label="留守番 ' + m.name + ' ' + m.age + '歳 HP' + m.hp + '">' + ART[m.job] + '</button>').join('');
+    const out = su && n > 1 ? '<button type="button" class="bn-out" data-bn="out">留守番へ</button>' : '';
+    return '<div class="bench"><span class="bn-l">出撃 ' + n + '/' + RUN.sortie + '<b>留守番</b></span><span class="bn-list">' + (items || (out ? '' : '<span class="bn-none">なし（戦闘のあと全快する控え）</span>')) + out + (items && !su && !benchSel ? '<span class="bn-none">顔をタップで入れ替え</span>' : '') + '</span></div>';
+  }
+  $('book').addEventListener('click', (ev) => {
+    const t = ev.target.closest('[data-bn]'); if (!t || !run || tut || phase !== 'prep') return;
+    ev.stopPropagation();
+    if (t.dataset.bn === 'out') {
+      if (!sel || units().length <= 1) return;
+      grid[sel.r][sel.c] = null; sel = null; SFX.swap(0, 2); render(); return;
+    }
+    const m = run.members.find((x) => x.uid === t.dataset.bn); if (!m) return;
+    if (sel) { const r = sel.r, c = sel.c; grid[r][c] = m; sel = null; benchSel = null; SFX.swap(r, 2); render(); return; }
+    benchSel = benchSel === m ? null : m; SFX.pick(2); render();
+  });
   function renderBook() {
     const b = $('book');
+    if (benchSel && (phase !== 'prep' || !run || !run.members.includes(benchSel))) benchSel = null;
     const foe = inspect === FOE, su = phase === 'prep' && sel && grid[sel.r][sel.c], pu = foe ? null : ((inspect && inspect !== FOE) ? inspect : su);
     $('stage').classList.toggle('inspecting', foe);
     $('foeSheet').hidden = !foe; $('foeBg').hidden = !foe;
     if (foe) $('foeSheet').innerHTML = enemyCardHTML();
     showPeek(pu);
     if (su) {
-      b.innerHTML = orderHTML() + '<p class="hint"></p>';
-      b.querySelector('.hint').textContent = su.name + 'を選択中。入れ替え先をタップ';
+      b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(su);
+      b.querySelector('.hint').textContent = su.name + (run && !tut ? 'の入れ替え先をタップ' : 'を選択中。入れ替え先をタップ');
+      return;
+    }
+    if (phase === 'prep' && benchSel) {
+      const bu = benchSel;
+      b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(null);
+      b.querySelector('.hint').textContent = bu.name + '（' + bu.jname + '・' + bu.age + '歳・HP' + bu.hp + '）を出撃させる場所をタップ';
       return;
     }
     let lines = logLines.slice(-2);
     let hint = '';
     if (phase === 'prep' && !tut) {
       const empty = !grid[0].some(Boolean);
-      b.innerHTML = orderHTML() + '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">編成タイム</b><small class="' + (empty ? 'warn' : '') + '">' + (empty ? '攻撃列が空だと被害2倍。仲間を前へ' : 'ドラッグ、またはタップ→タップで仲間を入れ替え') + '</small></span></div>';
+      const bh = run && benchList().length ? benchHTML(null) : '';
+      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">編成タイム</b><small class="' + (empty ? 'warn' : '') + '">' + (empty ? '攻撃列が空だと被害2倍。仲間を前へ' : 'ドラッグ、またはタップ→タップで仲間を入れ替え') + '</small></span></div>') + bh;
       return;
     }
     if (phase === 'prep') hint = '仲間→入れ替え先の順にタップ' + (grid[0].some(Boolean) ? '' : '（攻撃列が空だと被害2倍）');
@@ -2293,7 +2363,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   }
 
   function render() {
-    $('chipTurn').textContent = (tut ? '練習' : (run ? 'ノード' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn;
+    $('chipTurn').textContent = (tut ? '練習' : (run ? '地点' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn;
     renderBoard();
     renderTicket();
     renderBook();
@@ -2549,6 +2619,10 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     SFX.pick(r);
     if (phase !== 'prep') { const du = showGhost() ? previewGrid()[r][c] : u; inspect = (inspect === du) ? null : (du || null); renderBook(); return; }
     inspect = null;
+    if (benchSel) {
+      if (!u && units().length >= RUN.sortie) { SFX.nope(); benchSel = null; render(); return; }
+      grid[r][c] = benchSel; benchSel = null; SFX.swap(2, r); render(); return;
+    }
     if (!sel) {
       if (u) sel = { r, c };
     } else if (sel.r === r && sel.c === c) {
@@ -2864,7 +2938,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     const old = {};
     $('board').querySelectorAll('.tok[data-id]').forEach((t) => { const b = t.getBoundingClientRect(); old[t.dataset.id] = { x: b.left, y: b.top }; });
     rotateGrid();
-    say('ローテーション。補助が再び使える。');
+    say('隊列を回した。補助が再び使える。');
     SFX.rotate(); vib(18);
     $('dock').style.visibility = 'hidden';
     renderBoard(); renderBook(); renderTicket();
@@ -2935,7 +3009,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   function saveStars(a) { try { localStorage.setItem('rb-stars', JSON.stringify(a)); } catch (e) { /* 保存できない環境 */ } }
   function coverProgress() {
     let b = 0; try { b = +localStorage.getItem('rb-run-best') || 0; } catch (e) { /* 保存できない環境 */ }
-    $('beginSub').textContent = '騎士団の30年に挑む' + (b ? '　最高 ' + Math.min(b, 10) + ' / 10' : '');
+    const sv = runSaved();
+    $('resume').hidden = !sv;
+    $('cover').classList.toggle('has-save', !!sv);
+    if (sv) $('resumeSub').textContent = '騎士団 ' + sv.run.year + '年目・地点 ' + Math.min(sv.run.node + 1, RUN.nodes) + ' / ' + RUN.nodes;
+    $('begin').classList.toggle('primary', !sv);
+    $('beginSub').textContent = (sv ? '新しい騎士団で始める' : '騎士団の30年に挑む') + (b ? '　最高 ' + Math.min(b, 10) + ' / 10' : '');
   }
   function showStats(win) {
     const par = enemy.par || 99, turns = turn;
@@ -2952,7 +3031,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       '<div class="r-stars">' + [0, 1, 2].map((i) => '<i class="' + (i < got ? 'on' : '') + '" style="animation-delay:' + (0.35 + i * 0.18) + 's">' + STAR + '</i>').join('') + '</div>' +
       '<ul class="r-conds">' + conds.map((c) => '<li class="' + (c[0] ? 'ok' : '') + '"><i>' + (c[0] ? '✓' : '—') + '</i>' + c[1] + '</li>').join('') + '</ul>' +
       (mu ? '<div class="r-mvp"><span class="uc-disc c-' + mu.cls + '">' + ART[mu.id] + '</span><span><small>いちばん活躍</small><b class="disp">' + mu.name + '</b></span><span class="r-num"><b class="disp">' + stats.dealt[mvp] + '</b><small>与ダメージ</small></span></div>' : '') +
-      '<p class="r-best">' + (got > prev && prev > 0 ? 'ベスト更新！' : 'ベスト ★' + Math.max(got, prev)) + '　受けたダメージ ' + stats.taken + '</p>';
+      '<p class="r-best">' + (run ? (win && run.node + 1 < RUN.nodes ? (got >= 3 ? '戦果★3　報酬が1つ増える' : '戦果★' + got + '　★3で報酬が1つ増える') : '戦果★' + got) : (got > prev && prev > 0 ? 'ベスト更新！' : 'ベスト ★' + Math.max(got, prev))) + '　受けたダメージ ' + stats.taken + '</p>';
+    if (run) run.lastStars = win ? got : 0;
     coverProgress();
     return got;
   }
@@ -2960,7 +3040,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     phase = 'over';
     lastResult = result;
     render();
-    const last = battleIdx === ENEMIES.length - 1;
+    const last = run ? run.node + 1 >= RUN.nodes : battleIdx === ENEMIES.length - 1;
     if (tut) hideCoach();
     $('resultAlt').hidden = true;
     if (result === 'win') {
@@ -2968,7 +3048,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       $('rSmall').textContent = chapLabel() + '　完';
       $('rTitle').textContent = tut ? '完了' : (last ? '大団円' : '勝利');
       $('rTitle').className = 'disp';
-      $('rSub').textContent = tut ? '基本はこれで完了。本番モードで3つの戦いに挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
+      $('rSub').textContent = tut ? '基本はこれで完了。本番「騎士団の30年」に挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
       const gotStars = tut ? 3 : showStats(true);
       if (tut) $('rStats').innerHTML = '';
       if (!tut && !run && gotStars < 3) { $('resultAlt').textContent = 'もう一度挑んで★を集める'; $('resultAlt').hidden = false; }
@@ -2996,7 +3076,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     if (tut) { if (lastResult === 'win') beginMain(); else beginTutorial(); return; }
     if (run) {
       $('result').hidden = true;
-      if (lastResult === 'win') { const ev = runAfterBattle(true); if (run.node + 1 >= RUN.nodes) runAdvance(ev); else runReward(ev); }
+      if (lastResult === 'win') { const ev = runAfterBattle(true); if (run.node + 1 >= RUN.nodes) runAdvance(ev); else runRecruit((rev) => runReward(rev), ev, enemy.name + 'を倒した。入団を望む若者がいる。'); }
       else { runAfterBattle(false); runEnd(false); }
       return;
     }
@@ -3036,12 +3116,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     { t: '仲間を動かす ②', x: '次に、攻撃列の空きマス（三の列）をタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 2), expect: { slot: [0, 2] }, hint: '光っているマスをタップ' },
     { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 2), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
-    { t: '1ターン終了', x: 'ここで、隊列を「ローテーション」するか「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
+    { t: '1ターン終了', x: 'ここで、隊列を「回す」か「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
     { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
     { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。「突」が付いた仲間は、攻撃列に入ったターンだけ突入技を出す。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
-    { t: '維持のあと', x: '補助の「攻」「防」は使い切りで、維持しても戻らない。戻すにはローテーションが必要。', pos: 'top', spot: () => slotEl(1, 0), next: true },
-    { t: 'ローテーション', x: '今度は「ローテーション」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
+    { t: '維持のあと', x: '補助の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
+    { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
     { t: '基本はここまで', x: 'あとは自由に。回すか維持するかを選びながら、敵を倒そう。', pos: 'bottom', next: true, last: true }
   ];
 
@@ -3206,6 +3286,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     en.classList.remove('skip');
     const S = run && run.summary;
     const lines = S ? [run.year + '年のあいだに、', (S.alive + S.ret + S.fal) + '人が騎士団に名を連ね、', S.ret + '人が引退し、' + S.fal + '人が帰らなかった。', '前で戦い、中で支え、後ろで休む。', 'ひと回りするたびに、騎士団は受け継がれた。'] : EN_LINES;
+    $('enKick').textContent = S ? '騎士団の30年' : 'ひとめぐりの戦術';
+    $('enAgain').textContent = S ? 'もう一度、最初から' : 'もう一度、★を集めに';
     $('enLines').innerHTML = lines.map((l, i) => '<p style="--d:' + (0.8 + i * 1.5) + '">' + l + '</p>').join('');
     const unitM = (u, i, y) => '<span class="en-u" style="--d:' + (0.3 + i * 0.16) + ';--y:' + y + 'px;--b:' + (i * 0.37).toFixed(2) + 's"><span class="en-disc c-' + u.cls + '">' + ART[u.job || u.id] + '</span><b>' + u.name + '</b></span>';
     const unit = (id, i, y) => unitM(roster.find((x) => x.id === id), i, y);
@@ -3253,7 +3335,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
      10ノードを進む。ノードごとに3年が過ぎ、団員は 若手 → 盛り → 円熟 → 衰え をたどって55歳で引退する。
      戦闘・入団・継承・休息を選びながら、世代交代しつつ最後の大災厄を倒す。 */
   const RUN = {
-    nodes: 10, years: 3, retire: 55, cap: 10, afterHeal: 0.5, hpStep: 0.05, dmgStep: 0.02, bossHp: 0.15, bossDmg: 0.05, tierHp: [0.85, 0.64, 0.58], tierDmg: [0.85, 0.74, 0.68],
+    nodes: 10, years: 3, retire: 55, cap: 10, sortie: 7, afterHeal: 0.5, hpStep: 0.05, dmgStep: 0.02, tierHp: [0.85, 0.72, 0.66], tierDmg: [0.85, 0.8, 0.74],
+    inhAtk: 3, inhHp: 2, restAtk: 1, restRecruit: true, healTrain: true, bonusPick: true,
     start: { warrior: 38, knight: 30, samurai: 24, witch: 33, cleric: 44, monk: 27, archer: 19 },
     forced: { 3: 0, 6: 1, 10: 2 }
   };
@@ -3265,12 +3348,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   ];
   const NAMES = ['アルト', 'ベル', 'カイ', 'ドナ', 'エマ', 'フィン', 'ギル', 'ハナ', 'イオ', 'ジン', 'ケイ', 'リオ', 'ミナ', 'ノア', 'オト', 'ルカ', 'サラ', 'トマ', 'ユナ', 'ロイ', 'ゼン', 'ニコ', 'マオ', 'レナ', 'ソラ', 'ヒロ', 'アン', 'テオ', 'ナギ', 'ルル'];
   const EQUIPS = [
-    { name: '鋼の剣', key: 'atk', v: 2, desc: '攻撃+2', ok: (m) => m.base.atk >= 6 },
-    { name: '大盾', key: 'defSup', v: 3, desc: '防御補助+3', ok: (m) => m.base.defSup >= 2 },
+    { name: '鋼の剣', key: 'atk', v: 4, desc: '攻撃+4', ok: (m) => m.base.atk >= 6 },
+    { name: '大盾', key: 'defSup', v: 5, desc: '防御補助+5', ok: (m) => m.base.defSup >= 2 },
     { name: '軽い鎧', key: 'sta', v: 1, desc: 'スタミナ+1', ok: () => true },
-    { name: '薬草袋', key: 'rest', v: 5, desc: '休んで回復+5', ok: () => true },
-    { name: '長弓', key: 'ranged', v: 3, desc: '間接攻撃+3', ok: (m) => m.base.ranged > 0 },
-    { name: '守りの護符', key: 'hp', v: 8, desc: '最大HP+8', ok: () => true }
+    { name: '薬草袋', key: 'rest', v: 8, desc: '休んで回復+8', ok: () => true },
+    { name: '長弓', key: 'ranged', v: 5, desc: '間接攻撃+5', ok: (m) => m.base.ranged > 0 },
+    { name: '守りの護符', key: 'hp', v: 14, desc: '最大HP+14', ok: () => true }
   ];
   let run = null, uidSeq = 0;
   let rseed = 1;
@@ -3324,57 +3407,73 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     applyAge(m, true);
     return m;
   }
+  // 盤面に出るのは出撃枠（RUN.sortie）まで。r が null の団員は留守番
   function runGrid() {
     const g = emptyGrid();
-    run.members.forEach((m) => { if (m.r != null && !g[m.r][m.c]) g[m.r][m.c] = m; else { m.r = null; } });
+    let n = 0;
+    run.members.forEach((m) => { if (m.r != null && !g[m.r][m.c] && n < RUN.sortie) { g[m.r][m.c] = m; n++; } else { m.r = null; m.c = null; } });
     run.members.filter((m) => m.r == null).forEach((m) => {
-      for (const r of [2, 1, 0]) for (let c = 0; c < COLS; c++) if (m.r == null && !g[r][c]) { g[r][c] = m; m.r = r; m.c = c; }
+      if (n >= RUN.sortie) return;
+      for (const r of [2, 1, 0]) for (let c = 0; c < COLS; c++) if (m.r == null && !g[r][c]) { g[r][c] = m; m.r = r; m.c = c; n++; }
     });
     return g;
   }
-  function runSaveForm(list) { list.forEach(({ u, r, c }) => { u.r = r; u.c = c; }); }
+  const benchList = () => (run ? run.members.filter((m) => !units().some((x) => x.u === m)) : []);
+  // 戦闘開始時の並びを団員に記録（留守番は r = null。空いた枠には次の戦闘で留守番から入る）
+  function runSaveForm(list) {
+    run.members.forEach((m) => { m.r = null; m.c = null; });
+    list.forEach(({ u, r, c }) => { u.r = r; u.c = c; });
+  }
   function runEnemy(step) {
     const tier = step <= 3 ? 0 : step <= 6 ? 1 : 2, start = [1, 4, 7][tier], boss = step === RUN.nodes;
-    const base = ENEMIES[tier], k = RUN.tierHp[tier] * (1 + RUN.hpStep * (step - start) + (boss ? RUN.bossHp : 0)), kd = RUN.tierDmg[tier] * (1 + RUN.dmgStep * (step - start) + (boss ? RUN.bossDmg : 0));
+    const base = boss ? BOSS : ENEMIES[tier], k = RUN.tierHp[tier] * (1 + RUN.hpStep * (step - start)), kd = RUN.tierDmg[tier] * (1 + RUN.dmgStep * (step - start));
     const e = Object.assign({}, base, {
-      name: (boss ? '大災厄 ' : '') + base.name, hp: Math.round(base.hp * k),
+      hp: Math.round(base.hp * k),
       pattern: base.pattern.map((a) => Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * kd) } : {}))
     });
     return { def: e, tier };
   }
   function runChoices(step) {
     if (RUN.forced[step] != null) return [{ type: 'battle', boss: step === RUN.nodes, step }];
-    const other = ['recruit', 'rest'];
-    if (run.members.some((m) => m.age >= 40) && run.members.some((m) => m.age <= 24)) other.push('inherit');
+    const other = ['rest'];
+    if (inheritPairs().length) other.push('inherit');
     return [{ type: 'battle', step }, { type: pick(other), step }];
   }
+  const isFull = () => run.members.length >= RUN.cap;
   const CARD_INFO = {
-    battle: (c) => { const e = runEnemy(c.step).def; return { ico: EART[runEnemy(c.step).tier], t: c.boss ? '決戦　' + e.name : '戦闘　' + e.name, d: 'HP ' + e.hp + '。勝てば報酬を3つから1つ選べる。' }; },
-    recruit: () => ({ ico: ICON.plus, t: '入団希望者', d: '若い団員を1人迎える（3人から選ぶ）。' }),
-    rest: () => ({ ico: ICON.heart, t: '休息', d: '全員のHPが全快する。' }),
-    inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる。' })
+    battle: (c) => { const e = runEnemy(c.step).def; return { ico: EART[runEnemy(c.step).tier], t: c.boss ? '決戦　' + e.name : '戦闘　' + e.name, d: 'HP ' + e.hp + '。' + (c.boss ? '騎士団の最後の戦い。' : '勝てば' + (isFull() ? '' : '入団希望者と、') + '報酬を3つから1つ。') }; },
+    rest: () => ({ ico: ICON.heart, t: '休息と稽古', d: '全員のHPが全快し、若手は攻撃+' + RUN.restAtk + '。' + (isFull() ? '' : '入団希望者も訪ねてくる。') }),
+    inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる（攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '）。' })
   };
   function newRun() {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
-    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0 };
+    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0 };
     DEFAULT_FORM.forEach(([id, r, c]) => { const m = newMember(id, RUN.start[id]); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
     roster = run.members;
     grid = runGrid();
     run.choices = runChoices(1);
   }
-  const portrait = (m, extra) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + ART[m.job] + '</span><b>' + m.name + '</b><small>' + m.age + '歳</small></span>';
+  const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span>'; };
+  const portrait = (m, extra) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + ART[m.job] + '</span><b>' + m.name + '</b><small>' + m.age + '歳</small>' + hpBar(m) + '</span>';
+  const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
+  // 出来事：1件目（引退・戦死など大事なものが先頭）を見せ、残りはタップで開く
+  function eventsHTML(list, open) {
+    if (!list.length) return '';
+    if (open || list.length === 1) return list.map((e) => '<p>' + e + '</p>').join('');
+    return '<details class="rv-log"><summary>' + list[0] + '　<em>ほか' + (list.length - 1) + '件 ▸</em></summary><div>' + list.slice(1).map((e) => '<p>' + e + '</p>').join('') + '</div></details>';
+  }
   function rvShow(o) {
-    $('rvSmall').textContent = o.small || ('ノード ' + Math.min(run.node + 1, RUN.nodes) + ' / ' + RUN.nodes + '　·　騎士団 ' + run.year + '年目');
+    $('rvSmall').textContent = o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)));
     $('rvTitle').textContent = o.title;
     $('rvSub').textContent = o.sub || '';
     $('rvRoster').innerHTML = o.noRoster ? '' : run.members.map((m) => portrait(m)).join('');
-    $('rvEvents').innerHTML = (o.events || []).map((e) => '<p>' + e + '</p>').join('');
+    $('rvEvents').innerHTML = eventsHTML(o.events || [], o.openLog);
     $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b><span>' + c.d + '</span></span></button>').join('') +
       (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '');
     $('rvCards').__on = o.on;
     const v = $('runv');
     v.hidden = false;
-    const card = v.querySelector('.r-card'); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+    const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
     Music.charge(false); Music.set('title');
   }
@@ -3385,11 +3484,26 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     SFX.page();
     on(+b.dataset.i);
   });
+  /* --- 途中保存：地点を選ぶ画面に来るたびに保存し、タイトルの「続きから」で再開 --- */
+  const SAVE_KEY = 'rb-run-save';
+  function runSave() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: APP_VERSION, rseed, uidSeq, run: Object.assign({}, run, { enemy: null }) })); } catch (e) { /* 保存できない環境 */ }
+  }
+  function runSaved() {
+    try { const o = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); return o && o.run && Array.isArray(o.run.members) && o.run.members.length ? o : null; } catch (e) { return null; }
+  }
+  function runClearSave() { try { localStorage.removeItem(SAVE_KEY); } catch (e) { /* 保存できない環境 */ } }
   function runShowMap(events) {
     phase = 'map';
     const step = run.node + 1;
+    runSave();
     const cards = run.choices.map((c) => CARD_INFO[c.type](c));
     rvShow({ title: run.choices.length > 1 ? 'どちらへ進む？' : (run.choices[0].boss ? '最後の戦い' : '避けられない戦い'), sub: step === RUN.nodes ? '大災厄が迫る。騎士団の最後の戦い。' : '', events, cards, on: (i) => runEnter(run.choices[i]) });
+  }
+  function trainYoung() {
+    const ys = run.members.filter((m) => m.phase === 'young');
+    ys.forEach((m) => { m.bonus.atk = (m.bonus.atk || 0) + RUN.restAtk; applyAge(m, false); });
+    return ys.length ? '若手の' + ys.map((m) => m.name).join('・') + 'が稽古で攻撃+' + RUN.restAtk + '。' : '';
   }
   function runEnter(c) {
     if (c.type === 'battle') {
@@ -3397,25 +3511,31 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       run.enemy = e.def; battleIdx = e.tier;
       $('runv').hidden = true;
       grid = runGrid();
+      benchSel = null;
       toPrep(false);
       showChapter();
       if (run.node === 0) setTimeout(() => { if (phase === 'prep') { demoArm(); tipsCheck(curAct()); } }, RM ? 50 : 900);
+      else setTimeout(() => { if (phase === 'prep') tipsCheck(curAct()); }, RM ? 50 : 1900);
       return;
     }
     if (c.type === 'rest') {
       run.members.forEach((m) => { m.hp = m.max; m.sta = m.staMax; });
       SFX.heal();
-      runAdvance(['休息をとった。全員のHPが全快した。']);
+      const ev = ['休息をとった。全員のHPが全快した。' + (RUN.healTrain ? trainYoung() : '')];
+      if (RUN.restRecruit && !isFull()) { runRecruit((rev) => runAdvance(ev.concat(rev)), ev, '休息の地に、入団を望む若者が訪ねてきた。'); return; }
+      runAdvance(ev);
       return;
     }
-    if (c.type === 'recruit') { runRecruit(); return; }
     if (c.type === 'inherit') { runInherit(); return; }
   }
   function recruitCards(n) {
-    const out = [];
+    const out = [], taken = new Set();
     for (let i = 0; i < n; i++) {
       const j = pick(JOBS), age = 16 + Math.floor(rnd() * 4);
-      out.push({ job: j.id, age, name: pickName() });
+      let name = pickName();
+      for (let g = 0; taken.has(name) && g < 30; g++) name = pickName();
+      taken.add(name);
+      out.push({ job: j.id, age, name });
     }
     return out;
   }
@@ -3426,11 +3546,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     SFX.recruit();
     return m.name + '（' + m.jname + '・' + m.age + '歳）が入団した。';
   }
-  function runRecruit(after) {
-    const full = run.members.length >= RUN.cap;
+  // 入団希望者（3人から1人）。満員なら何もせずに after へ
+  function runRecruit(after, pre, sub) {
+    if (isFull()) { after([]); return; }
     const list = recruitCards(3);
-    rvShow({ title: '入団希望者', sub: full ? '団員がいっぱい（' + RUN.cap + '人）。誰かが去るまで迎えられない。' : '1人を迎える。若手は伸びしろが大きい。', cards: list.map((o) => { const j = JOBS.find((x) => x.id === o.job); return { ico: '<span class="uc-disc c-' + j.cls + '">' + ART[o.job] + '</span>', t: o.name + '（' + j.name + '）', d: o.age + '歳・若手。突入技「' + j.entry.name + '」', disabled: full }; }),
-      skip: '迎えずに進む', on: (i) => { const ev = i >= 0 ? [addRecruit(list[i])] : []; if (after) after(ev); else runAdvance(ev); } });
+    rvShow({ title: '入団希望者', sub: (sub || '1人を迎えられる。') + '（団員 ' + run.members.length + ' / ' + RUN.cap + '人）', events: pre || [], cards: list.map((o) => { const j = JOBS.find((x) => x.id === o.job); return { ico: '<span class="uc-disc c-' + j.cls + '">' + ART[o.job] + '</span>', t: o.name + '（' + j.name + '）', d: o.age + '歳・若手。突入技「' + j.entry.name + '」' }; }),
+      skip: '迎えずに進む', on: (i) => after(i >= 0 ? [addRecruit(list[i])] : []) });
   }
   function inheritPairs() {
     const vets = run.members.filter((m) => m.age >= 40).sort((a, b) => b.age - a.age);
@@ -3441,42 +3562,51 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   }
   function doInherit(v, y) {
     y.inherit = { from: v.name, fromJob: v.jname, entry: JOBS.find((j) => j.id === v.job).entry };
-    y.bonus.atk = (y.bonus.atk || 0) + 2;
+    y.bonus.atk = (y.bonus.atk || 0) + RUN.inhAtk;
+    y.bonus.hp = (y.bonus.hp || 0) + RUN.inhHp;
     applyAge(y, false);
+    y.hp = Math.min(y.max, y.hp + RUN.inhHp);
     run.events.push(run.year + '年　' + v.name + 'の技を' + y.name + 'が継承');
     SFX.inherit();
-    return y.name + 'が' + v.name + '（' + v.jname + '）の突入技「' + y.entry.name.replace('継承・', '') + '」を受け継いだ。攻撃+2。';
+    return y.name + 'が' + v.name + '（' + v.jname + '）の突入技「' + y.entry.name.replace('継承・', '') + '」を受け継いだ。攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '。';
   }
-  function runInherit(after) {
+  function runInherit() {
     const pairs = inheritPairs();
-    rvShow({ title: '継承', sub: 'ベテランの突入技を若手に伝える。受け継いだ若手は攻撃も+2。', cards: pairs.map(([v, y]) => ({ ico: '<span class="uc-disc c-' + y.cls + '">' + ART[y.job] + '</span>', t: v.name + ' → ' + y.name, d: v.name + '（' + v.jname + '・' + v.age + '歳）の「' + v.entry.name.replace('継承・', '') + '」を、' + y.name + '（' + y.jname + '・' + y.age + '歳）へ' })),
-      skip: '継承せずに進む', on: (i) => { const ev = i >= 0 ? [doInherit(pairs[i][0], pairs[i][1])] : []; if (after) after(ev); else runAdvance(ev); } });
+    if (!pairs.length) { runAdvance([]); return; }
+    rvShow({ title: '継承', sub: 'ベテランの突入技を若手に伝える。受け継いだ若手は攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '。', cards: pairs.map(([v, y]) => ({ ico: '<span class="uc-disc c-' + y.cls + '">' + ART[y.job] + '</span>', t: v.name + ' → ' + y.name, d: v.name + '（' + v.jname + '・' + v.age + '歳）の「' + v.entry.name.replace('継承・', '') + '」を、' + y.name + '（' + y.jname + '・' + y.age + '歳）へ' })),
+      skip: '継承せずに進む', on: (i) => runAdvance(i >= 0 ? [doInherit(pairs[i][0], pairs[i][1])] : []) });
   }
-  function equipCard() {
+  function equipCands() {
     const cands = [];
     EQUIPS.forEach((e) => run.members.forEach((m) => { if (e.ok(m) && !m.equips.includes(e.name)) cands.push([e, m]); }));
-    return cands.length ? pick(cands) : null;
+    for (let i = cands.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [cands[i], cands[j]] = [cands[j], cands[i]]; }
+    return cands;
   }
+  function equipCard([e, m], bonus) {
+    return { ico: ICON.sword, t: (bonus ? '戦果の褒美　' : '装備　') + e.name, d: m.name + '（' + m.jname + '）に。' + e.desc,
+      act: () => { m.bonus[e.key] = (m.bonus[e.key] || 0) + e.v; m.equips.push(e.name); applyAge(m, false); if (e.key === 'hp') m.hp = Math.min(m.max, m.hp + e.v); SFX.buff(); return m.name + 'が' + e.name + 'を手に入れた（' + e.desc + '）。'; } };
+  }
+  // 勝利の報酬：装備・継承・手当て（★3なら戦果の褒美でもう1枚）
   function runReward(pre) {
-    pre = pre || [];
-    const cards = [], acts = [];
-    const full = run.members.length >= RUN.cap;
-    if (!full) { const o = recruitCards(1)[0], j = JOBS.find((x) => x.id === o.job); cards.push({ ico: '<span class="uc-disc c-' + j.cls + '">' + ART[o.job] + '</span>', t: '新団員　' + o.name + '（' + j.name + '）', d: o.age + '歳・若手。突入技「' + j.entry.name + '」' }); acts.push(() => addRecruit(o)); }
-    const eq = equipCard();
-    if (eq) { const [e, m] = eq; cards.push({ ico: ICON.sword, t: '装備　' + e.name, d: m.name + '（' + m.jname + '）に。' + e.desc }); acts.push(() => { m.bonus[e.key] = (m.bonus[e.key] || 0) + e.v; m.equips.push(e.name); applyAge(m, false); SFX.buff(); return m.name + 'が' + e.name + 'を手に入れた（' + e.desc + '）。'; }); }
+    const cards = [];
+    const eqs = equipCands();
+    if (eqs.length) cards.push(equipCard(eqs[0]));
     const pairs = inheritPairs();
-    if (pairs.length) { const [v, y] = pick(pairs); cards.push({ ico: ICON.rot, t: '継承　' + v.name + ' → ' + y.name, d: v.name + 'の「' + v.entry.name.replace('継承・', '') + '」を' + y.name + 'へ。攻撃+2' }); acts.push(() => doInherit(v, y)); }
-    else { cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快する。' }); acts.push(() => { run.members.forEach((m) => { m.hp = m.max; }); SFX.heal(); return '手当てをした。全員のHPが全快した。'; }); }
-    rvShow({ title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。', events: pre, cards, on: (i) => runAdvance([acts[i]()]) });
+    if (pairs.length) { const [v, y] = pick(pairs); cards.push({ ico: ICON.rot, t: '継承　' + v.name + ' → ' + y.name, d: v.name + 'の「' + v.entry.name.replace('継承・', '') + '」を' + y.name + 'へ。攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp, act: () => doInherit(v, y) }); }
+    cards.push({ ico: ICON.heart, t: '手当てと稽古', d: '全員のHPが全快。若手は攻撃+' + RUN.restAtk + '。', act: () => { run.members.forEach((m) => { m.hp = m.max; }); SFX.heal(); return '手当てをした。全員のHPが全快した。' + (RUN.healTrain ? trainYoung() : ''); } });
+    const bonus = RUN.bonusPick && run.lastStars >= 3;
+    if (bonus) { const alt = eqs.find((x) => !eqs[0] || x[0] !== eqs[0][0] || x[1] !== eqs[0][1]); if (alt) cards.push(equipCard(alt, true)); }
+    rvShow({ title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。' + (bonus ? '戦果★3で、選べる報酬が1つ増えた。' : ''), events: pre || [], cards, on: (i) => runAdvance([cards[i].act()]) });
   }
-  // 戦闘のあと：倒れた仲間は戦死。生き残った仲間は少し回復する
+  // 戦闘のあと：倒れた仲間は戦死。戦った仲間は少し回復し、留守番は全快
   function runAfterBattle(win) {
+    const fought = new Set((snapshot || []).map((x) => x.u));
     if (snapshot) runSaveForm(snapshot.filter((x) => x.u.hp > 0));
     const dead = run.members.filter((m) => m.hp <= 0);
     dead.forEach((m) => { run.gone.push(Object.assign(m, { fate: 'fallen', leftYear: run.year })); run.events.push(run.year + '年　' + m.name + '（' + m.jname + '）戦死'); });
     run.members = run.members.filter((m) => m.hp > 0);
     roster = run.members;
-    if (win) run.members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * RUN.afterHeal)); });
+    if (win) run.members.forEach((m) => { m.hp = fought.has(m) ? Math.min(m.max, m.hp + Math.ceil(m.max * RUN.afterHeal)) : m.max; });
     return dead.map((m) => m.name + '（' + m.jname + '）は帰らなかった。');
   }
   function runAdvance(events) {
@@ -3487,13 +3617,15 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     if (run.node >= RUN.nodes) { runEnd(true); return; }
     run.year += RUN.years;
     let retired = 0;
+    const grown = [];
     run.members.forEach((m) => {
       const before = m.phase;
       m.age += RUN.years;
       if (m.age >= RUN.retire) return;
       applyAge(m, false);
-      if (m.phase !== before) events.push(m.name + '（' + m.jname + '）は' + m.phaseLabel + 'の年頃になった（' + m.age + '歳）。');
+      if (m.phase !== before) grown.push(m.name + '（' + m.phaseLabel + '・' + m.age + '歳）');
     });
+    if (grown.length) events.push(grown.length + '人が新しい年頃を迎えた：' + grown.join('、') + '。');
     run.members.filter((m) => m.age >= RUN.retire).forEach((m) => {
       retired++;
       run.gone.push(Object.assign(m, { fate: 'retired', leftYear: run.year }));
@@ -3509,24 +3641,42 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   }
   function runEnd(clear) {
     phase = 'over';
+    runClearSave();
     const alive = run.members.length, ret = run.gone.filter((m) => m.fate === 'retired').length, fal = run.gone.filter((m) => m.fate === 'fallen').length;
     run.summary = { clear, alive, ret, fal, years: run.year, node: run.node };
+    coverProgress();
     if (clear) { showEnding(); return; }
-    rvShow({ small: '騎士団 ' + run.year + '年目　·　ノード ' + run.node + ' / ' + RUN.nodes, title: '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', noRoster: true,
+    rvShow({ small: '騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)), title: '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', noRoster: true, openLog: true,
       events: run.events.slice(-8), cards: [{ ico: ICON.rot, t: 'もう一度、最初から', d: '新しい騎士団で30年に挑む。' }], skip: 'タイトルへ', on: (i) => { $('runv').hidden = true; if (i >= 0) beginMain(); else goTitle(); } });
   }
-  function beginMain() {
+  function enterRun() {
     camp = { turns: 0, fallen: 0, stars: [], rec: [] };
     $('ending').hidden = true; $('result').hidden = true;
     tut = null;
     $('coach').hidden = true; $('spot').hidden = true; $('resultAlt').hidden = true;
     if (!$('board').children.length) buildBoard();
+  }
+  function beginMain() {
+    enterRun();
     newRun();
     battleIdx = 0; run.enemy = runEnemy(1).def;
     toPrep(false);
     if (!$('cover').hidden) closeCover();
     swappedOnce = false;
     runShowMap([]);
+  }
+  function resumeRun() {
+    const o = runSaved(); if (!o) { beginMain(); return; }
+    enterRun();
+    run = o.run; rseed = o.rseed || 7; uidSeq = o.uidSeq || run.members.length;
+    roster = run.members;
+    const step = Math.min(run.node + 1, RUN.nodes);
+    run.enemy = runEnemy(step).def; battleIdx = runEnemy(step).tier;
+    grid = runGrid();
+    toPrep(false);
+    if (!$('cover').hidden) closeCover();
+    swappedOnce = true;
+    runShowMap(['騎士団 ' + run.year + '年目から再開した。']);
   }
   function beginTutorial() {
     run = null; $('runv').hidden = true;
@@ -3556,6 +3706,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   $('cover').addEventListener('click', (ev) => { if (gated) { ev.preventDefault(); ev.stopPropagation(); ungate(); } }, true);
   document.addEventListener('keydown', (ev) => { if (gated && !$('cover').hidden && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ungate(true); } });
   $('begin').addEventListener('click', beginMain);
+  $('resume').addEventListener('click', resumeRun);
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
   $('tutTag').hidden = tutDone();
