@@ -451,6 +451,12 @@ body.is-cover .app { opacity: 0; pointer-events: none; }
 .en-lines p { margin: 0; font-family: "Kaisei Decol", "Hiragino Mincho ProN", "Noto Serif JP", serif; font-weight: 700; font-size: clamp(13px, 4.1vw, 19px); line-height: 1.9; letter-spacing: -0.01em; animation: enline 1s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--d) * 1s); }
 .en-lines p:nth-child(4) { margin-top: 10px; }
 .en-lines p:last-child { color: var(--accent-text); }
+/* 最後の戦いのあと（紫の空）：文字を明るくして沈まないように */
+body.boss-stage .ending { color: #f4ecff; }
+body.boss-stage .en-kick { opacity: 1; color: #d9c8f2; }
+body.boss-stage .en-lines p { text-shadow: 0 2px 0 rgba(20, 6, 34, 0.6), 0 0 14px rgba(20, 6, 34, 0.5); }
+body.boss-stage .en-lines p:last-child { color: #ffd36b; }
+body.boss-stage .en-u b { color: var(--ink); }
 @keyframes enline { from { opacity: 0; transform: translateY(10px); filter: blur(3px); } }
 @keyframes enfade { from { opacity: 0; } }
 .en-stage { position: relative; height: 196px; margin: 0 -20px; }
@@ -1066,7 +1072,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       </div>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.6</p>
+    <p class="c-ver" id="cVer">ver 5.1.7</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1334,7 +1340,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.6';
+  const APP_VERSION = '5.1.7';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
