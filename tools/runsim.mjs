@@ -16,15 +16,20 @@ export const RUN = grab('RUN');
 const AGE_PH = grab('AGE_PH');
 const EQUIPS = grab('EQUIPS');
 export const BOSS = grab('BOSS');
+const TRAITS = grab('TRAITS');
+const VARIANTS = grab('VARIANTS');
+let MENTORS = {}, CFG = RUN;
 const COLS = 4;
 
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 const phaseOf = (age) => AGE_PH.find((p) => age <= p.max);
 
 function applyAge(m, fill) {
-  const ph = phaseOf(m.age), b = m.base, add = (k) => m.bonus[k] || 0, mul = (v) => Math.round(v * ph.mul);
-  m.max = Math.max(8, Math.round(b.hp * (ph.key === 'old' ? 0.9 : 1)) + add('hp'));
-  m.atk = mul(b.atk) + add('atk');
+  const ph = phaseOf(m.age), b = m.base, add = (k) => m.bonus[k] || 0;
+  const tr = m.trait ? TRAITS[m.trait] : null, tm = tr && tr.mul ? (tr.mul[ph.key] || 1) : 1, mul = (v) => Math.round(v * ph.mul * tm);
+  const mt = MENTORS[m.job] && MENTORS[m.job] !== m.uid;
+  m.max = Math.max(8, Math.round(b.hp * (ph.key === 'old' && !(tr && tr.keepHp) ? 0.9 : 1)) + add('hp') + ((tr && tr.hp) || 0) + (mt ? CFG.mentorHp : 0));
+  m.atk = mul(b.atk) + add('atk') + (mt ? CFG.mentorAtk : 0);
   m.ranged = b.ranged ? mul(b.ranged) + add('ranged') : 0;
   m.atkSup = b.atkSup ? Math.max(1, mul(b.atkSup)) : 0;
   m.defSup = b.defSup ? Math.max(1, mul(b.defSup)) + add('defSup') : 0;
@@ -38,9 +43,9 @@ function applyAge(m, fill) {
   if (fill) m.hp = m.max; else m.hp = Math.min(m.hp, m.max);
 }
 let uid = 0;
-function newMember(job, age) {
+function newMember(job, age, trait) {
   const j = JOBS.find((x) => x.id === job);
-  const m = Object.assign({}, j, { uid: 'm' + (++uid), job, age, base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest, sta: j.sta }, bonus: {}, equips: [], inherit: null, r: null, c: null });
+  const m = Object.assign({}, j, { uid: 'm' + (++uid), job, age, trait: trait || null, base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest, sta: j.sta }, bonus: {}, equips: [], inherit: null, r: null, c: null });
   applyAge(m, true);
   return m;
 }
@@ -49,10 +54,16 @@ function place(members) {
   members.forEach((m) => { if (m.r != null && !g[m.r][m.c]) g[m.r][m.c] = m; else m.r = null; });
   members.filter((m) => m.r == null).forEach((m) => { for (const r of [2, 1, 0]) for (let c = 0; c < COLS; c++) if (m.r == null && !g[r][c]) { g[r][c] = m; m.r = r; m.c = c; } });
 }
-export function runEnemy(step, cfg = RUN) {
+export function runEnemy(step, cfg = RUN, vkey = null) {
   const tier = step <= 3 ? 0 : step <= 6 ? 1 : 2, start = [1, 4, 7][tier], boss = step === cfg.nodes;
   const base = boss ? BOSS : ENEMIES[tier], k = cfg.tierHp[tier] * (1 + cfg.hpStep * (step - start)), kd = cfg.tierDmg[tier] * (1 + cfg.dmgStep * (step - start));
-  return Object.assign({}, base, { hp: Math.round(base.hp * k), pattern: base.pattern.map((a) => Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * kd) } : {})) });
+  const v = !boss && vkey ? VARIANTS[vkey] : null;
+  return Object.assign({}, base, { def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * k * ((v && v.hp) || 1)), pattern: base.pattern.map((a) => {
+    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * kd * ((v && v.dmg) || 1)) } : {});
+    if (v && vkey === 'swarm' && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
+    if (v && vkey === 'poison' && o.dmg) o.pierce = true;
+    return o;
+  }) });
 }
 // 出撃する仲間（ゲームでは編成画面で自分で選ぶ。ここでは強い順に枠まで）
 const power = (m) => m.hp * (m.atk + m.heal * 2 + m.defSup + 4);
@@ -79,12 +90,22 @@ export const STAY = () => false;
 // strat.reward(タグ一覧) → 選ぶタグ（'equip' | 'inherit' | 'heal' | 'equip2'）
 // strat.recruit → false なら入団を断る
 export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
-  const R = rng(seed); uid = 0;
+  const R = rng(seed); uid = 0; MENTORS = {}; CFG = cfg;
   const pick = (a) => a[Math.floor(R() * a.length)];
   let members = DEFAULT_FORM.map(([id, r, c]) => { const m = newMember(id, cfg.start[id]); m.r = r; m.c = c; return m; });
   let fallen = 0, retired = 0, battles = 0;
   const pairs = () => { const v = members.filter((m) => m.age >= 40), y = members.filter((m) => m.age <= 24 && !m.inherit), o = []; v.forEach((a) => y.forEach((b) => { if (a !== b) o.push([a, b]); })); return o; };
-  const recruit = () => { if (members.length < cfg.cap) members.push(newMember(pick(JOBS).id, 16 + Math.floor(R() * 4))); };
+  const TK = Object.keys(TRAITS), VK = Object.keys(VARIANTS);
+  const recruit = () => { if (members.length < cfg.cap) members.push(newMember(pick(JOBS).id, 16 + Math.floor(R() * 4), R() < cfg.traitRate ? pick(TK) : null)); };
+  // 出来事（ゲームと同じ4種。選び方はランダム）
+  const event = () => {
+    const primes = members.filter((m) => m.phase === 'prime'), kinds = ['festival', 'plague', 'arms']; if (primes.length) kinds.push('marriage', 'marriage');
+    const k = pick(kinds), a = R() < 0.5;
+    if (k === 'festival') { const ys = members.filter((m) => m.phase === 'young' || m.phase === 'prime'); if (a || !ys.length) members.forEach((m) => { m.hp = m.max; }); else { const x = pick(ys); x.bonus.atk = (x.bonus.atk || 0) + 2; applyAge(x, false); } }
+    else if (k === 'marriage') { const x = pick(primes); if (a) { x.bonus.hp = (x.bonus.hp || 0) + 6; applyAge(x, false); x.hp = Math.min(x.max, x.hp + 6); } else { x.bonus.atk = (x.bonus.atk || 0) + 2; applyAge(x, false); } }
+    else if (k === 'plague') { const h = members.find((m) => m.heal > 0); if (h && a) { h.bonus.hp = (h.bonus.hp || 0) - 4; applyAge(h, false); } else members.forEach((m) => { m.hp = Math.max(1, m.hp - Math.ceil(m.max * 0.3)); }); }
+    else equip();
+  };
   const inherit = ([v, y]) => { y.inherit = JOBS.find((j) => j.id === v.job).entry; y.bonus.atk = (y.bonus.atk || 0) + cfg.inhAtk; y.bonus.hp = (y.bonus.hp || 0) + cfg.inhHp; applyAge(y, false); };
   const equip = () => { const eq = []; EQUIPS.forEach((e) => members.forEach((m) => { if (e.ok(m) && !m.equips.includes(e.name)) eq.push([e, m]); })); if (!eq.length) return false; const [e, m] = pick(eq); m.bonus[e.key] = (m.bonus[e.key] || 0) + e.v; m.equips.push(e.name); applyAge(m, false); return true; };
   for (let step = 1; step <= cfg.nodes; step++) {
@@ -98,7 +119,7 @@ export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
       battles++;
       const fighters = pickSortie(members, cfg.sortie);
       place(fighters);
-      const en = runEnemy(step, cfg), bseed = Math.floor(R() * 1e9);
+      const en = runEnemy(step, cfg, step < cfg.nodes && R() < cfg.variantRate ? pick(VK) : null), bseed = Math.floor(R() * 1e9);
       const party = () => fighters.map((m) => Object.assign({}, m));
       if (strat.onBattle) strat.onBattle(en, party(), bseed, step);
       let res;
@@ -135,9 +156,13 @@ export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
     else if (type === 'inherit') { const ps = pairs(); if (ps.length) inherit(pick(ps)); }
     if (step === cfg.nodes) return { clear: true, reached: step, fallen, retired, battles };
     members.forEach((m) => { m.age += cfg.years; if (m.age < cfg.retire) applyAge(m, false); });
-    retired += members.filter((m) => m.age >= cfg.retire).length;
+    const gone = members.filter((m) => m.age >= cfg.retire);
+    retired += gone.length;
+    gone.forEach((m) => { MENTORS[m.job] = m.uid; });
     members = members.filter((m) => m.age < cfg.retire);
+    if (gone.length) members.forEach((m) => applyAge(m, false));
     if (!members.length) return { clear: false, reached: step, fallen, retired, battles };
+    if (cfg.forced[step + 1] == null && step + 1 < cfg.nodes && R() < cfg.eventRate) event();
   }
 }
 
