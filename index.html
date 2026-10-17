@@ -187,6 +187,25 @@ button { font-family: inherit; }
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
+/* ---------- 最後の戦い：紫の毒の空 ---------- */
+body.boss-stage {
+  --sky-top: #1c0b2e; --sky-bot: #5b2477; --hill-far: #452060; --hill-near: #331649; --ground: #261036;
+  --sun: #b8f56a; --star-op: 0.55;
+}
+body.boss-stage .sky { background: radial-gradient(120% 60% at 70% 30%, rgba(160, 70, 200, 0.35), transparent 60%), linear-gradient(180deg, var(--sky-top), var(--sky-bot)); }
+body.boss-stage .sun { box-shadow: 0 0 0 10px rgba(184, 245, 106, 0.22), 0 0 0 24px rgba(184, 245, 106, 0.1), 0 0 60px 20px rgba(140, 230, 80, 0.35); }
+body.boss-stage .cloud { background: rgba(150, 70, 190, 0.45); filter: none; }
+body.boss-stage .hills { filter: drop-shadow(0 -3px 0 rgba(180, 255, 110, 0.25)); }
+body.boss-stage .plate small, body.boss-stage .plate b, body.boss-stage .espd, body.boss-stage .ehpn { color: #f4ecff; text-shadow: 0 2px 0 rgba(20, 6, 34, 0.55); }
+body.boss-stage .stage .eart svg { filter: drop-shadow(0 0 14px rgba(150, 240, 80, 0.45)); }
+.miasma { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s; }
+body.boss-stage .miasma { opacity: 1; }
+.miasma i { position: absolute; bottom: -20px; width: var(--s); height: var(--s); border-radius: 50%; background: radial-gradient(circle at 35% 35%, rgba(220, 255, 170, 0.9), rgba(120, 220, 60, 0.55) 45%, rgba(110, 40, 150, 0) 72%); animation: bubble var(--t) linear infinite; animation-delay: var(--d); }
+@keyframes bubble { 0% { transform: translate(0, 0) scale(0.6); opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(var(--x), -78vh) scale(1.1); opacity: 0; } }
+.miasma b { position: absolute; left: -20%; right: -20%; height: 120px; border-radius: 50%; background: radial-gradient(closest-side, rgba(140, 60, 180, 0.45), transparent); animation: fog 14s ease-in-out infinite alternate; }
+@keyframes fog { to { transform: translateX(12%); } }
+@media (prefers-reduced-motion: reduce) { .miasma i, .miasma b { animation: none; } .miasma i { opacity: 0.5; bottom: 30%; } }
+
 /* ---------- レイアウト ---------- */
 .app { position: relative; z-index: 1; display: flex; flex-direction: column; min-height: 100vh; min-height: 100dvh; max-width: 520px; max-width: min(520px, 58vh); max-width: min(520px, 58dvh); margin: 0 auto; padding: 0 max(12px, env(safe-area-inset-left, 0px)) 14px max(12px, env(safe-area-inset-right, 0px)); padding-top: env(safe-area-inset-top, 0px); }
 .app { transition: opacity 0.6s; }
@@ -974,6 +993,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     <path d="M0 112 C60 100 120 104 190 116 C250 126 320 106 390 112 L390 150 L0 150Z" fill="var(--ground)"/>
   </svg>
   <div class="ground"></div>
+  <div class="miasma"><b style="top:250px"></b><b style="top:420px;animation-delay:-6s"></b><i style="left:8%;--s:16px;--t:9s;--d:-1s;--x:20px"></i><i style="left:22%;--s:10px;--t:7s;--d:-4s;--x:-14px"></i><i style="left:41%;--s:22px;--t:11s;--d:-7s;--x:24px"></i><i style="left:58%;--s:12px;--t:8s;--d:-2s;--x:-18px"></i><i style="left:74%;--s:18px;--t:10s;--d:-5s;--x:12px"></i><i style="left:90%;--s:9px;--t:6.5s;--d:-3s;--x:-10px"></i></div>
   <div class="grain"></div>
 </div>
 
@@ -1046,7 +1066,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       </div>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.5</p>
+    <p class="c-ver" id="cVer">ver 5.1.6</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1266,7 +1286,28 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       '<path d="M78 74 L102 80 M162 74 L138 80" stroke="#23314a" stroke-width="4.5" stroke-linecap="round"/>' +
       '<path d="M120 92 Q66 90 54 142 Q84 164 120 146 Q156 164 186 142 Q174 90 120 92Z" fill="#e88c9d"/>' +
       '<ellipse cx="96" cy="144" rx="9" ry="12" fill="#8a3f56"/><ellipse cx="144" cy="144" rx="9" ry="12" fill="#8a3f56"/>' +
-      '<circle cx="86" cy="116" r="5" fill="#f4b1be"/><circle cx="154" cy="116" r="5" fill="#f4b1be"/>')
+      '<circle cx="86" cy="116" r="5" fill="#f4b1be"/><circle cx="154" cy="116" r="5" fill="#f4b1be"/>'),
+    // 大災厄の毒竜：切り紙の竜。紫の鱗、骨の角、毒の緑に光る目と棘
+    E('<path d="M176 138 Q226 150 228 116 Q230 92 210 86" stroke="#41245f" stroke-width="15" fill="none" stroke-linecap="round"/>' +
+      '<path d="M198 72 L224 82 L210 100 L204 86Z" fill="#8be04a"/>' +
+      '<path d="M126 78 Q140 8 208 10 Q192 26 200 44 Q178 42 180 62 Q160 58 158 84Z" fill="#2a1546"/>' +
+      '<ellipse cx="140" cy="122" rx="62" ry="42" fill="#55327e"/>' +
+      '<ellipse cx="118" cy="138" rx="40" ry="22" fill="#b892da"/>' +
+      '<path d="M90 132 Q118 124 146 132 M86 142 Q118 134 150 142 M92 152 Q118 146 144 152" stroke="#8e68b4" stroke-width="2.5" fill="none" stroke-linecap="round"/>' +
+      '<path d="M112 82 L120 64 L128 80Z M132 80 L141 61 L149 80Z M154 86 L164 68 L170 90Z M174 96 L186 82 L188 104Z" fill="#8be04a"/>' +
+      '<path d="M148 96 Q170 22 236 26 Q220 40 228 58 Q206 56 210 76 Q188 72 186 94 Q168 88 148 96Z" fill="#3a1d5e"/>' +
+      '<path d="M150 94 L234 28 M168 90 L226 58 M186 93 L209 76" stroke="#1d0f33" stroke-width="3" stroke-linecap="round"/>' +
+      '<ellipse cx="104" cy="160" rx="20" ry="9" fill="#3d2163"/><ellipse cx="172" cy="162" rx="20" ry="9" fill="#3d2163"/>' +
+      '<path d="M86 162 l4 7 4-7 M96 164 l4 7 4-7 M154 164 l4 7 4-7 M164 166 l4 7 4-7" fill="#efe6d2"/>' +
+      '<path d="M102 124 Q72 104 70 72 L100 62 Q104 92 126 106Z" fill="#55327e"/>' +
+      '<path d="M8 70 Q20 60 42 62 L46 82 Q24 86 8 78Z" fill="#62408f"/>' +
+      '<path d="M30 70 Q28 42 58 36 Q88 32 100 56 Q104 76 84 86 Q58 94 30 70Z" fill="#62408f"/>' +
+      '<path d="M70 40 Q80 12 102 4 Q90 22 84 42Z" fill="#ece2cc"/><path d="M52 40 Q50 16 64 4 Q62 22 66 40Z" fill="#d6c9ae"/>' +
+      '<path d="M48 49 L76 53" stroke="#241238" stroke-width="5" stroke-linecap="round"/>' +
+      '<ellipse cx="62" cy="59" rx="9" ry="6.5" fill="#c8ff6e"/><ellipse cx="63" cy="59" rx="2.6" ry="5.4" fill="#1a0f26"/>' +
+      '<circle cx="15" cy="69" r="2.2" fill="#241238"/>' +
+      '<path d="M15 77 L19 86 L23 78Z M27 79 L31 88 L35 80Z" fill="#fff"/>' +
+      '<path d="M22 84 Q19 96 23 104 Q28 96 26 84Z" fill="#8be04a"/>')
   ];
   const ICON_SWAP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4 3 8l4 4M3 8h13M17 20l4-4-4-4M21 16H8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const ICON = {
@@ -1293,7 +1334,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.5';
+  const APP_VERSION = '5.1.6';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -1316,14 +1357,14 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       { name: 'とっしん', glyph: '猛', rule: 'lowhp', dmg: 32, pierce: true }
     ] }
   ];
-  // 騎士団の30年の最後の敵。溜め→防無効の全体攻撃が来る前に、元気な列を前に出せるかが勝負
+  // 騎士団の30年の最後の敵（毒竜）。毒を吸いこむ→防無効の息吹が来る前に、元気な列を前に出せるかが勝負
   const BOSS = {
-    name: '大災厄オッドノーズ', art: 2, voice: 'horn', hp: 300, spd: 7, def: 3, par: 14, allowFallen: 2, pattern: [
-      { name: '三連突き', glyph: '突', rule: 'random', hits: 3, dmg: 11 },
-      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
-      { name: '災厄の咆哮', glyph: '災', rule: 'all', dmg: 24, pierce: true },
-      { name: 'なぎはらい', glyph: '薙', rule: 'all', dmg: 12 },
-      { name: 'とっしん', glyph: '猛', rule: 'lowhp', dmg: 34, pierce: true }
+    name: '大災厄の毒竜', art: 3, boss: true, voice: 'dragon', hp: 300, spd: 7, def: 3, par: 14, allowFallen: 2, pattern: [
+      { name: '爪の連撃', glyph: '爪', rule: 'random', hits: 3, dmg: 11 },
+      { name: '毒を吸いこむ', glyph: '溜', rule: 'charge' },
+      { name: '毒の息吹', glyph: '毒', rule: 'all', dmg: 24, pierce: true },
+      { name: '翼のはばたき', glyph: '翼', rule: 'all', dmg: 12 },
+      { name: '尾の一撃', glyph: '尾', rule: 'lowhp', dmg: 34, pierce: true }
     ]
   };
 
@@ -1622,10 +1663,13 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       INST.swish(t, 0.3, 0.2, d, 180, 900);
       INST.wood(t + 0.24, 300, 0.5, d, 0.2);
     } else {
-      const g = outNode(d, 0.3), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400; lp.connect(g);
-      amp(g, t, 0.03, 0.16, 0.38);
-      [43, 44].forEach((m, i) => { const o = osc('sawtooth', mtof(m), t, t + 0.45, lp, i ? 8 : -8); o.frequency.exponentialRampToValueAtTime(mtof(m + 5), t + 0.3); });
-      const r = outNode(d, 0.1); amp(r, t, 0.05, 0.3, 0.35); nz(t, 0.45, r, 'lowpass', 220, 0.8);
+      // 鼻の獣のいななき。竜はそれを低く長くして、喉のうなりを重ねる
+      const dr = kind === 'dragon', len = dr ? 0.85 : 0.45;
+      const g = outNode(d, 0.3), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = dr ? 900 : 1400; lp.connect(g);
+      amp(g, t, 0.03, dr ? 0.2 : 0.16, len - 0.07);
+      (dr ? [31, 32, 38] : [43, 44]).forEach((m, i) => { const o = osc('sawtooth', mtof(m), t, t + len, lp, i ? 8 : -8); o.frequency.exponentialRampToValueAtTime(mtof(m + (dr ? 7 : 5)), t + len * 0.6); });
+      const r = outNode(d, 0.1); amp(r, t, 0.05, dr ? 0.45 : 0.3, len - 0.1); nz(t, len, r, 'lowpass', dr ? 160 : 220, 0.8);
+      if (dr) { const h = outNode(d, 0.2); amp(h, t + 0.1, 0.1, 0.12, 0.6); nz(t + 0.1, 0.7, h, 'bandpass', 2400, 1.2); }
     }
     if (big) { INST.timp(t + 0.2, 38, 0.8, d); INST.brass(t + 0.15, 50, 0.35, 0.09, d, 0.3); INST.brass(t + 0.15, 51, 0.35, 0.07, d, 0.3); }
   };
@@ -1640,7 +1684,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
      タイトル：F メジャー 84（フェルトピアノと鈴）
      戦闘　　：D マイナー 136（ギャロップの低音、楽隊の太鼓とラッパ、笛の旋律） */
   const Music = (() => {
-    const CH = { F: [53, 57, 60], Dm: [50, 53, 57], Bb: [46, 50, 53], C: [48, 52, 55], Am: [45, 48, 52], A: [45, 49, 52], Gm: [43, 46, 50] };
+    const CH = { F: [53, 57, 60], Dm: [50, 53, 57], Bb: [46, 50, 53], C: [48, 52, 55], Am: [45, 48, 52], A: [45, 49, 52], Gm: [43, 46, 50], Eb: [51, 55, 58] };
     const T_BARS = [['F'], ['Dm'], ['Bb'], ['C'], ['F'], ['Am'], ['Bb', 'C'], ['F']];
     const B_BARS = [['Dm'], ['Bb'], ['C'], ['A'], ['Dm'], ['Bb'], ['Gm'], ['A']];
     // 戦闘テーマ（拍, 音, 長さ）：F・A・C の動機を D マイナーで鳴らす
@@ -1655,6 +1699,19 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       [[0, 86, 2], [2, 81, 1], [3, 76, 1]]
     ];
     const ARP = [0, 1, 2, 1];
+    // 最後の戦い：D マイナーにフリギアの E♭ を混ぜた不穏な進行、152。テーマの F・A・C は bar2 で E♭ までせり上がる
+    const X_BARS = [['Dm'], ['Eb'], ['Dm'], ['A'], ['Bb'], ['Eb'], ['Gm', 'A'], ['Dm', 'A']];
+    const X_MEL = [
+      [[0, 74, 1], [1, 75, .5], [1.5, 74, .5], [2, 81, 1.5], [3.5, 80, .5]],
+      [[0, 79, 1], [1, 75, 1], [2, 70, 1], [3, 75, 1]],
+      [[0, 74, .5], [.5, 77, .5], [1, 81, .5], [1.5, 86, .5], [2, 87, 1], [3, 86, 1]],
+      [[0, 85, 2], [2, 81, 1], [3, 76, 1]],
+      [[0, 82, 1], [1, 81, .5], [1.5, 79, .5], [2, 77, 1], [3, 74, 1]],
+      [[0, 79, 1.5], [1.5, 82, .5], [2, 87, 2]],
+      [[0, 86, 1], [1, 82, 1], [2, 85, 1], [3, 88, 1]],
+      [[0, 86, 2], [2, 81, 1], [3, 74, 1]]
+    ];
+    const BOSS_BPM = 152;
     // エンディング：テーマ（F・A・C）を長調で歌い上げる
     const END_MEL = [
       [[0, 72, 1], [1, 77, 1], [2, 81, 1.5], [3.5, 79, .5]],
@@ -1674,7 +1731,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       resolve: { str: 0.9, drm: 1, mel: 0.35, brs: 0.9, title: 0 },
       off: { str: 0, drm: 0, mel: 0, brs: 0, title: 0 }
     };
-    let state = 'off', L = null, drone = null, charged = false, only = null;
+    let state = 'off', L = null, drone = null, charged = false, only = null, boss = false;
     function layers() {
       if (L) return L;
       L = {};
@@ -1711,6 +1768,36 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
         if (e8 % 2 === 1) INST.pizz(t, ch[[0, 1, 2, 1][(e8 >> 1) % 4]] + 24, 0.09, L.title, 0.35);
         return;
       }
+      if (boss) {   // ---- 最後の戦い ----
+        const ch = chordAt(X_BARS, bar, beat), root = ch[0], q = e % 4;
+        if (on('str')) {
+          // 16分で突き進む低音（オクターブの往復）と、半音でうごめく刻み
+          INST.bass(t, root - 12 + (e % 2 ? 12 : 0), spb * 0.22, e % 4 === 0 ? 0.52 : 0.34, L.str);
+          INST.pizz(t, ch[ARP[q]] + 12 + (e >= 8 ? 12 : 0) + (q === 3 ? 1 : 0), q === 0 ? 0.2 : 0.12, L.str, 0.12);
+        }
+        if (on('drm')) {
+          if (e % 4 === 0 || e === 14) INST.kick(t, 0.66, L.drm);
+          if (e === 4 || e === 12) INST.snare(t, 0.42, L.drm);
+          INST.hat(t, e % 2 === 0 ? 0.12 : 0.06, L.drm);
+          if (e === 0) INST.timp(t, root - 12, 0.7, L.drm);
+          if (bar % 2 === 1 && e >= 12) INST.timp(t, root - 12 + (e - 12), 0.35 + (e - 12) * 0.08, L.drm);
+        }
+        if (on('brs')) {
+          // 小節頭の低い金管の和音を長く鳴らし、裏で鋭く刺す
+          if (e === 0) ch.forEach((m) => INST.brass(t, m, spb * 3.6, 0.08, L.brs, 0.35));
+          if (e === 6 || e === 10 || e === 14) ch.forEach((m) => INST.brass(t, m + 12, spb * 0.22, 0.1, L.brs));
+          if (bar === 7 && e >= 8) INST.snare(t, 0.2 + (e - 8) * 0.05, L.brs);
+        }
+        if (on('mel')) {
+          X_MEL[bar].forEach(([b, m, d]) => {
+            if (b * 4 !== e) return;
+            INST.flute(t, m, d * spb * 0.92, 0.2, L.mel, 0.3);
+            INST.brass(t, m - 12, d * spb * 0.85, 0.08, L.mel, 0.25);
+            if (d >= 1) INST.bell(t, m + 12, 0.04, L.mel, 0.5);
+          });
+        }
+        return;
+      }
       const ch = chordAt(B_BARS, bar, beat), root = ch[0], q = e % 4;
       if (on('str')) {
         // ギャロップの低音（タッ・タタ）
@@ -1739,24 +1826,24 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     }
     /* 演奏は毎フレーム合成せず、各パートを一度だけ録音（オフライン合成）してループ再生する。
        ゲーム中の音声処理がほぼゼロになり、音切れ・プチノイズを防ぐ。 */
-    const GROUPS = { title: ['title'], battle: ['str', 'drm', 'mel', 'brs'], ending: ['end'] };
-    const groupOf = (st) => (st === 'title' ? 'title' : st === 'ending' ? 'ending' : st === 'off' ? null : 'battle');
+    const GROUPS = { title: ['title'], battle: ['str', 'drm', 'mel', 'brs'], boss: ['str', 'drm', 'mel', 'brs'], ending: ['end'] };
+    const groupOf = (st) => (st === 'title' ? 'title' : st === 'ending' ? 'ending' : st === 'off' ? null : boss ? 'boss' : 'battle');
     const bufs = {}, pend = {};
     let queue = Promise.resolve(), cur = { group: null, srcs: [] }, token = 0;
     // 1小節ずつ小さく録音して重ね合わせる（大きな一括録音より何倍も速い）。余韻はループ頭へ折り返す。
     function renderBar(OC, st, layer, bar, spb, SR, len) {
       const oc = new OC(2, len, SR);
-      const save = { ac, bus, noiseBuf, L, state, only };
+      const save = { ac, bus, noiseBuf, L, state, only, boss };
       try {
         ac = oc; buildBus();
         bus.master.gain.value = 1;   // 音楽バスの音量と残響の比率は録音側に焼き込む
         bus.comp.threshold.value = 0; bus.comp.ratio.value = 1; bus.lim.threshold.value = 0; bus.lim.ratio.value = 1;
         const dest = oc.createGain(); dest.connect(bus.music);
         L = { str: dest, drm: dest, mel: dest, brs: dest, title: dest, end: dest };
-        state = st; only = layer;
+        boss = st === 'boss'; state = boss ? 'resolve' : st; only = layer;
         for (let e = 0; e < 16; e++) schedStep(0.005 + e * spb / 4, bar * 16 + e, spb);
       } finally {
-        ac = save.ac; bus = save.bus; noiseBuf = save.noiseBuf; L = save.L; state = save.state; only = save.only;
+        ac = save.ac; bus = save.bus; noiseBuf = save.noiseBuf; L = save.L; state = save.state; only = save.only; boss = save.boss;
       }
       return new Promise((res, rej) => {
         let done = false; const fin = (b) => { if (!done) { done = true; res(b); } };
@@ -1767,7 +1854,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     async function renderLoop(st, layer) {
       const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
       if (!OC) throw new Error('no offline');
-      const SR = ac.sampleRate, bpm = st === 'title' ? 84 : (st === 'ending' ? 96 : 136), spb = 60 / bpm;
+      const SR = ac.sampleRate, bpm = st === 'title' ? 84 : (st === 'ending' ? 96 : st === 'boss' ? BOSS_BPM : 136), spb = 60 / bpm;
       const barLen = 4 * spb, n = Math.round(8 * barLen * SR), tail = 2.2, len = Math.ceil((barLen + tail) * SR);
       const out = ac.createBuffer(2, n, SR), ch = [out.getChannelData(0), out.getChannelData(1)];
       // 小節ごとに並列録音。タイトル曲は最優先で全力、それ以外は端末のコア数に合わせて控えめにし画面の動きを止めない
@@ -1808,7 +1895,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     }
     // ---- 予備：その場で演奏する（録音が間に合わない／できないとき） ----
     let live = null, nextT = 0, step = 0, FB = null;
-    const spbOf = (st) => 60 / (st === 'title' ? 84 : (st === 'ending' ? 96 : 136));
+    const spbOf = (st) => 60 / (st === 'title' ? 84 : (st === 'ending' ? 96 : boss ? BOSS_BPM : 136));
     function fbLayers() {
       if (FB) return FB;
       layers(); FB = {};
@@ -1843,7 +1930,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       cur.group = g;
       if (!g || !ac) return;
       layers();
-      const keys = GROUPS[g], st = g === 'battle' ? 'resolve' : g;
+      const keys = GROUPS[g], st = g === 'battle' ? 'resolve' : g;   // 'boss' はそのまま録音名に使う
       let done = false;
       // 録音が 0.8 秒で間に合わなければ、まず従来どおりその場で演奏して無音を作らない
       const fb = setTimeout(() => { if (my === token && !done) liveStart(g); }, broken ? 0 : 800);
@@ -1907,6 +1994,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
         applyMix(prev === 'off' ? 0.05 : 0.35);
       },
       charge(on) { charged = !!on; if (!can()) return; setDrone(charged); applyMix(0.4); },
+      // 最後の戦いの曲へ切り替える（録音は地点10に着いた時点で先に始めておく）
+      boss(on) { on = !!on; if (on === boss) return; boss = on; if (!can()) return; layers(); const g = groupOf(state); if (g && g !== cur.group) startGroup(g); },
+      warmBoss() { if (can()) GROUPS.boss.forEach((k) => getBuf('boss', k).catch(() => {})); },
       warm() { if (can()) warm(); },
       get state() { return state; },
       resume() { if (!can()) return; layers(); startGroup(groupOf(state)); applyMix(0.2); if (charged) setDrone(true); },
@@ -2114,7 +2204,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     }
     if (enter) {
       const a = $('eart');
-      a.innerHTML = EART[battleIdx];
+      a.innerHTML = EART[enemy.art != null ? enemy.art : battleIdx];
       a.classList.toggle('vary', !!enemy.vf); a.style.setProperty('--vf', enemy.vf || 'none');
       a.classList.remove('enter'); void a.offsetWidth; if (!RM) a.classList.add('enter');
     }
@@ -2306,7 +2396,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
         '<span class="ep-d"><b class="disp">' + (a.rule === 'charge' ? '—' : a.dmg) + (a.hits > 1 ? '<small style="display:inline;font-size:12px;color:var(--danger)">×' + a.hits + '</small>' : '') + '</b><small>ダメージ</small></span></span>';
     }
     return '<button type="button" class="ucard" id="cardClose" aria-label="閉じる">' +
-      '<span class="uc-head"><span class="uc-disc c-enemy">' + EART[Math.min(battleIdx, EART.length - 1)] + '</span>' +
+      '<span class="uc-head"><span class="uc-disc c-enemy">' + EART[e.art != null ? e.art : Math.min(battleIdx, EART.length - 1)] + '</span>' +
       '<span class="uc-id"><b class="uc-name disp">' + e.name + '</b><span class="uc-tags"><span class="uc-tag foe">敵</span><span class="uc-tag">' + chapLabel() + '</span></span></span>' +
       '<span class="uc-x">' + ICON.x + '</span></span>' +
       '<span class="uc-hp">' + ICON.heart + '<span class="uc-hpbar' + (p <= 35 ? ' low' : '') + '"><i style="width:' + p + '%;background:var(--danger)"></i></span><b class="disp">' + e.hp + '<small> / ' + e.max + '</small></b></span>' +
@@ -2605,6 +2695,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     resetFlags();
     const edef = tut ? TUT_ENEMY : (run && run.enemy) || ENEMIES[battleIdx];
     enemy = Object.assign({}, edef, { max: edef.hp });
+    const lastFight = !!(run && !tut && enemy.boss);
+    document.body.classList.toggle('boss-stage', lastFight);
+    Music.boss(lastFight);
     turn = 1; phase = 'prep'; sel = null; inspect = null; previewOn = false; order = []; orderIdx = -1;
     $('stage').classList.remove('charged');
     logLines = [chapLabel() + '　' + enemy.name + 'があらわれた。'];
@@ -3370,6 +3463,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     if (phase === 'resolve' && !(tut && tut.noteDone)) return;
     if (tut) hideCoach();
     tut = null; run = null; $('runv').hidden = true;
+    document.body.classList.remove('boss-stage'); Music.boss(false);
     phase = 'title';
     inspect = null; sel = null;
     $('foeSheet').hidden = true; $('foeBg').hidden = true; $('result').hidden = true; $('help').hidden = true; $('ending').hidden = true;
@@ -3522,7 +3616,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   }
   const isFull = () => run.members.length >= RUN.cap;
   const CARD_INFO = {
-    battle: (c) => { const r = runEnemy(c.step, c.variant), e = r.def; return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[r.tier] + '</span>', t: c.boss ? '決戦　' + e.name : '戦闘　' + e.name, d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (c.boss ? '騎士団の最後の戦い。' : '勝てば' + (isFull() ? '' : '入団希望者と、') + '報酬を3つから1つ。') }; },
+    battle: (c) => { const r = runEnemy(c.step, c.variant), e = r.def; return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art != null ? e.art : r.tier] + '</span>', t: c.boss ? '決戦　' + e.name : '戦闘　' + e.name, d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (c.boss ? '騎士団の最後の戦い。' : '勝てば' + (isFull() ? '' : '入団希望者と、') + '報酬を3つから1つ。') }; },
     rest: () => ({ ico: ICON.heart, t: '休息と稽古', d: '全員のHPが全快し、若手は攻撃+' + RUN.restAtk + '。' + (isFull() ? '' : '入団希望者も訪ねてくる。') }),
     inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる（攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '）。' })
   };
@@ -3604,6 +3698,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     phase = 'map';
     const step = run.node + 1;
     runSave();
+    if (step === RUN.nodes) Music.warmBoss();
     const cards = run.choices.map((c) => CARD_INFO[c.type](c));
     rvShow({ map: true, title: run.choices.length > 1 ? 'どちらへ進む？' : (run.choices[0].boss ? '最後の戦い' : '避けられない戦い'), sub: step === RUN.nodes ? '大災厄が迫る。騎士団の最後の戦い。' : '', events, cards, on: (i) => runEnter(run.choices[i]) });
   }
