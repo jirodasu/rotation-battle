@@ -1072,7 +1072,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       </div>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.7</p>
+    <p class="c-ver" id="cVer">ver 5.1.8</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1340,7 +1340,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.7';
+  const APP_VERSION = '5.1.8';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -1535,6 +1535,13 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     entry(c) { if (!can()) return; duck(0.6, 0.35); const t = now(), p = [0, 2, 4, 5][c] || 0; INST.swish(t, 0.18, 0.12, bus.sfx, 600, 4200); INST.brass(t + 0.04, 57 + p, 0.09, 0.08, bus.sfx, 0.3); INST.brass(t + 0.13, 62 + p, 0.22, 0.09, bus.sfx, 0.35); INST.snare(t + 0.13, 0.18, bus.sfx); INST.bell(t + 0.15, 86 + p, 0.08, bus.sfx, 0.5); },
     // 引退：主題の冒頭4音をオルゴールで
     retire() { if (!can()) return; duck(0.4, 2.2); const t = now() + 0.05; [[0, 84], [0.34, 89], [0.68, 93], [1.02, 91]].forEach(([s, m]) => { INST.bell(t + s, m + 12, 0.16, bus.sfx, 0.7); INST.bell(t + s + 0.003, m, 0.06, bus.sfx, 0.7); }); INST.bass(t, 41, 1.6, 0.12, bus.sfx); },
+    // 年が進む：遠くの鐘を3回（1打＝1年）。年頃が変わった仲間がいれば、その人数ぶん短く上がる（F・A・C…）
+    year(n) {
+      if (!can()) return; const t = now() + 0.05;
+      [0, 0.42, 0.84].forEach((s, i) => { INST.bell(t + s, 65, i === 2 ? 0.16 : 0.12, bus.sfx, 0.85); INST.bell(t + s + 0.004, 77, 0.05, bus.sfx, 0.85); });
+      INST.bass(t, 41, 1.6, 0.08, bus.sfx);
+      [77, 81, 84, 89].slice(0, Math.min(n || 0, 4)).forEach((m, i) => INST.xylo(t + 1.3 + i * 0.09, m, 0.26, bus.sfx, 0.25));
+    },
     // 戦死：引退のオルゴールと同じ4音の形を、短調で低くゆっくり（テーマの裏返し）
     fallen() { if (!can()) return; duck(0.35, 2.6); const t = now() + 0.05; [[0, 72], [0.46, 77], [0.92, 80], [1.38, 79]].forEach(([s, m]) => { INST.bell(t + s, m + 12, 0.12, bus.sfx, 0.9); INST.bell(t + s + 0.004, m, 0.07, bus.sfx, 0.9); }); INST.bass(t, 41, 2.2, 0.14, bus.sfx); INST.bass(t + 1.38, 40, 1.4, 0.1, bus.sfx); },
     // 出来事：ページをめくって、テーマのF・A・Cを軽く
@@ -1735,9 +1742,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       prep: { str: 0.8, drm: 0.4, mel: 0.7, brs: 0, title: 0 },
       choose: { str: 0.85, drm: 0.75, mel: 0.75, brs: 0.35, title: 0 },
       resolve: { str: 0.9, drm: 1, mel: 0.35, brs: 0.9, title: 0 },
+      march: { str: 0.62, drm: 0.42, mel: 0, brs: 0, title: 0 },
       off: { str: 0, drm: 0, mel: 0, brs: 0, title: 0 }
     };
-    let state = 'off', L = null, drone = null, charged = false, only = null, boss = false;
+    let state = 'off', L = null, drone = null, charged = false, only = null, boss = false, era = 1;
+    // 騎士団の歴史を音で：1年目は弦と笛が中心、年を重ねるほど太鼓と金管が加わる（era 0〜1）
+    const ERA = { drm: (e) => 0.5 + 0.5 * e, brs: (e) => 0.12 + 0.88 * e };
     function layers() {
       if (L) return L;
       L = {};
@@ -1968,6 +1978,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       const m = MIX[state] || MIX.off, t = ac.currentTime;
       Object.keys(L).forEach((k) => {
         let v = m[k] || 0;
+        if (ERA[k] && !boss) v *= ERA[k](era);
         if (charged && k === 'mel') v *= 0.25;
         if (charged && k === 'drm') v *= 0.5;
         L[k].gain.cancelScheduledValues(t); L[k].gain.setTargetAtTime(v, t, fade || 0.35);
@@ -2003,10 +2014,11 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       // 最後の戦いの曲へ切り替える（録音は地点10に着いた時点で先に始めておく）
       boss(on) { on = !!on; if (on === boss) return; boss = on; if (!can()) return; layers(); const g = groupOf(state); if (g && g !== cur.group) startGroup(g); },
       warmBoss() { if (can()) GROUPS.boss.forEach((k) => getBuf('boss', k).catch(() => {})); },
+      era(v) { era = Math.max(0, Math.min(1, v)); if (can()) applyMix(0.8); },
       warm() { if (can()) warm(); },
       get state() { return state; },
       resume() { if (!can()) return; layers(); startGroup(groupOf(state)); applyMix(0.2); if (charged) setDrone(true); },
-      debug() { return { ctx: ac && ac.state, group: cur.group, playing: cur.srcs.length, live: !!live, broken, ready: Object.keys(bufs), bufs }; },
+      debug() { return { ctx: ac && ac.state, state, era, gains: L ? Object.fromEntries(Object.keys(L).map((k) => [k, +L[k].gain.value.toFixed(2)])) : null, group: cur.group, playing: cur.srcs.length, live: !!live, broken, ready: Object.keys(bufs), bufs }; },
       _break() { broken = true; }
     };
   })();
@@ -2704,6 +2716,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     const lastFight = !!(run && !tut && enemy.boss);
     document.body.classList.toggle('boss-stage', lastFight);
     Music.boss(lastFight);
+    Music.era(run && !tut ? run.node / (RUN.nodes - 1) : 1);
     turn = 1; phase = 'prep'; sel = null; inspect = null; previewOn = false; order = []; orderIdx = -1;
     $('stage').classList.remove('charged');
     logLines = [chapLabel() + '　' + enemy.name + 'があらわれた。'];
@@ -3469,7 +3482,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     if (phase === 'resolve' && !(tut && tut.noteDone)) return;
     if (tut) hideCoach();
     tut = null; run = null; $('runv').hidden = true;
-    document.body.classList.remove('boss-stage'); Music.boss(false);
+    document.body.classList.remove('boss-stage'); Music.boss(false); Music.era(1);
     phase = 'title';
     inspect = null; sel = null;
     $('foeSheet').hidden = true; $('foeBg').hidden = true; $('result').hidden = true; $('help').hidden = true; $('ending').hidden = true;
@@ -3682,7 +3695,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     v.hidden = false;
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
-    Music.charge(false); Music.set('title');
+    Music.charge(false); Music.era(run.node / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
   }
   $('rvCards').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-i]'); if (!b || b.disabled) return;
@@ -3847,7 +3860,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     });
     run.members = run.members.filter((m) => m.age < RUN.retire);
     roster = run.members;
-    if (retired) { run.members.forEach((m) => applyAge(m, false)); SFX.retire(); }
+    SFX.year(grown.length);
+    if (retired) { run.members.forEach((m) => applyAge(m, false)); setTimeout(() => SFX.retire(), RM ? 0 : 1500); }
     if (!run.members.length) { runEnd(false); return; }
     run.choices = fixChoices(run.nextChoices) || runChoices(run.node + 1);
     run.nextChoices = run.node + 2 <= RUN.nodes ? runChoices(run.node + 2) : null;
@@ -3898,7 +3912,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     run.summary = { clear, alive, ret, fal, years: run.year, node: run.node };
     coverProgress();
     if (clear) { showEnding(); return; }
-    rvShow({ small: '騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)), title: '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', roster: run.gone.concat(run.members), openLog: true,
+    rvShow({ small: '騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)), calm: true, title: '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', roster: run.gone.concat(run.members), openLog: true,
       events: run.events.slice(-8), cards: [{ ico: ICON.rot, t: 'もう一度、最初から', d: '新しい騎士団で30年に挑む。' }], skip: 'タイトルへ', on: (i) => { $('runv').hidden = true; if (i >= 0) beginMain(); else goTitle(); } });
   }
   function enterRun() {
