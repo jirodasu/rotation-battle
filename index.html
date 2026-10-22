@@ -1126,7 +1126,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 }
 
 /* ---- 遠征地図（進路選択画面）：古地図風の見た目と、地点の特徴ラベル ---- */
-.runv.is-map .r-card { --paper: #f2e6c6; --paper-2: #e7d6a9; --paper-line: #b99c63; --ink: #3a2514; --ink-soft: #6b5236; --accent-text: #7b4a0c;
+.runv.is-map .r-card {
   background: radial-gradient(120% 90% at 50% 40%, #f7edcf, #ead9ac 80%); box-shadow: 0 0 0 2px #7a5527, 0 0 0 5px #f2e6c6, 0 0 0 6.5px #7a5527aa, 0 14px 34px var(--shadow); }
 .runv.is-map .rv-track::before { background: repeating-linear-gradient(90deg, #7a5527 0 6px, transparent 6px 10px); height: 2px; top: 16px; opacity: 0.7; }
 .rv-track { padding-bottom: 15px; }
@@ -1305,7 +1305,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .bn-out { border-radius: 4px; border: 1.5px dashed var(--gold); color: var(--accent-text); font-family: var(--serif); }
 
 /* ---- ボタン：金箔（押せるもの）と帳面（控えめな選択） ---- */
-.btn { --b: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%); --bd: color-mix(in srgb, var(--paper-line) 80%, #4a3018);
+.btn { --b: linear-gradient(180deg, var(--paper) 0%, var(--paper-2) 100%); --bd: var(--paper-line);
   border-radius: 8px; background: var(--b); color: var(--ink);
   box-shadow: inset 0 0 0 1px var(--rule-a), inset 0 1px 0 rgba(255, 252, 240, 0.7), 0 3px 0 var(--bd), 0 10px 16px -10px var(--shadow); }
 .btn:active { transform: translateY(2px); box-shadow: inset 0 0 0 1px var(--rule-a), 0 1px 0 var(--bd), 0 4px 8px -6px var(--shadow); }
@@ -1381,7 +1381,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .rv-next b { font-family: var(--serif); }
 .rv-next, .r-card p, .tip p, .co-text { text-wrap: pretty; }
 .rv-log summary em { color: var(--accent-text); }
-.runv.is-map .r-card { --paper: var(--vellum-hi); --paper-2: var(--paper-2); --paper-line: var(--paper-line); --ink: var(--ink); --ink-soft: var(--ink-soft);
+.runv.is-map .r-card {
   background: radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%);
   box-shadow: inset 0 0 0 1px var(--rule-a), inset 0 0 0 5px var(--vellum-hi), inset 0 0 0 6px var(--rule-a), 0 22px 46px -18px rgba(30, 18, 6, 0.6); }
 .runv .rv-cards > .rv-card { background: var(--card); }
@@ -1557,6 +1557,7 @@ body.boss-stage .en-lines p:last-child { color: #ffd36b; }
   .c-copy { display: none; }
 }
 @media (min-aspect-ratio: 6/5) and (min-width: 560px) { .c-inner > .c-rule { grid-column: 1; } }
+body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgba(255, 215, 120, 0.35) 52%, transparent 53%); border-color: rgba(255, 215, 120, 0.6); box-shadow: 0 0 50px 16px rgba(255, 200, 100, 0.22); }
 /* @@CHRONICLE-END@@ */
 </style>
 </head>
