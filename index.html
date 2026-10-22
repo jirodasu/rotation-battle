@@ -1124,6 +1124,22 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   .stage:hover .eart svg { filter: drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)) brightness(1.04); }
   .btn:hover:not([disabled]) { filter: brightness(1.04); }
 }
+
+/* ---- 遠征地図（進路選択画面）：古地図風の見た目と、地点の特徴ラベル ---- */
+.runv.is-map .r-card { --paper: #f2e6c6; --paper-2: #e7d6a9; --paper-line: #b99c63; --ink: #3a2514; --ink-soft: #6b5236; --accent-text: #7b4a0c;
+  background: radial-gradient(120% 90% at 50% 40%, #f7edcf, #ead9ac 80%); box-shadow: 0 0 0 2px #7a5527, 0 0 0 5px #f2e6c6, 0 0 0 6.5px #7a5527aa, 0 14px 34px var(--shadow); }
+.runv.is-map .rv-track::before { background: repeating-linear-gradient(90deg, #7a5527 0 6px, transparent 6px 10px); height: 2px; top: 16px; opacity: 0.7; }
+.rv-track { padding-bottom: 15px; }
+.rv-track i s { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; font-size: 9px; font-weight: 500; text-decoration: none; color: var(--ink-soft); white-space: nowrap; letter-spacing: 0; }
+.rv-track i.bt { border-radius: 6px; }
+.rv-track i.boss { border-radius: 6px; }
+.rv-tags { display: flex !important; flex-wrap: wrap; gap: 4px; margin-top: 5px !important; }
+.rv-tags em { font-style: normal; font-size: 11px; font-weight: 700; line-height: 1; padding: 3px 7px 4px; border-radius: 8px; background: var(--paper); color: var(--ink-soft); box-shadow: inset 0 0 0 1px var(--paper-line); }
+.rv-tags .tg-foe { color: #7e1d14; } .rv-tags .tg-var { background: #7e1d14; color: #fff; box-shadow: none; }
+.rv-tags .tg-bt { background: #9a2a1b; color: #fff; box-shadow: none; } .rv-tags .tg-calm { color: #2d6a45; } .rv-tags .tg-warn { background: #b8412e; color: #fff; box-shadow: none; }
+.rv-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) { .runv .rv-card:not([disabled]):hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--paper-line), 0 0 0 2px var(--accent); } }
+@media (max-height: 460px), (max-height: 700px) and (max-aspect-ratio: 6/5) { .runv .rv-card { padding: 7px 10px; gap: 9px; border-radius: 14px; } .rv-ico { width: 42px; height: 42px; } .rv-txt b { font-size: 14.5px; } .rv-txt span { font-size: 11.5px; line-height: 1.35; margin-top: 1px; } .rv-tags { margin-top: 3px !important; gap: 3px; } .rv-tags em { font-size: 10px; padding: 2px 5px 3px; } .runv > .r-card { padding-top: 14px; padding-bottom: 12px; row-gap: 5px; } .rv-track { padding-bottom: 13px; } }
 </style>
 </head>
 <body class="is-cover">
@@ -3783,10 +3799,12 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     return [{ type: 'battle', step, variant: vk() }, { type: pick(other), step }];
   }
   const isFull = () => run.members.length >= RUN.cap;
+  const TIER_LABEL = ['序盤', '中盤', '終盤'];
+  const hpAvg = () => { const t = run.members.reduce((a, m) => a + m.max, 0); return t ? Math.round(run.members.reduce((a, m) => a + Math.max(0, m.hp), 0) / t * 100) : 0; };
   const CARD_INFO = {
-    battle: (c) => { const r = runEnemy(c.step, c.variant), e = r.def; return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art != null ? e.art : r.tier] + '</span>', t: c.boss ? '決戦　' + e.name : '戦闘　' + e.name, d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (c.boss ? '騎士団の最後の戦い。' : '勝てば' + (isFull() ? '' : '入団希望者と、') + '報酬を3つから1つ。') }; },
-    rest: () => ({ ico: ICON.heart, t: '休息と稽古', d: '全員のHPが全快し、若手は攻撃+' + RUN.restAtk + '。' + (isFull() ? '' : '入団希望者も訪ねてくる。') }),
-    inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる（攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '）。' })
+    battle: (c) => { const r = runEnemy(c.step, c.variant), e = r.def; return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art != null ? e.art : r.tier] + '</span>', t: c.boss ? '決戦　' + e.name : '戦闘　' + e.name, d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (c.boss ? '騎士団の最後の戦い。' : '勝てば' + (isFull() ? '' : '入団希望者と、') + '報酬を3つから1つ。'), tags: [{ t: c.boss ? '最終決戦' : TIER_LABEL[r.tier] + 'の敵', k: 'foe' }, { t: '強さ ' + '★'.repeat(c.boss ? 4 : r.tier + 1), k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], [{ t: '戦闘あり', k: 'bt' }]) }; },
+    rest: () => ({ ico: ICON.heart, t: '休息と稽古', d: '全員のHPが全快し、若手は攻撃+' + RUN.restAtk + '。' + (isFull() ? '' : '入団希望者も訪ねてくる。'), tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまの団員HP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] }),
+    inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる（攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '）。', tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまの団員HP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] })
   };
   function newRun() {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
@@ -3811,7 +3829,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
       else if (i === RUN.nodes) { cls = 'boss'; g = '災'; }
       else if (RUN.forced[i] != null) { cls = 'bt'; g = '戦'; }
       else if (i === cur + 1) g = '分';
-      h += '<i class="disp ' + cls + '" title="地点' + i + '">' + g + '</i>';
+      h += '<i class="disp ' + cls + '" title="地点' + i + '（' + (1 + RUN.years * (i - 1)) + '年目）">' + g + '<s>' + (1 + RUN.years * (i - 1)) + '年</s></i>';
     }
     return h;
   }
@@ -3821,7 +3839,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   }
   function nextHTML() {
     const n = run.nextChoices; if (!n || !n.length) return '';
-    return 'その先（地点' + n[0].step + '）：<b>' + n.map(choiceName).join('</b> ／ <b>') + '</b>';
+    const cur = run.node + 1, fz = Object.keys(RUN.forced).map(Number).filter((k) => k > cur).sort((a, b) => a - b)[0];
+    const far = fz && fz > n[0].step ? '<br>避けられない戦い：地点' + fz + (fz === RUN.nodes ? '（決戦）' : '') + '　あと' + (fz - cur) + '地点' : '';
+    return 'その先（地点' + n[0].step + '）：<b>' + n.map(choiceName).join('</b> ／ <b>') + '</b>' + far;
   }
   // 出来事：1件目（引退・戦死など大事なものが先頭）を見せ、残りはタップで開く
   function eventsHTML(list, open) {
@@ -3837,11 +3857,11 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
     $('rvEvents').innerHTML = eventsHTML(o.events || [], o.openLog);
-    $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b><span>' + c.d + '</span></span></button>').join('') +
+    $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b><span>' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
       (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '');
     $('rvCards').__on = o.on;
     const v = $('runv');
-    v.hidden = false;
+    v.hidden = false; v.classList.toggle('is-map', !!o.map);
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
     Music.charge(false); Music.era(run.node / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
