@@ -9,7 +9,7 @@ const { launch, indexURL } = require('./_env');
   await p.click('#coNext'); await p.waitForTimeout(200);
   await p.click('#coQuit'); await p.waitForTimeout(600);
   const t1 = await p.evaluate(() => !document.getElementById('cover').hidden && document.body.classList.contains('is-cover'));
-  await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900); await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(900);
+  await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900); await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(900);
   const chip = await p.evaluate(() => document.getElementById('chipTurn').textContent);
   await p.click('#btnStart'); await p.waitForTimeout(300);
   const disabledDuring = await p.evaluate(() => document.getElementById('homeBtn').disabled);

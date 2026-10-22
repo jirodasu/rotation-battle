@@ -9,7 +9,7 @@ fs.mkdirSync(OUT, { recursive: true });
 // window.__rb から本番モードの状態に触れるようにしたコピー（ゲーム本体は書き換えない）
 function testPage() {
   let s = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  s = s.replace('  function beginMain() {', "  window.__rb = { get run() { return run; }, get grid() { return grid; }, runShowMap, runAdvance, runEnd, runRecruit, runReward, runEvent, runInherit, resumeRun, applyAge, showEnding }; window.__M = Music;\n  function beginMain() {");
+  s = s.replace('  function beginMain() {', "  window.__rb = { get run() { return run; }, get grid() { return grid; }, runShowMap, runAdvance, runEnd, runRecruit, runReward, runEvent, runInherit, resumeRun, runEnter, runSave, runSaved, ROUTE, routeValidate, routeCanMove, routeCur, routeNodeId, routePick, routeChoices, routeMigrate, routeFill, applyAge, showEnding }; window.__M = Music;\n  function beginMain() {");
   const p = path.join(OUT, 't.html'); fs.writeFileSync(p, s);
   return 'file://' + p;
 }

@@ -7,7 +7,7 @@ const { launch, indexURL } = require('./_env');
     const p = await (await b.newContext({ viewport: { width: 390, height: 844 } })).newPage();
     p.on('pageerror', e => errs.push('main: ' + e.message));
     await p.goto(indexURL); await p.waitForTimeout(400);
-    await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(800); await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(900);
+    await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(800); await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(900);
     await p.click('#btnStart');
     let opened = false;
     for (let i = 0; i < 80; i++) {

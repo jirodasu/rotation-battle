@@ -78,6 +78,7 @@ const INVARIANTS = () => {
         let pickI = choices.length ? choices[Math.floor(rnd() * choices.length)] : '-1';
         if (ok.includes('-1') && rnd() < 0.15) pickI = '-1';
         await p.click(`#rvCards [data-i="${pickI}"]`).catch(() => {});
+        if (await p.evaluate(() => !!document.getElementById('rvGo'))) await p.click('#rvGo').catch(() => {});
         await p.waitForTimeout(80);
         continue;
       }
