@@ -52,8 +52,8 @@ async function measure(p, need) {
     await p.click('#cover'); await p.waitForTimeout(700);
     await check('title', [['#begin', 'btn'], ['#beginTut', 'btn']]);
     await p.click('#begin'); await p.waitForTimeout(900);
-    await check('map', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-card[data-i="1"]', 'warn']]);
-    await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(2600); await closeTip();
+    await check('map', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-card[data-i="1"]', 'warn'], ['#rvGo', 'warn']]);
+    await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(2600); await closeTip();
     await check('prep', [['#btnStart', 'btn'], ['#btnPrepRot', 'btn'], ['#ticket'], ['#board']]);
     await p.click('#stage'); await p.waitForTimeout(500);
     await check('foe-sheet', [['#foeSheet', 'warn']]);

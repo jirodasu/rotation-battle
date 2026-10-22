@@ -1560,35 +1560,60 @@ body.boss-stage .en-lines p:last-child { color: #ffd36b; }
 body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgba(255, 215, 120, 0.35) 52%, transparent 53%); border-color: rgba(255, 215, 120, 0.6); box-shadow: 0 0 50px 16px rgba(255, 200, 100, 0.22); }
 /* @@CHRONICLE-END@@ */
 
-/* 経路図（試作）：各地点が分かれ道のつながった道 */
+/* 遠征地図：章ごとの島と領地。状態は色だけでなく、印（✓・団・戦・休・継・砦・災）と枠の太さ、点線でも区別する */
 .rv-track { display: block; padding: 0; }
 .rv-track::before { content: none !important; }
-.rv-track svg.route { display: block; width: 100%; height: auto; max-height: 92px; overflow: visible; }
-.rt-l { fill: none; stroke-width: 1.6; stroke-linecap: round; }
-.rt-l.done { stroke: var(--ink); }
-.rt-l.ghost { stroke: var(--rule); stroke-dasharray: 2 3; opacity: .7; }
-.rt-l.now { stroke: var(--gold-lo); stroke-width: 2; }
-.rt-l.next { stroke: var(--rule); stroke-dasharray: 3 3; }
-.rt-n circle { fill: var(--vellum-hi); stroke: var(--rule); stroke-width: 1.2; }
-.rt-n text { font: 800 9.5px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
-.rt-n.done circle { fill: var(--ink); stroke: none; }
-.rt-n.done text { fill: var(--vellum-hi); }
-.rt-n.ghost circle { fill: none; stroke-dasharray: 2 2.5; opacity: .55; }
-.rt-n.far circle { opacity: .75; }
-.rt-n.rt-bt circle { stroke: var(--rubric); stroke-width: 1.6; }
-.rt-n.rt-bt text { fill: var(--rubric); }
-.rt-n.rt-boss circle { fill: var(--rubric); stroke: var(--gold); stroke-width: 1.6; }
-.rt-n.rt-boss text { fill: #fff3e0; }
-.rt-n.rt-bt.done circle, .rt-n.rt-boss.done circle { fill: var(--ink); }
-.rt-n.now circle { fill: var(--gold); stroke: var(--gold-lo); stroke-width: 1.8; }
-.rt-n.now text { fill: var(--accent-ink); }
-.rt-n.now.up text { fill: var(--rubric); }
-.rt-pair.cur .rt-n circle { transition: transform .2s, filter .2s; transform-box: fill-box; transform-origin: center; }
-.rt-pair.cur.hl0 .up circle, .rt-pair.cur.hl1 .dn circle { transform: scale(1.22); filter: drop-shadow(0 0 3px var(--gold)); }
-.rt-pair.cur.hl0 .dn, .rt-pair.cur.hl1 .up { opacity: .5; }
-.rt-y { font: 600 7.5px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
-.rt-y.now { fill: var(--ink); font-weight: 800; }
-@media (prefers-reduced-motion: reduce) { .rt-pair.cur .rt-n circle { transition: none; } }
+.rv-track svg.route { display: block; width: 100%; height: auto; max-height: 260px; overflow: visible; user-select: none; -webkit-user-select: none; }
+.rt-ch { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 8px; font: 700 11px/1 var(--serif); letter-spacing: .12em; color: var(--ink-soft); }
+.rt-ch span { padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--rule); }
+.rt-ch span.done { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--rubric); opacity: .75; }
+.rt-ch span.now { background: var(--ink); color: var(--vellum-hi); box-shadow: none; }
+.rt-ch i { width: 14px; height: 1px; background: var(--rule); }
+.route .isle { fill: color-mix(in srgb, var(--vellum-hi) 70%, var(--gold-hi)); stroke: var(--ink-soft); stroke-width: 1.4; stroke-linejoin: round; filter: drop-shadow(0 2px 0 rgba(60, 38, 18, .18)); }
+.route .land { fill: transparent; stroke: var(--vellum); stroke-width: 2.4; stroke-linejoin: round; transition: fill .2s; }
+.rt-n.locked .land { fill: rgba(80, 56, 30, .10); }
+.rt-n.done .land { fill: rgba(42, 28, 16, .22); }
+.rt-n.here .land { fill: color-mix(in srgb, var(--gold) 55%, transparent); }
+.rt-n.avail .land { fill: color-mix(in srgb, var(--vellum-hi) 82%, transparent); stroke: var(--gold-lo); stroke-width: 2.6; cursor: pointer; }
+.rt-n.avail.k-battle .land, .rt-n.avail.k-fort .land, .rt-n.avail.k-boss .land { stroke: var(--rubric); }
+.rt-n.avail.sel .land { fill: color-mix(in srgb, var(--gold-hi) 75%, transparent); stroke-width: 3.4; }
+.rt-n.avail:not(.sel) .land { animation: rtPulse 1.8s ease-in-out infinite; }
+@keyframes rtPulse { 50% { stroke-width: 1.4; } }
+.rt-n:focus { outline: none; }
+.rt-n.avail:focus-visible .land { stroke-width: 3.8; stroke-dasharray: 5 3; }
+.rt-l { fill: none; stroke-linecap: round; pointer-events: none; }
+.rt-l.done { stroke: var(--ink); stroke-width: 2.2; }
+.rt-l.go { stroke: var(--gold-lo); stroke-width: 2.2; stroke-dasharray: 5 3; }
+.rt-l.go.sel { stroke: var(--rubric); stroke-width: 3; stroke-dasharray: none; }
+.rt-l.idle { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 1.5 3; opacity: .55; }
+.rt-n.mk { cursor: pointer; }
+.rt-n.mk:not([data-pick]) { pointer-events: none; }
+.rt-n .seal { fill: var(--vellum-hi); stroke: var(--rule); stroke-width: 1.3; }
+.rt-n .g { font: 800 11px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
+.rt-n .lb { font: 800 8.6px var(--serif); text-anchor: middle; fill: var(--ink); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.4px; stroke-linejoin: round; }
+.rt-n .st { font: 700 7.4px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
+.rt-n.locked .seal { stroke-dasharray: 2 2; }
+.rt-n.locked .g, .rt-n.locked .lb { opacity: .7; }
+.rt-n.k-battle .seal, .rt-n.k-fort .seal { stroke: var(--rubric); }
+.rt-n.k-battle .g, .rt-n.k-fort .g { fill: var(--rubric); }
+.rt-n.k-fort .seal { stroke-width: 2.2; }
+.rt-n.k-boss .seal { fill: var(--rubric); stroke: var(--gold); stroke-width: 2; }
+.rt-n.k-boss .g { fill: #fff3e0; }
+.rt-n.done .seal { fill: var(--ink); stroke: none; }
+.rt-n.done .g { fill: var(--vellum-hi); }
+.rt-n.here .seal { fill: var(--gold); stroke: var(--gold-lo); stroke-width: 2; }
+.rt-n.here .g { fill: var(--accent-ink); }
+.rt-n.here .halo { fill: none; stroke: var(--gold-lo); stroke-width: 1.2; stroke-dasharray: 2 2; }
+.rt-n.avail .seal { fill: var(--gold-hi); stroke-width: 2.2; }
+.rt-n.avail.sel .seal { stroke-width: 3; }
+.rt-y { font: 700 8px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
+.rt-y.now { fill: var(--rubric); font-weight: 800; }
+.runv .rv-card.sel { outline: 2px solid var(--rubric); outline-offset: 1px; background: var(--vellum-hi); }
+.rv-go { width: 100%; margin-top: 4px; }
+.rv-go:disabled { opacity: .55; }
+@media (prefers-reduced-motion: reduce) { .rt-n.avail:not(.sel) .land { animation: none; } }
+@media (max-height: 700px) and (max-aspect-ratio: 6/5) { .rv-track svg.route { max-height: 140px; } .rt-ch { margin-bottom: 2px; } }
+@media (max-height: 460px) { .rv-track svg.route { max-height: 168px; } .rt-ch { margin-bottom: 0; font-size: 10px; } .rt-ch span { padding: 2px 6px; } }
 /* @@ROUTE-END@@ */
 </style>
 </head>
@@ -1684,7 +1709,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.12</p>
+    <p class="c-ver" id="cVer">ver 5.1.13</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1952,7 +1977,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.12';
+  const APP_VERSION = '5.1.13';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4246,6 +4271,108 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     });
     return { def: e, tier };
   }
+  /* --- 遠征地図：章（序盤・中盤・終盤）ごとの島に、領地（地点）が並ぶ。地点と接続は明示的なデータで持ち、
+     表示も、進めるかの検証も、同じ ROUTE を使う。
+     - 避けられない戦い（RUN.forced）の地点で、すべての道が合流する（章の終わり）
+     - その間の地点は列ごとに「戦闘(B)」「休息か継承(C)」の領地が2〜3つ並び、隣の列の近い領地へつながる
+     - どの領地から見ても、次の選択肢は必ず「戦闘1つ＋休息系1つ」（従来と同じ構成。バランスを変えない）
+     - 道によって、出会う敵（亜種か）や休息系（休息か継承か）が変わる */
+  const ROUTE_ROWS = ['BC', 'CBC', 'BCB'];  // 章の1列目・2列目・3列目…の並び（3列目以降は交互）
+  function buildRoute() {
+    const forced = Object.keys(RUN.forced).map(Number).concat(RUN.nodes).filter((v, i, a) => a.indexOf(v) === i).sort((a, b) => a - b);
+    const nodes = { start: { id: 'start', step: 0, row: 0, y: 0.5, kind: 'start', ch: 0, next: [] } };
+    let prev = ['start'], from = 0;
+    forced.forEach((fz, ch) => {
+      const cols = [];
+      for (let st = from + 1; st < fz; st++) {
+        const k = cols.length, pat = k === 0 ? ROUTE_ROWS[0] : ROUTE_ROWS[1 + ((k - 1) % 2)];
+        cols.push(pat.split('').map((t, r) => { const id = 's' + st + '-' + r; nodes[id] = { id, step: st, row: r, y: (r + 1) / (pat.length + 1), kind: t === 'B' ? 'battle' : 'camp', ch, next: [] }; return id; }));
+      }
+      const fid = 's' + fz + '-0';
+      nodes[fid] = { id: fid, step: fz, row: 0, y: 0.5, kind: fz === RUN.nodes ? 'boss' : 'fort', ch, next: [] };
+      cols.push([fid]);
+      // 接続：章の入口（出陣・前の砦）からは1列目すべてへ。以降は、次の列の「いちばん近い戦闘」と「いちばん近い休息系」へ
+      [prev].concat(cols).forEach((col, i, all) => {
+        const nx = all[i + 1]; if (!nx) return;
+        col.forEach((id) => {
+          const a = nodes[id];
+          if (i === 0 || nx.length === 1) { a.next = nx.slice(); return; }
+          const near = (kind) => nx.filter((t) => nodes[t].kind === kind).sort((p, q) => Math.abs(nodes[p].y - a.y) - Math.abs(nodes[q].y - a.y) || nodes[q].y - nodes[p].y)[0];
+          a.next = [near('battle'), near('camp')].filter(Boolean);
+        });
+      });
+      prev = [fid]; from = fz;
+    });
+    return { nodes, goal: 's' + RUN.nodes + '-0', chapters: forced.length };
+  }
+  const ROUTE = buildRoute();
+  const isFightKind = (k) => k === 'battle' || k === 'fort' || k === 'boss';
+  // 地図データの検査：接続先が実在し右へ進む／行き止まりが無い／すべての地点に到達できる／終点に着ける／
+  // 選べる地点が2つ以上ある所では「戦闘1つ＋休息系1つ」。問題の一覧を返す
+  function routeValidate(g) {
+    g = g || ROUTE; const bad = [], ids = Object.keys(g.nodes);
+    ids.forEach((id) => {
+      const n = g.nodes[id];
+      n.next.forEach((t) => { if (!g.nodes[t]) bad.push(id + ' の接続先 ' + t + ' が無い'); else if (g.nodes[t].step !== n.step + 1) bad.push(id + '→' + t + ' が次の地点ではない'); });
+      if (id !== g.goal && !n.next.length) bad.push(id + ' が行き止まり');
+      if (n.next.length > 1 && g.nodes[n.next[0]] && g.nodes[n.next[0]].kind !== 'start') {
+        const f = n.next.filter((t) => g.nodes[t] && isFightKind(g.nodes[t].kind)).length;
+        if (!g.loose && (f !== 1 || n.next.length !== 2)) bad.push(id + ' の次が「戦闘1＋休息系1」になっていない');
+      }
+    });
+    const seen = new Set(['start']), q = ['start'];
+    while (q.length) { const n = g.nodes[q.shift()]; if (n) n.next.forEach((t) => { if (!seen.has(t) && g.nodes[t]) { seen.add(t); q.push(t); } }); }
+    ids.forEach((id) => { if (!seen.has(id)) bad.push(id + ' に到達できない'); });
+    if (!seen.has(g.goal)) bad.push('終点に到達できない');
+    return bad;
+  }
+  const routeCur = () => (run && run.path && run.path.length ? run.path[run.path.length - 1] : 'start');
+  // 現在地 from から to へ進めるか（接続があり、まだ通っていない）。表示ではなく、進行処理がこれで検証する
+  function routeCanMove(from, to, g, path) {
+    g = g || ROUTE; const f = g.nodes[from || 'start'], t = g.nodes[to]; path = path || (run && run.path) || [];
+    return !!f && !!t && f.next.includes(to) && t.step === f.step + 1 && !path.includes(to);
+  }
+  const routeNodeId = (c) => (c && c.rid) || null;
+  // ランごとの中身：戦闘の亜種、休息系が休息か継承か。確率は従来どおり（亜種 RUN.variantRate、休息系は半々）
+  function routeFill() {
+    const m = {};
+    Object.keys(ROUTE.nodes).forEach((id) => {
+      const n = ROUTE.nodes[id];
+      if (n.kind === 'battle' || n.kind === 'fort') m[id] = { variant: rnd() < RUN.variantRate ? pick(Object.keys(VARIANTS)) : null };
+      else if (n.kind === 'camp') m[id] = { camp: rnd() < 0.5 ? 'inherit' : 'rest' };
+    });
+    return m;
+  }
+  // 地点の中身を、カードと進行処理で使う選択肢にする。継承できる組がいなければ休息に（従来の fixChoices と同じ扱い）
+  function routeChoice(id) {
+    const n = ROUTE.nodes[id], c = (run.map && run.map[id]) || {};
+    if (isFightKind(n.kind)) return { type: 'battle', step: n.step, rid: id, variant: n.kind === 'boss' ? null : c.variant || null, boss: n.kind === 'boss' || undefined };
+    return { type: c.camp === 'inherit' && inheritPairs().length ? 'inherit' : 'rest', step: n.step, rid: id };
+  }
+  // いまの現在地から進める地点（戦闘を先に）
+  function routeChoices() {
+    return ROUTE.nodes[routeCur()].next.map(routeChoice).sort((a, b) => (a.type === 'battle' ? 0 : 1) - (b.type === 'battle' ? 0 : 1));
+  }
+  // 古いセーブ（通った道と地図の中身が無い）を移行：地点ごとの記録 hist から道をたどり、保存されていた選択肢を地図に写す
+  function routeMigrate() {
+    if (run.map && Array.isArray(run.path) && run.path.length === run.node) return;
+    run.map = run.map || routeFill();
+    const path = []; let cur = 'start';
+    for (let i = 0; i < run.node; i++) {
+      const h = run.hist[i], nx = ROUTE.nodes[cur].next;
+      const id = nx.find((t) => (h === 'battle') === isFightKind(ROUTE.nodes[t].kind)) || nx[0];
+      if (ROUTE.nodes[id].kind === 'camp') run.map[id] = { camp: h === 'inherit' ? 'inherit' : 'rest' };
+      path.push(id); cur = id;
+    }
+    run.path = path;
+    (run.choices || []).forEach((c) => {
+      const id = ROUTE.nodes[cur].next.find((t) => (c.type === 'battle') === isFightKind(ROUTE.nodes[t].kind));
+      if (!id) return;
+      if (ROUTE.nodes[id].kind === 'camp') run.map[id] = { camp: c.type };
+      else if (ROUTE.nodes[id].kind !== 'boss') run.map[id] = { variant: c.variant || null };
+    });
+  }
+  let routeSel = null;  // 地図で仮に選んでいる札（確定前）
   function runChoices(step) {
     const vk = () => (step < RUN.nodes && rnd() < RUN.variantRate ? pick(Object.keys(VARIANTS)) : null);
     if (RUN.forced[step] != null) return [{ type: 'battle', boss: step === RUN.nodes, step, variant: vk() }];
@@ -4263,72 +4390,112 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   };
   function newRun() {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
-    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {} };
+    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [] };
     DEFAULT_FORM.forEach(([id, r, c]) => { const m = newMember(id, RUN.start[id]); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
     roster = run.members;
     grid = runGrid();
-    run.choices = runChoices(1);
-    run.nextChoices = runChoices(2);
+    run.map = routeFill();
+    run.choices = routeChoices();
+    run.nextChoices = null;
   }
   const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span>'; };
   const portrait = (m, extra) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + '</span>';
   const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };
-  /* 経路図（試作）：各地点は「戦闘」か「休息・継承」の分かれ道。通った道は実線、これからは点線 */
-  function trackHTML() {
-    const cur = run.node + 1, N = RUN.nodes, W = 300, X0 = 16, DX = (W - 2 * X0) / (N - 1), YT = 15, YM = 31, YB = 47, R = 8.5;
-    const x = (i) => +(X0 + (i - 1) * DX).toFixed(1);
-    const forced = (i) => RUN.forced[i] != null;
-    const sp = [];  // 各地点の接続点
-    let path = '', g = '';
-    const seg = (a, b, cls) => '<path class="rt-l ' + cls + '" d="M' + a[0] + ' ' + a[1] + ' C' + ((a[0] + b[0]) / 2) + ' ' + a[1] + ' ' + ((a[0] + b[0]) / 2) + ' ' + b[1] + ' ' + b[0] + ' ' + b[1] + '"/>';
-    const node = (cx, cy, glyph, cls, label) => '<g class="rt-n ' + cls + '"><circle cx="' + cx + '" cy="' + cy + '" r="' + R + '"/><text x="' + cx + '" y="' + (cy + 0.5) + '">' + glyph + '</text>' + (label ? '<title>' + label + '</title>' : '') + '</g>';
-    let prev = null; // 直前の地点で通った点
-    for (let i = 1; i <= N; i++) {
-      const cx = x(i), done = i < cur, now = i === cur, boss = i === N, fz = forced(i);
-      if (fz || boss) {
-        const kind = boss ? 'boss' : 'bt', here = [cx, YM];
-        if (prev) path += seg(prev, here, done ? 'done' : now ? 'now' : 'next');
-        g += node(cx, YM, boss ? '災' : '戦', 'rt-' + kind + (done ? ' done' : '') + (now ? ' now' : ''), '地点' + i + (boss ? '（決戦）' : '（避けられない戦い）'));
-        prev = here; continue;
-      }
-      const tk = done ? run.hist[i - 1] : null, goUp = tk === 'battle';
-      const T = [cx, YT], B = [cx, YB];
-      if (done) {
-        const via = goUp ? T : B, other = goUp ? B : T;
-        if (prev) { path += seg(prev, via, 'done'); path += seg(prev, other, 'ghost'); }
-        g += node(via[0], via[1], HIST_G[tk] || '・', 'done', '地点' + i + '：' + (tk === 'battle' ? '戦闘' : tk === 'rest' ? '休息' : '継承'));
-        g += node(other[0], other[1], '', 'ghost');
-        prev = via;
-      } else {
-        const cls = now ? 'now' : 'far';
-        if (prev) { path += seg(prev, T, now ? 'now' : 'next'); path += seg(prev, B, now ? 'now' : 'next'); }
-        g += '<g class="rt-pair' + (now ? ' cur' : '') + '" data-step="' + i + '">' + node(cx, YT, now ? '戦' : '', cls + ' up', now ? '戦闘' : '') + node(cx, YB, now ? (run.choices[1] && run.choices[1].type === 'inherit' ? '継' : '休') : '', cls + ' dn', now ? '休息／継承' : '') + '</g>';
-        prev = [cx, YM];
-        // 次の地点へ向かう合流の点
-        const jn = [cx + DX * 0.5, YM];
-        path += '<path class="rt-l ' + (now ? 'now' : 'next') + '" d="M' + cx + ' ' + YT + ' C' + (cx + DX * 0.3) + ' ' + YT + ' ' + (cx + DX * 0.3) + ' ' + YM + ' ' + jn[0] + ' ' + jn[1] + '"/>' + '<path class="rt-l ' + (now ? 'now' : 'next') + '" d="M' + cx + ' ' + YB + ' C' + (cx + DX * 0.3) + ' ' + YB + ' ' + (cx + DX * 0.3) + ' ' + YM + ' ' + jn[0] + ' ' + jn[1] + '"/>';
-        prev = jn;
-        continue;
-      }
-      // 通った地点からの合流
-      const jn2 = [cx + DX * 0.5, YM];
-      path += '<path class="rt-l done" d="M' + prev[0] + ' ' + prev[1] + ' C' + (prev[0] + DX * 0.3) + ' ' + prev[1] + ' ' + (prev[0] + DX * 0.3) + ' ' + YM + ' ' + jn2[0] + ' ' + jn2[1] + '"/>';
-      prev = jn2;
+  /* 遠征地図の描画：いまの章を1つの島として描き、地点ごとの領地（ボロノイ分割）に分ける。
+     道は ROUTE の接続そのもの。通った道は実線、いま進める道は金、その先は点線 */
+  const RT_W = 360, RT_H = 222;
+  const rtHash = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 1000) / 1000; };
+  // 凸多角形でなくても、半平面で切り取る（Sutherland–Hodgman）
+  function rtClip(poly, px, py, nx, ny) {
+    const out = [], d = (p) => (p[0] - px) * nx + (p[1] - py) * ny;
+    for (let i = 0; i < poly.length; i++) {
+      const A = poly[i], B = poly[(i + 1) % poly.length], da = d(A), db = d(B);
+      if (da <= 0) out.push(A);
+      if ((da < 0) !== (db < 0) && da !== db) { const t = da / (da - db); out.push([A[0] + (B[0] - A[0]) * t, A[1] + (B[1] - A[1]) * t]); }
     }
-    let yr = '';
-    for (let i = 1; i <= N; i++) yr += '<text class="rt-y' + (i === cur ? ' now' : '') + '" x="' + x(i) + '" y="68">' + (1 + RUN.years * (i - 1)) + '年</text>';
-    return '<svg class="route" viewBox="0 0 ' + W + ' 72" role="img" aria-label="経路図：地点' + cur + 'まで進んだ。各地点は戦闘か休息・継承の分かれ道"><g class="rt-paths">' + path + '</g>' + g + yr + '</svg>';
+    return out;
+  }
+  // 章の配置：列（地点）ごとの x、列の中の並び y。島の輪郭と、各地点の領地
+  const rtGeoCache = {};
+  function rtGeo(ch) {
+    if (rtGeoCache[ch]) return rtGeoCache[ch];
+    const ids = Object.keys(ROUTE.nodes).filter((id) => ROUTE.nodes[id].ch === ch && ROUTE.nodes[id].kind !== 'start');
+    const entry = ch === 0 ? 'start' : Object.keys(ROUTE.nodes).find((id) => ROUTE.nodes[id].ch === ch - 1 && (ROUTE.nodes[id].kind === 'fort'));
+    const all = [entry].concat(ids), steps = all.map((id) => ROUTE.nodes[id].step), s0 = Math.min.apply(null, steps), s1 = Math.max.apply(null, steps);
+    const X0 = 34, X1 = RT_W - 34, Y0 = 22, Y1 = RT_H - 40;
+    const pt = {};
+    all.forEach((id) => {
+      const n = ROUTE.nodes[id], j = rtHash(id) - 0.5, k = rtHash(id + 'y') - 0.5;
+      const three = Object.keys(ROUTE.nodes).filter((o) => ROUTE.nodes[o].step === n.step).length === 3, dx = three ? (n.row === 1 ? 15 : -7) : 0;  // 3つ並ぶ列は中央を少しずらし、文字の重なりを避ける
+      pt[id] = [X0 + (X1 - X0) * (n.step - s0) / Math.max(1, s1 - s0) + dx + j * 8, Y0 + (Y1 - Y0) * n.y + k * 6];
+    });
+    // 島の輪郭：楕円を章ごとに少し崩す
+    const isl = [], cx = RT_W / 2, cy = (RT_H - 12) / 2, rx = RT_W / 2 - 6, ry = (RT_H - 12) / 2 - 3;
+    for (let i = 0; i < 56; i++) {
+      const t = i / 56 * Math.PI * 2, w = 1 + 0.035 * Math.sin(3 * t + ch * 1.7) + 0.03 * Math.sin(7 * t + ch) + 0.018 * Math.sin(13 * t + ch * 2.3);
+      const e = Math.pow(Math.abs(Math.cos(t)), 0.62) * Math.sign(Math.cos(t)), f = Math.pow(Math.abs(Math.sin(t)), 0.72) * Math.sign(Math.sin(t));
+      isl.push([cx + rx * e * w, cy + ry * f * w]);
+    }
+    const cell = {};
+    all.forEach((id) => {
+      let poly = isl.slice(); const a = pt[id];
+      all.forEach((o) => { if (o === id || poly.length < 3) return; const b = pt[o]; poly = rtClip(poly, (a[0] + b[0]) / 2, (a[1] + b[1]) / 2, b[0] - a[0], b[1] - a[1]); });
+      cell[id] = poly;
+    });
+    const span = [];
+    for (let st = s0; st <= s1; st++) span.push([st, X0 + (X1 - X0) * (st - s0) / Math.max(1, s1 - s0)]);
+    return (rtGeoCache[ch] = { all, pt, isl, cell, span, entry });
+  }
+  const rtD = (poly) => 'M' + poly.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'Z';
+  // 地点の見出し（地図とカードで共通）。地図に出すのは既存データにある情報だけ
+  function rtInfo(id) {
+    const n = ROUTE.nodes[id], c = (run.map && run.map[id]) || {};
+    if (n.kind === 'start') return { g: '団', t: '出陣', s: '' };
+    if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : { g: '休', t: '休息', s: '' }; }
+    const tier = n.step <= 3 ? 0 : n.step <= 6 ? 1 : 2;
+    if (n.kind === 'boss') return { g: '災', t: '決戦', s: '★★★★' };
+    return { g: '戦', t: n.kind === 'fort' ? '砦の戦い' : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
+  }
+  function trackHTML() {
+    const here = routeCur(), done = new Set(['start'].concat(run.path || []));
+    const avail = {}; run.choices.forEach((c, i) => { if (c.rid) avail[c.rid] = i; });
+    const sel = routeSel != null && run.choices[routeSel] ? run.choices[routeSel].rid : null;
+    const first = run.choices[0] && run.choices[0].rid, ch = first ? ROUTE.nodes[first].ch : ROUTE.nodes[here].ch;
+    const G = rtGeo(ch), seq = ['start'].concat(run.path || []);
+    let land = '', road = '', mark = '';
+    G.all.forEach((id) => {
+      const n = ROUTE.nodes[id], st = id === here ? 'here' : done.has(id) ? 'done' : avail[id] != null ? 'avail' : 'locked';
+      const inf = rtInfo(id), p = G.pt[id];
+      const cls = 'rt-n k-' + n.kind + ' ' + st + (id === sel ? ' sel' : '');
+      const stTxt = { done: '攻略済み', here: '現在地', avail: '進める', locked: 'まだ進めない' }[st];
+      const pick = avail[id] != null ? ' data-pick="' + avail[id] + '" tabindex="0" role="button" aria-pressed="' + (id === sel) + '" aria-label="地点' + n.step + '　' + inf.t + (inf.s ? '　' + inf.s : '') + '（進める）"' : '';
+      land += '<g class="' + cls + '"' + pick + '><title>地点' + n.step + '　' + inf.t + (inf.s ? '　' + inf.s : '') + '：' + stTxt + '</title><path class="land" d="' + rtD(G.cell[id]) + '"/></g>';
+      mark += '<g class="' + cls + ' mk"' + (avail[id] != null ? ' data-pick="' + avail[id] + '"' : '') + '>' +
+        '<circle class="seal" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="9.5"/>' + (st === 'here' ? '<circle class="halo" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="13"/>' : '') +
+        '<text class="g" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 0.6).toFixed(1) + '">' + (st === 'done' ? '✓' : inf.g) + '</text>' +
+        '<text class="lb" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 19).toFixed(1) + '">' + inf.t + '</text>' + (inf.s && st !== 'done' ? '<text class="st" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 27.5).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';
+      ROUTE.nodes[id].next.forEach((t) => {
+        if (G.all.indexOf(t) < 0) return;
+        const q = G.pt[t], taken = seq.indexOf(t) > 0 && seq[seq.indexOf(t) - 1] === id, go = id === here && avail[t] != null;
+        road += '<path class="rt-l ' + (taken ? 'done' : go ? 'go' + (t === sel ? ' sel' : '') : 'idle') + '" d="M' + p[0].toFixed(1) + ' ' + p[1].toFixed(1) + ' L' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + '"/>';
+      });
+    });
+    let yrs = '';
+    G.span.forEach(([st, x]) => { yrs += '<text class="rt-y' + (st === ROUTE.nodes[here].step + 1 ? ' now' : '') + '" x="' + x.toFixed(1) + '" y="' + (RT_H - 4) + '">' + (st === 0 ? '出陣' : (1 + RUN.years * (st - 1)) + '年') + '</text>'; });
+    const names = ['序盤', '中盤', '終盤'], chips = [];
+    for (let i = 0; i < ROUTE.chapters; i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + (names[i] || '第' + (i + 1) + '章') + '</span>');
+    return '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div><svg class="route" viewBox="0 0 ' + RT_W + ' ' + RT_H + '" role="group" aria-label="遠征地図（' + (names[ch] || '') + '）。' + (here === 'start' ? '出陣前' : '現在地は地点' + ROUTE.nodes[here].step) + '。光っている領地へ進める">' +
+      '<path class="isle" d="' + rtD(G.isl) + '"/>' + land + '<g class="rt-roads">' + road + '</g>' + mark + yrs + '</svg>';
   }
   function choiceName(c) {
     if (c.type === 'battle') { const e = runEnemy(c.step, c.variant).def; return (c.boss ? '決戦 ' : '戦闘 ') + e.name; }
     return c.type === 'rest' ? '休息と稽古' : '継承';
   }
   function nextHTML() {
-    const n = run.nextChoices; if (!n || !n.length) return '';
-    const cur = run.node + 1, fz = Object.keys(RUN.forced).map(Number).filter((k) => k > cur).sort((a, b) => a - b)[0];
-    const far = fz && fz > n[0].step ? '<br>避けられない戦い：地点' + fz + (fz === RUN.nodes ? '（決戦）' : '') + '　あと' + (fz - cur) + '地点' : '';
-    return 'その先（地点' + n[0].step + '）：<b>' + n.map(choiceName).join('</b> ／ <b>') + '</b>' + far;
+    const cur = run.node + 1, fz = Object.keys(RUN.forced).map(Number).concat(RUN.nodes).filter((k) => k >= cur).sort((a, b) => a - b)[0];
+    if (!fz || fz === cur) return '';
+    return 'どの道も、地点' + fz + 'の' + (fz === RUN.nodes ? '<b>決戦</b>' : '<b>避けられない戦い</b>') + 'で合流する（あと' + (fz - cur) + '地点）。道によって、出会う敵と休息の中身が変わる。';
   }
   // 出来事：1件目（引退・戦死など大事なものが先頭）を見せ、残りはタップで開く
   function eventsHTML(list, open) {
@@ -4341,11 +4508,14 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('rvTitle').textContent = o.title;
     $('rvSub').textContent = o.sub || '';
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || run.members).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '')).join('');
+    routeSel = o.map && o.cards.length === 1 ? 0 : null;
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
     $('rvEvents').innerHTML = eventsHTML(o.events || [], o.openLog);
-    $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card" data-i="' + i + '"' + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b><span>' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
-      (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '');
+    $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card' + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b><span>' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
+      (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') +
+      (o.map ? '<button type="button" class="btn primary rv-go" id="rvGo" data-go="1"></button>' : '');
+    if (o.map) routeRefresh();
     $('rvCards').__on = o.on;
     const v = $('runv');
     v.hidden = false; v.classList.toggle('is-map', !!o.map);
@@ -4353,15 +4523,28 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     card.scrollTop = 0;
     Music.charge(false); Music.era(run.node / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
   }
-  // 札に触れると、経路図の同じ側の道が光る
-  const routeHl = (ev) => { const b = ev.target.closest && ev.target.closest('.rv-card[data-i]'), p = document.querySelector('#rvTrack .rt-pair.cur'); if (!p) return; p.classList.remove('hl0', 'hl1'); if (b && ev.type !== 'mouseout' && ev.type !== 'focusout') p.classList.add('hl' + b.dataset.i); };
-  ['mouseover', 'mouseout', 'focusin', 'focusout'].forEach((t) => $('rvCards').addEventListener(t, routeHl));
+  // 地図での選択：札か地図の地点を一度タップして選び、「進む」で確定（選んだ札をもう一度タップしても確定）
+  function routeRefresh() {
+    if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
+    const go = $('rvGo'); if (!go) return;
+    const c = routeSel != null ? run.choices[routeSel] : null;
+    go.disabled = !c; go.textContent = c ? '「' + choiceName(c) + '」へ進む' : '進む道を選んでください';
+    $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
+    $('rvTrack').innerHTML = trackHTML();
+  }
+  function routePick(i) { if (!run.choices[i]) return; routeSel = i; SFX.page(); routeRefresh(); }
+  $('rvTrack').addEventListener('click', (ev) => { const n = ev.target.closest('[data-pick]'); if (n && $('rvCards').__on) routePick(+n.dataset.pick); });
+  $('rvTrack').addEventListener('keydown', (ev) => { const n = ev.target.closest && ev.target.closest('[data-pick]'); if (n && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if ($('rvCards').__on) routePick(+n.dataset.pick); } });
   $('rvCards').addEventListener('click', (ev) => {
-    const b = ev.target.closest('[data-i]'); if (!b || b.disabled) return;
+    const b = ev.target.closest('[data-i],[data-go]'); if (!b || b.disabled) return;
     const on = $('rvCards').__on; if (!on) return;
+    const map = $('runv').classList.contains('is-map');
+    let i = b.dataset.go ? routeSel : +b.dataset.i;
+    if (map && i == null) return;
+    if (map && !b.dataset.go && routeSel !== i) { routePick(i); return; }
     $('rvCards').__on = null;
     SFX.page();
-    on(+b.dataset.i);
+    on(i);
   });
   /* --- 途中保存：地点を選ぶ画面に来るたびに保存し、タイトルの「続きから」で再開 --- */
   const SAVE_KEY = 'rb-run-save';
@@ -4378,7 +4561,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     runSave();
     if (step === RUN.nodes) Music.warmBoss();
     const cards = run.choices.map((c) => CARD_INFO[c.type](c));
-    rvShow({ map: true, title: run.choices.length > 1 ? 'どちらへ進む？' : (run.choices[0].boss ? '最後の戦い' : '避けられない戦い'), sub: step === RUN.nodes ? '大災厄が迫る。騎士団の最後の戦い。' : '', events, cards, on: (i) => runEnter(run.choices[i]) });
+    rvShow({ map: true, title: run.choices.length > 1 ? 'どちらへ進む？' : (run.choices[0].boss ? '最後の戦い' : '避けられない戦い'), sub: step === RUN.nodes ? '大災厄が迫る。騎士団の最後の戦い。' : '', events, cards, on: (i) => { if (runEnter(run.choices[i]) === false) runShowMap(['その道へは進めない。']); } });
   }
   function trainYoung() {
     const ys = run.members.filter((m) => m.phase === 'young');
@@ -4386,6 +4569,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     return ys.length ? '若手の' + ys.map((m) => m.name).join('・') + 'が稽古で攻撃+' + RUN.restAtk + '。' : '';
   }
   function runEnter(c) {
+    // 進行処理でも検証する：いまの現在地から接続している、いま選べる地点だけに進める
+    if (!c || !run.choices.includes(c) || !routeCanMove(routeCur(), routeNodeId(c))) { console.warn('進めない地点', c); return false; }
+    run.pendId = routeNodeId(c);
     if (c.type === 'battle') {
       const e = runEnemy(c.step, c.variant);
       run.enemy = e.def; battleIdx = e.tier;
@@ -4494,6 +4680,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   }
   function runAdvance(events) {
     events = (events || []).slice();
+    if (run.pendId) { run.path = (run.path || []).concat(run.pendId); run.pendId = null; }
     run.node += 1;
     run.best = Math.max(run.best, run.node);
     try { const b = +localStorage.getItem('rb-run-best') || 0; if (run.node > b) localStorage.setItem('rb-run-best', String(run.node)); } catch (e) { /* 保存できない環境 */ }
@@ -4522,8 +4709,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     SFX.year(grown.length);
     if (retired) { run.members.forEach((m) => applyAge(m, false)); setTimeout(() => SFX.retire(), RM ? 0 : 1500); }
     if (!run.members.length) { runEnd(false); return; }
-    run.choices = fixChoices(run.nextChoices) || runChoices(run.node + 1);
-    run.nextChoices = run.node + 2 <= RUN.nodes ? runChoices(run.node + 2) : null;
+    run.choices = routeChoices();
+    run.nextChoices = null;
     const st = run.node + 1;
     if (RUN.forced[st] == null && st < RUN.nodes && rnd() < RUN.eventRate) { runEvent(events); return; }
     runShowMap(events);
@@ -4594,11 +4781,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     const o = runSaved(); if (!o) { beginMain(); return; }
     enterRun();
     run = o.run; rseed = o.rseed || 7; uidSeq = o.uidSeq || run.members.length;
-    run.hist = run.hist || []; run.mentors = run.mentors || {};
+    run.hist = run.hist || []; run.mentors = run.mentors || {}; run.pendId = null;
+    // 古いセーブには通った道と地図の中身が無いので、地点ごとの記録と保存されていた選択肢から復元する
+    routeMigrate();
+    run.choices = routeChoices(); run.nextChoices = null;
     roster = run.members;
     const step = Math.min(run.node + 1, RUN.nodes);
     run.enemy = runEnemy(step).def; battleIdx = runEnemy(step).tier;
-    if (!run.nextChoices && step < RUN.nodes) run.nextChoices = runChoices(step + 1);
     grid = runGrid();
     toPrep(false);
     if (!$('cover').hidden) closeCover();
