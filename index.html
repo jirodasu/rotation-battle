@@ -694,7 +694,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .r-card { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
 .h-card { padding-bottom: 0; }
 .h-card .steps { margin-bottom: 0; }
-.h-foot { position: sticky; bottom: 0; width: calc(100% + 44px); margin: 6px -22px 0; padding: 12px 22px 18px; background: linear-gradient(180deg, transparent, var(--paper) 30%); display: flex; justify-content: center; }
+.h-foot { position: sticky; bottom: 0; width: calc(100% + 44px); margin: 6px -22px 0; padding: 12px 22px 18px; background: linear-gradient(180deg, transparent, var(--paper) 30%); grid-column: 1 / -1; display: flex; justify-content: center; }
 .h-x { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--paper-2); color: var(--ink-soft); display: grid; place-items: center; cursor: pointer; }
 .h-x svg { width: 14px; height: 14px; }
 @media (max-height: 700px) { .steps li { font-size: 12px; line-height: 1.5; } .steps { gap: 9px; } .h-card h2 { font-size: 26px; } }
@@ -968,7 +968,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .demo-ring { position: fixed; left: 0; top: 0; z-index: 65; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; border: 3px solid #fff; pointer-events: none; opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .board.prep .slot .tok[data-id] { animation: none; } }
 /* 初めて出会う仕掛けのヒント */
-.tip { position: fixed; z-index: 58; left: 12px; right: 12px; max-width: 440px; margin: 0 auto; padding: 12px 12px 12px 16px; border-radius: 16px; background: var(--paper); color: var(--ink);
+.tip { position: fixed; z-index: 43; left: 12px; right: 12px; max-width: 440px; margin: 0 auto; padding: 12px 12px 12px 16px; border-radius: 16px; background: var(--paper); color: var(--ink);
   box-shadow: 0 5px 0 var(--paper-line), 0 22px 40px -14px rgba(16, 20, 34, 0.6); border-left: 6px solid var(--accent);
   display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; align-items: center; animation: tipin 0.42s cubic-bezier(.2, 1.3, .4, 1) both; }
 .tip[hidden] { display: none; }
@@ -983,6 +983,147 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .tip[data-k="stars"] b::before { content: "このゲームの目標"; }
 @keyframes tipin { from { opacity: 0; transform: translateY(-10px) scale(0.96); } }
 @media (prefers-reduced-motion: reduce) { .tip, .ticket.tip-ping { animation: none; } }
+
+/* ================= 横長画面（スマホ横持ち・PC）=================
+   左の列：敵の舞台（名前・HP・絵・攻撃予告）と情報欄。右の列：隊列盤と操作ボタン。
+   「予告を見る → 盤面を見る → 押す」が左から右へ並ぶ。HTMLの並びはそのまま、CSSだけで組み替える。
+   盤面の大きさは画面の高さから決める（ヘッダー34 + 操作56 + 余白 を引いた高さに、3行が収まる幅）。 */
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) {
+  .app {
+    display: grid; width: 100%; max-width: min(1440px, 100%); height: 100vh; height: 100dvh; min-height: 0; margin: 0 auto;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "top top" "stage board" "book board" "book dock";
+    column-gap: clamp(14px, 2.4vw, 36px);
+    padding: env(safe-area-inset-top, 0px) max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+    --bw: min(620px, 58vw, calc((100dvh - 34px - 62px - env(safe-area-inset-top, 0px) - max(8px, env(safe-area-inset-bottom, 0px)) - 96px) * 1.333 + 84px));
+  }
+  .top { grid-area: top; height: 34px; }
+  .stage { grid-area: stage; min-height: 0; max-height: none; flex: none; container-type: inline-size; }
+  .plate { max-width: 100%; }
+  .plate b { white-space: nowrap; font-size: min(23px, 6.4cqi); }
+  .board { grid-area: board; width: var(--bw); margin: 0; padding: 2px 12px 4px; gap: 4px 6px; align-self: center; }
+  .book { grid-area: book; align-self: end; margin: 6px 0 0; min-height: 0; }
+  .dock { grid-area: dock; width: var(--bw); margin: 0; min-height: 0; padding: 4px 0 0; gap: 10px; }
+  .tok { transform: none; }
+  .slot { padding-bottom: 12px; }
+  .eart { top: 34px; bottom: 74px; right: 0; }
+  .ticket { bottom: 2px; }
+  .tok .nm { padding: 1px 6px 2px; gap: 3px; }
+  .tok .nm b, .tok .nm u { font-size: 10.5px; }
+  /* 敵の詳細：右から出る縦長のパネル */
+  .sheet { left: auto; right: 0; top: 0; bottom: 0; width: min(460px, 62vw); max-height: none; margin: 0; border-radius: 26px 0 0 26px;
+    padding: max(12px, env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) 18px;
+    animation: sheetin 0.32s cubic-bezier(.2, .9, .3, 1); }
+  .sheet::before { display: none; }
+  /* 初めてのヒント：左の列に */
+  .tip { left: max(12px, env(safe-area-inset-left, 0px)); right: auto; width: min(440px, 44vw); margin: 0; }
+  /* チュートリアルの解説：光っている所の反対側に寄せる（JS が side-l / side-r を付ける） */
+  .coach.side-l, .coach.side-r { top: auto; bottom: max(12px, env(safe-area-inset-bottom, 0px)); width: min(400px, 44vw); margin: 0; }
+  .coach.side-l { left: max(12px, env(safe-area-inset-left, 0px)); right: auto; }
+  .coach.side-r { right: max(12px, env(safe-area-inset-right, 0px)); left: auto; }
+  /* タイトル：左にロゴと絵、右にボタン */
+  .c-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 340px); column-gap: clamp(20px, 5vw, 64px); row-gap: 8px; align-items: center; justify-items: center; }
+  .c-inner > .c-kicker, .c-inner > .c-title, .c-inner > .orbit, .c-inner > .c-copy { grid-column: 1; }
+  .c-inner > .c-press, .c-inner > .c-btns { grid-column: 2; grid-row: 1 / span 4; }
+  .cover { padding-left: max(24px, env(safe-area-inset-left, 0px)); padding-right: max(24px, env(safe-area-inset-right, 0px)); }
+  /* 地点・入団・報酬・出来事・負けた画面：左に道と団員、右に選択肢 */
+  .runv > .r-card { display: grid; width: min(900px, 100%); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 22px; row-gap: 8px; align-items: start; align-content: start; }
+  .runv > .r-card > small, .runv > .r-card > h2, .runv > .r-card > p { grid-column: 1 / -1; justify-self: center; text-align: center; }
+  .runv > .r-card > #rvTrack, .runv > .r-card > #rvNext, .runv > .r-card > #rvRoster { grid-column: 1; }
+  .runv > .r-card > #rvCards { grid-column: 2; grid-row: 4 / span 3; margin-top: 0; }
+  .runv > .r-card > #rvEvents { grid-column: 2; grid-row: 7; }
+  .runv > .r-card.memo > #rvEvents { grid-row: 7; }
+  .runv > .r-card.memo > #rvCards { grid-row: 4 / span 3; }
+  /* 勝利・全滅：左に結果と次へ、右に戦果 */
+  #result .r-card { display: grid; width: min(720px, 100%); grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 26px; row-gap: 6px; justify-items: center; align-items: center; }
+  #result .r-card > * { grid-column: 1; }
+  #result .r-card > #rStats { grid-column: 2; grid-row: 1 / span 6; margin: 0; }
+  #result .r-card h2 { font-size: 42px; }
+  /* あそびかた：2列 */
+  .h-card { width: min(900px, 100%); max-width: none; }
+  .steps { grid-template-columns: 1fr 1fr; column-gap: 22px; }
+  /* エンディング：左に文、右に団員とボタン */
+  .ending { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; column-gap: 24px;
+    padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  .en-top { grid-column: 1; grid-row: 1 / span 2; }
+  .en-stage { grid-column: 2; grid-row: 1; align-self: end; }
+  .en-bottom { grid-column: 2; grid-row: 2; }
+  .ending { background: linear-gradient(180deg, var(--sky-top), var(--sky-bot) 78%, var(--ground) 78%); }
+  .en-top { justify-content: flex-start; padding-top: 4vh; }
+  .en-sun { left: auto; right: 6%; bottom: 30%; }
+}
+/* 盤面の枠が狭いとき（横持ち・小さい画面）は名札を詰めて、隣と重ならないようにする */
+.slot { container-type: inline-size; }
+@container (max-width: 80px) {
+  .tok .nm { padding: 1px 4px 2px; gap: 2px; }
+  .tok .nm b, .tok .nm u { font-size: 10px; letter-spacing: -0.02em; }
+  .tok .nm u::before { display: none; }
+}
+@keyframes sheetin { from { transform: translateX(100%); } to { transform: none; } }
+/* 高さに余裕のある横長画面（PC・タブレット）：文字と操作を一回り大きく */
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) and (min-height: 600px) {
+  .top { height: 46px; }
+  .app { --bw: min(640px, 56vw, calc((100dvh - 46px - 76px - 96px) * 1.333 + 84px)); }
+  .plate b { font-size: min(28px, 6.4cqi); }
+  .plate small { font-size: 13px; }
+  .ehp { top: 76px; }
+  .espd { display: block; top: 98px; font-size: 12px; }
+  .eart { top: 40px; bottom: 96px; max-width: 320px; }
+  .ticket { padding-top: 11px; padding-bottom: 11px; }
+  .t-main b { font-size: 20px; }
+  .t-main span { font-size: 13px; }
+  .t-dmg b { font-size: 30px; }
+  .book p { font-size: 15px; }
+  .book p.l0 { display: block; }
+  .tok .nm b, .tok .nm u { font-size: 12px; }
+  .dock { padding-top: 8px; gap: 12px; }
+  .btn { min-height: 58px; font-size: 17px; }
+  .btn.icon { width: 58px; }
+}
+/* 大きな画面（1080pなど）：盤面と文字をもう一回り大きく */
+@media (min-aspect-ratio: 6/5) and (min-width: 1200px) and (min-height: 900px) {
+  .top { height: 56px; }
+  .icon-btn { width: 42px; height: 42px; }
+  .icon-btn svg { width: 22px; height: 22px; }
+  .chip { height: 32px; font-size: 14px; padding: 0 14px; border-radius: 16px; }
+  .app { --bw: min(800px, 52vw, calc((100dvh - 56px - 84px - 110px) * 1.333 + 84px)); }
+  .plate b { font-size: min(36px, 6.4cqi); }
+  .plate small { font-size: 15px; }
+  .ehp { top: 92px; width: 50%; }
+  .ebar { height: 18px; }
+  .ehpn { font-size: 16px; }
+  .espd { top: 118px; font-size: 14px; }
+  .eart { top: 56px; bottom: 120px; max-width: 460px; }
+  .ticket { grid-template-columns: 58px 1fr auto; padding: 14px 20px 14px 14px; }
+  .t-ico { width: 56px; height: 56px; font-size: 28px; }
+  .t-main b { font-size: 25px; }
+  .t-main span { font-size: 15px; }
+  .t-dmg b { font-size: 38px; }
+  .t-dmg small { font-size: 12px; }
+  .book p { font-size: 17px; }
+  .od { width: 32px; height: 32px; }
+  .ctag { height: 28px; line-height: 28px; font-size: 15px; min-width: 32px; }
+  .rail svg { width: 26px; height: 26px; }
+  .rail em { font-size: 13px; }
+  .tok .nm b, .tok .nm u { font-size: 14px; }
+  .btn { min-height: 66px; font-size: 19px; }
+  .btn.icon { width: 66px; }
+  .dm, .inc { height: 26px; font-size: 15px; padding: 0 9px 0 7px; border-radius: 13px; }
+  .dm svg { width: 14px; height: 14px; }
+  .seal { width: 24px; height: 24px; font-size: 12px; }
+  .prepban b { font-size: 20px; }
+  .prepban small, .bench .bn-none { font-size: 14px; }
+  .od-l { font-size: 12px; }
+}
+/* マウスで指せる所は、重ねると少し持ち上がる */
+@media (hover: hover) and (pointer: fine) {
+  .slot:hover .tok[data-id] .disc { filter: brightness(1.06); }
+  .board.prep .slot:hover .tok[data-id] { transform: translateY(-3px); }
+  .rv-card:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 6px 0 var(--paper-line); }
+  .stage:hover .eart svg { filter: drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)) brightness(1.04); }
+  .btn:hover:not([disabled]) { filter: brightness(1.04); }
+}
 </style>
 </head>
 <body class="is-cover">
@@ -3290,11 +3431,11 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 
   function placeSpot() {
     const sp = $('spot');
-    if (!tut || !tut.spotFn || $('coach').hidden) { sp.hidden = true; return; }
+    if (!tut || !tut.spotFn || $('coach').hidden) { sp.hidden = true; coachSide(null); return; }
     let t = null;
     try { t = tut.spotFn(); } catch (e) { t = null; }
     const els = (Array.isArray(t) ? t : [t]).filter(Boolean);
-    if (!els.length) { sp.hidden = true; return; }
+    if (!els.length) { sp.hidden = true; coachSide(null); return; }
     let l = 1e9, tp = 1e9, r = -1e9, b = -1e9;
     els.forEach((el) => {
       const q = el.getBoundingClientRect();
@@ -3304,6 +3445,14 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
     sp.style.left = (l - pad) + 'px'; sp.style.top = (tp - pad) + 'px';
     sp.style.width = (r - l + pad * 2) + 'px'; sp.style.height = (b - tp + pad * 2) + 'px';
     sp.hidden = false;
+    coachSide((l + r) / 2);
+  }
+  // 横長画面では、解説を光っている所と反対側の列に出して、操作する場所を隠さない
+  const LAND = window.matchMedia ? matchMedia('(min-aspect-ratio: 6/5) and (min-width: 560px)') : null;
+  function coachSide(cx) {
+    const c = $('coach'), on = !!(LAND && LAND.matches) && cx != null;
+    c.classList.toggle('side-l', on && cx >= innerWidth / 2);
+    c.classList.toggle('side-r', on && cx < innerWidth / 2);
   }
   function showCoach(o) {
     const c = $('coach');
