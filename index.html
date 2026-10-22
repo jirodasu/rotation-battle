@@ -1559,6 +1559,37 @@ body.boss-stage .en-lines p:last-child { color: #ffd36b; }
 @media (min-aspect-ratio: 6/5) and (min-width: 560px) { .c-inner > .c-rule { grid-column: 1; } }
 body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgba(255, 215, 120, 0.35) 52%, transparent 53%); border-color: rgba(255, 215, 120, 0.6); box-shadow: 0 0 50px 16px rgba(255, 200, 100, 0.22); }
 /* @@CHRONICLE-END@@ */
+
+/* 経路図（試作）：各地点が分かれ道のつながった道 */
+.rv-track { display: block; padding: 0; }
+.rv-track::before { content: none !important; }
+.rv-track svg.route { display: block; width: 100%; height: auto; max-height: 92px; overflow: visible; }
+.rt-l { fill: none; stroke-width: 1.6; stroke-linecap: round; }
+.rt-l.done { stroke: var(--ink); }
+.rt-l.ghost { stroke: var(--rule); stroke-dasharray: 2 3; opacity: .7; }
+.rt-l.now { stroke: var(--gold-lo); stroke-width: 2; }
+.rt-l.next { stroke: var(--rule); stroke-dasharray: 3 3; }
+.rt-n circle { fill: var(--vellum-hi); stroke: var(--rule); stroke-width: 1.2; }
+.rt-n text { font: 800 9.5px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
+.rt-n.done circle { fill: var(--ink); stroke: none; }
+.rt-n.done text { fill: var(--vellum-hi); }
+.rt-n.ghost circle { fill: none; stroke-dasharray: 2 2.5; opacity: .55; }
+.rt-n.far circle { opacity: .75; }
+.rt-n.rt-bt circle { stroke: var(--rubric); stroke-width: 1.6; }
+.rt-n.rt-bt text { fill: var(--rubric); }
+.rt-n.rt-boss circle { fill: var(--rubric); stroke: var(--gold); stroke-width: 1.6; }
+.rt-n.rt-boss text { fill: #fff3e0; }
+.rt-n.rt-bt.done circle, .rt-n.rt-boss.done circle { fill: var(--ink); }
+.rt-n.now circle { fill: var(--gold); stroke: var(--gold-lo); stroke-width: 1.8; }
+.rt-n.now text { fill: var(--accent-ink); }
+.rt-n.now.up text { fill: var(--rubric); }
+.rt-pair.cur .rt-n circle { transition: transform .2s, filter .2s; transform-box: fill-box; transform-origin: center; }
+.rt-pair.cur.hl0 .up circle, .rt-pair.cur.hl1 .dn circle { transform: scale(1.22); filter: drop-shadow(0 0 3px var(--gold)); }
+.rt-pair.cur.hl0 .dn, .rt-pair.cur.hl1 .up { opacity: .5; }
+.rt-y { font: 600 7.5px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
+.rt-y.now { fill: var(--ink); font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .rt-pair.cur .rt-n circle { transition: none; } }
+/* @@ROUTE-END@@ */
 </style>
 </head>
 <body class="is-cover">
@@ -1653,7 +1684,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.11</p>
+    <p class="c-ver" id="cVer">ver 5.1.12</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1921,7 +1952,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.11';
+  const APP_VERSION = '5.1.12';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4243,19 +4274,51 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   const portrait = (m, extra) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + '</span>';
   const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };
+  /* 経路図（試作）：各地点は「戦闘」か「休息・継承」の分かれ道。通った道は実線、これからは点線 */
   function trackHTML() {
-    const cur = run.node + 1;
-    let h = '';
-    for (let i = 1; i <= RUN.nodes; i++) {
-      let cls = '', g = '？';
-      if (i < cur) { cls = 'done'; g = HIST_G[run.hist[i - 1]] || '・'; }
-      else if (i === cur) { cls = 'now'; g = i === RUN.nodes ? '災' : RUN.forced[i] != null ? '戦' : '分'; }
-      else if (i === RUN.nodes) { cls = 'boss'; g = '災'; }
-      else if (RUN.forced[i] != null) { cls = 'bt'; g = '戦'; }
-      else if (i === cur + 1) g = '分';
-      h += '<i class="disp ' + cls + '" title="地点' + i + '（' + (1 + RUN.years * (i - 1)) + '年目）">' + g + '<s>' + (1 + RUN.years * (i - 1)) + '年</s></i>';
+    const cur = run.node + 1, N = RUN.nodes, W = 300, X0 = 16, DX = (W - 2 * X0) / (N - 1), YT = 15, YM = 31, YB = 47, R = 8.5;
+    const x = (i) => +(X0 + (i - 1) * DX).toFixed(1);
+    const forced = (i) => RUN.forced[i] != null;
+    const sp = [];  // 各地点の接続点
+    let path = '', g = '';
+    const seg = (a, b, cls) => '<path class="rt-l ' + cls + '" d="M' + a[0] + ' ' + a[1] + ' C' + ((a[0] + b[0]) / 2) + ' ' + a[1] + ' ' + ((a[0] + b[0]) / 2) + ' ' + b[1] + ' ' + b[0] + ' ' + b[1] + '"/>';
+    const node = (cx, cy, glyph, cls, label) => '<g class="rt-n ' + cls + '"><circle cx="' + cx + '" cy="' + cy + '" r="' + R + '"/><text x="' + cx + '" y="' + (cy + 0.5) + '">' + glyph + '</text>' + (label ? '<title>' + label + '</title>' : '') + '</g>';
+    let prev = null; // 直前の地点で通った点
+    for (let i = 1; i <= N; i++) {
+      const cx = x(i), done = i < cur, now = i === cur, boss = i === N, fz = forced(i);
+      if (fz || boss) {
+        const kind = boss ? 'boss' : 'bt', here = [cx, YM];
+        if (prev) path += seg(prev, here, done ? 'done' : now ? 'now' : 'next');
+        g += node(cx, YM, boss ? '災' : '戦', 'rt-' + kind + (done ? ' done' : '') + (now ? ' now' : ''), '地点' + i + (boss ? '（決戦）' : '（避けられない戦い）'));
+        prev = here; continue;
+      }
+      const tk = done ? run.hist[i - 1] : null, goUp = tk === 'battle';
+      const T = [cx, YT], B = [cx, YB];
+      if (done) {
+        const via = goUp ? T : B, other = goUp ? B : T;
+        if (prev) { path += seg(prev, via, 'done'); path += seg(prev, other, 'ghost'); }
+        g += node(via[0], via[1], HIST_G[tk] || '・', 'done', '地点' + i + '：' + (tk === 'battle' ? '戦闘' : tk === 'rest' ? '休息' : '継承'));
+        g += node(other[0], other[1], '', 'ghost');
+        prev = via;
+      } else {
+        const cls = now ? 'now' : 'far';
+        if (prev) { path += seg(prev, T, now ? 'now' : 'next'); path += seg(prev, B, now ? 'now' : 'next'); }
+        g += '<g class="rt-pair' + (now ? ' cur' : '') + '" data-step="' + i + '">' + node(cx, YT, now ? '戦' : '', cls + ' up', now ? '戦闘' : '') + node(cx, YB, now ? (run.choices[1] && run.choices[1].type === 'inherit' ? '継' : '休') : '', cls + ' dn', now ? '休息／継承' : '') + '</g>';
+        prev = [cx, YM];
+        // 次の地点へ向かう合流の点
+        const jn = [cx + DX * 0.5, YM];
+        path += '<path class="rt-l ' + (now ? 'now' : 'next') + '" d="M' + cx + ' ' + YT + ' C' + (cx + DX * 0.3) + ' ' + YT + ' ' + (cx + DX * 0.3) + ' ' + YM + ' ' + jn[0] + ' ' + jn[1] + '"/>' + '<path class="rt-l ' + (now ? 'now' : 'next') + '" d="M' + cx + ' ' + YB + ' C' + (cx + DX * 0.3) + ' ' + YB + ' ' + (cx + DX * 0.3) + ' ' + YM + ' ' + jn[0] + ' ' + jn[1] + '"/>';
+        prev = jn;
+        continue;
+      }
+      // 通った地点からの合流
+      const jn2 = [cx + DX * 0.5, YM];
+      path += '<path class="rt-l done" d="M' + prev[0] + ' ' + prev[1] + ' C' + (prev[0] + DX * 0.3) + ' ' + prev[1] + ' ' + (prev[0] + DX * 0.3) + ' ' + YM + ' ' + jn2[0] + ' ' + jn2[1] + '"/>';
+      prev = jn2;
     }
-    return h;
+    let yr = '';
+    for (let i = 1; i <= N; i++) yr += '<text class="rt-y' + (i === cur ? ' now' : '') + '" x="' + x(i) + '" y="68">' + (1 + RUN.years * (i - 1)) + '年</text>';
+    return '<svg class="route" viewBox="0 0 ' + W + ' 72" role="img" aria-label="経路図：地点' + cur + 'まで進んだ。各地点は戦闘か休息・継承の分かれ道"><g class="rt-paths">' + path + '</g>' + g + yr + '</svg>';
   }
   function choiceName(c) {
     if (c.type === 'battle') { const e = runEnemy(c.step, c.variant).def; return (c.boss ? '決戦 ' : '戦闘 ') + e.name; }
@@ -4290,6 +4353,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     card.scrollTop = 0;
     Music.charge(false); Music.era(run.node / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
   }
+  // 札に触れると、経路図の同じ側の道が光る
+  const routeHl = (ev) => { const b = ev.target.closest && ev.target.closest('.rv-card[data-i]'), p = document.querySelector('#rvTrack .rt-pair.cur'); if (!p) return; p.classList.remove('hl0', 'hl1'); if (b && ev.type !== 'mouseout' && ev.type !== 'focusout') p.classList.add('hl' + b.dataset.i); };
+  ['mouseover', 'mouseout', 'focusin', 'focusout'].forEach((t) => $('rvCards').addEventListener(t, routeHl));
   $('rvCards').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-i]'); if (!b || b.disabled) return;
     const on = $('rvCards').__on; if (!on) return;
