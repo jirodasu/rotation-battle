@@ -1712,6 +1712,41 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   .runv.is-map .r-card h2::after { display: none; }
 }
 /* @@ROUTE-END@@ */
+/* @@SQUAD-BEGIN@@ 騎士団の選択画面：スクロールなしで4つ並べる */
+.runv.is-squad > .r-card { display: flex; flex-direction: column; width: min(520px, 100%); align-items: stretch; }
+.runv.is-squad > .r-card > small, .runv.is-squad > .r-card > h2, .runv.is-squad > .r-card > p { align-self: center; text-align: center; }
+.runv.is-squad .rv-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; width: 100%; margin: 0; grid-column: auto; grid-row: auto; }
+.runv.is-squad .rv-main, .runv.is-squad .rv-left, .runv.is-squad .rv-right { display: block !important; }
+.runv.is-squad .rv-cards > .rv-card { padding: 9px 12px; }
+.runv.is-squad .rv-cards > .rv-card[disabled] { opacity: 0.62; }
+.runv.is-squad .rv-skip { grid-column: 1 / -1; justify-self: center; width: min(100%, 320px); }
+@media (max-height: 700px) and (max-aspect-ratio: 6/5) {
+  .runv.is-squad > .r-card { padding-top: 12px; padding-bottom: 12px; row-gap: 5px; }
+  .runv.is-squad h2 { font-size: 24px; }
+  .runv.is-squad .rv-cards { gap: 6px; }
+  .runv.is-squad .rv-cards > .rv-card { padding: 6px 10px; }
+  .runv.is-squad #rvSub { display: none; }
+}
+@media (max-height: 590px) and (max-aspect-ratio: 6/5) {
+  .runv.is-squad .rv-cards > .rv-card:not([disabled]) .rv-txt > span:not(.rv-tags) { display: none; }
+}
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) {
+  .runv.is-squad > .r-card { width: min(780px, 100%); row-gap: 8px; }
+  .runv.is-squad .rv-cards { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+}
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) and (max-height: 460px) {
+  .runv.is-squad > .r-card { padding-top: 9px; padding-bottom: 10px; row-gap: 4px; }
+  .runv.is-squad h2 { font-size: 22px; margin: 0; }
+  .runv.is-squad #rvSub { display: none; }
+  .runv.is-squad .rv-cards { gap: 7px; }
+  .runv.is-squad .rv-cards > .rv-card { padding: 5px 9px; }
+  .runv.is-squad .rv-txt > span:not(.rv-tags) { margin-top: 0; font-size: 11px; line-height: 1.3; }
+  .runv.is-squad .rv-tags { margin-top: 2px !important; }
+}
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) and (max-height: 340px) {
+  .runv.is-squad .rv-cards > .rv-card:not([disabled]) .rv-txt > span:not(.rv-tags) { display: none; }
+}
+/* @@SQUAD-END@@ */
 </style>
 </head>
 <body class="is-cover">
@@ -1806,7 +1841,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.15</p>
+    <p class="c-ver" id="cVer">ver 5.1.16</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2080,7 +2115,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.15';
+  const APP_VERSION = '5.1.16';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3920,7 +3955,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('cover').classList.toggle('has-save', !!sv);
     if (sv) $('resumeSub').textContent = '騎士団 ' + sv.run.year + '年目・地点 ' + Math.min(sv.run.node + 1, RUN.nodes) + ' / ' + RUN.nodes;
     $('begin').classList.toggle('primary', !sv);
-    $('beginSub').textContent = (sv ? '新しい騎士団で始める' : '騎士団の30年に挑む') + (b ? '　最高 ' + Math.min(b, 10) + ' / 10' : '');
+    $('beginSub').textContent = (sv ? '新しい騎士団で始める' : '騎士団の30年に挑む') + (b ? '　最高 ' + Math.min(b, 10) + ' / 10' : '') + (metaLoad().runs > 0 ? '　騎士団 ' + squadList().filter((q) => squadOpen(q.id, metaLoad())).length + ' / ' + squadList().length : '');
   }
   function showStats(win) {
     const par = enemy.par || 99, turns = turn;
@@ -4217,7 +4252,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     let row = '';
     for (let i = 0; i < total; i++) row += '<i class="' + (i < got ? 'on' : '') + '">' + STAR + '</i>';
     const fallenN = S ? run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name) : [], mentorN = S ? Object.values(run.mentors || {}).map((m) => m.name + '（' + m.jname + '）') : [];
-    $('enScore').innerHTML = S ? '<p>騎士団 ' + run.year + '年　生還 ' + S.alive + '人　引退 ' + S.ret + '人　戦死 ' + S.fal + '人' + (fallenN.length ? '<br>眠る者　' + fallenN.join('・') : '') + (mentorN.length ? '<br>教官　' + mentorN.join('・') : '') + '</p>' : '<div class="en-stars" aria-label="今回の★ ' + got + ' / ' + total + '">' + row + '</div>' +
+    $('enScore').innerHTML = S ? '<p>騎士団 ' + run.year + '年　生還 ' + S.alive + '人　引退 ' + S.ret + '人　戦死 ' + S.fal + '人' + (fallenN.length ? '<br>眠る者　' + fallenN.join('・') : '') + (mentorN.length ? '<br>教官　' + mentorN.join('・') : '') + (run.unlocked && run.unlocked.length ? '<br><b>' + run.unlocked.join('<br>') + '</b>' : '') + '</p>' : '<div class="en-stars" aria-label="今回の★ ' + got + ' / ' + total + '">' + row + '</div>' +
       '<p>今回 ★' + got + ' / ' + total + '　合計 ' + camp.turns + 'ターン　倒れた仲間 ' + camp.fallen + '人<br>ベスト ★' + best + ' / ' + total + '</p>';
     en.hidden = false;
     en.querySelectorAll('[style*="--d"], .en-bottom, .en-title, .en-skip').forEach((x) => { x.style.animation = 'none'; void x.offsetWidth; x.style.animation = ''; });
@@ -4227,7 +4262,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (ev.target.closest('button')) return;
     $('ending').classList.add('skip');
   });
-  $('enAgain').addEventListener('click', () => { SFX.tap(); beginMain(); });
+  $('enAgain').addEventListener('click', () => { SFX.tap(); startFlow(); });
   $('enTitle').addEventListener('click', () => { SFX.tap(); $('ending').hidden = true; goTitle(); });
   function goTitle() {
     if (phase === 'resolve' && !(tut && tut.noteDone)) return;
@@ -4257,6 +4292,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     start: { warrior: 38, knight: 30, samurai: 24, witch: 33, cleric: 44, monk: 27, archer: 19 },
     forced: { 3: 0, 6: 1, 10: 2 }
   };
+  /* 騎士団（最初の編成）。標準は DEFAULT_FORM＋RUN.start のまま変えない。ここは追加分で、解禁すると選べる。
+     form は [職業, 行, 列, 年齢]。出撃枠（前3・中2・後2）に合わせた7人。値は tools/runsim.mjs で測って決める */
+  const SQUADS = [
+    { id: 'vanguard', name: '攻めの騎士団', tag: '速攻', desc: '騎士がサムライに。速く重いが、脆い。', form: [['samurai', 0, 0, 24], ['warrior', 0, 1, 38], ['samurai', 0, 2, 29], ['archer', 1, 0, 19], ['witch', 1, 1, 33], ['cleric', 2, 0, 44], ['monk', 2, 1, 27]] },
+    { id: 'bulwark', name: '護りの騎士団', tag: '堅守', desc: '騎士が2人。堅いが、引退が早い。', form: [['warrior', 0, 0, 38], ['knight', 0, 1, 30], ['knight', 0, 2, 40], ['witch', 1, 0, 33], ['monk', 1, 1, 29], ['cleric', 2, 0, 44], ['monk', 2, 1, 31]] },
+    { id: 'veterans', name: '老練の騎士団', tag: '高難度', desc: '全員ベテラン。強いが、引退が続く。', form: [['warrior', 0, 0, 41], ['knight', 0, 1, 38], ['samurai', 0, 2, 36], ['witch', 1, 0, 40], ['archer', 1, 1, 35], ['cleric', 2, 0, 44], ['monk', 2, 1, 39]] }
+  ];
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, sta: 0, ent: 1 },
     { max: 34, key: 'prime', label: '盛り', mul: 1, sta: 0, ent: 1 },
@@ -4494,10 +4536,12 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     rest: () => ({ ico: ICON.heart, t: '休息と稽古', d: '全員のHPが全快し、若手は攻撃+' + RUN.restAtk + '。' + (isFull() ? '' : '入団希望者も訪ねてくる。'), tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまの団員HP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] }),
     inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる（攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '）。', tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまの団員HP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] })
   };
-  function newRun() {
+  function newRun(sqId) {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
-    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [] };
-    DEFAULT_FORM.forEach(([id, r, c]) => { const m = newMember(id, RUN.start[id]); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
+    const sq = typeof sqId === 'string' ? SQUADS.find((x) => x.id === sqId) : null;
+    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std' };
+    const form = sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]);
+    form.forEach(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
     roster = run.members;
     grid = runGrid();
     run.map = routeFill();
@@ -4613,7 +4657,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('rvSmall').textContent = o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)));
     $('rvTitle').textContent = o.title;
     $('rvSub').textContent = o.sub || '';
-    $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || run.members).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '')).join('');
+    $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '')).join('');
     routeSel = o.map && o.cards.length === 1 ? 0 : null;
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
@@ -4624,11 +4668,11 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (o.map) routeRefresh();
     $('rvCards').__on = o.on;
     const v = $('runv');
-    v.hidden = false; v.classList.toggle('is-map', !!o.map);
-    v.style.setProperty('--rr', (o.roster || run.members).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
+    v.hidden = false; v.classList.toggle('is-map', !!o.map); v.classList.toggle('is-squad', !!o.squad);
+    v.style.setProperty('--rr', (o.roster || (run ? run.members : [])).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
-    Music.charge(false); Music.era(run.node / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
+    Music.charge(false); Music.era((run ? run.node : 0) / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
   }
   // 地図での選択：札か地図の地点を一度タップして選び、「進む」で確定（選んだ札をもう一度タップしても確定）
   function routeRefresh() {
@@ -4653,6 +4697,50 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     SFX.page();
     on(i);
   });
+  /* --- 騎士団の解禁：周回の記録。途中保存とは別の追加項目（rb-meta）で、実績を満たすと新しい騎士団が選べるようになる --- */
+  const META_KEY = 'rb-meta';
+  const ACHS = [
+    { id: 'clear', t: '30年を完遂', d: '騎士団の30年をクリアする', squad: 'vanguard', ok: (S) => S.clear },
+    { id: 'few', t: 'ほとんど欠けず', d: '戦死3人以下でクリアする', squad: 'bulwark', ok: (S) => S.clear && S.fal <= 3 },
+    { id: 'two', t: '二つの旗', d: '攻めと護り、どちらの騎士団でもクリアする', squad: 'veterans', ok: (S, m) => !!(m.won.vanguard && m.won.bulwark) }
+  ];
+  let metaMem = null;
+  function metaLoad() {
+    if (metaMem) return metaMem;
+    let o = null;
+    try { o = JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e) { /* 保存できない環境 */ }
+    o = o && typeof o === 'object' ? o : {};
+    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: o.won && typeof o.won === 'object' ? o.won : {}, ach: o.ach && typeof o.ach === 'object' ? o.ach : {} };
+    return metaMem;
+  }
+  const metaSave = () => { try { localStorage.setItem(META_KEY, JSON.stringify(metaMem)); } catch (e) { /* 保存できない環境 */ } };
+  const squadOpen = (id, m) => id === 'std' || ACHS.some((a) => a.squad === id && m.ach[a.id]);
+  // 1回の本番が終わるたびに呼ぶ。新しく満たした実績を返す
+  function metaRecord(S, sqId) {
+    const m = metaLoad(), got = [];
+    m.runs++;
+    if (S.clear) { m.clears++; m.won[sqId || 'std'] = (m.won[sqId || 'std'] || 0) + 1; }
+    ACHS.forEach((a) => { if (!m.ach[a.id] && a.ok(S, m)) { m.ach[a.id] = 1; got.push(a); } });
+    metaSave();
+    return got;
+  }
+  const squadList = () => [{ id: 'std', name: '標準の騎士団', tag: '標準', desc: '戦士・騎士・サムライ・魔女ほか基本の7人。', form: DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]) }].concat(SQUADS);
+  // 本番の開始：一度でも本番を終えていれば騎士団を選ぶ。はじめては標準の騎士団でそのまま始める
+  function startFlow() { if (metaLoad().runs > 0) showSquads(); else beginMain(); }
+  function showSquads() {
+    const m = metaLoad(), list = squadList();
+    const cards = list.map((sq) => {
+      const open = squadOpen(sq.id, m), a = ACHS.find((x) => x.squad === sq.id), lead = JOBS.find((j) => j.id === sq.form[0][0]);
+      return {
+        ico: '<span class="uc-disc c-' + lead.cls + '">' + ageArt(lead.id, 'prime') + '</span>',
+        t: sq.name, d: open ? sq.desc : '解禁：' + a.d + '。',
+        tags: open ? [{ t: sq.tag, k: sq.id === 'veterans' ? 'warn' : 'bt' }].concat(m.won[sq.id] ? [{ t: 'クリア済み', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }],
+        disabled: !open
+      };
+    });
+    rvShow({ small: '騎士団　·　' + list.filter((sq) => squadOpen(sq.id, m)).length + ' / ' + list.length + ' 解禁', squad: true, title: 'どの騎士団で挑む？', sub: 'クリアすると、新しい騎士団が解禁される。', noRoster: true, calm: true, cards, skip: 'タイトルへ',
+      on: (i) => { $('runv').hidden = true; if (i >= 0) beginMain(list[i].id === 'std' ? null : list[i].id); else goTitle(); } });
+  }
   /* --- 途中保存：地点を選ぶ画面に来るたびに保存し、タイトルの「続きから」で再開 --- */
   const SAVE_KEY = 'rb-run-save';
   function runSave() {
@@ -4863,10 +4951,11 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     runClearSave();
     const alive = run.members.length, ret = run.gone.filter((m) => m.fate === 'retired').length, fal = run.gone.filter((m) => m.fate === 'fallen').length;
     run.summary = { clear, alive, ret, fal, years: run.year, node: run.node };
+    run.unlocked = metaRecord(run.summary, run.squad).map((a) => '新しい騎士団が解禁された：' + SQUADS.find((q) => q.id === a.squad).name + '（' + a.t + '）');
     coverProgress();
     if (clear) { showEnding(); return; }
     rvShow({ small: '騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)), calm: true, title: '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', roster: run.gone.concat(run.members), openLog: true,
-      events: run.events.slice(-8), cards: [{ ico: ICON.rot, t: 'もう一度、最初から', d: '新しい騎士団で30年に挑む。' }], skip: 'タイトルへ', on: (i) => { $('runv').hidden = true; if (i >= 0) beginMain(); else goTitle(); } });
+      events: run.events.slice(-8), cards: [{ ico: ICON.rot, t: 'もう一度、最初から', d: '新しい騎士団で30年に挑む。' }], skip: 'タイトルへ', on: (i) => { $('runv').hidden = true; if (i >= 0) startFlow(); else goTitle(); } });
   }
   function enterRun() {
     camp = { turns: 0, fallen: 0, stars: [], rec: [] };
@@ -4875,9 +4964,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('coach').hidden = true; $('spot').hidden = true; $('resultAlt').hidden = true;
     if (!$('board').children.length) buildBoard();
   }
-  function beginMain() {
+  function beginMain(sqId) {
     enterRun();
-    newRun();
+    newRun(sqId);
     battleIdx = 0; run.enemy = runEnemy(1).def;
     toPrep(false);
     if (!$('cover').hidden) closeCover();
@@ -4928,7 +5017,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   }
   $('cover').addEventListener('click', (ev) => { if (gated) { ev.preventDefault(); ev.stopPropagation(); ungate(); } }, true);
   document.addEventListener('keydown', (ev) => { if (gated && !$('cover').hidden && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ungate(true); } });
-  $('begin').addEventListener('click', beginMain);
+  $('begin').addEventListener('click', () => startFlow());
   $('resume').addEventListener('click', resumeRun);
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });

@@ -18,6 +18,7 @@ const EQUIPS = grab('EQUIPS');
 export const BOSS = grab('BOSS');
 const TRAITS = grab('TRAITS');
 const VARIANTS = grab('VARIANTS');
+export const SQUADS = grab('SQUADS');
 let MENTORS = {}, CFG = RUN;
 const COLS = 4;
 
@@ -92,7 +93,10 @@ export const STAY = () => false;
 export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
   const R = rng(seed); uid = 0; MENTORS = {}; CFG = cfg;
   const pick = (a) => a[Math.floor(R() * a.length)];
-  let members = DEFAULT_FORM.map(([id, r, c]) => { const m = newMember(id, cfg.start[id]); m.r = r; m.c = c; return m; });
+  // cfg.squad に騎士団の id を入れると、その編成から始める（無指定は標準）
+  const sq = cfg.squad ? SQUADS.find((x) => x.id === cfg.squad) : null;
+  const form = cfg.form ? cfg.form : sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, cfg.start[id]]);
+  let members = form.map(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; return m; });
   let fallen = 0, retired = 0, battles = 0;
   const pairs = () => { const v = members.filter((m) => m.age >= 40), y = members.filter((m) => m.age <= 24 && !m.inherit), o = []; v.forEach((a) => y.forEach((b) => { if (a !== b) o.push([a, b]); })); return o; };
   const TK = Object.keys(TRAITS), VK = Object.keys(VARIANTS);
@@ -170,10 +174,10 @@ function rate(pol, strat, cfg, n) { let c = 0; for (let i = 1; i <= n; i++) if (
 export function runReport(n = 300, cfg = RUN) {
   const out = {};
   for (const [name, pol] of [['回さない', STAY], ['回す判断あり', SMART], ['先読みの名人', 'plan']]) {
-    let clear = 0, reached = 0, fallen = 0, retired = 0; const hist = Array(cfg.nodes + 1).fill(0);
+    let clear = 0, reached = 0, fallen = 0, retired = 0, clearLow = 0; const hist = Array(cfg.nodes + 1).fill(0);
     const N = pol === 'plan' ? Math.min(n, 120) : n;
-    for (let i = 1; i <= N; i++) { const r = playRun(i * 7919, pol, {}, cfg); if (r.clear) clear++; reached += r.reached; fallen += r.fallen; retired += r.retired; hist[r.reached]++; }
-    out[name] = { clear: clear / N, reached: reached / N, fallen: fallen / N, retired: retired / N, hist };
+    for (let i = 1; i <= N; i++) { const r = playRun(i * 7919, pol, {}, cfg); if (r.clear) { clear++; if (r.fallen <= 3) clearLow++; } reached += r.reached; fallen += r.fallen; retired += r.retired; hist[r.reached]++; }
+    out[name] = { clearLow: clearLow / N, clear: clear / N, reached: reached / N, fallen: fallen / N, retired: retired / N, hist };
   }
   // 選び方ごとのクリア率（回す判断あり）。どれか1つだけ極端に高い／0%に近いものがあれば要調整
   const S = {
@@ -189,6 +193,6 @@ if (process.argv[1] && /(^|[\\/])runsim\.mjs$/.test(process.argv[1])) {
   const n = +(process.argv[2] || 300);
   const cfg = Object.assign({}, RUN, process.argv[3] ? JSON.parse(process.argv[3]) : {});
   const rep = runReport(n, cfg);
-  ['回さない', '回す判断あり', '先読みの名人'].forEach((k) => { const v = rep[k]; console.log(`${k}\tクリア率 ${(v.clear * 100).toFixed(1)}%\t平均到達 ${v.reached.toFixed(1)}/${cfg.nodes}\t戦死 ${v.fallen.toFixed(1)}人\t引退 ${v.retired.toFixed(1)}人\t到達ノード分布 ${v.hist.slice(1).join(',')}`); });
+  ['回さない', '回す判断あり', '先読みの名人'].forEach((k) => { const v = rep[k]; console.log(`${k}\tクリア率 ${(v.clear * 100).toFixed(1)}%\t平均到達 ${v.reached.toFixed(1)}/${cfg.nodes}\t戦死3人以下でクリア ${(v.clearLow * 100).toFixed(1)}%\t戦死 ${v.fallen.toFixed(1)}人\t引退 ${v.retired.toFixed(1)}人\t到達ノード分布 ${v.hist.slice(1).join(',')}`); });
   console.log('選び方ごと（回す判断あり）\t' + Object.entries(rep.strategies).map(([k, v]) => `${k} ${(v * 100).toFixed(1)}%`).join('　'));
 }
