@@ -23,7 +23,8 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m);
   ok(after.dis.every(Boolean), '2. 名声が足りない品・買った品は押せない');
   await p.click('#rvCards .rv-skip'); await p.waitForTimeout(300);
   ok((await T()) === '中盤、どの地方へ？' && await p.evaluate(() => document.querySelectorAll('#rvCards .rv-card').length === 3), '3. 店を出ると、中盤の地方を3つから選ぶ');
-  await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(400);
+  await p.evaluate(() => { window.__mr = Math.random; Math.random = () => 0.99; });  // 地方のあとの偶然の出来事を避ける
+  await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(400); await p.evaluate(() => { Math.random = window.__mr; });
   const rg = await p.evaluate(() => { const R = window.__rb, N = R.ROUTE.nodes, v = Object.keys(N).filter((id) => N[id].ch === 1 && R.run.map[id] && R.run.map[id].variant).map((id) => R.run.map[id].variant); return { region: R.run.region, v, map: document.getElementById('runv').classList.contains('is-map'), sub: document.getElementById('rvSub').textContent }; });
   ok(JSON.stringify(rg.region) === '["poison"]' && rg.v.every((x) => x === 'poison') && rg.map, '3. 毒の沼地を選ぶと、中盤の変異種はすべて「毒」になり、地図へ進む（' + rg.v.length + '地点）');
   ok(rg.sub.includes('毒の沼地') && rg.sub.includes('名声 2'), '3. 地図に、いまの地方と名声が出る');
