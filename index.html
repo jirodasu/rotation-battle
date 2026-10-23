@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<title>ローテーションバトル</title>
+<title>ローグライク・ローテーションバトル</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
@@ -1747,6 +1747,14 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 @media (min-aspect-ratio: 6/5) and (min-width: 560px) and (max-height: 340px) {
   .runv.is-squad .rv-cards > .rv-card:not([disabled]) .rv-txt > span:not(.rv-tags) { display: none; }
 }
+/* 語り継ぐ者を選ぶ画面：名簿の団員をタップして選ぶ */
+.runv.is-legacy .rv-roster .hpb { display: none; }
+.runv.is-legacy .rv-roster { gap: 4px 2px; }
+.runv.is-legacy .rv-roster .rv-m { cursor: pointer; border-radius: 12px; padding: 3px 2px; transition: background 0.15s; }
+.runv.is-legacy .rv-roster .rv-m.pick { outline: 2px solid var(--rubric, #9a2a1b); outline-offset: 1px; background: var(--vellum-hi, #fff8e8); }
+@media (hover: hover) and (pointer: fine) { .runv.is-legacy .rv-roster .rv-m:hover { background: var(--vellum-hi, #fff8e8); } }
+@media (max-height: 600px) and (max-aspect-ratio: 6/5) { .runv.is-legacy h2 { font-size: 24px; } .runv.is-legacy .rv-roster .rv-m .uc-disc { width: 36px; height: 36px; } .runv.is-legacy .rv-roster { gap: 2px; } }
+@media (max-height: 340px) { .runv.is-squad > .r-card:not(.memo) #rvEvents { display: none; } }
 /* 実績と記録の画面、選択画面の下のボタン2つ */
 .runv .rv-btnrow { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: center; width: 100%; }
 .runv .rv-btnrow .rv-skip { flex: 1 1 0; width: auto !important; max-width: 240px; margin: 0; }
@@ -1844,8 +1852,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 
 <div class="cover gate" id="cover">
   <div class="c-inner">
-    <p class="c-kicker disp">ひとめぐりの戦術</p>
-    <h2 class="c-title disp">ローテーション<br>バトル</h2>
+    <p class="c-kicker disp">ローグライク</p>
+    <h2 class="c-title disp" aria-label="ローグライク・ローテーションバトル">ローテーション<br>バトル</h2>
     <div class="c-rule" aria-hidden="true"></div>
     <div class="orbit" aria-hidden="true">
       <div class="path"></div>
@@ -1857,7 +1865,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.17</p>
+    <p class="c-ver" id="cVer">ver 5.1.18</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2131,7 +2139,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.17';
+  const APP_VERSION = '5.1.18';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3988,8 +3996,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       '<div class="r-stars">' + [0, 1, 2].map((i) => '<i class="' + (i < got ? 'on' : '') + '" style="animation-delay:' + (0.35 + i * 0.18) + 's">' + STAR + '</i>').join('') + '</div>' +
       '<ul class="r-conds">' + conds.map((c) => '<li class="' + (c[0] ? 'ok' : '') + '"><i>' + (c[0] ? '✓' : '—') + '</i>' + c[1] + '</li>').join('') + '</ul>' +
       (mu ? '<div class="r-mvp"><span class="uc-disc c-' + mu.cls + '">' + face(mu) + '</span><span><small>いちばん活躍</small><b class="disp">' + mu.name + '</b></span><span class="r-num"><b class="disp">' + stats.dealt[mvp] + '</b><small>与ダメージ</small></span></div>' : '') +
-      '<p class="r-best">' + (run ? (win && run.node + 1 < RUN.nodes ? (got >= 3 ? '戦果★3　報酬が1つ増える' : '戦果★' + got + '　★3で報酬が1つ増える') : '戦果★' + got) : (got > prev && prev > 0 ? 'ベスト更新！' : 'ベスト ★' + Math.max(got, prev))) + '　受けたダメージ ' + stats.taken + '</p>';
-    if (run) run.lastStars = win ? got : 0;
+      '<p class="r-best">' + (run ? (win && run.node + 1 < RUN.nodes ? (got >= 3 ? '戦果★3　報酬が1つ増える' : '戦果★' + got + '　★3で報酬が1つ増える') + '　名声+' + got : '戦果★' + got) : (got > prev && prev > 0 ? 'ベスト更新！' : 'ベスト ★' + Math.max(got, prev))) + '　受けたダメージ ' + stats.taken + '</p>';
+    if (run) { run.lastStars = win ? got : 0; if (win) run.fame = (run.fame || 0) + got; }
     coverProgress();
     return got;
   }
@@ -4315,6 +4323,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     { id: 'bulwark', name: '護りの騎士団', tag: '堅守', desc: '騎士が2人。堅いが、引退が早い。', form: [['warrior', 0, 0, 38], ['knight', 0, 1, 30], ['knight', 0, 2, 40], ['witch', 1, 0, 33], ['monk', 1, 1, 29], ['cleric', 2, 0, 44], ['monk', 2, 1, 31]] },
     { id: 'veterans', name: '老練の騎士団', tag: '高難度', desc: '全員ベテラン。強いが、引退が続く。', form: [['warrior', 0, 0, 41], ['knight', 0, 1, 38], ['samurai', 0, 2, 36], ['witch', 1, 0, 40], ['archer', 1, 1, 35], ['cleric', 2, 0, 44], ['monk', 2, 1, 39]] }
   ];
+  /* ローグライク要素（Into the Breach 由来）。戦闘ルール・RUN の値には触れない追加分で、値は tools/rogue.mjs で測って決める
+     legacyAge：語り継がれる者が次の代で迎える年齢 / shop：章末の店の値段（名声＝戦闘の★の合計） / regions：中盤・終盤の入口で選ぶ地方（変異種の種類が決まる） */
+  const ROGUE = {
+    legacyAge: 28,
+    shop: { heal: 3, equip: 5, recruit: 4, train: 3 },
+    regions: { swarm: { name: '獣の森', desc: '変異種は「群れ」。ひとりを狙う攻撃が、2回のランダム攻撃になる。' }, poison: { name: '毒の沼地', desc: '変異種は「毒」。攻撃がすべて防無効になる。' }, armor: { name: '鉄の砦', desc: '変異種は「鎧」。防御が高いが、HPは少なめ。' } }
+  };
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, sta: 0, ent: 1 },
     { max: 34, key: 'prime', label: '盛り', mul: 1, sta: 0, ent: 1 },
@@ -4552,12 +4567,14 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     rest: () => ({ ico: ICON.heart, t: '休息と稽古', d: '全員のHPが全快し、若手は攻撃+' + RUN.restAtk + '。' + (isFull() ? '' : '入団希望者も訪ねてくる。'), tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまの団員HP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] }),
     inherit: () => ({ ico: ICON.rot, t: '継承', d: 'ベテランの突入技を若手に受け継がせる（攻撃+' + RUN.inhAtk + '・最大HP+' + RUN.inhHp + '）。', tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまの団員HP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] })
   };
-  function newRun(sqId) {
+  function newRun(sqId, legacy) {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
     const sq = typeof sqId === 'string' ? SQUADS.find((x) => x.id === sqId) : null;
     run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std', gen: metaLoad().runs + 1 };
     const form = sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]);
     form.forEach(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
+    if (legacy) legacyJoin(legacy);
+    run.fame = 0; run.spent = 0; run.region = [];
     roster = run.members;
     grid = runGrid();
     run.map = routeFill();
@@ -4684,7 +4701,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (o.map) routeRefresh();
     $('rvCards').__on = o.on;
     const v = $('runv');
-    v.hidden = false; v.classList.toggle('is-map', !!o.map); v.classList.toggle('is-squad', !!o.squad);
+    v.hidden = false; v.classList.toggle('is-map', !!o.map); v.classList.toggle('is-squad', !!o.squad); v.classList.toggle('is-legacy', !!o.legacy);
     v.style.setProperty('--rr', (o.roster || (run ? run.members : [])).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
@@ -4737,7 +4754,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     try { o = JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e) { /* 保存できない環境 */ }
     o = o && typeof o === 'object' ? o : {};
     const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [] };
+    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [], legacyCands: Array.isArray(o.legacyCands) ? o.legacyCands : [], legacyFrom: +o.legacyFrom || 0 };
     return metaMem;
   }
   const metaSave = () => { try { localStorage.setItem(META_KEY, JSON.stringify(metaMem)); } catch (e) { /* 保存できない環境 */ } };
@@ -4781,8 +4798,76 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
         if (i < 0) { $('runv').hidden = true; goTitle(); return; }
         const sq = list[i];
         if (!squadOpen(sq.id, metaLoad())) { if (squadBuy(sq.id)) SFX.event(); showSquads(sq.name + 'を勲章で解禁した。'); return; }
-        $('runv').hidden = true; beginMain(sq.id === 'std' ? null : sq.id);
+        chooseLegacy(sq.id === 'std' ? null : sq.id);
       } });
+  }
+  /* --- 語り継がれる者（Into the Breach の時間旅行者）：本番の終わりに残った団員・引退した団員から1人を次の代へ。
+     稽古・継承・素質・装備は保ち、年齢は ROGUE.legacyAge に戻って、同じ職業（無ければ同じ役割、無ければ最後）の初期団員と入れ替わる --- */
+  const legacySnap = (m) => ({ job: m.job, name: m.name, trait: m.trait || null, bonus: Object.assign({}, m.bonus), equips: (m.equips || []).slice(), inherit: m.inherit || null, age: m.age, fate: m.fate || null });
+  function legacyNote(c) {
+    const b = c.bonus || {}, parts = [];
+    if (b.atk) parts.push('攻撃' + (b.atk > 0 ? '+' : '') + b.atk);
+    if (b.hp) parts.push('最大HP' + (b.hp > 0 ? '+' : '') + b.hp);
+    if (c.equips && c.equips.length) parts.push(c.equips.join('・'));
+    if (c.inherit) parts.push('継承「' + String(c.inherit.name || '').replace('継承・', '') + '」');
+    if (c.trait && TRAITS[c.trait]) parts.push('素質「' + (TRAITS[c.trait].name || c.trait) + '」');
+    return parts.length ? parts.join('　') : '鍛えた能力はまだ無い';
+  }
+  function legacyJoin(c) {
+    const i0 = run.members.findIndex((m) => m.job === c.job), cls = (JOBS.find((j) => j.id === c.job) || {}).cls;
+    const i1 = i0 >= 0 ? i0 : run.members.findIndex((m) => m.cls === cls), i = i1 >= 0 ? i1 : run.members.length - 1;
+    const old = run.members[i], m = newMember(c.job, ROGUE.legacyAge, c.trait);
+    m.name = c.name; m.bonus = Object.assign({}, c.bonus); m.equips = (c.equips || []).slice(); m.inherit = c.inherit || null; m.legacy = c.from || true;
+    m.r = old.r; m.c = old.c; m.joinYear = 1; applyAge(m, true);
+    run.members[i] = m; run.legacy = m.name;
+    run.events.push('1年　' + m.name + '（' + m.jname + '）が' + (c.from ? '第' + c.from + '代から' : '') + '語り継がれた');
+  }
+  let legacySel = null;
+  function chooseLegacy(sqId) {
+    const m = metaLoad();
+    if (!m.legacyCands.length) { $('runv').hidden = true; beginMain(sqId); return; }
+    legacySel = null;
+    const cands = m.legacyCands.map((c) => { const j = JOBS.find((x) => x.id === c.job) || JOBS[0]; return { job: c.job, cls: j.cls, name: c.name, phase: AGE_PH.find((p) => c.age <= p.max).key, age: c.age, fate: c.fate === 'retired' ? 'retired' : null, hp: 1, max: 1 }; });
+    const show = () => rvShow({ small: '第' + (m.runs + 1) + '代の騎士団', legacy: true, title: '語り継ぐ者を選ぶ', sub: '第' + (m.legacyFrom || m.runs) + '代から1人。能力はそのまま、' + ROGUE.legacyAge + '歳に戻る。', roster: cands, calm: true,
+      cards: [legacySel == null ? { ico: ICON.rot, t: '上の団員から1人を選ぶ', d: '同じ職業の初期団員と入れ替わる。', disabled: true } : { ico: '<span class="uc-disc c-' + cands[legacySel].cls + '">' + ageArt(cands[legacySel].job, 'prime') + '</span>', t: cands[legacySel].name + 'を連れていく', d: legacyNote(m.legacyCands[legacySel]) }],
+      skip: '連れていかない',
+      on: (i) => { $('runv').hidden = true; beginMain(sqId, i >= 0 && legacySel != null ? Object.assign({}, m.legacyCands[legacySel], { from: m.legacyFrom || m.runs }) : null); } });
+    show();
+    $('rvRoster').querySelectorAll('.rv-m').forEach((el, k) => { el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.lg = k; if (k === legacySel) el.classList.add('pick'); });
+    $('rvRoster').__lg = (k) => { legacySel = k; SFX.page(); chooseLegacyRedraw(); };
+    function chooseLegacyRedraw() { show(); $('rvRoster').querySelectorAll('.rv-m').forEach((el, k) => { el.setAttribute('role', 'button'); el.tabIndex = 0; el.dataset.lg = k; if (k === legacySel) el.classList.add('pick'); }); }
+  }
+  $('rvRoster').addEventListener('click', (ev) => { const el = ev.target.closest('[data-lg]'); if (el && $('runv').classList.contains('is-legacy') && $('rvRoster').__lg) $('rvRoster').__lg(+el.dataset.lg); });
+  $('rvRoster').addEventListener('keydown', (ev) => { const el = ev.target.closest && ev.target.closest('[data-lg]'); if (el && (ev.key === 'Enter' || ev.key === ' ') && $('runv').classList.contains('is-legacy') && $('rvRoster').__lg) { ev.preventDefault(); $('rvRoster').__lg(+el.dataset.lg); } });
+  /* --- 章末の店（Into the Breach の島の精算）：戦闘の★を名声として貯め、地点3・6の砦のあとで使う --- */
+  const fameLeft = () => Math.max(0, (run.fame || 0) - (run.spent || 0));
+  function runShop(pre, done) {
+    const P = ROGUE.shop, bought = new Set(), log = [];
+    const eqs = equipCands(), rec = isFull() ? null : recruitCards(1)[0];
+    const items = [
+      { id: 'heal', ico: ICON.heart, t: '手当て', d: '全員のHPが全快する。', ok: () => run.members.some((m) => m.hp < m.max), act: () => { run.members.forEach((m) => { m.hp = m.max; }); SFX.heal(); return '手当てをした。全員のHPが全快した。'; } },
+      eqs.length ? { id: 'equip', ico: ICON.sword, t: '装備　' + eqs[0][0].name, d: eqs[0][1].name + '（' + eqs[0][1].jname + '）に。' + eqs[0][0].desc, ok: () => true, act: () => equipCard(eqs[0]).act() } : null,
+      rec ? { id: 'recruit', ico: '<span class="uc-disc c-' + JOBS.find((j) => j.id === rec.job).cls + '">' + ageArt(rec.job, 'young') + '</span>', t: '入団者を雇う　' + rec.name, d: JOBS.find((j) => j.id === rec.job).name + '・' + rec.age + '歳' + (rec.trait && TRAITS[rec.trait] ? '・素質「' + (TRAITS[rec.trait].name || rec.trait) + '」' : '') + '。', ok: () => !isFull(), act: () => addRecruit(rec) } : null,
+      { id: 'train', ico: ICON.rot, t: '稽古', d: '若手の攻撃+' + RUN.restAtk + '。', ok: () => run.members.some((m) => m.phase === 'young'), act: () => trainYoung() || '稽古をした。' }
+    ].filter(Boolean);
+    const draw = () => {
+      const left = fameLeft();
+      const cards = items.map((it) => { const has = bought.has(it.id), can = !has && left >= P[it.id] && it.ok(); return { ico: it.ico, t: it.t, d: it.d, tags: [{ t: has ? '購入済み' : '名声 ' + P[it.id], k: has ? 'calm' : can ? 'bt' : 'foe' }], disabled: !can }; });
+      rvShow({ squad: true, noRoster: true, title: '章の終わり：名声を使う', sub: '名声 ' + left + '　（戦闘の★の合計。残りは次の店へ）', events: log.length ? log.slice(0, 1) : (pre || []).slice(0, 1), cards, skip: '出発する',
+        on: (i) => { if (i < 0) { done((pre || []).concat(log)); return; } const it = items[i]; run.spent = (run.spent || 0) + P[it.id]; bought.add(it.id); log.unshift(it.act()); draw(); } });
+    };
+    draw();
+  }
+  /* --- 地方を選ぶ（Into the Breach の島選び）：中盤・終盤の入口で、その章の変異種の種類を決める。変異種が出る地点の数は変わらない --- */
+  function runRegion(pre, done) {
+    const ch = RUN.forced[run.node] + 1, used = run.region || [], keys = Object.keys(ROGUE.regions).filter((k) => !used.includes(k));
+    const cards = keys.map((k) => { const r = ROGUE.regions[k], v = VARIANTS[k]; return { ico: '<span class="ev-var" style="--vf:' + (v.f || 'none') + '">' + EART[Math.min(ch, 2)] + '</span>', t: r.name, d: r.desc, tags: [{ t: TIER_LABEL[ch] + 'の地方', k: 'foe' }, { t: v.pre.replace('の', '') + 'の敵', k: 'var' }] }; });
+    rvShow({ squad: true, noRoster: true, title: TIER_LABEL[ch] + '、どの地方へ？', sub: 'この章の変異種は、選んだ地方のものになる。', events: (pre || []).slice(0, 1), cards,
+      on: (i) => { const k = keys[i]; run.region = used.concat(k); regionApply(ch, k); run.events.push(run.year + '年　' + ROGUE.regions[k].name + 'へ'); done(['騎士団は' + ROGUE.regions[k].name + 'へ向かった。']); } });
+  }
+  function regionApply(ch, k) {
+    Object.keys(ROUTE.nodes).forEach((id) => { const n = ROUTE.nodes[id]; if (n.ch === ch && (n.kind === 'battle' || n.kind === 'fort') && run.map[id] && run.map[id].variant) run.map[id].variant = k; });
+    run.choices = routeChoices();
   }
   // 実績と歴代の騎士団（Into the Breach のタイムラインのように、1回の本番を「第N代」として残す）
   function showRecords() {
@@ -4808,7 +4893,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     runSave();
     if (step === RUN.nodes) Music.warmBoss();
     const cards = run.choices.map((c) => CARD_INFO[c.type](c));
-    rvShow({ map: true, title: run.choices.length > 1 ? 'どちらへ進む？' : (run.choices[0].boss ? '最後の戦い' : '避けられない戦い'), sub: step === RUN.nodes ? '大災厄が迫る。騎士団の最後の戦い。' : '', events, cards, on: (i) => { if (runEnter(run.choices[i]) === false) runShowMap(['その道へは進めない。']); } });
+    rvShow({ map: true, title: run.choices.length > 1 ? 'どちらへ進む？' : (run.choices[0].boss ? '最後の戦い' : '避けられない戦い'), sub: step === RUN.nodes ? '大災厄が迫る。騎士団の最後の戦い。' : ((run.region || []).length ? ROGUE.regions[run.region[run.region.length - 1]].name + '　·　' : '') + '名声 ' + fameLeft(), events, cards, on: (i) => { if (runEnter(run.choices[i]) === false) runShowMap(['その道へは進めない。']); } });
   }
   function trainYoung() {
     const ys = run.members.filter((m) => m.phase === 'young');
@@ -4956,11 +5041,16 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     SFX.year(grown.length);
     if (retired) { run.members.forEach((m) => applyAge(m, false)); setTimeout(() => SFX.retire(), RM ? 0 : 1500); }
     if (!run.members.length) { runEnd(false); return; }
-    run.choices = routeChoices();
-    run.nextChoices = null;
-    const st = run.node + 1;
-    if (RUN.forced[st] == null && st < RUN.nodes && rnd() < RUN.eventRate) { runEvent(events); return; }
-    runShowMap(events);
+    const tail = (ev) => {
+      run.choices = routeChoices();
+      run.nextChoices = null;
+      const st = run.node + 1;
+      if (RUN.forced[st] == null && st < RUN.nodes && rnd() < RUN.eventRate) { runEvent(ev); return; }
+      runShowMap(ev);
+    };
+    // 章の終わり（地点3・6の砦のあと）：名声の店 → 次の章の地方を選ぶ
+    if (RUN.forced[run.node] != null && run.node < RUN.nodes) { runShop(events, (ev) => runRegion(ev, tail)); return; }
+    tail(events);
   }
   // 先読みしていた選択肢が、いまも選べるか確かめる（継承できる組み合わせが消えていたら休息に）
   function fixChoices(list) {
@@ -5004,6 +5094,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     const alive = run.members.length, ret = run.gone.filter((m) => m.fate === 'retired').length, fal = run.gone.filter((m) => m.fate === 'fallen').length;
     run.summary = { clear, alive, ret, fal, years: run.year, node: run.node, reach: clear ? RUN.nodes : Math.min(run.node + 1, RUN.nodes), gen: run.gen };
     run.unlocked = []; run.newAch = []; run.newSquads = [];
+    { const mm = metaLoad(); mm.legacyCands = run.members.concat(run.gone.filter((m) => m.fate === 'retired')).slice(0, 12).map(legacySnap); mm.legacyFrom = run.gen || 0; }
     metaRecord(run.summary, run.squad).forEach((a) => { run.newAch.push(a.t); run.unlocked.push('実績「' + a.t + '」　勲章+1'); if (a.squad) { run.newSquads.push(squadName(a.squad)); run.unlocked.push('新しい騎士団が解禁された：' + squadName(a.squad)); } });
     coverProgress();
     if (clear) { showEnding(); return; }
@@ -5017,9 +5108,10 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('coach').hidden = true; $('spot').hidden = true; $('resultAlt').hidden = true;
     if (!$('board').children.length) buildBoard();
   }
-  function beginMain(sqId) {
+  function beginMain(sqId, legacy) {
     enterRun();
-    newRun(sqId);
+    newRun(sqId, legacy);
+    { const mm = metaLoad(); if (mm.legacyCands && mm.legacyCands.length) { mm.legacyCands = []; metaSave(); } }
     battleIdx = 0; run.enemy = runEnemy(1).def;
     toPrep(false);
     if (!$('cover').hidden) closeCover();
