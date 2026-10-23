@@ -53,6 +53,8 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m);
   // 7/9 進行・保存・復元
   await ev(() => { const R = window.__rb, run = R.run; run.hist[0] = 'battle'; R.runAdvance([]); });
   await p.waitForTimeout(600);
+  await ev(() => window.__rb.runShowMap([]));  // 小さな出来事（35%）が挟まる回があるので、保存される地図画面を必ず通す
+  await p.waitForTimeout(300);
   const m = await ev(() => { const R = window.__rb; return { path: R.run.path, choices: R.run.choices.map((c) => c.rid), next: R.ROUTE.nodes[R.run.path[0]].next, saved: JSON.parse(localStorage.getItem('rb-run-save')).run.path, done: document.querySelectorAll('#rvTrack .rt-n.done:not(.mk)').length }; });
   ok(m.path.length === 1 && m.path[0] === firstId, '7. 地点を終えると、通った道に記録される');
   ok(JSON.stringify(m.choices.slice().sort()) === JSON.stringify(m.next.slice().sort()), '5. 次の選択肢は、新しい現在地の接続先そのもの');
