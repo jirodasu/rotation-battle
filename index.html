@@ -224,6 +224,12 @@ body.is-cover .app { opacity: 0; pointer-events: none; }
 .icon-btn svg { width: 18px; height: 18px; }
 .icon-btn[aria-pressed="false"] { color: var(--ink-soft); }
 .icon-btn[aria-pressed="false"] .wave { display: none; }
+.icon-btn.spd .disp { font-size: 14px; line-height: 1; }
+.icon-btn.spd[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+body.fast .pop { animation-duration: 0.48s; }
+body.fast .pop.big, body.fast .pop.sub { animation-duration: 0.65s; }
+body.fast .ebar b { transition-duration: 0.35s; transition-delay: 0.22s; }
+body.fast .ebar i { transition-duration: 0.18s; }
 
 /* ---------- 敵の舞台 ---------- */
 .stage { position: relative; flex: 1 1 226px; min-height: 206px; max-height: 330px; }
@@ -1800,6 +1806,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     <button class="icon-btn" id="homeBtn" type="button" aria-label="タイトルへ戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h4.5v-5.5h3V20H18V9.5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="top-r">
       <span class="chip" id="chipTurn">第1戦　ターン1</span>
+      <button class="icon-btn spd" id="spdBtn" type="button" aria-pressed="false" aria-label="戦闘を2倍速にする"><span class="disp">×2</span></button>
       <button class="icon-btn" id="helpBtn" type="button" aria-label="あそびかた"><span class="disp" style="font-size:17px;line-height:1">？</span></button>
       <button class="icon-btn" id="snd" type="button" aria-pressed="true" aria-label="効果音">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="wave" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -1865,7 +1872,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.18</p>
+    <p class="c-ver" id="cVer">ver 5.1.19</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1970,7 +1977,19 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = (id) => document.getElementById(id);
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-  const wait = (ms) => sleep(RM ? Math.min(ms, 80) : ms);
+  /* 戦闘2倍速：待ち時間と演出（Web Animations・CSS）をまとめて速くする。戦闘の進行中だけ効く */
+  let SPD = 1;
+  try { if (localStorage.getItem('rb-fast') === '1') SPD = 2; } catch (e) { /* 保存できない環境 */ }
+  const wait = (ms) => sleep((RM ? Math.min(ms, 80) : ms) / SPD);
+  (function () {
+    const orig = Element.prototype.animate;
+    if (!orig) return;
+    Element.prototype.animate = function () {
+      const a = orig.apply(this, arguments);
+      try { if (SPD !== 1 && (phase === 'resolve' || phase === 'choose')) a.playbackRate = SPD; } catch (e) { /* 対象外 */ }
+      return a;
+    };
+  })();
 
   /* ============ イラスト（切り紙風・SVG） ============ */
   const INK = '#23314a';
@@ -2139,7 +2158,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.18';
+  const APP_VERSION = '5.1.19';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3356,7 +3375,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('fx').appendChild(p);
     const hw = p.offsetWidth / 2, vw = document.documentElement.clientWidth;
     if (hw > 0) p.style.left = Math.min(Math.max(c.x + (dx || 0), hw + 8), vw - hw - 8) + 'px';
-    setTimeout(() => p.remove(), /big|sub/.test(cls || '') ? 1400 : 1000);
+    setTimeout(() => p.remove(), (/big|sub/.test(cls || '') ? 1400 : 1000) / SPD);
   }
   function shake(el, amp) {
     const a = amp || 7;
@@ -3912,7 +3931,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     ic.className = 'spinicon'; ic.innerHTML = ICON.rot;
     board.appendChild(ic);
     anim(ic, [{ transform: 'rotate(-120deg) scale(.4)', opacity: 0 }, { transform: 'rotate(0deg) scale(1.1)', opacity: 1, offset: 0.35 }, { transform: 'rotate(260deg) scale(1)', opacity: 0 }], { duration: 900, easing: 'ease-out' });
-    setTimeout(() => ic.remove(), 950);
+    setTimeout(() => ic.remove(), 950 / SPD);
     const jobs = [];
     board.querySelectorAll('.tok[data-id]').forEach((t) => {
       const o = old[t.dataset.id];
@@ -4215,6 +4234,15 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (!tutBtnOk('btnPreview')) { tutNudge(); return; }
     previewOn = !previewOn; inspect = null; SFX.tap(); render();
     tutAdvance();
+  });
+  function spdSync() {
+    $('spdBtn').setAttribute('aria-pressed', String(SPD === 2));
+    document.body.classList.toggle('fast', SPD === 2);
+  }
+  spdSync();
+  $('spdBtn').addEventListener('click', () => {
+    SPD = SPD === 2 ? 1 : 2; spdSync();
+    try { localStorage.setItem('rb-fast', SPD === 2 ? '1' : '0'); } catch (e) { /* 保存できない環境 */ }
   });
   $('snd').setAttribute('aria-pressed', String(sndOn));
   $('snd').addEventListener('click', () => {
