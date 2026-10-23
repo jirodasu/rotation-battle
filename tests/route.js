@@ -46,6 +46,10 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m);
   await p.click('#rvGo'); await p.waitForTimeout(900);
   ok(await ev((id) => document.getElementById('runv').hidden && window.__rb.run.pendId === id, firstId), '確定すると、選んだ領地の戦闘（準備画面）へ進む');
 
+  // 敵の攻撃予告の赤枠は、ダメージを受ける仲間のマスだけ（列全体ではない）
+  const bm = await ev(() => { const on = [...document.querySelectorAll('.beam.on')], mb = [...document.querySelectorAll('.beam.maybe')], g = window.__rb.grid; let fr = -1; for (let r = 0; r < 3 && fr < 0; r++) if (g[r].some(Boolean)) fr = r; return { n: on.length + mb.length, rows: [...on, ...mb].map((b) => b.style.gridRow), fr, front: g[fr] ? g[fr].filter(Boolean).length : 0, same: [...on, ...mb].every((b) => g[fr][+b.dataset.c]) }; });
+  ok(bm.n >= 1 && bm.n <= bm.front && bm.rows.every((r) => r === (bm.fr + 2) + ' / ' + (bm.fr + 3)) && bm.same, '予告の赤枠は、一番前の列の仲間のマスだけに出る（' + bm.n + '枠・前列' + bm.front + '人）');
+
   // 7/9 進行・保存・復元
   await ev(() => { const R = window.__rb, run = R.run; run.hist[0] = 'battle'; R.runAdvance([]); });
   await p.waitForTimeout(600);
