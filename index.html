@@ -1716,7 +1716,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .runv.is-squad > .r-card { display: flex; flex-direction: column; width: min(520px, 100%); align-items: stretch; }
 .runv.is-squad > .r-card > small, .runv.is-squad > .r-card > h2, .runv.is-squad > .r-card > p { align-self: center; text-align: center; }
 .runv.is-squad .rv-cards { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; width: 100%; margin: 0; grid-column: auto; grid-row: auto; }
-.runv.is-squad .rv-main, .runv.is-squad .rv-left, .runv.is-squad .rv-right { display: block !important; }
+.runv.is-squad .rv-main, .runv.is-squad .rv-left { display: block !important; }
+.runv.is-squad .rv-right { display: flex !important; flex-direction: column; gap: 8px; }
 .runv.is-squad .rv-cards > .rv-card { padding: 9px 12px; }
 .runv.is-squad .rv-cards > .rv-card[disabled] { opacity: 0.62; }
 .runv.is-squad .rv-skip { grid-column: 1 / -1; justify-self: center; width: min(100%, 320px); }
@@ -1746,6 +1747,21 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 @media (min-aspect-ratio: 6/5) and (min-width: 560px) and (max-height: 340px) {
   .runv.is-squad .rv-cards > .rv-card:not([disabled]) .rv-txt > span:not(.rv-tags) { display: none; }
 }
+/* 実績と記録の画面、選択画面の下のボタン2つ */
+.runv .rv-btnrow { grid-column: 1 / -1; display: flex; gap: 8px; justify-content: center; width: 100%; }
+.runv .rv-btnrow .rv-skip { flex: 1 1 0; width: auto !important; max-width: 240px; margin: 0; }
+.runv .rec { display: grid; gap: 10px 22px; width: 100%; text-align: left; }
+.runv .rec h3 { margin: 0 0 4px; font-size: 13px; letter-spacing: 0.08em; color: var(--ink-soft); }
+.runv .rec ul, .runv .rec ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.runv .rec li { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 12.5px; line-height: 1.35; white-space: nowrap; }
+.runv .rec li span { min-width: 0; overflow: hidden; text-overflow: ellipsis; color: var(--ink-soft); font-size: 11.5px; }
+.runv .rec li b { flex: none; }
+.runv .rec-ach li i { flex: none; width: 9px; height: 9px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px var(--paper-line); align-self: center; }
+.runv .rec-ach li.on i { background: var(--rubric, #9a2a1b); box-shadow: none; }
+.runv .rec-ach li:not(.on) b { color: var(--ink-soft); font-weight: 500; }
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) { .runv .rec { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+@media (max-height: 400px) { .runv .rec ul, .runv .rec ol { gap: 1px; } .runv .rec li { font-size: 11.5px; line-height: 1.3; } .runv .rec li span { font-size: 10.5px; } .runv .rec h3 { margin-bottom: 2px; font-size: 12px; } }
+@media (max-height: 340px) { .runv .rec li { line-height: 1.2; } .runv .rec { row-gap: 4px; } }
 /* @@SQUAD-END@@ */
 </style>
 </head>
@@ -1841,7 +1857,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.16</p>
+    <p class="c-ver" id="cVer">ver 5.1.17</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2115,7 +2131,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.16';
+  const APP_VERSION = '5.1.17';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4252,7 +4268,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     let row = '';
     for (let i = 0; i < total; i++) row += '<i class="' + (i < got ? 'on' : '') + '">' + STAR + '</i>';
     const fallenN = S ? run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name) : [], mentorN = S ? Object.values(run.mentors || {}).map((m) => m.name + '（' + m.jname + '）') : [];
-    $('enScore').innerHTML = S ? '<p>騎士団 ' + run.year + '年　生還 ' + S.alive + '人　引退 ' + S.ret + '人　戦死 ' + S.fal + '人' + (fallenN.length ? '<br>眠る者　' + fallenN.join('・') : '') + (mentorN.length ? '<br>教官　' + mentorN.join('・') : '') + (run.unlocked && run.unlocked.length ? '<br><b>' + run.unlocked.join('<br>') + '</b>' : '') + '</p>' : '<div class="en-stars" aria-label="今回の★ ' + got + ' / ' + total + '">' + row + '</div>' +
+    $('enScore').innerHTML = S ? '<p>' + (run.gen ? '第' + run.gen + '代 ' : '') + '騎士団 ' + run.year + '年　生還 ' + S.alive + '人　引退 ' + S.ret + '人　戦死 ' + S.fal + '人' + (fallenN.length ? '<br>眠る者　' + fallenN.join('・') : '') + (mentorN.length ? '<br>教官　' + mentorN.join('・') : '') + (run.newAch && run.newAch.length ? '<br><b>実績+' + run.newAch.length + '（勲章+' + run.newAch.length + '）' + (run.newSquads.length ? '　解禁：' + run.newSquads.map((n) => n.replace('の騎士団', '')).join('・') + 'の騎士団' : '') + '</b>' : '') + '</p>' : '<div class="en-stars" aria-label="今回の★ ' + got + ' / ' + total + '">' + row + '</div>' +
       '<p>今回 ★' + got + ' / ' + total + '　合計 ' + camp.turns + 'ターン　倒れた仲間 ' + camp.fallen + '人<br>ベスト ★' + best + ' / ' + total + '</p>';
     en.hidden = false;
     en.querySelectorAll('[style*="--d"], .en-bottom, .en-title, .en-skip').forEach((x) => { x.style.animation = 'none'; void x.offsetWidth; x.style.animation = ''; });
@@ -4539,7 +4555,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function newRun(sqId) {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
     const sq = typeof sqId === 'string' ? SQUADS.find((x) => x.id === sqId) : null;
-    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std' };
+    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std', gen: metaLoad().runs + 1 };
     const form = sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]);
     form.forEach(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
     roster = run.members;
@@ -4661,9 +4677,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     routeSel = o.map && o.cards.length === 1 ? 0 : null;
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
-    $('rvEvents').innerHTML = eventsHTML(o.events || [], o.openLog);
+    $('rvEvents').innerHTML = o.body || eventsHTML(o.events || [], o.openLog);
     $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card' + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b><span>' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
-      (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') +
+      (o.aux ? '<div class="rv-btnrow">' : '') + (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') + (o.aux ? '<button type="button" class="btn rv-skip rv-aux" data-i="-2">' + o.aux + '</button></div>' : '') +
       (o.map ? '<button type="button" class="btn primary rv-go" id="rvGo" data-go="1"></button>' : '');
     if (o.map) routeRefresh();
     $('rvCards').__on = o.on;
@@ -4699,47 +4715,83 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   });
   /* --- 騎士団の解禁：周回の記録。途中保存とは別の追加項目（rb-meta）で、実績を満たすと新しい騎士団が選べるようになる --- */
   const META_KEY = 'rb-meta';
+  // 実績（Into the Breach 式）：全体の実績と騎士団ごとの実績。負けた本番でも取れるものがある。1つにつき勲章1枚。
+  // squad がある実績は、満たすとその騎士団が解禁される。id は保存に使うので変えない
   const ACHS = [
     { id: 'clear', t: '30年を完遂', d: '騎士団の30年をクリアする', squad: 'vanguard', ok: (S) => S.clear },
     { id: 'few', t: 'ほとんど欠けず', d: '戦死3人以下でクリアする', squad: 'bulwark', ok: (S) => S.clear && S.fal <= 3 },
-    { id: 'two', t: '二つの旗', d: '攻めと護り、どちらの騎士団でもクリアする', squad: 'veterans', ok: (S, m) => !!(m.won.vanguard && m.won.bulwark) }
+    { id: 'two', t: '二つの旗', d: '攻めと護り、どちらの騎士団でもクリアする', squad: 'veterans', ok: (S, m) => !!(m.won.vanguard && m.won.bulwark) },
+    { id: 'mid', t: '中盤を越えて', d: '地点7までたどり着く（負けてもよい）', ok: (S) => S.reach >= 7 },
+    { id: 'nofall', t: '誰も欠けず', d: '戦死0人でクリアする', ok: (S) => S.clear && S.fal === 0 },
+    { id: 'w_std', t: '標準の誉れ', d: '標準の騎士団でクリアする', ok: (S, m, sq) => S.clear && sq === 'std' },
+    { id: 'w_vanguard', t: '速攻の誉れ', d: '攻めの騎士団でクリアする', ok: (S, m, sq) => S.clear && sq === 'vanguard' },
+    { id: 'w_bulwark', t: '堅守の誉れ', d: '護りの騎士団でクリアする', ok: (S, m, sq) => S.clear && sq === 'bulwark' },
+    { id: 'w_veterans', t: '老練の誉れ', d: '老練の騎士団でクリアする', ok: (S, m, sq) => S.clear && sq === 'veterans' }
   ];
+  // 勲章で騎士団を買うときの枚数（条件を満たさなくても解禁できる）
+  const SQUAD_PRICE = { vanguard: 3, bulwark: 4, veterans: 6 };
   let metaMem = null;
   function metaLoad() {
     if (metaMem) return metaMem;
     let o = null;
     try { o = JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e) { /* 保存できない環境 */ }
     o = o && typeof o === 'object' ? o : {};
-    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: o.won && typeof o.won === 'object' ? o.won : {}, ach: o.ach && typeof o.ach === 'object' ? o.ach : {} };
+    const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [] };
     return metaMem;
   }
   const metaSave = () => { try { localStorage.setItem(META_KEY, JSON.stringify(metaMem)); } catch (e) { /* 保存できない環境 */ } };
-  const squadOpen = (id, m) => id === 'std' || ACHS.some((a) => a.squad === id && m.ach[a.id]);
-  // 1回の本番が終わるたびに呼ぶ。新しく満たした実績を返す
+  const squadOpen = (id, m) => id === 'std' || !!m.bought[id] || ACHS.some((a) => a.squad === id && m.ach[a.id]);
+  const medals = (m) => Math.max(0, ACHS.filter((a) => m.ach[a.id]).length - m.spent);
+  function squadBuy(id) {
+    const m = metaLoad(), price = SQUAD_PRICE[id];
+    if (!price || squadOpen(id, m) || medals(m) < price) return false;
+    m.bought[id] = 1; m.spent += price; metaSave();
+    return true;
+  }
+  // 1回の本番が終わるたびに呼ぶ。新しく満たした実績を返し、歴代の騎士団に1行残す
   function metaRecord(S, sqId) {
-    const m = metaLoad(), got = [];
+    const m = metaLoad(), got = [], sq = sqId || 'std';
     m.runs++;
-    if (S.clear) { m.clears++; m.won[sqId || 'std'] = (m.won[sqId || 'std'] || 0) + 1; }
-    ACHS.forEach((a) => { if (!m.ach[a.id] && a.ok(S, m)) { m.ach[a.id] = 1; got.push(a); } });
+    if (S.clear) { m.clears++; m.won[sq] = (m.won[sq] || 0) + 1; }
+    ACHS.forEach((a) => { if (!m.ach[a.id] && a.ok(S, m, sq)) { m.ach[a.id] = 1; got.push(a); } });
+    m.hist.unshift({ gen: S.gen || m.runs, sq, clear: !!S.clear, reach: S.reach, years: S.years, fal: S.fal, ret: S.ret });
+    m.hist = m.hist.slice(0, 20);
     metaSave();
     return got;
   }
   const squadList = () => [{ id: 'std', name: '標準の騎士団', tag: '標準', desc: '戦士・騎士・サムライ・魔女ほか基本の7人。', form: DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]) }].concat(SQUADS);
+  const squadName = (id) => (squadList().find((q) => q.id === id) || squadList()[0]).name;
   // 本番の開始：一度でも本番を終えていれば騎士団を選ぶ。はじめては標準の騎士団でそのまま始める
   function startFlow() { if (metaLoad().runs > 0) showSquads(); else beginMain(); }
-  function showSquads() {
-    const m = metaLoad(), list = squadList();
+  function showSquads(note) {
+    const m = metaLoad(), list = squadList(), have = medals(m);
     const cards = list.map((sq) => {
-      const open = squadOpen(sq.id, m), a = ACHS.find((x) => x.squad === sq.id), lead = JOBS.find((j) => j.id === sq.form[0][0]);
+      const open = squadOpen(sq.id, m), a = ACHS.find((x) => x.squad === sq.id), lead = JOBS.find((j) => j.id === sq.form[0][0]), price = SQUAD_PRICE[sq.id], can = !open && have >= price;
       return {
         ico: '<span class="uc-disc c-' + lead.cls + '">' + ageArt(lead.id, 'prime') + '</span>',
         t: sq.name, d: open ? sq.desc : '解禁：' + a.d + '。',
-        tags: open ? [{ t: sq.tag, k: sq.id === 'veterans' ? 'warn' : 'bt' }].concat(m.won[sq.id] ? [{ t: 'クリア済み', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }],
-        disabled: !open
+        tags: open ? [{ t: sq.tag, k: sq.id === 'veterans' ? 'warn' : 'bt' }].concat(m.won[sq.id] ? [{ t: 'クリア済み', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }, { t: can ? 'タップで勲章' + price + '枚を使って解禁' : 'または勲章' + price + '枚', k: can ? 'calm' : 'foe' }],
+        disabled: !open && !can
       };
     });
-    rvShow({ small: '騎士団　·　' + list.filter((sq) => squadOpen(sq.id, m)).length + ' / ' + list.length + ' 解禁', squad: true, title: 'どの騎士団で挑む？', sub: 'クリアすると、新しい騎士団が解禁される。', noRoster: true, calm: true, cards, skip: 'タイトルへ',
-      on: (i) => { $('runv').hidden = true; if (i >= 0) beginMain(list[i].id === 'std' ? null : list[i].id); else goTitle(); } });
+    rvShow({ small: '騎士団 ' + list.filter((sq) => squadOpen(sq.id, m)).length + ' / ' + list.length + ' 解禁　·　勲章 ' + have + '枚', squad: true, title: 'どの騎士団で挑む？', sub: note || '実績を満たすか、勲章を使うと、新しい騎士団が解禁される。', noRoster: true, calm: true, cards, skip: 'タイトルへ', aux: '実績と記録',
+      on: (i) => {
+        if (i === -2) { showRecords(); return; }
+        if (i < 0) { $('runv').hidden = true; goTitle(); return; }
+        const sq = list[i];
+        if (!squadOpen(sq.id, metaLoad())) { if (squadBuy(sq.id)) SFX.event(); showSquads(sq.name + 'を勲章で解禁した。'); return; }
+        $('runv').hidden = true; beginMain(sq.id === 'std' ? null : sq.id);
+      } });
+  }
+  // 実績と歴代の騎士団（Into the Breach のタイムラインのように、1回の本番を「第N代」として残す）
+  function showRecords() {
+    const m = metaLoad(), n = ACHS.filter((a) => m.ach[a.id]).length;
+    const ach = ACHS.map((a) => '<li class="' + (m.ach[a.id] ? 'on' : '') + '"><i></i><b>' + a.t + '</b><span>' + a.d + '</span></li>').join('');
+    const hist = m.hist.slice(0, 5).map((h) => '<li><b>第' + h.gen + '代</b>' + squadName(h.sq) + '<span>' + (h.clear ? '30年を完遂' : '地点' + h.reach + 'で眠る') + '　戦死' + h.fal + '人</span></li>').join('') || '<li><span>まだ記録がない</span></li>';
+    rvShow({ small: '実績 ' + n + ' / ' + ACHS.length + '　·　勲章 ' + medals(m) + '枚', squad: true, title: '実績と記録', noRoster: true, calm: true, openLog: true, cards: [], skip: 'もどる',
+      body: '<div class="rec"><section><h3>実績</h3><ul class="rec-ach">' + ach + '</ul></section><section><h3>歴代の騎士団</h3><ol class="rec-hist">' + hist + '</ol></section></div>',
+      on: () => showSquads() });
   }
   /* --- 途中保存：地点を選ぶ画面に来るたびに保存し、タイトルの「続きから」で再開 --- */
   const SAVE_KEY = 'rb-run-save';
@@ -4950,12 +5002,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     phase = 'over';
     runClearSave();
     const alive = run.members.length, ret = run.gone.filter((m) => m.fate === 'retired').length, fal = run.gone.filter((m) => m.fate === 'fallen').length;
-    run.summary = { clear, alive, ret, fal, years: run.year, node: run.node };
-    run.unlocked = metaRecord(run.summary, run.squad).map((a) => '新しい騎士団が解禁された：' + SQUADS.find((q) => q.id === a.squad).name + '（' + a.t + '）');
+    run.summary = { clear, alive, ret, fal, years: run.year, node: run.node, reach: clear ? RUN.nodes : Math.min(run.node + 1, RUN.nodes), gen: run.gen };
+    run.unlocked = []; run.newAch = []; run.newSquads = [];
+    metaRecord(run.summary, run.squad).forEach((a) => { run.newAch.push(a.t); run.unlocked.push('実績「' + a.t + '」　勲章+1'); if (a.squad) { run.newSquads.push(squadName(a.squad)); run.unlocked.push('新しい騎士団が解禁された：' + squadName(a.squad)); } });
     coverProgress();
     if (clear) { showEnding(); return; }
-    rvShow({ small: '騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)), calm: true, title: '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', roster: run.gone.concat(run.members), openLog: true,
-      events: run.events.slice(-8), cards: [{ ico: ICON.rot, t: 'もう一度、最初から', d: '新しい騎士団で30年に挑む。' }], skip: 'タイトルへ', on: (i) => { $('runv').hidden = true; if (i >= 0) startFlow(); else goTitle(); } });
+    rvShow({ small: '騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)), calm: true, title: (run.gen ? '第' + run.gen + '代の' : '') + '騎士団、ここに眠る', sub: '在籍した団員 ' + (alive + ret + fal) + '人　引退 ' + ret + '人　戦死 ' + fal + '人', roster: run.gone.concat(run.members), openLog: true,
+      events: run.unlocked.concat(run.events.slice(-Math.max(3, 8 - run.unlocked.length))), cards: [{ ico: ICON.rot, t: 'もう一度、最初から', d: (run.gen ? '第' + (run.gen + 1) + '代の' : '新しい') + '騎士団が旗を継ぐ。' }], skip: 'タイトルへ', on: (i) => { $('runv').hidden = true; if (i >= 0) startFlow(); else goTitle(); } });
   }
   function enterRun() {
     camp = { turns: 0, fallen: 0, stars: [], rec: [] };
