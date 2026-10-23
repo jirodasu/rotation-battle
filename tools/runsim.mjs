@@ -19,6 +19,7 @@ export const BOSS = grab('BOSS');
 const TRAITS = grab('TRAITS');
 const VARIANTS = grab('VARIANTS');
 export const SQUADS = grab('SQUADS');
+export const ROGUE = grab('ROGUE');
 let MENTORS = {}, CFG = RUN;
 const COLS = 4;
 
@@ -97,7 +98,16 @@ export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
   const sq = cfg.squad ? SQUADS.find((x) => x.id === cfg.squad) : null;
   const form = cfg.form ? cfg.form : sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, cfg.start[id]]);
   let members = form.map(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; return m; });
-  let fallen = 0, retired = 0, battles = 0;
+  // 語り継がれる者（cfg.legacy = 前の代の団員）：能力を保ったまま、同じ職業（無ければ同じ役割、無ければ最後）の初期団員と入れ替わる。年齢は cfg.legacyAge
+  if (cfg.legacy) {
+    const L = cfg.legacy, i0 = members.findIndex((m) => m.job === L.job), i1 = i0 >= 0 ? i0 : members.findIndex((m) => m.cls === JOBS.find((j) => j.id === L.job).cls), i = i1 >= 0 ? i1 : members.length - 1;
+    const m = newMember(L.job, cfg.legacyAge === 'slot' ? members[i].age : cfg.legacyAge || 25, L.trait); const half = (b) => Object.fromEntries(Object.entries(b || {}).map(([k, v]) => [k, Math.trunc(v / 2)])); m.bonus = cfg.legacyMode === 'half' ? half(L.bonus) : cfg.legacyMode === 'none' ? {} : Object.assign({}, L.bonus); m.equips = cfg.legacyMode === 'none' ? [] : (L.equips || []).slice(); m.inherit = cfg.legacyMode === 'none' ? null : L.inherit || null; m.r = members[i].r; m.c = members[i].c; applyAge(m, true); members[i] = m;
+  }
+  // 地方（cfg.regions = [中盤, 終盤] の変異種。cfg.regionPick = 'random' なら別の乱数で2つ選ぶ。本体の乱数の並びは変えない）
+  if (!cfg.regions && cfg.regionPick === 'random') { const R2 = rng(seed ^ 0x5bd1e995), ks = Object.keys(VARIANTS), a = ks.splice(Math.floor(R2() * ks.length), 1)[0]; cfg = Object.assign({}, cfg, { regions: [a, ks[Math.floor(R2() * ks.length)]] }); CFG = cfg; }
+  let fallen = 0, retired = 0, battles = 0, fame = 0, spent = 0;
+  const retiredList = [];
+  const fin = (o) => Object.assign(o, { members, retiredList, fame, spent });
   const pairs = () => { const v = members.filter((m) => m.age >= 40), y = members.filter((m) => m.age <= 24 && !m.inherit), o = []; v.forEach((a) => y.forEach((b) => { if (a !== b) o.push([a, b]); })); return o; };
   const TK = Object.keys(TRAITS), VK = Object.keys(VARIANTS);
   const recruit = () => { if (members.length < cfg.cap) members.push(newMember(pick(JOBS).id, 16 + Math.floor(R() * 4), R() < cfg.traitRate ? pick(TK) : null)); };
@@ -123,7 +133,8 @@ export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
       battles++;
       const fighters = pickSortie(members, cfg.sortie);
       place(fighters);
-      const en = runEnemy(step, cfg, step < cfg.nodes && R() < cfg.variantRate ? pick(VK) : null), bseed = Math.floor(R() * 1e9);
+      const vk = step < cfg.nodes && R() < cfg.variantRate ? pick(VK) : null, reg = cfg.regions ? (step >= 4 && step <= 6 ? cfg.regions[0] : step >= 7 ? cfg.regions[1] : null) : null;
+      const en = runEnemy(step, cfg, vk && reg ? reg : vk), bseed = Math.floor(R() * 1e9);
       const party = () => fighters.map((m) => Object.assign({}, m));
       if (strat.onBattle) strat.onBattle(en, party(), bseed, step);
       let res;
@@ -141,9 +152,10 @@ export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
       fighters.forEach((m) => { m.hp = res.hp[m.uid] != null ? res.hp[m.uid] : 0; });
       const dead = members.filter((m) => m.hp <= 0); fallen += dead.length;
       members = members.filter((m) => m.hp > 0);
-      if (!res.win || !members.length) return { clear: false, reached: step, fallen, retired, battles };
+      if (!res.win || !members.length) return fin({ clear: false, reached: step, fallen, retired, battles });
       const bench = members.filter((m) => !fighters.includes(m));
       members.forEach((m) => { m.hp = bench.includes(m) ? m.max : Math.min(m.max, m.hp + Math.ceil(m.max * cfg.afterHeal)); });
+      if (cfg.shop) fame += 1 + (res.fallen <= (en.allowFallen || 0) ? 1 : 0) + (res.turns <= (en.par || 99) ? 1 : 0);
       if (step < cfg.nodes) {
         if (strat.recruit !== false) recruit();
         const stars = res.fallen === 0 && res.turns <= (en.par || 99) ? 3 : 0;
@@ -158,14 +170,23 @@ export function playRun(seed, policy, strat = {}, cfg = RUN, log = null) {
       if (cfg.restRecruit && strat.recruit !== false) recruit();
     }
     else if (type === 'inherit') { const ps = pairs(); if (ps.length) inherit(pick(ps)); }
-    if (step === cfg.nodes) return { clear: true, reached: step, fallen, retired, battles };
+    if (step === cfg.nodes) return fin({ clear: true, reached: step, fallen, retired, battles });
     members.forEach((m) => { m.age += cfg.years; if (m.age < cfg.retire) applyAge(m, false); });
     const gone = members.filter((m) => m.age >= cfg.retire);
-    retired += gone.length;
+    retired += gone.length; retiredList.push(...gone);
     gone.forEach((m) => { MENTORS[m.job] = m.uid; });
     members = members.filter((m) => m.age < cfg.retire);
     if (gone.length) members.forEach((m) => applyAge(m, false));
-    if (!members.length) return { clear: false, reached: step, fallen, retired, battles };
+    if (!members.length) return fin({ clear: false, reached: step, fallen, retired, battles });
+    // 章末の店（cfg.shop = 値段）：地点3・6の戦いのあと。手当て→装備→入団→稽古の順に、名声が足りる分だけ買う
+    if (cfg.shop && cfg.forced[step] != null) {
+      const P = cfg.shop, buy = (k, f) => { if (fame - spent >= P[k] && f() !== false) spent += P[k]; };
+      const hpr = members.reduce((a, m) => a + m.hp, 0) / members.reduce((a, m) => a + m.max, 0);
+      if (hpr < 0.8) buy('heal', () => members.forEach((m) => { m.hp = m.max; }));
+      buy('equip', () => equip());
+      if (members.length < cfg.cap) buy('recruit', () => recruit());
+      buy('train', () => { const ys = members.filter((m) => phaseOf(m.age).key === 'young'); if (!ys.length) return false; ys.forEach((m) => { m.bonus.atk = (m.bonus.atk || 0) + cfg.restAtk; applyAge(m, false); }); });
+    }
     if (cfg.forced[step + 1] == null && step + 1 < cfg.nodes && R() < cfg.eventRate) event();
   }
 }
@@ -189,9 +210,11 @@ export function runReport(n = 300, cfg = RUN) {
   return out;
 }
 
+// ゲームと同じ設定（章末の店・地方選びあり）。RUN だけなら従来の測り方
+export const GAME = Object.assign({}, RUN, { shop: ROGUE.shop, regionPick: 'random' });
 if (process.argv[1] && /(^|[\\/])runsim\.mjs$/.test(process.argv[1])) {
   const n = +(process.argv[2] || 300);
-  const cfg = Object.assign({}, RUN, process.argv[3] ? JSON.parse(process.argv[3]) : {});
+  const cfg = Object.assign({}, GAME, process.argv[3] ? JSON.parse(process.argv[3]) : {});
   const rep = runReport(n, cfg);
   ['回さない', '回す判断あり', '先読みの名人'].forEach((k) => { const v = rep[k]; console.log(`${k}\tクリア率 ${(v.clear * 100).toFixed(1)}%\t平均到達 ${v.reached.toFixed(1)}/${cfg.nodes}\t戦死3人以下でクリア ${(v.clearLow * 100).toFixed(1)}%\t戦死 ${v.fallen.toFixed(1)}人\t引退 ${v.retired.toFixed(1)}人\t到達ノード分布 ${v.hist.slice(1).join(',')}`); });
   console.log('選び方ごと（回す判断あり）\t' + Object.entries(rep.strategies).map(([k, v]) => `${k} ${(v * 100).toFixed(1)}%`).join('　'));

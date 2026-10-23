@@ -9,6 +9,8 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m);
     await p.goto(url); await p.waitForTimeout(600); await p.click('#cover'); await p.waitForTimeout(400);
     return p;
   };
+  // 語り継ぐ候補が残っていると、騎士団を選んだあとに「語り継ぐ者を選ぶ」が挟まる。ここでは連れていかない
+  const skipLegacy = async () => { if (await p.evaluate(() => !document.getElementById('runv').hidden && document.getElementById('rvTitle').textContent === '語り継ぐ者を選ぶ')) { await p.click('#rvCards .rv-skip'); await p.waitForTimeout(800); } };
   const STD = ['warrior', 'knight', 'samurai', 'witch', 'archer', 'cleric', 'monk'];
   const jobs = (p) => p.evaluate(() => window.__rb.run.members.map((m) => m.job));
 
@@ -29,7 +31,7 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m);
   ok(sel.n === 4 && JSON.stringify(sel.dis) === '[false,false,false,true]' && sel.title === 'どの騎士団で挑む？', '3. 選択画面に4つ並び、標準・攻め・護りは選べ、老練は未解禁で押せない');
   ok(sel.hint.includes('解禁：攻めと護り、どちらの騎士団でもクリアする'), '3. 未解禁の騎士団には、解禁の条件が書いてある');
   // 4 攻めの騎士団を選ぶ
-  await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(900);
+  await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(500); await skipLegacy();
   st = await p.evaluate(() => ({ squad: window.__rb.run.squad, jobs: window.__rb.run.members.map((m) => m.job), ages: window.__rb.run.members.map((m) => m.age), pos: window.__rb.run.members.map((m) => m.r + ',' + m.c), grid: window.__rb.grid.flat().filter(Boolean).length, map: document.getElementById('runv').classList.contains('is-map') }));
   ok(st.squad === 'vanguard' && JSON.stringify(st.jobs) === JSON.stringify(['samurai', 'warrior', 'samurai', 'archer', 'witch', 'cleric', 'monk']) && st.map, '4. 攻めの騎士団を選ぶと、その編成で始まり地図に進む');
   ok(JSON.stringify(st.ages) === JSON.stringify([24, 38, 29, 19, 33, 44, 27]) && st.grid === 7 && new Set(st.pos).size === 7, '4. 年齢が編成どおりで、7人が重ならず盤面に並ぶ');
@@ -70,7 +72,7 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m);
   ok(rec.title === '実績と記録' && rec.all === 9 && rec.on === 3 && rec.hist.includes('第1代') && rec.hist.includes('地点7で眠る'), '10. 「実績と記録」に9つの実績（取得3）と歴代の騎士団が並ぶ');
   await p.click('#rvCards .rv-skip'); await p.waitForTimeout(300);
   ok(await p.evaluate(() => document.getElementById('rvTitle').textContent === 'どの騎士団で挑む？'), '10. 「もどる」で騎士団の選択に戻る');
-  await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(700);
+  await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(500); await skipLegacy();
   ok(await p.evaluate(() => window.__rb.run.squad === 'vanguard' && window.__rb.run.gen === 2), '10. 2回目の本番は「第2代」として始まる');
   // 8 壊れた記録でも動く
   await p.context().close();
