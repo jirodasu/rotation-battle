@@ -11,7 +11,8 @@ async function open(b, date, store) {
 }
 const startMain = async (p) => { await p.click('#cover'); await p.waitForTimeout(400); await p.click('#begin'); await p.waitForTimeout(900); await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500); };
 const state = (p) => p.evaluate(() => ({
-  shown: !document.getElementById('skinSel').hidden,
+  // 見た目で判定する（hidden属性だけでは、CSSのdisplayに負けて見えているケースを見逃す）
+  shown: (() => { const e = document.getElementById('skinSel'), s = getComputedStyle(e), r = e.getBoundingClientRect(); return s.display !== 'none' && s.visibility !== 'hidden' && r.width > 0 && r.height > 0; })(),
   skin: document.documentElement.getAttribute('data-skin'), theme: document.documentElement.getAttribute('data-theme'),
   o1: document.getElementById('o1').innerHTML, ename: (document.getElementById('ename') || {}).textContent,
   toks: [...document.querySelectorAll('.tok[data-id] svg')].map((s) => s.outerHTML).join('')
