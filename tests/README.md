@@ -21,6 +21,8 @@ FUZZ=1 bash tests/run-all.sh     # fuzz も実行（FUZZ_RUNS=ラン数 既定3�
 | `speed.js` | 戦闘 ×2 速ボタン（時間が短くなる・設定が保存される） |
 | `skin.js` | 10月だけ選べるハロウィン版の見た目（**見た目で判定**。11月はボタンが見えないこと） |
 | `telemetry.js` | 端末内の計測記録（遊んだ時間・最後の地点）が追記のみで、古い保存が壊れないこと |
+| `expedition.js` | 試作：遠征（4人・3列×2マス・第1章）：入口・縛り・報酬・別の途中保存と再開・最後まで遊べること・30年モードに戻ると盤が戻ること |
+| `expparity.js` | 遠征の戦闘が自動対戦 `tools/expsim.mjs` と同じ結果になること（回転レリック4種・突入技の強化・縛り） |
 | `fuzz.js` | でたらめな操作で本番を通しで遊び、エラー・止まり・状態の矛盾を探す（`node tests/fuzz.js [ラン数] [seed]`） |
 
 自動対戦（勝てるかの測定。面白さは測れない）:
@@ -29,6 +31,7 @@ FUZZ=1 bash tests/run-all.sh     # fuzz も実行（FUZZ_RUNS=ラン数 既定3�
 node tools/sim.mjs && node tools/runsim.mjs 200   # 戦闘とラン全体のクリア率
 node tools/rogue.mjs 200                          # 店・地方・語り継がれる者の影響
 node tools/jobs.mjs 120                           # 職業の入れ替えによるクリア率の変化
+node tools/expsim.mjs 200                         # 試作：遠征（第1章）の突破率と、事前に決めた合格線の判定
 ```
 
 Playwright と Chromium の場所は環境変数 `PLAYWRIGHT_PATH` と `CHROME_PATH` で変えられる。
