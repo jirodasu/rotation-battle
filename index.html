@@ -4420,6 +4420,29 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     shop: { heal: 3, equip: 5, recruit: 4, train: 3 },
     regions: { swarm: { name: '獣の森', desc: '変異種は「群れ」。ひとりを狙う攻撃が、2回のランダム攻撃になる。' }, poison: { name: '毒の沼地', desc: '変異種は「毒」。攻撃がすべて防無効になる。' }, armor: { name: '鉄の砦', desc: '変異種は「鎧」。防御が高いが、HPは少なめ。' } }
   };
+  /* 試作：遠征（年齢・世代なしのローグライク。2026-10-25 の新方針）。30年モードとは別の入口・別の保存で、30年モードの値には触れない。
+     少人数（4人・3列×2マス）で第1章（地点1〜3、地点3は章の主）だけ遊べる。値は tools/expsim.mjs で測って決める。
+     relics：回転の切れ目で発動する持ち物 / up：突入技の強化量 / foes：地点1・2に出る敵（ENEMIES の番号か、ここで定義した敵） */
+  const EXP = {
+    nodes: 3, cols: 2, age: 25, afterHeal: 0.3, variantRate: 0.7, chiefVariant: true,
+    party: [['warrior', 0, 0], ['samurai', 0, 1], ['witch', 1, 0], ['cleric', 2, 1]],
+    party5: [['warrior', 0, 0], ['samurai', 0, 1], ['archer', 0, 2], ['witch', 1, 0], ['cleric', 2, 1]],
+    hp: [0.45, 0.45, 0.44], dmg: [0.7, 0.7, 0.67],
+    relics: [
+      { id: 'shield', name: '先陣の盾', desc: '回すたび、攻撃列に入った仲間はそのターン受けるダメージ-4', guard: 4 },
+      { id: 'incense', name: '休息の香', desc: '回すたび、回復列に下がった仲間のHP+6', backHeal: 6 },
+      { id: 'bell', name: '勢いの鐘', desc: '突入技の攻撃+3', entryAtk: 3 },
+      { id: 'stance', name: '不動の構え', desc: '維持するたび、攻撃列の攻撃+2（最大+6。回すと消える）', stayAtk: 2, stayMax: 6 }
+    ],
+    up: { atk: 3, guard: 3, heal: 4, teamGuard: 1 },
+    binder: { name: 'しばりネズミ', art: 0, voice: 'bite', hp: 150, spd: 6, def: 1, par: 10, allowFallen: 0, f: 'hue-rotate(200deg) saturate(1.1)', pattern: [
+      { name: 'かみつき', glyph: '牙', rule: 'lowhp', dmg: 15 },
+      { name: 'しっぽで縛る', glyph: '縛', rule: 'bind' },
+      { name: 'のしかかり', glyph: '圧', rule: 'lowhp', dmg: 28 },
+      { name: 'ひっかき', glyph: '爪', rule: 'all', dmg: 9 }
+    ] },
+    foes: [0, 'binder'], chief: 1
+  };
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, sta: 0, ent: 1 },
     { max: 34, key: 'prime', label: '盛り', mul: 1, sta: 0, ent: 1 },
