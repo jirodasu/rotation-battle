@@ -4660,7 +4660,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function newRun(sqId, legacy) {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
     const sq = typeof sqId === 'string' ? SQUADS.find((x) => x.id === sqId) : null;
-    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std', gen: metaLoad().runs + 1 };
+    run = { node: 0, year: 1, act: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std', gen: metaLoad().runs + 1 };
     const form = sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]);
     form.forEach(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
     if (legacy) legacyJoin(legacy);
@@ -4844,9 +4844,17 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     try { o = JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e) { /* 保存できない環境 */ }
     o = o && typeof o === 'object' ? o : {};
     const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [], legacyCands: Array.isArray(o.legacyCands) ? o.legacyCands : [], legacyFrom: +o.legacyFrom || 0 };
+    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [], legacyCands: Array.isArray(o.legacyCands) ? o.legacyCands : [], legacyFrom: +o.legacyFrom || 0, last: o.last && typeof o.last === 'object' && !Array.isArray(o.last) ? o.last : null };
     return metaMem;
   }
+  /* 端末の中だけの計測：操作のあいだ（60秒まで）を足した「遊んだ時間」。通信はしない。古い保存には無いので 0 から数える */
+  let actAt = 0;
+  function actTick() {
+    const now = Date.now();
+    if (typeof run === 'object' && run && actAt) run.act = (+run.act || 0) + Math.min(now - actAt, 60000);
+    actAt = now;
+  }
+  document.addEventListener('pointerdown', actTick, true);
   const metaSave = () => { try { localStorage.setItem(META_KEY, JSON.stringify(metaMem)); } catch (e) { /* 保存できない環境 */ } };
   const squadOpen = (id, m) => id === 'std' || !!m.bought[id] || ACHS.some((a) => a.squad === id && m.ach[a.id]);
   const medals = (m) => Math.max(0, ACHS.filter((a) => m.ach[a.id]).length - m.spent);
@@ -4862,7 +4870,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     m.runs++;
     if (S.clear) { m.clears++; m.won[sq] = (m.won[sq] || 0) + 1; }
     ACHS.forEach((a) => { if (!m.ach[a.id] && a.ok(S, m, sq)) { m.ach[a.id] = 1; got.push(a); } });
-    m.hist.unshift({ gen: S.gen || m.runs, sq, clear: !!S.clear, reach: S.reach, years: S.years, fal: S.fal, ret: S.ret });
+    actTick();
+    m.hist.unshift({ gen: S.gen || m.runs, sq, clear: !!S.clear, reach: S.reach, years: S.years, fal: S.fal, ret: S.ret, ms: Math.round((typeof run === 'object' && run && +run.act) || 0) });
+    m.last = null;
     m.hist = m.hist.slice(0, 20);
     metaSave();
     return got;
@@ -4971,6 +4981,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   /* --- 途中保存：地点を選ぶ画面に来るたびに保存し、タイトルの「続きから」で再開 --- */
   const SAVE_KEY = 'rb-run-save';
   function runSave() {
+    try { actTick(); const m = metaLoad(); m.last = { gen: run.gen, node: run.node, at: Date.now() }; metaSave(); } catch (e) { /* 記録できなくても進行は止めない */ }
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: APP_VERSION, rseed, uidSeq, run: Object.assign({}, run, { enemy: null }) })); } catch (e) { /* 保存できない環境 */ }
   }
   function runSaved() {

@@ -1,6 +1,13 @@
 # テスト
 
-Playwright（Chromium）でゲームを実際に動かして確かめる。`tests/out/` に画像と結果が出る（Git管理外）。
+Playwright（Chromium）でゲームを実際に動かして確かめる。`tests/out/` に画像・結果・各テストのログ（`<名前>.log`）が出る（Git管理外）。
+
+**テストは1本ずつ順番に実行する**（同時に回すと `layout` が一時的に失敗することがあった）。まとめて回すには:
+
+```
+bash tests/run-all.sh            # fuzz 以外を順番に実行。1本でも失敗すれば終了コード1
+FUZZ=1 bash tests/run-all.sh     # fuzz も実行（FUZZ_RUNS=ラン数 既定3、FUZZ_LIMIT=秒 既定900。打ち切りは不合格）
+```
 
 | ファイル | 内容 |
 |---|---|
@@ -8,10 +15,20 @@ Playwright（Chromium）でゲームを実際に動かして確かめる。`test
 | `nav.js` | タイトルへ戻る・ボタンの有効無効などの画面遷移 |
 | `tutheal.js` | チュートリアルの回復の手順 |
 | `layout.js` | 8つの画面サイズ（スマホ横・縦、PC 16:9/16:10、小ウィンドウ、1080p）× 主要画面の撮影と合格判定 |
+| `route.js` | 地図の道（分岐・合流・行き止まりなし）、選択、保存と古い形式の読み込み |
+| `rogue.js` | 章末の店・地方の選択・語り継がれる者、途中保存からの再開、小さい画面での収まり |
+| `squads.js` | 騎士団の選択・解禁・実績と記録、記録が壊れていても始められること |
+| `speed.js` | 戦闘 ×2 速ボタン（時間が短くなる・設定が保存される） |
+| `skin.js` | 10月だけ選べるハロウィン版の見た目（**見た目で判定**。11月はボタンが見えないこと） |
+| `telemetry.js` | 端末内の計測記録（遊んだ時間・最後の地点）が追記のみで、古い保存が壊れないこと |
+| `fuzz.js` | でたらめな操作で本番を通しで遊び、エラー・止まり・状態の矛盾を探す（`node tests/fuzz.js [ラン数] [seed]`） |
+
+自動対戦（勝てるかの測定。面白さは測れない）:
 
 ```
-node tests/reg.js && node tests/nav.js && node tests/tutheal.js && node tests/layout.js
-node tools/sim.mjs && node tools/runsim.mjs 200
+node tools/sim.mjs && node tools/runsim.mjs 200   # 戦闘とラン全体のクリア率
+node tools/rogue.mjs 200                          # 店・地方・語り継がれる者の影響
+node tools/jobs.mjs 120                           # 職業の入れ替えによるクリア率の変化
 ```
 
 Playwright と Chromium の場所は環境変数 `PLAYWRIGHT_PATH` と `CHROME_PATH` で変えられる。
