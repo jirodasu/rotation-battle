@@ -127,7 +127,8 @@ export const SMART = (s) => {
 // ---- 1ラン（第1章） ----
 function member(job, r, c, uid, cfg) {
   const j = JOBS.find((x) => x.id === job);
-  return Object.assign({}, j, { uid, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
+  // name は個人名（ゲームの本番と同じ）。そのため「職業を狙う」攻撃は、ゲームと同じく職業名に一致せず「HP最低」に切り替わる
+  return Object.assign({}, j, { uid, name: '団員' + uid, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
 }
 // 亜種（vkey）は30年モードの VARIANTS をそのまま使う（runsim.mjs の runEnemy と同じ変形）
 export function enemyAt(step, k, cfg, vkey) {

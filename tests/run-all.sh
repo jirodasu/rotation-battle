@@ -3,7 +3,7 @@
 #   bash tests/run-all.sh          # fuzz 以外
 #   FUZZ=1 bash tests/run-all.sh   # fuzz も（FUZZ_RUNS=ラン数 既定3 / FUZZ_LIMIT=秒 既定900。打ち切りは不合格として数える）
 cd "$(dirname "$0")/.." || exit 2
-LIST="reg nav tutheal layout route rogue squads speed skin telemetry"
+LIST="reg nav tutheal layout route rogue squads speed skin telemetry expedition expparity"
 [ -n "$FUZZ" ] && LIST="$LIST fuzz"
 LIMIT="${FUZZ_LIMIT:-900}"
 fail=0; failed=""
