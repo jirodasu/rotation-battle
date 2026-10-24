@@ -1779,6 +1779,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 /* @@SQUAD-END@@ */
 /* ---- 見た目の切り替え（10月だけ：ハロウィン） ---- */
 .c-skin { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; letter-spacing: 0.08em; }
+.c-skin[hidden] { display: none; }
 .c-skin > span { margin-right: 4px; opacity: 0.8; }
 .c-skin button { font: inherit; font-weight: 700; padding: 6px 14px; border-radius: 99px; border: 0; cursor: pointer;
   background: transparent; color: inherit; box-shadow: inset 0 0 0 1px var(--rule-a); }
@@ -1883,7 +1884,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.20</p>
+    <p class="c-ver" id="cVer">ver 5.1.21</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2170,7 +2171,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.20';
+  const APP_VERSION = '5.1.21';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4659,7 +4660,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function newRun(sqId, legacy) {
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
     const sq = typeof sqId === 'string' ? SQUADS.find((x) => x.id === sqId) : null;
-    run = { node: 0, year: 1, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std', gen: metaLoad().runs + 1 };
+    run = { node: 0, year: 1, act: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], squad: sq ? sq.id : 'std', gen: metaLoad().runs + 1 };
     const form = sq ? sq.form : DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]);
     form.forEach(([id, r, c, age]) => { const m = newMember(id, age); m.r = r; m.c = c; m.joinYear = 1; run.members.push(m); });
     if (legacy) legacyJoin(legacy);
@@ -4843,9 +4844,17 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     try { o = JSON.parse(localStorage.getItem(META_KEY) || 'null'); } catch (e) { /* 保存できない環境 */ }
     o = o && typeof o === 'object' ? o : {};
     const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
-    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [], legacyCands: Array.isArray(o.legacyCands) ? o.legacyCands : [], legacyFrom: +o.legacyFrom || 0 };
+    metaMem = { runs: +o.runs || 0, clears: +o.clears || 0, won: obj(o.won), ach: obj(o.ach), bought: obj(o.bought), spent: +o.spent || 0, hist: Array.isArray(o.hist) ? o.hist : [], legacyCands: Array.isArray(o.legacyCands) ? o.legacyCands : [], legacyFrom: +o.legacyFrom || 0, last: o.last && typeof o.last === 'object' && !Array.isArray(o.last) ? o.last : null };
     return metaMem;
   }
+  /* 端末の中だけの計測：操作のあいだ（60秒まで）を足した「遊んだ時間」。通信はしない。古い保存には無いので 0 から数える */
+  let actAt = 0;
+  function actTick() {
+    const now = Date.now();
+    if (typeof run === 'object' && run && actAt) run.act = (+run.act || 0) + Math.min(now - actAt, 60000);
+    actAt = now;
+  }
+  document.addEventListener('pointerdown', actTick, true);
   const metaSave = () => { try { localStorage.setItem(META_KEY, JSON.stringify(metaMem)); } catch (e) { /* 保存できない環境 */ } };
   const squadOpen = (id, m) => id === 'std' || !!m.bought[id] || ACHS.some((a) => a.squad === id && m.ach[a.id]);
   const medals = (m) => Math.max(0, ACHS.filter((a) => m.ach[a.id]).length - m.spent);
@@ -4861,7 +4870,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     m.runs++;
     if (S.clear) { m.clears++; m.won[sq] = (m.won[sq] || 0) + 1; }
     ACHS.forEach((a) => { if (!m.ach[a.id] && a.ok(S, m, sq)) { m.ach[a.id] = 1; got.push(a); } });
-    m.hist.unshift({ gen: S.gen || m.runs, sq, clear: !!S.clear, reach: S.reach, years: S.years, fal: S.fal, ret: S.ret });
+    actTick();
+    m.hist.unshift({ gen: S.gen || m.runs, sq, clear: !!S.clear, reach: S.reach, years: S.years, fal: S.fal, ret: S.ret, ms: Math.round((typeof run === 'object' && run && +run.act) || 0) });
+    m.last = null;
     m.hist = m.hist.slice(0, 20);
     metaSave();
     return got;
@@ -4970,6 +4981,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   /* --- 途中保存：地点を選ぶ画面に来るたびに保存し、タイトルの「続きから」で再開 --- */
   const SAVE_KEY = 'rb-run-save';
   function runSave() {
+    try { actTick(); const m = metaLoad(); m.last = { gen: run.gen, node: run.node, at: Date.now() }; metaSave(); } catch (e) { /* 記録できなくても進行は止めない */ }
     try { localStorage.setItem(SAVE_KEY, JSON.stringify({ v: APP_VERSION, rseed, uidSeq, run: Object.assign({}, run, { enemy: null }) })); } catch (e) { /* 保存できない環境 */ }
   }
   function runSaved() {
