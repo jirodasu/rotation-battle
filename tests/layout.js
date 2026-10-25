@@ -66,7 +66,7 @@ async function measure(p, need) {
     for (let k = 0; k < 120; k++) {
       if (await p.evaluate(() => !document.getElementById('result').hidden)) break;
       await closeTip();
-      if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) await p.click('#btnRotate').catch(() => {});
+      if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) await p.click(await p.evaluate(() => document.getElementById('btnRotate').disabled) ? '#btnStay' : '#btnRotate', { timeout: 3000 }).catch(() => {});   // 縛られたターンは「回す」が押せない
       await p.waitForTimeout(300);
     }
     await p.waitForTimeout(800);
