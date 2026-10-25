@@ -1937,7 +1937,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.29</p>
+    <p class="c-ver" id="cVer">ver 5.1.30</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2225,7 +2225,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.29';
+  const APP_VERSION = '5.1.30';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4593,7 +4593,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
     hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
     healMax: 3,   // 報酬「手当て」：全快＋全員の最大HP+3
-    swap: true, swapBonus: { ups: 1, hp: 4 },   // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回・最大HP+4
+    swap: true, swapBonus: { ups: 1, hp: 4 }, refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
+      // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回・最大HP+4
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
     // 休むたびに章の主が強くなる（HP・威力の割合）。休めば安全だが、主が強くなる
@@ -5541,6 +5542,17 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
       const have = new Set(run.members.map((x) => x.job)), pool = JOBS.filter((j) => !have.has(j.id)), nm = newMember(pick(pool.length ? pool : JOBS).id, EXP.age);
+      // 補充：仲間が欠けているときは、誰も抜けずに空いたマスへ加わる（自動対戦 tools/expsim.mjs と同じ規則）
+      if (EXP.refill && run.members.length < EXP.party.length) {
+        if (EXP.refillBonus !== false) { nm.bonus.hp = (nm.bonus.hp || 0) + EXP.swapBonus.hp; for (let k = 0; k < EXP.swapBonus.ups; k++) expUpgrade(nm); }
+        if (EXP.refillMax != null) nm.bonus.hp = (nm.bonus.hp || 0) - (nm.max - Math.round(nm.max * EXP.refillMax));   // 見習い：最大HPを refillMax 倍に（自動対戦と同じ丸め）
+        applyAge(nm, true);
+        const gap = EXP.party.length - run.members.length;
+        cards.push({ ico: '<span class="uc-disc c-' + nm.cls + '">' + face(nm) + '</span>', t: '仲間の補充　' + nm.name + '（' + nm.jname + '）',
+          d: (EXP.refillMax != null ? '見習い（HP' + nm.max + '）' : 'HP' + nm.max) + '・突入技「' + nm.entry.name + '」' + (EXP.refillBonus !== false ? '（強化済み）' : '') + '。誰も抜けずに、空いたマスへ加わる（空き' + gap + '人分）。',
+          act: () => { nm.r = null; nm.c = null; run.members.push(nm); roster = run.members; run.events.push('地点' + (run.node + 1) + '　' + nm.name + '（' + nm.jname + '）が加わった'); SFX.recruit(); return nm.name + '（' + nm.jname + '）が隊に加わった。'; } });
+        expRewardShow(pre, cards); return;
+      }
       nm.bonus.hp = (nm.bonus.hp || 0) + EXP.swapBonus.hp; for (let k = 0; k < EXP.swapBonus.ups; k++) expUpgrade(nm); applyAge(nm, true);
       cards.push({ ico: '<span class="uc-disc c-' + nm.cls + '">' + face(nm) + '</span>', t: '仲間の入れ替え　' + nm.name + '（' + nm.jname + '）', swap: nm,
         d: 'HP' + nm.max + '・突入技「' + nm.entry.name + '」（強化済み）。いまの仲間1人と入れ替える。' });
