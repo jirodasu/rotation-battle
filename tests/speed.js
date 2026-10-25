@@ -4,6 +4,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
 async function battle(b, fast) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+  // 通常と2倍速で同じ敵・同じ隊になるよう、遠征の乱数の種（時刻）を固定する。以前は毎回別の敵と比べていて、群れの敵（攻撃回数が多い）に当たると結果がぶれた
+  await p.clock.setFixedTime(new Date('2026-11-05T12:00:00+09:00'));
   await p.addInitScript((f) => { try { localStorage.setItem('rb-fast', f ? '1' : '0'); localStorage.setItem('rb-tips', JSON.stringify({})); } catch (e) { /* */ } }, fast);
   await p.goto(indexURL); await p.waitForTimeout(400);
   await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);

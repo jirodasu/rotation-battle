@@ -1937,7 +1937,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.28</p>
+    <p class="c-ver" id="cVer">ver 5.1.29</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2225,7 +2225,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.28';
+  const APP_VERSION = '5.1.29';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4261,6 +4261,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     { t: '回復列', x: '休んで自分のHPを回復する列。神官は、この横の列のほかの仲間もまとめて回復する（本人は含まない）。1ターン目は回復しない。', pos: 'top', spot: () => bd().querySelector('.strip.r2'), next: true },
     { t: '補助は縦、回復は横', x: '魔女の補助は、同じ縦の列（一）の戦士に届く。神官の回復は、回復列の横の仲間（サムライ）に届く。', pos: 'top', spot: () => [bd().querySelector('.ctag[data-c="0"]'), slotEl(1, 0)], next: true },
     { t: '敵の予告', x: '敵は次の行動を予告する。赤く光る仲間が狙われる。敵が狙うのは一番前の列の仲間だけ。', pos: 'bottom', spot: () => [$('ticket'), bd().querySelector('.ctag.hit')], next: true },
+    { t: '敵の詳細', x: '敵の名前や絵（ⓘの所）をタップすると、敵の詳細が開く。行動の一覧や特徴を、戦闘中いつでも確かめられる。', pos: 'bottom', spot: () => [$('stage').querySelector('.plate'), $('eart')].filter(Boolean), next: true },
     { t: '2手先の予兆', x: '予告の下の「その次」は、次のターンの行動。2手先を見て、回すかどうかを決めよう。', pos: 'bottom', spot: () => $('ticket').querySelector('.t-nx') || $('ticket'), next: true },
     { t: '与えるダメージ', x: '剣マークの数字は、次に与えるダメージの見込み。金色は攻撃補助が乗っている印。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
     { t: 'スタミナ', x: 'キャラ右横の点はスタミナ。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
