@@ -1404,7 +1404,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .rv-tags .tg-foe { color: var(--rubric); }
 .rv-tags .tg-var, .rv-tags .tg-bt { background: var(--rubric); color: #fff3e0; }
 .rv-tags .tg-warn { background: var(--danger); color: #fff3e0; }
-.rv-tags .tg-calm { color: var(--heal); }
+.rv-tags .tg-calm { color: color-mix(in srgb, var(--heal) 72%, var(--ink)); }
 .rv-events p, .rv-log summary { background: transparent; border-radius: 0; box-shadow: none; padding: 6px 4px 6px 16px; border-bottom: 1px dotted var(--rule-a); position: relative; }
 .rv-events p::before, .rv-log summary::before { content: ""; position: absolute; left: 3px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; transform: rotate(45deg); background: var(--rubric); opacity: 0.8; }
 .rv-log > div { gap: 0; margin-top: 0; }
@@ -1625,8 +1625,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-n.mk:not([data-pick]) { pointer-events: none; }
 .rt-n .seal { fill: var(--vellum-hi); stroke: var(--rule); stroke-width: 1.3; }
 .rt-n .g { font: 800 11px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
-.rt-n .lb { font: 800 8.6px var(--serif); text-anchor: middle; fill: var(--ink); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.4px; stroke-linejoin: round; }
-.rt-n .st { font: 700 7.4px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
+.rt-n .lb { font: 800 10.4px var(--serif); text-anchor: middle; fill: var(--ink); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.4px; stroke-linejoin: round; }
+.rt-n .st { font: 700 8.8px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
 .rt-n.locked .seal { stroke-dasharray: 2 2; }
 .rt-n.locked .g, .rt-n.locked .lb { opacity: .7; }
 .rt-n.k-battle .seal, .rt-n.k-fort .seal { stroke: var(--rubric); }
@@ -1641,7 +1641,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-n.here .halo { fill: none; stroke: var(--gold-lo); stroke-width: 1.2; stroke-dasharray: 2 2; }
 .rt-n.avail .seal { fill: var(--gold-hi); stroke-width: 2.2; }
 .rt-n.avail.sel .seal { stroke-width: 3; }
-.rt-y { font: 700 8px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
+.rt-y { font: 700 9.4px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
 .rt-y.now { fill: var(--rubric); font-weight: 800; }
 .runv .rv-card.sel { outline: 2px solid var(--rubric); outline-offset: 1px; background: var(--vellum-hi); }
 .rv-go { width: 100%; margin-top: 4px; }
@@ -1793,6 +1793,55 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   --accent: #f08a24; --accent-deep: #a8520c; --accent-ink: #2a1200; --accent-a: rgba(240, 138, 36, 0.24); --accent-text: #ffa64d;
   --gold: #f08a24; --gold-hi: #ffc070; --gold-lo: #8a420a; --rubric: #ff8a3a;
 }
+
+/* ---- 気力：上の札の目盛り と「回す」ボタンの目盛り（v5.1.28） ---- */
+#chipTurn .gz { display: inline-flex; align-items: center; gap: 3px; margin-left: 2px; padding: 0 2px; border-radius: 3px; }
+#chipTurn .gz b { font-weight: 700; margin-right: 3px; }
+#chipTurn .gp { font-style: normal; display: inline-block; width: 0.95em; text-align: center; color: var(--paper-line); line-height: 1; transition: color .2s; }
+#chipTurn .gp.on { color: color-mix(in srgb, var(--gold) 70%, var(--gold-lo)); text-shadow: 0 1px 0 rgba(255, 246, 214, .6); }
+#chipTurn .gz.low .gp.on { color: var(--rubric); text-shadow: none; }
+#chipTurn .gz.low b { color: var(--rubric); }
+#chipTurn .gp.gp-up { animation: gpop .45s cubic-bezier(.2, 1.6, .4, 1) both; }
+#chipTurn .gp.gp-dn { animation: gdrop .4s ease-out both; }
+@keyframes gpop { 0% { transform: scale(.2); } 60% { transform: scale(1.5); } 100% { transform: none; } }
+@keyframes gdrop { 0% { transform: scale(1.4); color: var(--gold); } 100% { transform: none; } }
+.rot-lbl { line-height: 1; }
+.rot-meter { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; margin-left: 4px; line-height: 1; }
+.rot-meter:empty { display: none; }
+.rot-meter .pips { display: inline-flex; gap: 4px; }
+.rot-meter .pips i { width: 11px; height: 11px; border-radius: 50%; box-shadow: inset 0 0 0 1.5px currentColor; opacity: .55; }
+.rot-meter .pips i.on { background: currentColor; opacity: 1; }
+.rot-meter .pips i.need:not(.on) { opacity: 1; box-shadow: inset 0 0 0 1.5px currentColor; background: repeating-linear-gradient(135deg, transparent 0 2px, rgba(150, 44, 28, .35) 2px 3.5px); }
+.rot-meter small { font-size: 10.5px; font-weight: 700; letter-spacing: .02em; opacity: .85; text-shadow: none; }
+/* 回せない：金をやめて帳面の色・破線の縁に。理由を赤で */
+#btnRotate:disabled { --b: repeating-linear-gradient(135deg, var(--paper) 0 8px, var(--paper-2) 8px 16px); --bd: var(--paper-line);
+  color: var(--ink-soft, #6d5a44); text-shadow: none; cursor: not-allowed; pointer-events: none;
+  box-shadow: inset 0 0 0 1.5px var(--paper-line), 0 2px 0 var(--bd); transform: translateY(1px); }
+#btnRotate:disabled svg { opacity: .45; }
+#btnRotate:disabled .rot-lbl { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: rgba(150, 44, 28, .55); }
+#btnRotate:disabled .rot-meter small { color: var(--rubric); opacity: 1; }
+#btnRotate:disabled .rot-meter .pips i { color: var(--rubric); }
+#btnRotate[data-block="bind"] svg { display: none; }
+#btnRotate[data-block="bind"]::before { content: "縛"; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--rubric); color: #fff3e0; font-family: var(--serif); font-size: 12px; font-weight: 700; }
+#btnRotate.deny { animation: deny .38s cubic-bezier(.36, .07, .19, .97) both; }
+@keyframes deny { 15%, 85% { translate: -2px 0; } 30%, 70% { translate: 4px 0; } 45%, 55% { translate: -5px 0; } }
+.rb-flash { animation: rbflash .9s ease-out both; }
+@keyframes rbflash { 0%, 40% { box-shadow: 0 0 0 3px var(--rubric), 0 0 18px 2px rgba(150, 44, 28, .45); } 100% { box-shadow: 0 0 0 0 transparent; } }
+#book .hint.rb-flash, #ename.rb-flash { box-shadow: none; animation: flashText .9s ease-out both; }
+@keyframes flashText { 0%, 40% { background: rgba(150, 44, 28, .14); } 100% { background: transparent; } }
+/* 押せるのが維持だけのとき、維持を金箔に（幅は変えない） */
+#btnStay.only { --b: linear-gradient(180deg, #ecd38c 0%, #d2a84d 38%, #b8892c 72%, #a6781f 100%); --bd: #6b4810; color: #2a1804;
+  text-shadow: 0 1px 0 rgba(255, 240, 200, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(107, 72, 16, 0.85), inset 0 2px 0 rgba(255, 246, 214, 0.65), inset 0 -2px 0 rgba(107, 72, 16, 0.25), 0 3px 0 var(--bd), 0 12px 18px -10px var(--shadow); }
+@media (prefers-reduced-motion: reduce) { #chipTurn .gp.gp-up, #chipTurn .gp.gp-dn, #btnRotate.deny { animation: none; } }
+/* 上の丸ボタンは見た目はそのまま、押せる範囲だけ44pxに広げる */
+.icon-btn { position: relative; }
+.icon-btn::after { content: ""; position: absolute; inset: 50% auto auto 50%; width: calc(100% + 8px); height: 44px; transform: translate(-50%, -50%); border-radius: 50%; }
+.c-skin button { position: relative; }
+.c-skin button::after { content: ""; position: absolute; left: -2px; right: -2px; top: 50%; height: 44px; transform: translateY(-50%); }
+#btnRotate.glint:not(:disabled) { animation: glint .9s ease-out both; }
+@keyframes glint { 0% { filter: brightness(1.35) saturate(1.2); box-shadow: 0 0 0 3px rgba(255, 220, 140, .9), 0 0 22px 4px rgba(240, 190, 80, .7); } 100% { filter: none; } }
+@media (prefers-reduced-motion: reduce) { #btnRotate.glint { animation: none; } }
 </style>
 </head>
 <body class="is-cover">
@@ -1851,7 +1900,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     <button class="btn primary" id="btnStart" type="button" hidden>戦闘開始</button>
     <button class="btn primary" id="btnRotate" type="button" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      回す
+      <span class="rot-lbl">回す</span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span>
     </button>
     <button class="btn icon" id="btnPreview" type="button" aria-pressed="false" aria-label="回した後の配置を先読み" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
@@ -1888,7 +1937,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.27</p>
+    <p class="c-ver" id="cVer">ver 5.1.28</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2176,7 +2225,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.27';
+  const APP_VERSION = '5.1.28';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3369,7 +3418,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     }
     if (phase === 'prep') hint = '仲間→入れ替え先の順にタップ' + (grid[0].some(Boolean) ? '' : '（攻撃列が空だと被害2倍）');
     else if (phase === 'choose') {
-      hint = enemy.bound ? '縛られている。このターンは回せない（維持のみ）' : !gaugeOk() ? '気力が足りない（回すには' + EXP.rot.cost + '、毎ターン1たまる）。維持のみ' : '回す？ 維持する？ 赤い数字は受けるダメージ';
+      hint = enemy.bound ? '縛られている。このターンは維持のみ' : !gaugeOk() ? '気力' + Math.max(0, gauge) + '／' + EXP.rot.cost + '。このターンは維持のみ' : '回す？ 維持する？ 赤い数字は受けるダメージ';
       if (previewOn) {
         const pg = previewGrid();
         const hole = !pg[0].some(Boolean);
@@ -3384,8 +3433,53 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (hint) ps[ps.length - 1].textContent = hint;
   }
 
+  // 気力：上の札（●○）と「回す」ボタンの中の目盛りの両方に出す。足りない・縛られているときは、ボタンが金色をやめて理由を出す
+  let gaugeShown = null;
+  function renderGauge() {
+    const head = (tut ? '練習' : (run ? '地点' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn;
+    const on = gaugeOn() && phase !== 'prep', cap = EXP.rot.cap, cost = EXP.rot.cost, g = Math.max(0, Math.min(cap, gauge));
+    const chip = $('chipTurn');
+    if (!on) { chip.textContent = head; gaugeShown = null; return; }
+    const up = gaugeShown != null && g > gaugeShown, down = gaugeShown != null && g < gaugeShown;
+    let pips = '';
+    for (let i = 0; i < cap; i++) pips += '<i class="gp' + (i < g ? ' on' : '') + (up && i >= gaugeShown && i < g ? ' gp-up' : '') + (down && i >= g && i < gaugeShown ? ' gp-dn' : '') + '">' + (i < g ? '●' : '○') + '</i>';
+    chip.innerHTML = '';
+    chip.append(document.createTextNode(head + '　'));
+    const gz = document.createElement('span'); gz.className = 'gz' + (g >= cost ? ' ready' : ' low'); gz.innerHTML = '<b>気力</b>' + pips;
+    chip.append(gz);
+    chip.setAttribute('aria-label', head + '　気力' + g + '／' + cap + (g >= cost ? '（回せる）' : '（回すには' + cost + '）'));
+    if (up && gaugeShown < cost && g >= cost) { const rb = $('btnRotate'); rb.classList.remove('glint'); void rb.offsetWidth; rb.classList.add('glint'); }   // 回せるようになった瞬間に光らせる
+    gaugeShown = g;
+  }
+  function renderRotBtn() {
+    const b = $('btnRotate'), m = $('rotMeter'), on = gaugeOn() && phase === 'choose';
+    const bound = !!(enemy && enemy.bound) && phase === 'choose', low = on && !gaugeOk();
+    const why = bound ? 'bind' : low ? 'low' : '';
+    if (why) b.dataset.block = why; else delete b.dataset.block;
+    $('btnStay').classList.toggle('only', phase === 'choose' && !!why);   // 押せるのが維持だけのときは、維持を金色にする
+    if (!on && !bound) { m.innerHTML = ''; b.setAttribute('aria-label', '隊列を回す'); return; }
+    const cap = EXP.rot.cap, cost = EXP.rot.cost, g = Math.max(0, Math.min(cap, gauge));
+    let h = '';
+    if (on) { for (let i = 0; i < cap; i++) h += '<i class="' + (i < g ? 'on' : '') + (i < cost ? ' need' : '') + '"></i>'; }
+    const wait = cost - g;
+    const sub = bound ? '縛られている' : low ? (wait <= 1 ? '次のターン回せる' : 'あと' + wait + 'ターン') : '気力' + cost + 'を使う';
+    m.innerHTML = (on ? '<span class="pips">' + h + '</span>' : '') + '<small>' + sub + '</small>';
+    b.setAttribute('aria-label', bound ? '回せない：縛られている。このターンは維持のみ' : low ? '回せない：気力' + g + '／' + cost + '。' + sub : '隊列を回す（気力' + cost + 'を使う。今' + g + '）');
+  }
+  // 押せない「回す」を押したとき：ボタンを揺らし、理由（気力の札／縛り）を光らせる
+  function rotDenied() {
+    const b = $('btnRotate');
+    if (!b.disabled || $('btnRotate').hidden) return;
+    try { SFX.nope(); } catch (e) { /* 音なし */ }
+    vib(25);
+    b.classList.remove('deny'); void b.offsetWidth; b.classList.add('deny');
+    const tgt = enemy && enemy.bound ? $('ename') : $('chipTurn');
+    if (tgt) { tgt.classList.remove('rb-flash'); void tgt.offsetWidth; tgt.classList.add('rb-flash'); }
+    const h = document.querySelector('#book .hint'); if (h) { h.classList.remove('rb-flash'); void h.offsetWidth; h.classList.add('rb-flash'); }
+  }
+
   function render() {
-    $('chipTurn').textContent = (tut ? '練習' : (run ? '地点' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn + (gaugeOn() && phase !== 'prep' ? '　気力' + '●'.repeat(Math.max(0, gauge)) + '○'.repeat(Math.max(0, EXP.rot.cap - gauge)) : '');
+    renderGauge();
     renderBoard();
     renderTicket();
     renderBook();
@@ -3394,6 +3488,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('btnStart').textContent = (phase === 'prep' && !tut) ? 'この並びで戦闘開始' : '戦闘開始';
     $('btnRotate').hidden = phase !== 'choose';
     $('btnRotate').disabled = phase === 'choose' && (!!(enemy && enemy.bound) || !gaugeOk());
+    renderRotBtn();
     $('btnStay').hidden = phase !== 'choose';
     $('btnPreview').hidden = phase !== 'choose';
     $('btnPreview').setAttribute('aria-pressed', String(previewOn));
@@ -4174,7 +4269,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
     { t: '1ターン終了', x: 'ここで、隊列を「回す」か「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
-    { t: '気力', x: '上のターン表示の●が気力。回すには気力2が要り、気力は毎ターン1たまる（最大3）。毎ターンは回せないので、いつ回すかを考えよう。', pos: 'bottom', spot: () => $('chipTurn'), next: true },
+    { t: '気力', x: '上のターン表示と「回す」ボタンの●が気力。回すには気力2が要り、気力は毎ターン1たまる（最大3）。足りないときは「回す」が灰色になる。いつ回すかを考えよう。', pos: 'bottom', spot: () => $('chipTurn'), next: true },
     { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
     { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。「突」が付いた仲間は、攻撃列に入ったターンだけ突入技を出す。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
@@ -4302,6 +4397,11 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   $('tipOk').addEventListener('click', () => { SFX.tap(); hideTip(); });
   ['btnStart', 'btnRotate', 'btnStay', 'homeBtn'].forEach((id) => $(id).addEventListener('click', () => { if (tipKey) hideTip(); demoStop(false); }, true));
   $('btnStart').addEventListener('click', () => { if (!tutBtnOk('btnStart')) { tutNudge(); return; } startBattle(); tutAdvance(); });
+  $('dock').addEventListener('click', (e) => {
+    const b = $('btnRotate'); if (!b.disabled || b.hidden || e.target.closest('button')) return;
+    const r = b.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) rotDenied();
+  });
   $('btnRotate').addEventListener('click', () => { if (!tutBtnOk('btnRotate')) { tutNudge(); return; } choose(true); tutAdvance(); });
   $('btnStay').addEventListener('click', () => { if (!tutBtnOk('btnStay')) { tutNudge(); return; } choose(false); tutAdvance(); });
   $('btnPreview').addEventListener('click', () => {
@@ -4840,7 +4940,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       mark += '<g class="' + cls + ' mk"' + (avail[id] != null ? ' data-pick="' + avail[id] + '"' : '') + '>' +
         '<circle class="seal" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="9.5"/>' + (st === 'here' ? '<circle class="halo" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="13"/>' : '') +
         '<text class="g" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 0.6).toFixed(1) + '">' + (st === 'done' ? '✓' : inf.g) + '</text>' +
-        '<text class="lb" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 19).toFixed(1) + '">' + inf.t + '</text>' + (inf.s && st !== 'done' ? '<text class="st" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 27.5).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';
+        '<text class="lb" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 21).toFixed(1) + '">' + inf.t + '</text>' + (inf.s && st !== 'done' ? '<text class="st" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 31).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';
       ROUTE.nodes[id].next.forEach((t) => {
         if (G.all.indexOf(t) < 0) return;
         const q = G.pt[t], taken = seq.indexOf(t) > 0 && seq[seq.indexOf(t) - 1] === id, go = id === here && avail[t] != null;
@@ -4855,6 +4955,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       '<path class="isle" d="' + rtD(G.isl) + '"/>' + land + '<g class="rt-roads">' + road + '</g>' + mark + yrs + '</svg>';
   }
   function choiceName(c) {
+    // 遠征：地図の札と同じ名前（以前は騎士団の敵の名前が出て、札と食い違っていた）
+    if (run && run.mode === 'exp') { if (c.type === 'battle') { const e = expEnemy(c.step, c.variant, expFoeOf(c)); return (expIsChief(c.step) ? '章の主 ' : '戦闘 ') + e.name; } return '休息'; }
     if (c.type === 'battle') { const e = runEnemy(c.step, c.variant).def; return (c.boss ? '決戦 ' : '戦闘 ') + e.name; }
     return c.type === 'rest' ? '休息と稽古' : '継承';
   }
