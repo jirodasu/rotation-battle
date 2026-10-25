@@ -1153,7 +1153,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 @media (hover: hover) and (pointer: fine) {
   .slot:hover .tok[data-id] .disc { filter: brightness(1.06); }
   .board.prep .slot:hover .tok[data-id] { transform: translateY(-3px); }
-  .rv-card:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 6px 0 var(--paper-line); }
+  /* 札そのものは動かさず中身だけ持ち上げる（札が動くと、縁にあるポインタが外れ・入りを繰り返して札が震える） */
+  .rv-card:hover:not([disabled]) { box-shadow: 0 6px 0 var(--paper-line); }
+  .rv-card:hover:not([disabled]) > * { transform: translateY(-2px); }
   .stage:hover .eart svg { filter: drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)) brightness(1.04); }
   .btn:hover:not([disabled]) { filter: brightness(1.04); }
 }
@@ -1171,7 +1173,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-tags .tg-foe { color: #7e1d14; } .rv-tags .tg-var { background: #7e1d14; color: #fff; box-shadow: none; }
 .rv-tags .tg-bt { background: #9a2a1b; color: #fff; box-shadow: none; } .rv-tags .tg-calm { color: #2d6a45; } .rv-tags .tg-warn { background: #b8412e; color: #fff; box-shadow: none; }
 .rv-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-@media (hover: hover) and (pointer: fine) { .runv .rv-card:not([disabled]):hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--paper-line), 0 0 0 2px var(--accent); } }
+@media (hover: hover) and (pointer: fine) { .runv .rv-card:not([disabled]):hover { box-shadow: 0 6px 0 var(--paper-line), 0 0 0 2px var(--accent); } }   /* 札は動かさない（縁のポインタで震えるため）。中身の持ち上げは上の規則 */
 @media (max-height: 460px), (max-height: 700px) and (max-aspect-ratio: 6/5) { .runv .rv-card { padding: 7px 10px; gap: 9px; border-radius: 14px; } .rv-ico { width: 42px; height: 42px; } .rv-txt b { font-size: 14.5px; } .rv-txt span { font-size: 11.5px; line-height: 1.35; margin-top: 1px; } .rv-tags { margin-top: 3px !important; gap: 3px; } .rv-tags em { font-size: 10px; padding: 2px 5px 3px; } .runv > .r-card { padding-top: 14px; padding-bottom: 12px; row-gap: 5px; } .rv-track { padding-bottom: 13px; } }
 /* @@CHRONICLE-BEGIN@@ */
 /* ==================== 騎士団年代記（見た目の層） ====================
@@ -1392,7 +1394,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .rv-cards > .rv-card { position: relative; border-radius: 6px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule-a), 0 2px 0 var(--rule-a), 0 8px 14px -10px var(--shadow); transition: transform 0.15s, box-shadow 0.15s; }
 .rv-cards > .rv-card:active { transform: translateY(1px); box-shadow: inset 0 0 0 1px var(--rule-a), 0 1px 0 var(--rule-a); }
 .rv-cards > .rv-card::before { content: ""; position: absolute; left: -1px; top: 12px; bottom: 12px; width: 3px; border-radius: 0 2px 2px 0; background: var(--gold); opacity: 0; transition: opacity 0.15s; }
-@media (hover: hover) and (pointer: fine) { .runv .rv-cards > .rv-card:not([disabled]):hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--rule), 0 3px 0 var(--rule-a), 0 12px 18px -10px var(--shadow); } .rv-cards > .rv-card:not([disabled]):hover::before { opacity: 1; } }
+@media (hover: hover) and (pointer: fine) { .runv .rv-cards > .rv-card:not([disabled]):hover { box-shadow: inset 0 0 0 1px var(--rule), 0 3px 0 var(--rule-a), 0 12px 18px -10px var(--shadow); } .rv-cards > .rv-card:not([disabled]):hover::before { opacity: 1; } }
 .r-card .rv-m small { color: var(--ink-soft); font-family: var(--sans); font-weight: 500; }
 .r-card .rv-m.gone.f-fallen small { color: var(--rubric); font-weight: 700; }
 .rv-ico { background: var(--vellum-hi); box-shadow: inset 0 0 0 1px var(--rule-a); }
