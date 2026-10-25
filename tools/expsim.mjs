@@ -196,10 +196,19 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * cfg.afterHeal)); });
     if (!last) {
       const free = cfg.relics.filter((x) => !relics.includes(x.id));
-      const tags = (free.length ? ['relic'] : []).concat(['up', 'heal']);
+      const tags = (free.length ? ['relic'] : []).concat(['up', 'heal'], cfg.swap ? ['swap'] : []);
       let t = strat.reward ? strat.reward(tags) : pick(tags); if (!tags.includes(t)) t = pick(tags);
-      if (t === 'relic') relics.push(pick(free).id);
-      else if (t === 'up') upgrade(pick(members), cfg.up);
+      // 入れ替え候補：いまの隊にいない職業から（全職業がいれば全体から）
+      const have = new Set(members.map((m) => m.job)), pool = JOBS.filter((j) => !have.has(j.id)), job = (pool.length ? pick(pool) : pick(JOBS)).id;
+      if (t === 'swap') {
+        // 誰と入れ替えるか：strat.swapOut（既定は「強さ」がいちばん低い仲間）
+        const pw = (m) => m.hp * (m.atk + (m.heal || 0) * 2 + (m.defSup || 0) + 4);
+        const out = strat.swapOut ? strat.swapOut(members, job, R) : members.reduce((a, b) => (pw(b) < pw(a) ? b : a));
+        const nm = member(job, out.r, out.c, 'w' + step, cfg); members[members.indexOf(out)] = nm;
+        if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
+        if (cfg.swapKeep) { for (let k = 0; k < (out.ups || 0); k++) upgrade(nm, cfg.up); nm.ups = out.ups || 0; nm.max += (out.max - JOBS.find((j) => j.id === out.job).hp) ; nm.hp = nm.max; }   // 去る仲間の強化（突入技・最大HP）を引き継ぐ
+      } else if (t === 'relic') relics.push(pick(free).id);
+      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; }
       else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
       if (chief) { reinforce(members, cfg, cols, R, 's' + step); rests = 0; }   // 章を越えた
     }
@@ -222,6 +231,7 @@ export function report(n = 200, over = {}) {
   const out = { stay: rate(STAY), always: rate(() => true) }; rr = rng2(12345); out.random = rate(RANDOM);
   out.smart = rate(SMART); out.plan = rate('plan', {}, Math.min(n, 120));
   out.rewards = { relic: rate(SMART, { reward: () => 'relic' }).clear, up: rate(SMART, { reward: () => 'up' }).clear, heal: rate(SMART, { reward: () => 'heal' }).clear };
+  if (cfg.swap) out.rewards.swap = rate(SMART, { reward: () => 'swap' }).clear;
   out.nodes = { fight: rate(SMART, { node: () => 'battle' }).clear, rest: rate(SMART, { node: () => 'rest' }).clear };
   return out;
 }
@@ -235,7 +245,7 @@ export function judge(o) {
     ['標準 最後まで 25〜50%', o.smart.clear >= 0.25 && o.smart.clear <= 0.5],
     ['名人と標準の差 ≦45pt', gap <= 0.45],
     ['各章の突破率（着いた人のうち）50〜90%', o.smart.chap.every((x) => x >= 0.5 && x <= 0.9)],
-    ['報酬の差 ≦10pt', Math.max(...rw) - Math.min(...rw) <= 0.10],
+    ['報酬の差（入れ替えを含む4種） ≦10pt', Math.max(...rw) - Math.min(...rw) <= 0.10],
     ['標準：戦う ≧ 休む', o.nodes.fight >= o.nodes.rest]
   ];
 }
@@ -247,7 +257,7 @@ if (process.argv[1] && /(^|[\\/])expsim\.mjs$/.test(process.argv[1])) {
   console.log(`== 遠征（全3章・仲間4人・盤 3列×${EXP.cols}）`);
   console.log(`回さない ${p(o.stay.clear)}　毎ターン回す ${p(o.always.clear)}　でたらめ ${p(o.random.clear)}　標準 ${p(o.smart.clear)}（倒れ ${o.smart.fallen.toFixed(2)}人）　名人 ${p(o.plan.clear)}（倒れ ${o.plan.fallen.toFixed(2)}人）`);
   console.log(`標準の章ごとの突破率（着いた人のうち）：${o.smart.chap.map((x, i) => '第' + (i + 1) + '章 ' + p(x)).join('　')}`);
-  console.log(`報酬はいつも：レリック ${p(o.rewards.relic)}　突入技の強化 ${p(o.rewards.up)}　手当て ${p(o.rewards.heal)}`);
+  console.log(`報酬はいつも：レリック ${p(o.rewards.relic)}　突入技の強化 ${p(o.rewards.up)}　手当て ${p(o.rewards.heal)}` + (o.rewards.swap != null ? `　仲間の入れ替え ${p(o.rewards.swap)}` : ''));
   console.log(`地点の選び方：戦闘を常に ${p(o.nodes.fight)}　休息を常に ${p(o.nodes.rest)}`);
   judge(o).forEach(([k, v]) => console.log((v ? '  OK  ' : '  NG  ') + k));
 }
