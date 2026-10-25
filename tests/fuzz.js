@@ -106,7 +106,8 @@ const INVARIANTS = () => {
       if (st.choose) {
         const rot = style === 'smart' ? (st.ko > 0 || st.tired > 0 || rnd() < 0.2) : rnd() < 0.5;
         if (rnd() < 0.1) { await p.click('#btnPreview').catch(() => {}); await p.waitForTimeout(50); }
-        await p.click(rot ? '#btnRotate' : '#btnStay').catch(() => {});
+        const dis = await p.evaluate(() => document.getElementById('btnRotate').disabled);   // 縛り・気力不足のときは押せない
+        await p.click(rot && !dis ? '#btnRotate' : '#btnStay', { timeout: 3000 }).catch(() => {});
         await p.waitForTimeout(60);
         continue;
       }

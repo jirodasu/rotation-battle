@@ -135,13 +135,15 @@ function member(job, r, c, uid, cfg) {
   return Object.assign({}, j, { uid, name: '団員' + uid, jname: j.name, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
 }
 // 亜種（vkey）は30年モードの VARIANTS をそのまま使う（runsim.mjs の runEnemy と同じ変形）
-export function enemyAt(step, k, cfg, vkey) {
+// rests：この遠征で休んだ回数。章の主は休むたびに強くなる（cfg.restPen）
+export function enemyAt(step, k, cfg, vkey, rests = 0) {
   const i = step === cfg.nodes ? 'chief' : k;
   const base = i === 'chief' ? ENEMIES[cfg.chief] : typeof i === 'number' ? ENEMIES[i] : cfg[i];
-  const t = step - 1, v = vkey ? VARIANTS[vkey] : null;
+  const t = step - 1, v = vkey ? VARIANTS[vkey] : null, rp = i === 'chief' && cfg.restPen ? cfg.restPen : null;
+  const kh = rp ? 1 + rp.hp * rests : 1, kd = rp ? 1 + rp.dmg * rests : 1;
   const pk = i === 'chief' ? 'chief' : String(i), pat = cfg.patch && cfg.patch[pk] ? cfg.patch[pk] : base.pattern;
-  return Object.assign({}, base, { def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * ((v && v.hp) || 1)), pattern: pat.map((a) => {
-    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * ((v && v.dmg) || 1)) } : {});
+  return Object.assign({}, base, { def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1)), pattern: pat.map((a) => {
+    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * kd * ((v && v.dmg) || 1)) } : {});
     if (v && vkey === 'swarm' && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
     if (v && vkey === 'poison' && o.dmg) o.pierce = true;
     return o;
@@ -156,13 +158,13 @@ export function playRun(seed, policy, strat = {}, over = {}) {
   const cfg = Object.assign({}, EXP, over), R = rng(seed), pick = (a) => a[Math.floor(R() * a.length)];
   const form = cfg.size === 5 ? cfg.party5 : cfg.party, cols = cfg.size === 5 ? 3 : cfg.cols;
   let members = form.map(([j, r, c], i) => member(j, r, c, 'm' + i, cfg));
-  const relics = (cfg.startRelics || []).slice(); let fallen = 0, battles = 0;
+  const relics = (cfg.startRelics || []).slice(); let fallen = 0, battles = 0, rests = 0;
   for (let step = 1; step <= cfg.nodes; step++) {
     const type = step === cfg.nodes ? 'battle' : (strat.node ? strat.node(['battle', 'rest'], step, R) : pick(['battle', 'rest']));
-    if (type === 'rest') { members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * (cfg.restHeal == null ? 1 : cfg.restHeal))); }); continue; }
+    if (type === 'rest') { rests++; members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * (cfg.restHeal == null ? 1 : cfg.restHeal))); }); continue; }
     battles++;
     const fk = pick(cfg.foes), vk = (step < cfg.nodes || cfg.chiefVariant) && R() < cfg.variantRate ? pick(Object.keys(VARIANTS)) : null;
-    const en = enemyAt(step, fk, cfg, vk), bseed = Math.floor(R() * 1e9);
+    const en = enemyAt(step, fk, cfg, vk, rests), bseed = Math.floor(R() * 1e9);
     const party = () => members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
     let res;
     if (policy === 'plan') {
@@ -185,7 +187,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
       let t = strat.reward ? strat.reward(tags) : pick(tags); if (!tags.includes(t)) t = pick(tags);
       if (t === 'relic') relics.push(pick(free).id);
       else if (t === 'up') upgrade(pick(members), cfg.up);
-      else members.forEach((m) => { m.hp = m.max; });
+      else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
     }
   }
   return { clear: true, reached: cfg.nodes, fallen, battles, relics };
