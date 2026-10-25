@@ -1,4 +1,4 @@
-// 遠征の戦闘が、自動対戦 tools/expsim.mjs と同じ結果になること（回転レリック4種・突入技の強化・縛りを含む）。
+// 遠征の戦闘が、自動対戦 tools/expsim.mjs と同じ結果になること（回転レリック4種・突入技の強化・縛り・気力を含む）。
 // 同じ4人・同じ敵・同じ「回す／維持」の順で、ゲーム本体と自動対戦を戦わせ、勝敗・ターン数・全員の残りHP・敵の残りHPを比べる。
 // 乱数を使う攻撃（ランダム）を含まない敵だけで比べる（乱数の並びはゲームと自動対戦で違うため）。
 const { launch, testPage } = require('./_env');
@@ -59,7 +59,7 @@ async function fight(p, seq) {
     // 自動対戦（同じ並び・同じ敵・同じ順）
     const pol = (st) => !!k.seq[(st.turn - 1) % k.seq.length];
     const party0 = setup.members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
-    const res = sim.battle(setup.e, party0, pol, { cols: 2, seed: 1, relics: k.relics });
+    const res = sim.battle(setup.e, party0, pol, { cols: 2, seed: 1, relics: k.relics, rot: sim.EXP.rot });   // 気力も同じ規則
     const shp = Object.fromEntries(setup.members.map((m) => [m.uid, res.hp[m.uid] != null ? res.hp[m.uid] : 0]));
     const same = game.win === res.win && game.turns === res.turns && JSON.stringify(game.hp) === JSON.stringify(shp);
     ok(same, `ケース${i + 1}（${setup.e.name}・レリック ${k.relics.join(',') || 'なし'}${k.up ? '・強化あり' : ''}）ゲーム ${game.win ? '勝ち' : '負け'}${game.turns}T ${JSON.stringify(Object.values(game.hp))} ／ 自動対戦 ${res.win ? '勝ち' : '負け'}${res.turns}T ${JSON.stringify(Object.values(shp))}`);

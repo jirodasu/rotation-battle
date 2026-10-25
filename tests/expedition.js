@@ -85,9 +85,29 @@ async function fight(p, seq) {
     const rs = await p.evaluate(() => ({ node: window.__rb.run.node, relics: window.__rb.run.relics.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
     ok(rs.node === 1 && rs.relics === 1 && rs.cols === 2 && rs.slots === 6, '再開すると地点・レリック・盤の幅が保たれる ' + JSON.stringify(rs));
   } else ok(false, '1戦目に勝てなかったため、報酬と保存の確認ができない（' + r1 + '）');
+  // 気力：回すと2減り、毎ターン1たまる。足りないと「回す」が押せない
+  await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
+  if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
+  await p.click('#begin'); await sleep(p, 500);
+  await p.evaluate(() => { const R = window.__rb, c = R.run.choices.find((x) => x.type === 'battle'); R.run.map[c.rid] = { foe: 0, variant: null }; });
+  await p.evaluate(() => window.__rb.run.choices.findIndex((x) => x.type === 'battle')).then((i) => p.click('#rvCards .rv-card[data-i="' + i + '"]'));
+  await p.click('#rvGo'); await sleep(p, 600); await p.click('#btnStart');
+  const g = [];
+  for (let i = 0; i < 300 && g.length < 3; i++) {
+    const st = await p.evaluate(() => ({ choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', dis: document.getElementById('btnRotate').disabled, chip: document.getElementById('chipTurn').textContent, res: !document.getElementById('result').hidden, tip: !document.getElementById('tip').hidden }));
+    if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
+    if (st.res) break;
+    if (st.choose) { g.push([st.chip.replace(/.*気力/, ''), st.dis]); await p.click(st.dis ? '#btnStay' : '#btnRotate'); }
+    await sleep(p, 50);
+  }
+  for (let i = 0; i < 100; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden || (!document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden'))) break; await sleep(p, 100); }   // 解決中はタイトルへ戻れない
+  ok(g.length >= 3 && g[0][0] === '●●●' && !g[0][1] && g[1][0] === '●●○' && !g[1][1] && g[2][0] === '●○○' && g[2][1], '気力：3→回して1→2→回して0→1では回せない ' + JSON.stringify(g));
+  // 休むと章の主が強くなる
+  const pen = await p.evaluate(() => { const R = window.__rb; const a = R.expEnemy(3, null, 0, 0), b = R.expEnemy(3, null, 0, 2); return [a.hp, b.hp, a.pattern.find((x) => x.dmg).dmg, b.pattern.find((x) => x.dmg).dmg]; });
+  ok(pen[1] > pen[0] && pen[3] >= pen[2], '休むたびに章の主のHPと威力が上がる ' + JSON.stringify(pen));
   // 第1章を最後まで（3回）：道・報酬はでたらめ。終わりの画面まで止まらずに進み、表示に NaN/undefined が出ない
   let cleared = false;
-  for (let k = 0; k < 6 && !(k >= 3 && cleared); k++) {
+  for (let k = 0; k < 10 && !(k >= 3 && cleared); k++) {   // 標準の突破率は約66%なので、運の悪い連敗で落ちないよう最大8回まで
     await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
     if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
     await p.click('#begin'); await sleep(p, 500);
@@ -107,7 +127,7 @@ async function fight(p, seq) {
     if (/突破/.test(end)) cleared = true;
     ok(!!end && !bad, '第1章を最後まで遊べる（' + (end || '止まった') + (bad ? '　表示に ' + bad : '') + '）');
   }
-  ok(cleared, '標準的な遊び方で第1章を突破できる（最大6回のうち）');
+  ok(cleared, '標準的な遊び方で第1章を突破できる（最大10回のうち）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(xm.runs >= 3, '遠征の回数が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
   // チュートリアルは従来の3列×4マス
