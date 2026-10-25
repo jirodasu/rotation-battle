@@ -2874,8 +2874,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   let roster, grid, snapshot, enemy, battleIdx, turn, phase, sel, inspect, logLines, lastResult, previewOn = false;
   // 試作：遠征の回転レリック。30年モード・チュートリアルでは常に無効
   let stayN = 0;   // 続けて「維持」した回数（不動の構え）
-  let gauge = 0;   // 遠征の気力（回すには EXP.rot.cost）
-  const gaugeOk = () => !EXPM() || gauge >= EXP.rot.cost;
+  let gauge = 0;   // 気力（回すには EXP.rot.cost）。遠征とチュートリアルで使う
+  const gaugeOn = () => EXPM() || !!tut;
+  const gaugeOk = () => !gaugeOn() || gauge >= EXP.rot.cost;
   const EXPM = () => !!(run && run.mode === 'exp' && !tut);
   const relOn = (id) => EXPM() && (run.relics || []).includes(id);
   const relD = (id) => EXP.relics.find((x) => x.id === id);
@@ -3382,7 +3383,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   }
 
   function render() {
-    $('chipTurn').textContent = (tut ? '練習' : (run ? '地点' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn + (EXPM() && phase !== 'prep' ? '　気力' + '●'.repeat(Math.max(0, gauge)) + '○'.repeat(Math.max(0, EXP.rot.cap - gauge)) : '');
+    $('chipTurn').textContent = (tut ? '練習' : (run ? '地点' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn + (gaugeOn() && phase !== 'prep' ? '　気力' + '●'.repeat(Math.max(0, gauge)) + '○'.repeat(Math.max(0, EXP.rot.cap - gauge)) : '');
     renderBoard();
     renderTicket();
     renderBook();
@@ -3693,7 +3694,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     stats = { dealt: {}, who: {}, taken: 0, fallen: 0 };
     resetFlags();
     roster.forEach((u) => { u.entered = false; u.sta = u.staMax; });   // 突入技は「回して攻撃列に入った」ときだけ
-    sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = EXPM() ? EXP.rot.start : 0;
+    sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = gaugeOn() ? EXP.rot.start : 0;
     logLines = ['戦闘開始。'];
     runTurn();
   }
@@ -3918,7 +3919,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     }
     if (phase === 'over') return;
     turn += 1;
-    if (EXPM()) gauge = Math.min(EXP.rot.cap, gauge + EXP.rot.gain);
+    if (gaugeOn()) gauge = Math.min(EXP.rot.cap, gauge + EXP.rot.gain);
     units().forEach(({ u }) => { u.entered = false; });
     entryNow = {};
     order = []; orderIdx = -1;
@@ -3975,7 +3976,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     $('board').querySelectorAll('.tok[data-id]').forEach((t) => { const b = t.getBoundingClientRect(); old[t.dataset.id] = { x: b.left, y: b.top }; });
     rotateGrid();
     stayN = 0;
-    if (EXPM()) gauge -= EXP.rot.cost;
+    if (gaugeOn()) gauge -= EXP.rot.cost;
     say('隊列を回した。補助が再び使える。');
     if (relOn('incense')) {
       const hv = relD('incense').backHeal, got = [];
@@ -4150,7 +4151,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function tutDone() { try { return localStorage.getItem('rb-tut') === '1'; } catch (e) { return false; } }
   function tutGrid() {
     const g = emptyGrid();
-    [['warrior', 0, 0], ['monk', 0, 1], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['knight', 2, 1], ['samurai', 2, 2]].forEach(([id, r, c]) => { g[r][c] = roster.find((u) => u.id === id); });
+    // 本番（遠征）と同じ4人・3列×2マス。サムライは回復列にいて、最初に攻撃列へ動かす
+    [['warrior', 0, 0], ['witch', 1, 0], ['cleric', 2, 0], ['samurai', 2, 1]].forEach(([id, r, c]) => { g[r][c] = roster.find((u) => u.id === id); });
     return g;
   }
   const bd = () => $('board');
@@ -4159,23 +4161,24 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     { t: '隊列は3つの列', x: '真ん中の盤が味方の隊列。味方は「攻撃列」「補助列」「回復列」に並ぶ。', pos: 'top', spot: () => bd(), next: true },
     { t: '攻撃列', x: 'ここにいる仲間だけが、敵を攻撃する。素早い順に動く。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
     { t: '補助列', x: '同じ縦の列の攻撃列を支える。「攻」は与えるダメージ増、「防」は受けるダメージ減。', pos: 'bottom', spot: () => bd().querySelector('.strip.r1'), next: true },
-    { t: '回復列', x: '休んで自分のHPを回復する列。神官・僧侶は、この横の列のほかの仲間もまとめて回復する（本人は含まない）。1ターン目は回復しない。', pos: 'top', spot: () => bd().querySelector('.strip.r2'), next: true },
-    { t: '補助は縦、回復は横', x: '魔女の補助は、同じ縦の列（一）の戦士に届く。神官・僧侶の回復は、回復列の横の仲間に届く。', pos: 'top', spot: () => [bd().querySelector('.ctag[data-c="0"]'), slotEl(1, 0)], next: true },
+    { t: '回復列', x: '休んで自分のHPを回復する列。神官は、この横の列のほかの仲間もまとめて回復する（本人は含まない）。1ターン目は回復しない。', pos: 'top', spot: () => bd().querySelector('.strip.r2'), next: true },
+    { t: '補助は縦、回復は横', x: '魔女の補助は、同じ縦の列（一）の戦士に届く。神官の回復は、回復列の横の仲間（サムライ）に届く。', pos: 'top', spot: () => [bd().querySelector('.ctag[data-c="0"]'), slotEl(1, 0)], next: true },
     { t: '敵の予告', x: '敵は次の行動を予告する。赤く光る仲間が狙われる。敵が狙うのは一番前の列の仲間だけ。', pos: 'bottom', spot: () => [$('ticket'), bd().querySelector('.ctag.hit')], next: true },
     { t: '2手先の予兆', x: '予告の下の「その次」は、次のターンの行動。2手先を見て、回すかどうかを決めよう。', pos: 'bottom', spot: () => $('ticket').querySelector('.t-nx') || $('ticket'), next: true },
-    { t: '与えるダメージ', x: '剣マークの数字は、次に与えるダメージの見込み。金色は攻撃補助が乗っている印。', pos: 'bottom', spot: () => [slotEl(0, 0), slotEl(0, 1)], next: true },
+    { t: '与えるダメージ', x: '剣マークの数字は、次に与えるダメージの見込み。金色は攻撃補助が乗っている印。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
     { t: 'スタミナ', x: 'キャラ右横の点はスタミナ。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
-    { t: '仲間を動かす ①', x: 'サムライは回復列にいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 2), expect: { slot: [2, 2] }, hint: '光っているマスをタップ' },
-    { t: '仲間を動かす ②', x: '次に、攻撃列の空きマス（三の列）をタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 2), expect: { slot: [0, 2] }, hint: '光っているマスをタップ' },
-    { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 2), next: true },
+    { t: '仲間を動かす ①', x: 'サムライは回復列にいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
+    { t: '仲間を動かす ②', x: '次に、攻撃列の空きマス（二の列）をタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
+    { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
     { t: '1ターン終了', x: 'ここで、隊列を「回す」か「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
+    { t: '気力', x: '上のターン表示の●が気力。回すには気力2が要り、気力は毎ターン1たまる（最大3）。毎ターンは回せないので、いつ回すかを考えよう。', pos: 'bottom', spot: () => $('chipTurn'), next: true },
     { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
     { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。「突」が付いた仲間は、攻撃列に入ったターンだけ突入技を出す。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
     { t: '維持のあと', x: '補助の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
     { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
-    { t: '基本はここまで', x: 'あとは自由に。回すか維持するかを選びながら、敵を倒そう。', pos: 'bottom', next: true, last: true }
+    { t: '基本はここまで', x: 'あとは自由に。気力を見ながら、回すか維持するかを選んで敵を倒そう。', pos: 'bottom', next: true, last: true }
   ];
 
   function placeSpot() {
@@ -4246,8 +4249,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function tutOnChoose() {
     if (!tut || tut.free) return;
     tut.stage += 1;
-    const map = { 1: 14, 2: 18, 3: 20 };
-    if (map[tut.stage] != null) tutShow(map[tut.stage]);
+    // 何ターン目の「選ぶ」で、どの手順を見せるか（番号ではなく見出しで引く。手順を足してもずれない）
+    const map = { 1: '1ターン終了', 2: '維持のあと', 3: '基本はここまで' }, at = map[tut.stage] ? STEPS.findIndex((x) => x.t === map[tut.stage]) : -1;
+    if (at >= 0) tutShow(at);
   }
   function tutNote(key, title, text, spotFn, pos) {
     if (!tut || tut.free || tut.seen[key]) return Promise.resolve();
@@ -5504,7 +5508,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     roster = makeRoster();
     grid = tutGrid();
     battleIdx = 0;
-    if (!$('board').children.length || COLS !== 4) setCols(4);
+    setCols(EXP.cols);
     $('resultAlt').hidden = true;
     toPrep(false);
     if (!$('cover').hidden) closeCover();

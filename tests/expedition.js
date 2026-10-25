@@ -85,6 +85,14 @@ async function fight(p, seq) {
     const rs = await p.evaluate(() => ({ node: window.__rb.run.node, relics: window.__rb.run.relics.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
     ok(rs.node === 1 && rs.relics === 1 && rs.cols === 2 && rs.slots === 6, '再開すると地点・レリック・盤の幅が保たれる ' + JSON.stringify(rs));
   } else ok(false, '1戦目に勝てなかったため、報酬と保存の確認ができない（' + r1 + '）');
+  // 第1章だけだった頃（v5.1.25 まで）の途中保存：地図の中身が第1章だけ・章の休息回数が無い → 再開すると補われる
+  {
+    await p.evaluate(() => { const o = JSON.parse(localStorage.getItem('rb-exp-save')); Object.keys(o.run.map).forEach((id) => { if (!/^s[123]-/.test(id)) delete o.run.map[id]; }); delete o.run.chRests; o.run.rests = 1; localStorage.setItem('rb-exp-save', JSON.stringify(o)); window.__rb.goTitle(); });
+    await sleep(p, 200); if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
+    await p.click('#resume'); await sleep(p, 600);
+    const old = await p.evaluate(() => { const run = window.__rb.run; return { s6: !!run.map['s6-0'], s10: !!run.map['s10-0'], ch: run.chRests, node: run.node }; });
+    ok(old.s6 && old.s10 && old.ch === 1 && old.node === 1, '第1章だけの古い途中保存も再開でき、第2・3章の中身が補われる ' + JSON.stringify(old));
+  }
   // 気力：回すと2減り、毎ターン1たまる。足りないと「回す」が押せない
   await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
   if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
@@ -153,11 +161,12 @@ async function fight(p, seq) {
   ok(/勝利/.test(w10) && /踏破/.test(end10.t), '地点10の毒竜に勝つと「全3章を踏破」になる（' + end10.t + '）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(xm.runs >= 3 && xm.clears >= 1, '遠征の回数と踏破が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
-  // チュートリアルは従来の3列×4マス
+  // チュートリアルは本番と同じ盤
   await p.evaluate(() => window.__rb.goTitle()); await sleep(p, 300);
   await p.click('#beginTut'); await sleep(p, 900);
   const m4 = await p.evaluate(() => ({ cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
-  ok(m4.cols === 4 && m4.slots === 12, '遠征のあとチュートリアルを開くと3列×4マスに戻る ' + JSON.stringify(m4));
+  const tu = await p.evaluate(() => [...document.querySelectorAll('#board .tok[data-id]')].length);
+  ok(m4.cols === 2 && m4.slots === 6 && tu === 4, 'チュートリアルも本番と同じ4人・3列×2マス ' + JSON.stringify(Object.assign(m4, { units: tu })));
   const tel = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(Array.isArray(tel.hist) && tel.hist.length >= 4 && tel.hist.every((h) => typeof h.ms === 'number' && h.node >= 1), '遠征ごとに遊んだ時間と到達地点が端末内に残る（' + (tel.hist || []).map((h) => h.node + '地点/' + Math.round(h.ms / 1000) + '秒').join(' ') + '）');
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));
