@@ -73,7 +73,9 @@ async function measure(p, need) {
     await check('result', [['#next', 'btn']]);
     // 遠征（本番）：報酬・全滅・突破の画面
     await p.evaluate(() => { document.getElementById('result').hidden = true; window.__rb.expReward([]); }); await p.waitForTimeout(700);
-    await check('reward', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-card[data-i="2"]', 'warn']]);
+    await check('reward', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-card[data-i="3"]', 'warn']]);
+    await p.click('#rvCards .rv-card[data-i="3"]'); await p.waitForTimeout(700);
+    await check('swap', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-skip', 'warn']]);
     await p.evaluate(() => { const R = window.__rb; R.run.events.push('地点2　テスト（戦士）が倒れた「あとは……頼んだ」'); R.expEnd(false, []); }); await p.waitForTimeout(700);
     await check('defeat', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-skip', 'btn']]);
     await p.evaluate(() => { window.__rb.expEnd(true, ['章の主を倒した。']); }); await p.waitForTimeout(700);
