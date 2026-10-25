@@ -1886,7 +1886,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.25</p>
+    <p class="c-ver" id="cVer">ver 5.1.26</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -1912,7 +1912,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
       <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征（本番）</b>4人で地図を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当てから1つを選べる。休むと全快するが、章の主が強くなる。倒れた仲間は戻らない。地点3の章の主を倒せば突破。<br><b>気力</b>　回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征（本番）</b>4人で地図を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当てから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の毒竜を倒せば踏破。<br><b>気力</b>　回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。先読み（目のボタン）で「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃と「その次」の行動が出る。2手先を見て回すかどうかを決めよう。</div></li>
@@ -2174,7 +2174,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.25';
+  const APP_VERSION = '5.1.26';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2883,7 +2883,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   let stats = null, order = [], orderIdx = -1;
   let camp = { turns: 0, fallen: 0, stars: [], rec: [] };
   let tut = null;
-  const chapLabel = () => (tut ? 'チュートリアル' : (run ? (run.mode === 'exp' ? '遠征　第1章' + (enemy && enemy.chief ? '　章の主' : '') : '騎士団 ' + run.year + '年目') : CHAP[battleIdx]));
+  const chapLabel = () => (tut ? 'チュートリアル' : (run ? (run.mode === 'exp' ? '遠征　第' + (expCh(run.node + 1) + 1) + '章' + (enemy && enemy.chief ? (enemy.boss ? '　最後の主' : '　章の主') : '') : '騎士団 ' + run.year + '年目') : CHAP[battleIdx]));
 
   function makeRoster() { return JOBS.map((j) => Object.assign({}, j, { uid: 't-' + j.id, job: j.id, jname: j.name, max: j.hp, atkReady: true, defReady: true, sta: j.sta || 0, staMax: j.sta || 0, entered: false })); }
   const RX = () => RULES;   // 本番・チュートリアル共通
@@ -4279,7 +4279,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function showChapter() {
     if (RM) return;
     const c = $('chapter');
-    $('chSmall').textContent = run ? (run.mode === 'exp' ? '遠征　第1章　地点' + (run.node + 1) : '騎士団 ' + run.year + '年目') : CHAP[battleIdx];
+    $('chSmall').textContent = run ? (run.mode === 'exp' ? '遠征　第' + (expCh(run.node + 1) + 1) + '章　地点' + (run.node + 1) : '騎士団 ' + run.year + '年目') : CHAP[battleIdx];
     $('chName').textContent = enemy.name;
     c.hidden = false;
     SFX.chapter();
@@ -4480,10 +4480,12 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
      少人数（4人・3列×2マス）で第1章（地点1〜3、地点3は章の主）だけ遊べる。値は tools/expsim.mjs で測って決める。
      relics：回転の切れ目で発動する持ち物 / up：突入技の強化量 / foes：地点1・2に出る敵（ENEMIES の番号か、ここで定義した敵） */
   const EXP = {
-    nodes: 3, cols: 2, age: 25, afterHeal: 0.3, variantRate: 0.7, chiefVariant: true,
+    nodes: 10, chiefs: [3, 6, 10], chiefFoe: [1, 2, 'boss'], cols: 2, age: 25, afterHeal: 0.3, variantRate: 0.7, chiefVariant: true,
     party: [['warrior', 0, 0], ['samurai', 0, 1], ['witch', 1, 0], ['cleric', 2, 1]],
     party5: [['warrior', 0, 0], ['samurai', 0, 1], ['archer', 0, 2], ['witch', 1, 0], ['cleric', 2, 1]],
-    hp: [0.45, 0.45, 0.4], dmg: [0.7, 0.7, 0.67],
+    // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
+    hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
+    healMax: 2,   // 報酬「手当て」：全快＋全員の最大HP+2
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
     // 休むたびに章の主が強くなる（HP・威力の割合）。休めば安全だが、主が強くなる
@@ -4501,7 +4503,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       { name: 'のしかかり', glyph: '圧', rule: 'lowhp', dmg: 28 },
       { name: 'ひっかき', glyph: '爪', rule: 'all', dmg: 9 }
     ] },
-    foes: [0, 'binder'], chief: 1
+    foes: [[0, 'binder'], [1, 'binder'], [1, 2]]
   };
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, sta: 0, ent: 1 },
@@ -4812,7 +4814,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : { g: '休', t: '休息', s: '' }; }
     const tier = n.step <= 3 ? 0 : n.step <= 6 ? 1 : 2;
     if (n.kind === 'boss') return { g: '災', t: '決戦', s: '★★★★' };
-    return { g: '戦', t: n.kind === 'fort' ? '砦の戦い' : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
+    return { g: '戦', t: n.kind === 'fort' ? (EXPM() ? '章の主' : '砦の戦い') : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
   }
   function trackHTML() {
     const here = routeCur(), done = new Set(['start'].concat(run.path || []));
@@ -4841,7 +4843,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     let yrs = '';
     G.span.forEach(([st, x]) => { yrs += '<text class="rt-y' + (st === ROUTE.nodes[here].step + 1 ? ' now' : '') + '" x="' + x.toFixed(1) + '" y="' + (RT_H - 4) + '">' + (st === 0 ? '出陣' : EXPM() ? '地点' + st : (1 + RUN.years * (st - 1)) + '年') + '</text>'; });
     const names = ['序盤', '中盤', '終盤'], chips = [];
-    for (let i = 0; i < (EXPM() ? 1 : ROUTE.chapters); i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + (EXPM() ? '第1章' : names[i] || '第' + (i + 1) + '章') + '</span>');
+    for (let i = 0; i < ROUTE.chapters; i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + (EXPM() ? '第' + (i + 1) + '章' : names[i] || '第' + (i + 1) + '章') + '</span>');
     return '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div><svg class="route" viewBox="0 0 ' + RT_W + ' ' + RT_H + '" role="group" aria-label="遠征地図（' + (names[ch] || '') + '）。' + (here === 'start' ? '出陣前' : '現在地は地点' + ROUTE.nodes[here].step) + '。光っている領地へ進める">' +
       '<path class="isle" d="' + rtD(G.isl) + '"/>' + land + '<g class="rt-roads">' + road + '</g>' + mark + yrs + '</svg>';
   }
@@ -4852,7 +4854,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function nextHTML() {
     const cur = run.node + 1, fz = Object.keys(RUN.forced).map(Number).concat(RUN.nodes).filter((k) => k >= cur).sort((a, b) => a - b)[0];
     if (!fz || fz === cur) return '';
-    return 'どの道も地点' + fz + 'の' + (fz === RUN.nodes ? '<b>決戦</b>' : '<b>避けられない戦い</b>') + 'で合流（あと' + (fz - cur) + '地点）';
+    return 'どの道も地点' + fz + 'の' + (fz === RUN.nodes ? '<b>決戦</b>' : EXPM() ? '<b>章の主</b>' : '<b>避けられない戦い</b>') + 'で合流（あと' + (fz - cur) + '地点）';
   }
   // 出来事：1件目（引退・戦死など大事なものが先頭）を見せ、残りはタップで開く
   function eventsHTML(list, open) {
@@ -5321,9 +5323,12 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     runShowMap(['騎士団 ' + run.year + '年目から再開した。']);
   }
 
-  /* ============ 試作：遠征（EXP）。年齢・世代なしのローグライク。30年モードの保存・記録には触れない ============
-     4人・3列×2マスで、30年モードの地図の第1章（地点1〜3）を進む。休息は全快、戦闘に勝つと報酬を3つから1つ。
-     回転レリック・突入技の強化・「縛る」敵の規則は tools/expsim.mjs と同じ */
+  /* ============ 遠征（本番。EXP）。年齢・世代なしのローグライク ============
+     4人・3列×2マスで、全3章・10地点の地図を進む。地点 EXP.chiefs が章の主、最後は毒竜。休息は全快だが章の主が強くなる。
+     戦闘に勝つと報酬を3つから1つ。章を越えると全員全快し、欠けた仲間の代わりが合流する（4人まで）。
+     回転レリック・突入技の強化・「縛る」敵・気力の規則は tools/expsim.mjs と同じ */
+  const expCh = (step) => Math.max(0, EXP.chiefs.findIndex((c) => step <= c));
+  const expIsChief = (step) => EXP.chiefs.includes(step);
   const EXP_KEY = 'rb-exp-save', EXP_META = 'rb-exp';
   function expMeta() { try { const o = JSON.parse(localStorage.getItem(EXP_META) || 'null'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
   function expSaved() {
@@ -5331,25 +5336,25 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   }
   function expSave() { try { localStorage.setItem(EXP_KEY, JSON.stringify({ v: APP_VERSION, rseed, uidSeq, run: Object.assign({}, run, { enemy: null }) })); } catch (e) { /* 保存できない環境 */ } }
   function expClearSave() { try { localStorage.removeItem(EXP_KEY); } catch (e) { /* 保存できない環境 */ } }
-  // 第1章の中身：戦闘の敵（地点1・2は EXP.foes から、地点3は章の主）と亜種。休息系はすべて休息
+  // 地図の中身：戦闘の敵（章ごとに EXP.foes から。章の主は EXP.chiefFoe）と亜種。休息系はすべて休息
   function expFill() {
     const m = {}, VK = Object.keys(VARIANTS);
     Object.keys(ROUTE.nodes).forEach((id) => {
-      const n = ROUTE.nodes[id]; if (n.ch !== 0) return;
-      const chief = n.step === EXP.nodes;
-      if (isFightKind(n.kind)) m[id] = { foe: chief ? 'chief' : pick(EXP.foes), variant: (!chief || EXP.chiefVariant) && rnd() < EXP.variantRate ? pick(VK) : null };
+      const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
+      if (isFightKind(n.kind)) m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < EXP.variantRate ? pick(VK) : null };
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
     });
     return m;
   }
+  // rests：その章で休んだ回数（章の主は休むたびに強くなる）
   function expEnemy(step, vkey, foe, rests) {
-    const chief = step === EXP.nodes, k = chief ? EXP.chief : foe, t = step - 1;
-    const nr = chief ? (rests == null ? (run && run.rests) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
-    const base = typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = typeof k === 'number' ? k : base.art;
+    const ch = expCh(step), chief = expIsChief(step), k = chief ? EXP.chiefFoe[ch] : foe, t = step - 1;
+    const nr = chief ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
+    const base = k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
     const v = vkey ? VARIANTS[vkey] : null;
     return Object.assign({}, base, {
-      name: (v ? v.pre : '') + base.name, chief, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
-      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1)), boss: false, restUp: nr,
+      name: (v ? v.pre : '') + base.name, chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
+      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1)), boss: k === 'boss', restUp: nr,
       pattern: base.pattern.map((a) => {
         const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1)) } : {});
         if (v && vkey === 'swarm' && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
@@ -5359,13 +5364,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     });
   }
   const expFoeOf = (c) => (run.map && run.map[c.rid] && run.map[c.rid].foe) || 0;
-  const expSmall = () => '遠征　·　地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes;
+  const expSmall = () => { const st = Math.min(run.node + 1, EXP.nodes); return '遠征　·　第' + (expCh(st) + 1) + '章　·　地点 ' + st + ' / ' + EXP.nodes; };
   const relicLine = () => (run.relics.length ? '回転レリック：' + run.relics.map((id) => relD(id).name).join('・') : '回転レリックはまだない');
   function expCard(c) {
-    const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
+    const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
-      d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + '勝てば第1章を突破。' : '勝てば報酬を3つから1つ。'),
-      tags: [{ t: chief ? '章の主' : '序盤の敵', k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], binds ? [{ t: '縛り', k: 'var' }] : [], [{ t: '戦闘あり', k: 'bt' }]) };
+      d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を3つから1つ。'),
+      tags: [{ t: last ? '最後の主' : chief ? '第' + (e.ch + 1) + '章の主' : '第' + (e.ch + 1) + '章の敵', k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], binds ? [{ t: '縛り', k: 'var' }] : [], [{ t: '戦闘あり', k: 'bt' }]) };
   }
   function expShowMap(events) {
     phase = 'map';
@@ -5373,7 +5378,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '全員のHPが全快する。報酬はなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまのHP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] }));
-    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : '第1章の主', sub: step === EXP.nodes ? '章の主が待つ。勝てば第1章を突破。　' + relicLine() : relicLine(), events, cards,
+    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + relicLine() : relicLine(), events, cards,
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
   function expEnter(c) {
@@ -5393,10 +5398,10 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       return;
     }
     run.hist[run.node] = 'rest';
-    run.rests = (run.rests || 0) + 1;
+    run.rests = (run.rests || 0) + 1; run.chRests = (run.chRests || 0) + 1;
     run.members.forEach((m) => { m.hp = m.max; m.sta = m.staMax; });
     SFX.heal();
-    expAdvance(['休息をとった。全員のHPが全快した。章の主の気配が強まった（HP+' + Math.round(EXP.restPen.hp * run.rests * 100) + '%）。']);
+    expAdvance(['休息をとった。全員のHPが全快した。章の主の気配が強まった（HP+' + Math.round(EXP.restPen.hp * run.chRests * 100) + '%）。']);
   }
   function expAfterBattle(win) {
     if (snapshot) runSaveForm(snapshot.filter((x) => x.u.hp > 0));
@@ -5422,14 +5427,27 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
     const m = pick(run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.name + '（' + m.jname + '）の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
-    cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快する。', act: () => { run.members.forEach((x) => { x.hp = x.max; }); SFX.heal(); return '手当てをした。全員のHPが全快した。'; } });
+    cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。', events: pre || [], cards, on: (i) => expAdvance([cards[i].act()]) });
   }
+  // 章を越えたとき：全員全快し、欠けた仲間の代わり（職業はでたらめ）が4人まで合流。章の休息回数を数え直す
+  function expChapterClear(events) {
+    const ch = expCh(run.node + 1);
+    run.members.forEach((m) => { m.hp = m.max; m.sta = m.staMax; });
+    const joined = [];
+    while (run.members.length < EXP.party.length) { const m = newMember(pick(JOBS).id, EXP.age); run.members.push(m); joined.push(m.name + '（' + m.jname + '）'); }
+    roster = run.members; run.chRests = 0;
+    events.unshift('第' + (ch + 1) + '章を突破した。全員のHPが全快した。' + (joined.length ? joined.join('・') + 'が合流した。' : ''));
+    run.events.push('第' + (ch + 1) + '章を突破' + (joined.length ? '　' + joined.join('・') + 'が合流' : ''));
+    SFX.recruit();
+  }
   function expAdvance(events) {
+    events = (events || []).slice();
+    if (expIsChief(run.node + 1) && run.node + 1 < EXP.nodes) expChapterClear(events);
     if (run.pendId) { run.path = (run.path || []).concat(run.pendId); run.pendId = null; }
     run.node += 1;
     run.choices = routeChoices();
-    expShowMap(events || []);
+    expShowMap(events);
   }
   function expEnd(clear, ev) {
     phase = 'over';
@@ -5443,14 +5461,14 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     try { localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 保存できない環境 */ }
     coverProgress();
     if (clear) confetti();
-    rvShow({ small: expSmall(), calm: true, title: clear ? '第1章を突破！' : '遠征はここまで', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
-      events: (ev || []).concat(run.events.slice(-6)), cards: [{ ico: ICON.rot, t: 'もう一度、遠征へ', d: '新しい4人で第1章に挑む。（遠征 ' + mm.runs + '回目・突破 ' + (+mm.clears || 0) + '回）' }], skip: 'タイトルへ',
+    rvShow({ small: expSmall(), calm: true, title: clear ? '全3章を踏破！' : '遠征はここまで', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
+      events: (ev || []).concat(run.events.slice(-6)), cards: [{ ico: ICON.rot, t: 'もう一度、遠征へ', d: '新しい4人で挑む。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' }], skip: 'タイトルへ',
       on: (i) => { $('runv').hidden = true; if (i >= 0) beginExp(); else goTitle(); } });
   }
   function beginExp() {
     enterRun();
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
-    run = { mode: 'exp', node: 0, year: 1, act: 0, rests: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], relics: [], squad: 'exp', gen: 0, fame: 0, spent: 0, region: [] };
+    run = { mode: 'exp', node: 0, year: 1, act: 0, rests: 0, chRests: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], relics: [], squad: 'exp', gen: 0, fame: 0, spent: 0, region: [] };
     EXP.party.forEach(([id, r, c]) => { const m = newMember(id, EXP.age); m.r = r; m.c = c; run.members.push(m); });
     roster = run.members;
     setCols(EXP.cols);
@@ -5468,6 +5486,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     enterRun();
     run = o.run; rseed = o.rseed || 7; uidSeq = o.uidSeq || run.members.length;
     run.hist = run.hist || []; run.mentors = run.mentors || {}; run.relics = run.relics || []; run.pendId = null;
+    { const f = expFill(); Object.keys(f).forEach((id) => { if (!run.map[id]) run.map[id] = f[id]; }); }   // 第1章だけだった頃の保存：第2・3章の中身を足す
+    if (run.chRests == null) run.chRests = run.rests || 0;
     run.choices = routeChoices();
     roster = run.members;
     setCols(EXP.cols);

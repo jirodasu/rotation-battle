@@ -28,7 +28,7 @@ const INVARIANTS = () => {
   const gid = new Set(); onGrid.forEach((u) => { if (gid.has(u.uid)) bad.push('盤面に同じ団員が2人 ' + u.name); gid.add(u.uid); });
   if (run.mode !== 'exp') bad.push('本番が遠征になっていない');
   if (run.members.length > 4) bad.push('遠征の仲間が4人を超えた ' + run.members.length);
-  if (run.node > 3) bad.push('地点が章を超えた ' + run.node);
+  if (run.node > 10) bad.push('地点が10を超えた ' + run.node);
   if (R.cols !== 2 || document.querySelectorAll('#board .slot').length !== 6) bad.push('盤が3列×2マスでない cols=' + R.cols);
   document.querySelectorAll('#board .tok .nm u, .ehpn, #rvRoster small').forEach((e) => { if (/NaN|undefined/.test(e.textContent)) bad.push('表示に NaN/undefined: ' + e.textContent); });
   return bad;
@@ -65,7 +65,7 @@ const INVARIANTS = () => {
       if (st.en) { outcome = 'クリア'; break; }
       if (st.rv) {
         if (/ここまで/.test(st.title)) { outcome = '全滅（地点' + (st.node + 1) + '）'; break; }
-        if (/突破/.test(st.title)) { outcome = 'クリア'; break; }
+        if (/踏破/.test(st.title)) { outcome = 'クリア'; break; }
         // ときどき「中断して再開」：ページを読み直して続きから
         if (/どちらへ/.test(st.title) && rnd() < 0.15) {
           await p.goto(url); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300);
