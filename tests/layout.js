@@ -66,21 +66,18 @@ async function measure(p, need) {
     for (let k = 0; k < 120; k++) {
       if (await p.evaluate(() => !document.getElementById('result').hidden)) break;
       await closeTip();
-      if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) await p.click('#btnRotate').catch(() => {});
+      if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) await p.click(await p.evaluate(() => document.getElementById('btnRotate').disabled) ? '#btnStay' : '#btnRotate', { timeout: 3000 }).catch(() => {});   // 縛られたターンは「回す」が押せない
       await p.waitForTimeout(300);
     }
     await p.waitForTimeout(800);
     await check('result', [['#next', 'btn']]);
-    await p.click('#next'); await p.waitForTimeout(800);
-    await check('recruit', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-skip', 'warn']]);
-    await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(700);
-    await check('reward', [['#rvCards .rv-card[data-i="0"]', 'btn']]);
-    await p.evaluate(() => window.__rb.runEvent(['テスト'])); await p.waitForTimeout(600);
-    await check('event', [['#rvCards .rv-card[data-i="0"]', 'btn']]);
-    await p.evaluate(() => { const R = window.__rb; R.run.events.push('4年　テスト（戦士）戦死「あとは……頼んだ」', '7年　テスト（騎士）引退、教官に'); R.runEnd(false); }); await p.waitForTimeout(700);
+    // 遠征（本番）：報酬・全滅・突破の画面
+    await p.evaluate(() => { document.getElementById('result').hidden = true; window.__rb.expReward([]); }); await p.waitForTimeout(700);
+    await check('reward', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-card[data-i="2"]', 'warn']]);
+    await p.evaluate(() => { const R = window.__rb; R.run.events.push('地点2　テスト（戦士）が倒れた「あとは……頼んだ」'); R.expEnd(false, []); }); await p.waitForTimeout(700);
     await check('defeat', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-skip', 'btn']]);
-    await p.evaluate(() => { document.getElementById('runv').hidden = true; window.__rb.runEnd(true); }); await p.waitForTimeout(600); await p.click('#ending'); await p.waitForTimeout(2500);
-    await check('ending', [['#enAgain', 'btn'], ['#enTitle', 'btn']]);
+    await p.evaluate(() => { window.__rb.expEnd(true, ['章の主を倒した。']); }); await p.waitForTimeout(700);
+    await check('ending', [['#rvCards .rv-card[data-i="0"]', 'btn'], ['#rvCards .rv-skip', 'btn']]);
     // あそびかた・チュートリアル
     const p2 = await ctx.newPage(); p2.on('pageerror', (e) => errs.push(e.message));
     await p2.goto(url); await p2.waitForTimeout(600); await p2.click('#cover'); await p2.waitForTimeout(400);

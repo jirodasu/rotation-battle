@@ -1,4 +1,4 @@
-// でたらめな操作で本番（騎士団の30年）を何度も通しで遊び、ページエラー・止まり・状態の矛盾を探す。
+// でたらめな操作で本番（遠征）を何度も通しで遊び、ページエラー・止まり・状態の矛盾を探す。
 //   node tests/fuzz.js [ラン数=6] [seed=1]
 // 演出は「動きを減らす」設定で短縮して速く回す。画面サイズは横・縦・PCを順に使う。
 const { launch, testPage, OUT } = require('./_env');
@@ -26,7 +26,10 @@ const INVARIANTS = () => {
   g.forEach((row) => row.forEach((u) => { if (u) onGrid.push(u); }));
   if (onGrid.length > 7) bad.push('出撃が7人超え ' + onGrid.length);
   const gid = new Set(); onGrid.forEach((u) => { if (gid.has(u.uid)) bad.push('盤面に同じ団員が2人 ' + u.name); gid.add(u.uid); });
-  if (run.year !== 1 + 3 * run.node && run.node < 10) bad.push('年と地点が合わない year=' + run.year + ' node=' + run.node);
+  if (run.mode !== 'exp') bad.push('本番が遠征になっていない');
+  if (run.members.length > 4) bad.push('遠征の仲間が4人を超えた ' + run.members.length);
+  if (run.node > 3) bad.push('地点が章を超えた ' + run.node);
+  if (R.cols !== 2 || document.querySelectorAll('#board .slot').length !== 6) bad.push('盤が3列×2マスでない cols=' + R.cols);
   document.querySelectorAll('#board .tok .nm u, .ehpn, #rvRoster small').forEach((e) => { if (/NaN|undefined/.test(e.textContent)) bad.push('表示に NaN/undefined: ' + e.textContent); });
   return bad;
 };
@@ -61,7 +64,8 @@ const INVARIANTS = () => {
       if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
       if (st.en) { outcome = 'クリア'; break; }
       if (st.rv) {
-        if (/眠る/.test(st.title)) { outcome = '全滅（地点' + (st.node + 1) + '）'; break; }
+        if (/ここまで/.test(st.title)) { outcome = '全滅（地点' + (st.node + 1) + '）'; break; }
+        if (/突破/.test(st.title)) { outcome = 'クリア'; break; }
         // ときどき「中断して再開」：ページを読み直して続きから
         if (/どちらへ/.test(st.title) && rnd() < 0.15) {
           await p.goto(url); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300);
@@ -86,12 +90,12 @@ const INVARIANTS = () => {
       if (st.prep) {
         battles++;
         // 編成をでたらめに：入れ替え・留守番との交代・縦回し
+        const W = await p.evaluate(() => window.__rb.cols);
         for (let s = 0; s < 3; s++) {
-          const a = Math.floor(rnd() * 12), c = Math.floor(rnd() * 12);
-          await p.click(`#board .slot[data-r="${a >> 2}"][data-c="${a & 3}"]`).catch(() => {});
-          await p.click(`#board .slot[data-r="${c >> 2}"][data-c="${c & 3}"]`).catch(() => {});
+          const a = Math.floor(rnd() * 3 * W), c = Math.floor(rnd() * 3 * W);
+          await p.click(`#board .slot[data-r="${Math.floor(a / W)}"][data-c="${a % W}"]`).catch(() => {});
+          await p.click(`#board .slot[data-r="${Math.floor(c / W)}"][data-c="${c % W}"]`).catch(() => {});
         }
-        if (st.bench && rnd() < 0.5) { await p.click('.bn >> nth=0').catch(() => {}); const a = Math.floor(rnd() * 12); await p.click(`#board .slot[data-r="${a >> 2}"][data-c="${a & 3}"]`).catch(() => {}); }
         if (rnd() < 0.3) await p.click('#btnPrepRot').catch(() => {});
         await p.waitForTimeout(150);
         if (await p.evaluate(() => !document.getElementById('tip').hidden)) await p.click('#tipOk').catch(() => {});

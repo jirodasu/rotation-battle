@@ -30,7 +30,7 @@ const state = (p) => p.evaluate(() => ({
   ok(await p.evaluate(() => localStorage.getItem('rb-skin')) === 'hw', '選んだ見た目が保存される');
   await p.click('#begin'); await p.waitForTimeout(900); await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
   const h1 = await state(p);
-  ok(/ドラキュラット/.test(h1.ename) && h1.toks.includes('#d61f3a'), '本番の戦闘で、敵がドラキュラット・団員がハロウィン版になる（' + h1.ename + '）');
+  ok(/ドラキュラット/.test(h1.ename) && h1.toks.includes('#8d8478'), '本番の戦闘で、敵がドラキュラット・団員がハロウィン版になる（' + h1.ename + '）');
   ok(!/<g transform="translate\(50 100\) scale\(.9\)/.test(h1.toks), 'ハロウィン版は年齢で顔を変えない');
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs)); await ctx.close();
   // 再起動しても保たれる
@@ -44,7 +44,7 @@ const state = (p) => p.evaluate(() => ({
   ok(!m0.shown && m0.skin === null && m0.theme === null, '11月は切り替えが出ず、通常の見た目になる');
   await p.click('#begin'); await p.waitForTimeout(900); await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
   const m1 = await state(p);
-  ok(/ヒュージラット/.test(m1.ename) && !m1.toks.includes('#d61f3a'), '11月の戦闘は通常の敵・団員（' + m1.ename + '）');
+  ok(/ヒュージラット/.test(m1.ename) && !m1.toks.includes('#8d8478'), '11月の戦闘は通常の敵・団員（' + m1.ename + '）');
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs)); await ctx.close();
   // 10月でも通常を選び直せる
   ({ ctx, p, errs } = await open(b, '2026-10-10T12:00:00+09:00', { 'rb-skin': 'hw' }));

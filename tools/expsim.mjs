@@ -18,7 +18,7 @@ function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>
 
 // ---- 1戦（tools/sim.mjs の battle と同じ規則＋盤の幅・回転レリック・縛り） ----
 export function battle(en, party, policy, o) {
-  const COLS = o.cols, R = RULES, rand = rng(o.seed || 1), rel = new Set(o.relics || []), RD = Object.fromEntries(EXP.relics.map((x) => [x.id, x]));
+  const COLS = o.cols, R = RULES, rand = rng(o.seed || 1), rel = new Set(o.relics || []), RD = Object.fromEntries((o.relicDefs || EXP.relics).map((x) => [x.id, x]));
   const empty = () => Array.from({ length: 3 }, () => Array(COLS).fill(null));
   const unitsOf = (g) => { const a = []; for (let r = 0; r < 3; r++) for (let c = 0; c < COLS; c++) if (g[r][c]) a.push({ u: g[r][c], r, c }); return a; };
   const frontRow = (g) => { for (let r = 0; r < 3; r++) if (g[r].some(Boolean)) return r; return -1; };
@@ -26,6 +26,8 @@ export function battle(en, party, policy, o) {
   party.forEach((p) => { grid[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, sta: p.staMax, entered: false }); });
   const e = Object.assign({}, en, { hpNow: en.hp, charged: false });
   let fallen = 0, stay = 0, bound = false;
+  // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
+  const RT = o.rot || null; let gauge = RT ? RT.start : 0;
   const hpMap = () => { const m = {}; unitsOf(grid).forEach(({ u }) => { m[u.uid] = u.hp; }); return m; };
   for (let turn = 1; turn <= 40; turn++) {
     if (turn > 1) {
@@ -60,6 +62,7 @@ export function battle(en, party, policy, o) {
           const v = grid[fr][col]; let d = act.dmg;
           if (fr > 0) d *= 2;
           else {
+            if (act.vsEntered && v.entered) d = Math.round(d * act.vsEntered);   // 実験用：入ったばかりの仲間に大きく当たる
             const m = grid[1][col];
             if (!act.pierce && m && m.defReady && m.defSup > 0) { d -= m.defSup; m.defReady = false; }
             d -= (guardCol[col] || 0) + teamGuard;
@@ -72,7 +75,7 @@ export function battle(en, party, policy, o) {
         if (act.rule === 'random') { for (let i = 0; i < act.hits; i++) { const f2 = frontRow(grid); if (f2 < 0) break; const L2 = unitsOf(grid).filter((x) => x.r === f2); hit(L2[Math.floor(rand() * L2.length)].c); } }
         else if (act.rule === 'all') L.map((x) => x.c).forEach(hit);
         else {
-          let t = act.rule === 'job' ? L.find((x) => x.u.name === act.job) : null;
+          let t = act.rule === 'job' ? L.find((x) => (x.u.jname || x.u.name) === act.job) : null;
           if (!t) t = L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p));
           for (let i = 0; i < (act.hits || 1); i++) hit(t.c);
         }
@@ -96,12 +99,13 @@ export function battle(en, party, policy, o) {
       }
     }
     unitsOf(grid).forEach(({ u }) => { u.entered = false; });
-    const canRot = !bound; bound = false;
+    if (RT) gauge = Math.min(RT.cap, gauge + RT.gain);
+    const canRot = !bound && (!RT || gauge >= RT.cost); bound = false;
     if (canRot && policy({ grid, turn, enemy: e, cols: COLS })) {
       const n = empty();
       for (let c = 0; c < COLS; c++) { n[0][c] = grid[1][c]; n[1][c] = grid[2][c]; n[2][c] = grid[0][c]; }
       if (rel.has('incense')) for (let c = 0; c < COLS; c++) { const u = n[2][c]; if (u) u.hp = Math.min(u.max, u.hp + RD.incense.backHeal); }
-      grid = n; stay = 0;
+      grid = n; stay = 0; if (RT) gauge -= RT.cost;
       unitsOf(grid).forEach(({ u, r }) => { u.atkReady = true; u.defReady = true; u.entered = r === 0; });
     } else stay++;
   }
@@ -127,15 +131,16 @@ export const SMART = (s) => {
 // ---- 1ラン（第1章） ----
 function member(job, r, c, uid, cfg) {
   const j = JOBS.find((x) => x.id === job);
-  // name は個人名（ゲームの本番と同じ）。そのため「職業を狙う」攻撃は、ゲームと同じく職業名に一致せず「HP最低」に切り替わる
-  return Object.assign({}, j, { uid, name: '団員' + uid, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
+  // name は個人名、jname は職業名（ゲームの本番と同じ）。「職業を狙う」攻撃は jname で照合する
+  return Object.assign({}, j, { uid, name: '団員' + uid, jname: j.name, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
 }
 // 亜種（vkey）は30年モードの VARIANTS をそのまま使う（runsim.mjs の runEnemy と同じ変形）
 export function enemyAt(step, k, cfg, vkey) {
   const i = step === cfg.nodes ? 'chief' : k;
   const base = i === 'chief' ? ENEMIES[cfg.chief] : typeof i === 'number' ? ENEMIES[i] : cfg[i];
   const t = step - 1, v = vkey ? VARIANTS[vkey] : null;
-  return Object.assign({}, base, { def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * ((v && v.hp) || 1)), pattern: base.pattern.map((a) => {
+  const pk = i === 'chief' ? 'chief' : String(i), pat = cfg.patch && cfg.patch[pk] ? cfg.patch[pk] : base.pattern;
+  return Object.assign({}, base, { def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * ((v && v.hp) || 1)), pattern: pat.map((a) => {
     const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * ((v && v.dmg) || 1)) } : {});
     if (v && vkey === 'swarm' && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
     if (v && vkey === 'poison' && o.dmg) o.pierce = true;
@@ -151,10 +156,10 @@ export function playRun(seed, policy, strat = {}, over = {}) {
   const cfg = Object.assign({}, EXP, over), R = rng(seed), pick = (a) => a[Math.floor(R() * a.length)];
   const form = cfg.size === 5 ? cfg.party5 : cfg.party, cols = cfg.size === 5 ? 3 : cfg.cols;
   let members = form.map(([j, r, c], i) => member(j, r, c, 'm' + i, cfg));
-  const relics = []; let fallen = 0, battles = 0;
+  const relics = (cfg.startRelics || []).slice(); let fallen = 0, battles = 0;
   for (let step = 1; step <= cfg.nodes; step++) {
     const type = step === cfg.nodes ? 'battle' : (strat.node ? strat.node(['battle', 'rest'], step, R) : pick(['battle', 'rest']));
-    if (type === 'rest') { members.forEach((m) => { m.hp = m.max; }); continue; }
+    if (type === 'rest') { members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * (cfg.restHeal == null ? 1 : cfg.restHeal))); }); continue; }
     battles++;
     const fk = pick(cfg.foes), vk = (step < cfg.nodes || cfg.chiefVariant) && R() < cfg.variantRate ? pick(Object.keys(VARIANTS)) : null;
     const en = enemyAt(step, fk, cfg, vk), bseed = Math.floor(R() * 1e9);
@@ -163,12 +168,12 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     if (policy === 'plan') {
       let best = null, sc0 = -1e9;
       for (let mk = 0; mk < 1024; mk++) {
-        const r = battle(en, party(), (st) => (st.turn <= 10 ? !!((mk >> (st.turn - 1)) & 1) : SMART(st)), { cols, seed: bseed, relics });
+        const r = battle(en, party(), (st) => (st.turn <= 10 ? !!((mk >> (st.turn - 1)) & 1) : SMART(st)), { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics });
         const sc = (r.win ? 1e5 : 0) - r.fallen * 1000 + Object.values(r.hp).reduce((a, b) => a + b, 0);
         if (sc > sc0) { sc0 = sc; best = r; }
       }
       res = best;
-    } else res = battle(en, party(), policy, { cols, seed: bseed, relics });
+    } else res = battle(en, party(), policy, { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics });
     members.forEach((m) => { m.hp = res.hp[m.uid] != null ? res.hp[m.uid] : 0; });
     fallen += members.filter((m) => m.hp <= 0).length;
     members = members.filter((m) => m.hp > 0);

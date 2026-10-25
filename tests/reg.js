@@ -40,6 +40,9 @@ const { launch, indexURL } = require('./_env');
       await p.waitForTimeout(350);
     }
     console.log('tut:', await p.evaluate(() => document.getElementById('rTitle').textContent), 'coach steps', steps);
+    // チュートリアルを終えたら「本番モードへ」で遠征が始まる
+    await p.click('#next'); await p.waitForTimeout(900);
+    console.log('afterTut:', await p.evaluate(() => (window.__rb && window.__rb.run ? window.__rb.run.mode : null) || document.getElementById('rvTitle').textContent));
   }
   console.log('errors', JSON.stringify(errs));
   await b.close();
