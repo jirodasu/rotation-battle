@@ -66,6 +66,8 @@ async function fight(p, seq) {
     await sleep(p, 50);
   }
   ok(boundSeen, '縛られたターンは「回す」が押せない');
+  // 誰も倒れないようにする（倒れると報酬が「入れ替え」ではなく「補充」になり、ここで確かめたい入れ替えの流れにならない。補充は tests/refill.js で確かめる）
+  await p.evaluate(() => window.__rb.run.members.forEach((m) => { m.hp = 999; }));
   await fight(p, [false, true]);
   const r1 = await p.evaluate(() => document.getElementById('rTitle').textContent);
   await p.click('#next'); await sleep(p, 500);

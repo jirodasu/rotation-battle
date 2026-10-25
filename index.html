@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#2e1c10">
+<meta name="theme-color" content="#0f1520">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1842,6 +1842,70 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 #btnRotate.glint:not(:disabled) { animation: glint .9s ease-out both; }
 @keyframes glint { 0% { filter: brightness(1.35) saturate(1.2); box-shadow: 0 0 0 3px rgba(255, 220, 140, .9), 0 0 22px 4px rgba(240, 190, 80, .7); } 100% { filter: none; } }
 @media (prefers-reduced-motion: reduce) { #btnRotate.glint { animation: none; } }
+/* ==== ゴシック調（洞窟聖堂の装飾線）：通常の見た目 v5.1.31 ==== */
+:root[data-skin="goth"][data-theme="dark"] {
+  --vellum: #151c2a; --vellum-hi: #1c2536; --vellum-lo: #0f1520;
+  --ink: #ece6d6; --ink-soft: #a9b3c6; --rule: #5b6a86; --rule-a: rgba(142, 154, 176, 0.32);
+  --rubric: #f08a62; --gold: #d8b660; --gold-hi: #f0dc9a; --gold-lo: #7f6420;
+  --paper: #1f2838; --paper-2: #263044; --paper-line: #3f4c66;
+  --row0: #3a2a2c; --row1: #2e2a46; --row2: #22362f;
+  --accent: #d8b660; --accent-deep: #7f6420; --accent-ink: #1a1405; --accent-a: rgba(216, 182, 96, 0.22); --accent-text: #e6c87a;
+  --danger-strong: #f08a62; --danger: #e2683f; --danger-a: rgba(226, 104, 63, 0.24); --on-danger: #2a0d06;
+  --shield: #9fc8f0; --shield-strong: #9fc8f0; --on-shield: #0c1a2c;
+  --hp: #86b892; --hp-low: #f08a62; --track: rgba(236, 230, 214, 0.14);
+  --shadow: rgba(0, 0, 0, 0.6); --scrim: rgba(5, 8, 14, 0.66);
+  --sky-top: #0f1520; --sky-bot: #26324a; --sun: #d6ecff;
+  --hill-far: #1b2436; --hill-near: #141b29; --ground: #121925;
+  --grain-blend: screen; --grain-op: 0.06;
+  --card: #222c40; --tank: #b08a46; --atk: #b0563f; --sup: #7d68ad; --heal: #4f8a5e;
+}
+/* 背景：霧の層とアーチの回廊、垂れる蔓。雲と丘はしまう */
+:root[data-skin="goth"] .cloud, :root[data-skin="goth"] .hills { display: none; }
+:root[data-skin="goth"] .sky { background:
+  radial-gradient(60% 45% at 50% 30%, rgba(159, 200, 240, 0.10), transparent 70%),
+  linear-gradient(180deg, var(--sky-top), var(--sky-bot) 70%, var(--ground)); height: 100%; }
+:root[data-skin="goth"] .sky::before, :root[data-skin="goth"] .sky::after { content: ""; position: absolute; left: 0; right: 0; pointer-events: none; -webkit-mask-image: linear-gradient(180deg, #000 62%, transparent); mask-image: linear-gradient(180deg, #000 62%, transparent); }
+/* 遠景：細線のアーチの列 */
+:root[data-skin="goth"] .sky::before { top: 0; height: calc(var(--hz) + 70px); opacity: .9;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='360' viewBox='0 0 260 360'><g fill='none' stroke='%233a4762' stroke-width='1.4'><path d='M20 360V150C20 80 60 40 110 40S200 80 200 150V360'/><path d='M34 360V156C34 96 66 62 110 62S186 96 186 156V360' stroke='%232c3750'/></g><g fill='none' stroke='%234d5c7b' stroke-width='1.2'><path d='M110 40v-26M104 20c-6-8 0-16 7-15 6 1 7 8 2 10'/></g></svg>") 0 0 / 260px auto repeat-x,
+    linear-gradient(180deg, transparent 60%, var(--sky-bot)); }
+/* 近景：太い柱のアーチ（左右の縁）と、垂れる蔓 */
+:root[data-skin="goth"] .sky::after { top: 0; height: calc(var(--hz) + 40px);
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='420' viewBox='0 0 160 420'><path d='M0 420V170C0 90 40 40 96 40H160V0H0Z' fill='%230f1520' fill-opacity='.3'/><path d='M14 420V176C14 104 48 60 100 58' fill='none' stroke='%234d5c7b' stroke-width='1.2'/><g fill='none' stroke='%233f5a52' stroke-width='1.3'><path d='M70 40c4 34-8 52-2 82 4 16 14 20 12 34'/><path d='M80 156c-5 2-8-2-6-5 2-3 5-1 5 1'/></g><path d='M30 120c-6-10 0-20 9-20 7 0 10 7 6 11-3 3-7 1-6-2' fill='none' stroke='%235b6a86' stroke-width='1.2'/></svg>") left top / auto 100% no-repeat,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='420' viewBox='0 0 160 420'><g transform='translate(160 0) scale(-1 1)'><path d='M0 420V170C0 90 40 40 96 40H160V0H0Z' fill='%230f1520' fill-opacity='.3'/><path d='M14 420V176C14 104 48 60 100 58' fill='none' stroke='%234d5c7b' stroke-width='1.2'/><g fill='none' stroke='%233f5a52' stroke-width='1.3'><path d='M76 40c-6 30 8 50 2 76-3 14-14 18-12 30'/></g></g></svg>") right top / auto 100% no-repeat; }
+/* 紙のしみは消し、頁の枠線は霧色に */
+:root[data-skin="goth"] .scene::before { opacity: 0; }
+:root[data-skin="goth"] body.boss-stage .top .chip, :root[data-skin="goth"] body.boss-stage .top .icon-btn { --paper: #1f2838; color: var(--ink); }
+/* 太陽 → 薔薇窓の光輪 */
+:root[data-skin="goth"] .sun { background:
+    radial-gradient(circle, rgba(214, 236, 255, .55) 0 18%, transparent 19%),
+    repeating-conic-gradient(from 0deg, rgba(214, 236, 255, .32) 0 4deg, transparent 4deg 30deg),
+    radial-gradient(circle, rgba(159, 200, 240, .22) 0 60%, transparent 61%);
+  border: 1.5px solid rgba(214, 236, 255, .45);
+  box-shadow: 0 0 0 6px rgba(159, 200, 240, .08), 0 0 0 7px rgba(214, 236, 255, .25), 0 0 60px 14px rgba(159, 200, 240, .18); }
+:root[data-skin="goth"] .stars { opacity: .25; }
+:root[data-skin="goth"] .ground { background: transparent; }
+/* 敵の影を暗く、輪郭を霧から浮かせる */
+:root[data-skin="goth"] .stage .eart svg { filter: drop-shadow(0 0 1.5px rgba(214, 236, 255, .55)) drop-shadow(0 0 14px rgba(159, 200, 240, .18)); }
+/* 仲間の駒：円の中を石の色に、縁に細い光 */
+:root[data-skin="goth"] .tok .disc, :root[data-skin="goth"] .uc-disc { box-shadow: inset 0 0 0 1px rgba(142, 154, 176, .35); }
+/* 最後の戦い：毒の光（緑）だけを足す */
+:root[data-skin="goth"] body.boss-stage { --sky-top: #0c1416; --sky-bot: #1c2e2a; --ground: #101a18; --sun: #b8f56a; }
+:root[data-skin="goth"] body.boss-stage .sun { border-color: rgba(184, 245, 106, .5);
+  background: radial-gradient(circle, rgba(184, 245, 106, .5) 0 18%, transparent 19%), repeating-conic-gradient(from 0deg, rgba(184, 245, 106, .3) 0 4deg, transparent 4deg 30deg); }
+/* 空きマス：霧に沈む破線 */
+:root[data-skin="goth"] .sock { background: rgba(214, 236, 255, 0.04); border-color: rgba(142, 154, 176, 0.45); }
+/* 表紙：洞窟聖堂の大アーチと薔薇窓 */
+:root[data-skin="goth"] .cover { color: #ece6d6; background:
+  url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='900' viewBox='0 0 600 900'><g fill='none' stroke='%233a4762' stroke-width='2'><path d='M80 900V380C80 200 180 90 300 90S520 200 520 380V900'/><path d='M110 900V390C110 226 196 124 300 124S490 226 490 390V900' stroke='%232c3750'/></g><g fill='none' stroke='%234d5c7b' stroke-width='1.4'><circle cx='300' cy='300' r='92'/><circle cx='300' cy='300' r='30'/><path d='M300 208V392M208 300H392M235 235L365 365M365 235L235 365'/></g><g fill='none' stroke='%233f5a52' stroke-width='1.6'><path d='M150 0c8 70-18 110-4 170 8 34 30 42 26 72'/><path d='M450 0c-10 60 14 104 2 156-6 28-28 36-24 60'/></g></svg>") center 42% / min(600px, 140vw) auto no-repeat,
+  radial-gradient(70% 55% at 50% 40%, rgba(159, 200, 240, 0.12), transparent 70%),
+  radial-gradient(140% 120% at 50% 50%, #1a2234 30%, #0a0e16 100%); }
+/* 夜の配色での文字の読みやすさ：熾火色の札は濃い文字、使い終えた補助の印は霧色の文字 */
+:root[data-skin="goth"] .rv-tags .tg-var, :root[data-skin="goth"] .rv-tags .tg-bt, :root[data-skin="goth"] .rv-tags .tg-warn, :root[data-skin="goth"] .ctag.hit { color: #1a0c06; }
+:root[data-skin="goth"] .seal.off { color: var(--ink-soft); }
+:root[data-skin="goth"] .btn .tag { color: #1a0c06; }
 </style>
 </head>
 <body class="is-cover">
@@ -1937,7 +2001,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.29</p>
+    <p class="c-ver" id="cVer">ver 5.1.31</p>
     <p class="c-copy">前列は戦い、中列は支え、後列は癒す。<br>ひと回りして、また戦う。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2140,7 +2204,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   };
   const faceMemo = {};
   function ageArt(job, phase) {
-    const base = ART[job]; if (!base || !phase || phase === 'prime' || SKIN === 'hw') return base;
+    const base = ART[job]; if (!base || !phase || phase === 'prime' || SKIN === 'hw' || SKIN === 'normal') return base;   // ゴシック調・ハロウィン版は年齢で顔を変えない
     const k = job + ':' + phase; if (faceMemo[k]) return faceMemo[k];
     const head = '<svg viewBox="0 0 100 100" aria-hidden="true">', inner = base.slice(head.length, -6);
     let out;
@@ -2225,7 +2289,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.29';
+  const APP_VERSION = '5.1.31';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4477,12 +4541,150 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     names: ['ドラキュラット', 'フランケン', 'カボチャおばけ'], boss: 'ナイトメアドラゴン',
     lines: ['ドラキュラットを追い払い、', 'フランケンの大技をしのぎ、', 'カボチャおばけの突進を受け止めた。']
   };
+  // ゴシック調（洞窟聖堂の装飾線）の絵。仲間は 100×100 の胸像、敵は 240×180。
+// 線：輪郭 #0c1019 2.4px／装飾 1.2px。顔は骨色の楕円＋目2つ。光は熾火（脅威）と光輪（味方の印）だけ。
+  const GOTH_ART = (function () {
+  const K = '#0c1019', BONE = '#ece6d6', SW = 'stroke="' + K + '" stroke-width="2.4" stroke-linejoin="round"';
+  const sv = (inner) => '<svg viewBox="0 0 100 100" aria-hidden="true">' + inner + '</svg>';
+  // 顔：骨色の楕円＋目（kind: dot=縦の短線, calm=閉じ目）
+  const faceAt = (cx, cy, rx, ry, kind) => '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="' + BONE + '" ' + SW + '/>' +
+    (kind === 'calm'
+      ? '<path d="M' + (cx - 8) + ' ' + (cy + 1) + 'q3 3 6 0M' + (cx + 2) + ' ' + (cy + 1) + 'q3 3 6 0" fill="none" stroke="' + K + '" stroke-width="2.2" stroke-linecap="round"/>'
+      : '<path d="M' + (cx - 6) + ' ' + (cy - 2) + 'v5M' + (cx + 6) + ' ' + (cy - 2) + 'v5" stroke="' + K + '" stroke-width="3" stroke-linecap="round"/>');
+  const curl = (x, y, s, col, w) => '<path d="M' + x + ' ' + y + 'c' + (-4 * s) + ' ' + (-1 * s) + ' ' + (-5 * s) + ' ' + (-6 * s) + ' ' + (-2 * s) + ' ' + (-8 * s) + 'c' + (3 * s) + ' ' + (-2 * s) + ' ' + (6 * s) + ' ' + (1 * s) + ' ' + (4 * s) + ' ' + (3 * s) + '" fill="none" stroke="' + col + '" stroke-width="' + (w || 1.3) + '" stroke-linecap="round"/>';
+  const art = {
+    // 戦士：鉄兜に金の鶏冠、肩当て
+    warrior: sv(
+      '<path d="M8 100Q10 74 50 70Q90 74 92 100Z" fill="#3b332c" ' + SW + '/>' +
+      '<path d="M14 86Q16 72 32 70L36 84Z M86 86Q84 72 68 70L64 84Z" fill="#5d6576" ' + SW + '/>' +
+      '<path d="M18 84q2-8 12-11M82 84q-2-8-12-11" fill="none" stroke="#d8b660" stroke-width="1.6"/>' +
+      '<path d="M25 52Q25 22 50 22Q75 22 75 52L75 58H25Z" fill="#6f7a8c" ' + SW + '/>' +
+      '<path d="M50 23Q56 6 76 4Q64 12 62 26Z" fill="#d8b660" ' + SW + '/>' +
+      '<path d="M27 46H73" stroke="' + K + '" stroke-width="2"/>' + curl(36, 40, 1, '#9aa6ba') +
+      faceAt(50, 62, 17, 13)),
+    // 騎士：鎖の頭巾と、アーチ紋の盾。兜飾りは貝の渦
+    knight: sv(
+      '<path d="M8 100Q10 74 50 70Q90 74 92 100Z" fill="#2c3a55" ' + SW + '/>' +
+      '<path d="M22 68Q20 30 50 26Q80 30 78 68Q66 78 50 78Q34 78 22 68Z" fill="#7b869a" ' + SW + '/>' +
+      '<path d="M28 60q22 10 44 0" fill="none" stroke="#4d5c7b" stroke-width="1.2"/><path d="M30 50q20 8 40 0" fill="none" stroke="#4d5c7b" stroke-width="1.2"/>' +
+      '<path d="M50 26q-4-12 6-16 10-3 12 6 1 7-6 7-4 0-4-4" fill="none" stroke="#d6ecff" stroke-width="2.2" stroke-linecap="round"/>' +
+      faceAt(50, 58, 15, 12) +
+      '<path d="M66 100V82q0-10 12-12 12 2 12 12v18Z" fill="#33405a" ' + SW + '/><path d="M72 100V86q0-7 6-8 6 1 6 8v14" fill="none" stroke="#d8b660" stroke-width="1.4"/>'),
+    // サムライ：髷と赤い鉢巻、骨色の襟
+    samurai: sv(
+      '<path d="M8 100Q10 74 50 70Q90 74 92 100Z" fill="#26304a" ' + SW + '/>' +
+      '<path d="M34 72L50 92L66 72" fill="none" stroke="' + BONE + '" stroke-width="3"/>' +
+      '<path d="M30 54Q28 26 50 26Q72 26 70 54Z" fill="#151c2a" ' + SW + '/>' +
+      '<path d="M44 28Q44 12 50 12Q56 12 56 28" fill="#151c2a" ' + SW + '/>' +
+      faceAt(50, 58, 17, 13) +
+      '<path d="M32 46H70L86 40M70 46l12 8" fill="none" stroke="#e2683f" stroke-width="3.4" stroke-linecap="round"/>'),
+    // 魔女：先が渦を巻く高い帽子、すみれ色
+    witch: sv(
+      '<path d="M8 100Q10 74 50 70Q90 74 92 100Z" fill="#3b2f55" ' + SW + '/>' +
+      '<path d="M30 54Q26 76 34 88L66 88Q74 76 70 54Z" fill="#241a38" ' + SW + '/>' +
+      faceAt(50, 62, 15, 12, 'calm') +
+      '<path d="M12 50H88Q82 58 50 58Q18 58 12 50Z" fill="#4a3b6c" ' + SW + '/>' +
+      '<path d="M32 50L46 14Q50 4 60 6Q70 9 66 18Q62 24 57 20Q54 16 58 14" fill="#4a3b6c" ' + SW + '/>' +
+      '<path d="M36 46L46 20" stroke="#a58fd0" stroke-width="1.2"/><circle cx="58" cy="42" r="3" fill="#a58fd0"/>'),
+    // アーチャー：苔色の頭巾、弓の細い弦
+    archer: sv(
+      '<path d="M82 10Q102 50 82 92" fill="none" stroke="#6b5232" stroke-width="4" stroke-linecap="round"/><path d="M82 10V92" stroke="#d6ecff" stroke-width="1" opacity=".8"/>' +
+      '<path d="M8 100Q10 74 50 70Q90 74 92 100Z" fill="#26392f" ' + SW + '/>' +
+      '<path d="M22 72Q20 28 50 20Q80 28 78 72Q64 66 50 66Q36 66 22 72Z" fill="#3f5a48" ' + SW + '/>' +
+      '<path d="M50 20q-6 10-2 18" fill="none" stroke="#86b892" stroke-width="1.2"/>' +
+      faceAt(50, 56, 15, 12) + curl(30, 80, 1.2, '#86b892')),
+    // 神官：アーチ形の白い頭巾、光輪、苔色の十字
+    cleric: sv(
+      '<circle cx="50" cy="14" r="9" fill="none" stroke="#d6ecff" stroke-width="1.6"/>' +
+      '<path d="M8 100Q10 76 50 72Q90 76 92 100Z" fill="#d9d2c0" ' + SW + '/>' +
+      '<path d="M20 84Q18 26 50 22Q82 26 80 84Z" fill="#ebe4d2" ' + SW + '/>' +
+      '<path d="M32 76Q32 40 50 38Q68 40 68 76Z" fill="#222c40" ' + SW + '/>' +
+      faceAt(50, 60, 12, 11) +
+      '<path d="M50 84v12M43 90h14" stroke="#4f8a5e" stroke-width="3" stroke-linecap="round"/>'),
+    // 僧侶：剃った頭、数珠、黄土の衣
+    monk: sv(
+      '<path d="M8 100Q10 74 50 70Q90 74 92 100Z" fill="#7a5a2c" ' + SW + '/>' +
+      '<path d="M14 100L40 72L52 76L28 100Z" fill="#5c4220" stroke="' + K + '" stroke-width="1.6"/>' +
+      '<ellipse cx="50" cy="48" rx="22" ry="22" fill="#d9cfb8" ' + SW + '/>' +
+      '<path d="M32 40q18-12 36 0" fill="none" stroke="#b7aa8c" stroke-width="1.2"/>' +
+      faceAt(50, 56, 15, 11, 'calm') +
+      '<path d="M30 74Q50 92 70 74" fill="none" stroke="#3b2a14" stroke-width="5" stroke-dasharray="0.1 6" stroke-linecap="round"/>' +
+      '<circle cx="50" cy="86" r="3.2" fill="#d8b660" stroke="' + K + '" stroke-width="1.2"/>')
+  };
+  // 敵：熾火の目・装飾の筋は「アクセント色」。亜種の色相回転でアクセントの色が変わる
+  const E = (inner) => '<svg viewBox="0 0 240 180" aria-hidden="true"><ellipse cx="120" cy="170" rx="90" ry="8" fill="rgba(5,7,12,.55)"/>' + inner + '</svg>';
+  const halo = (id, c) => '<radialGradient id="' + id + '"><stop offset="0" stop-color="' + c + '" stop-opacity=".6"/><stop offset=".5" stop-color="' + c + '" stop-opacity=".18"/><stop offset="1" stop-color="' + c + '" stop-opacity="0"/></radialGradient>';
+  const eye = (x, y, id) => '<circle cx="' + x + '" cy="' + y + '" r="16" fill="url(#' + id + ')"/><ellipse cx="' + x + '" cy="' + y + '" rx="5" ry="4" fill="#ff9a6a"/><circle cx="' + x + '" cy="' + y + '" r="2" fill="#fff1e0"/>';
+  const ES = 'stroke="' + K + '" stroke-width="3" stroke-linejoin="round"';
+  const eart = [
+    // 0 ヒュージラット：インクの塊に渦の毛並み、巻いた尾
+    E('<defs>' + halo('gE0', '#ff7a4a') + '</defs>' +
+      '<path d="M184 150c34-2 50-24 44-48-5-18-24-22-34-12-8 8-3 20 7 19 7-1 8-9 3-11" fill="none" stroke="' + K + '" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M184 150c34-2 50-24 44-48-5-18-24-22-34-12-8 8-3 20 7 19 7-1 8-9 3-11" fill="none" stroke="#5b6a86" stroke-width="1.4" stroke-linecap="round"/>' +
+      '<path d="M40 132c-4-44 26-80 82-80 52 0 82 30 82 68 0 30-22 48-70 48H72c-20 0-30-16-32-36z" fill="#3a4660" ' + ES + '/>' +
+      '<path d="M48 128c-2-38 26-68 74-68 46 0 74 26 76 60" fill="none" stroke="#9fc8f0" stroke-width="1.2" opacity=".3"/>' +
+      '<g fill="none" stroke="#8e9ab0" stroke-width="1.3" opacity=".75"><path d="M120 62c-5-9 0-17 8-17 6 0 9 6 5 9-3 3-6 1-5-2"/><path d="M154 70c0-9 8-14 15-11 5 3 5 8 1 10-3 1-5-1-4-3"/><path d="M92 70c-3-8 2-15 9-15 5 0 7 5 4 8"/></g>' +
+      '<path d="M84 78c16-10 40-12 62-5M78 92c24-12 56-13 86-2" fill="none" stroke="#5b6a86" stroke-width="1.2" opacity=".7"/>' +
+      '<path d="M38 104c-14-24-2-54 26-58 26-3 44 15 42 38-2 22-22 34-44 32" fill="#4a5672" ' + ES + '/>' +
+      '<path d="M48 52c-9-20 3-36 19-35 14 2 18 19 7 28" fill="#4a5672" ' + ES + '/><path d="M53 47c-4-10 3-19 11-18 7 1 9 9 3 14" fill="none" stroke="#e8a5a0" stroke-width="1.4" opacity=".8"/>' +
+      '<path d="M32 94c-3-20 8-38 30-42" fill="none" stroke="#9fc8f0" stroke-width="1.2" opacity=".45"/>' +
+      eye(58, 88, 'gE0') + '<path d="M46 82c5-6 13-7 19-2" fill="none" stroke="' + K + '" stroke-width="3"/>' +
+      '<circle cx="20" cy="104" r="4.5" fill="#e8a5a0" stroke="' + K + '" stroke-width="2"/>' +
+      '<path d="M30 116l4 9 5-8" fill="' + BONE + '" stroke="' + K + '" stroke-width="1.8"/>' +
+      '<path d="M18 96 0 90M18 102 0 104" stroke="#8e9ab0" stroke-width="1.2"/>' +
+      '<path d="M90 168c0-10 7-16 15-16M160 168c0-10 7-16 15-16" fill="none" stroke="' + K + '" stroke-width="3"/>'),
+    // 1 ジャイアント：石の肩にアーチの飾り、小さな骨色の顔、棍棒
+    E('<defs>' + halo('gE1', '#ff7a4a') + '</defs>' +
+      '<path d="M196 40L222 150" stroke="' + K + '" stroke-width="16" stroke-linecap="round"/><path d="M196 40L222 150" stroke="#4a3a2a" stroke-width="11" stroke-linecap="round"/>' +
+      '<path d="M200 60l8-3M205 82l8-3M210 104l8-3" stroke="#d8b660" stroke-width="2"/>' +
+      '<path d="M44 170Q30 92 78 66Q120 46 162 66Q210 92 196 170Z" fill="#414c64" ' + ES + '/>' +
+      '<path d="M60 170Q56 112 88 96M180 170Q184 112 152 96" fill="none" stroke="#5b6a86" stroke-width="1.3"/>' +
+      '<path d="M58 96Q58 60 86 58Q110 58 110 86Z M182 96Q182 60 154 58Q130 58 130 86Z" fill="#5a6680" ' + ES + '/>' +
+      '<path d="M66 92Q68 68 86 66Q102 66 104 84M174 92Q172 68 154 66Q138 66 136 84" fill="none" stroke="#8e9ab0" stroke-width="1.2"/>' +
+      '<path d="M98 72Q98 40 120 40Q142 40 142 72Q132 82 120 82Q108 82 98 72Z" fill="#3a4660" ' + ES + '/>' +
+      '<ellipse cx="120" cy="62" rx="14" ry="12" fill="' + BONE + '" stroke="' + K + '" stroke-width="2.4"/>' +
+      '<circle cx="120" cy="60" r="18" fill="url(#gE1)"/><path d="M113 58h4M123 58h4" stroke="#ff9a6a" stroke-width="3" stroke-linecap="round"/>' +
+      '<path d="M100 120q20 12 40 0" fill="none" stroke="#5b6a86" stroke-width="1.3"/>' + '<path d="M112 132c-6-8 0-16 8-14 6 2 6 9 1 10" fill="none" stroke="#8e9ab0" stroke-width="1.3"/>' +
+      '<path d="M178 120q16-4 22-20" fill="none" stroke="' + K + '" stroke-width="13" stroke-linecap="round"/><path d="M178 120q16-4 22-20" fill="none" stroke="#414c64" stroke-width="8" stroke-linecap="round"/>'),
+    // 2 オッドノーズ：渦巻く一本角の獣
+    E('<defs>' + halo('gE2', '#ff7a4a') + '</defs>' +
+      '<path d="M196 112q30-8 30-36" fill="none" stroke="' + K + '" stroke-width="6" stroke-linecap="round"/>' +
+      '<path d="M64 158Q46 100 96 84Q150 70 192 92Q218 108 206 150Q196 166 170 166H90Q72 166 64 158Z" fill="#3d4860" ' + ES + '/>' +
+      '<path d="M100 96q40-14 84 2M96 112q46-14 98 4" fill="none" stroke="#5b6a86" stroke-width="1.2" opacity=".8"/>' +
+      '<g fill="none" stroke="#8e9ab0" stroke-width="1.3"><path d="M140 88c-4-8 2-15 9-14 6 1 7 7 3 9"/><path d="M168 96c0-8 7-12 13-9 4 3 3 7 0 8"/></g>' +
+      '<path d="M88 166v-18M112 166v-14M164 166v-16M186 166v-18" stroke="' + K + '" stroke-width="9" stroke-linecap="round"/>' +
+      '<path d="M30 116Q24 84 54 76Q86 70 98 96Q104 124 76 132Q44 136 30 116Z" fill="#4d5974" ' + ES + '/>' +
+      '<path d="M40 86Q30 50 46 26Q58 10 72 20Q82 30 72 40Q64 46 58 40Q54 34 60 30" fill="#d9cfb8" ' + ES + '/>' +
+      '<path d="M44 82Q38 54 50 34" fill="none" stroke="#8e9ab0" stroke-width="1.2"/>' +
+      eye(64, 98, 'gE2') + '<path d="M54 90l16-3" stroke="' + K + '" stroke-width="3"/>' +
+      '<path d="M26 112q-6 4-4 10" fill="none" stroke="' + K + '" stroke-width="2.4"/>'),
+    // 3 毒竜：ゴシックのアーチ形の翼、長い首、毒の光
+    E('<defs>' + halo('gE3', '#9be36a') + '</defs>' +
+      '<path d="M120 96Q118 26 168 14Q154 40 172 46Q186 22 214 24Q196 44 210 60Q226 52 236 64Q200 76 186 100Z" fill="#2f403c" ' + ES + '/>' +
+      '<path d="M132 92Q134 44 166 28M150 92Q158 52 196 40M166 96Q182 70 216 64" fill="none" stroke="#86b892" stroke-width="1.2" opacity=".75"/>' +
+      '<path d="M186 140q40 6 46-24 4-20-14-24" fill="none" stroke="' + K + '" stroke-width="12" stroke-linecap="round"/><path d="M186 140q40 6 46-24 4-20-14-24" fill="none" stroke="#2a3a33" stroke-width="7" stroke-linecap="round"/>' +
+      '<path d="M66 166Q60 112 110 100Q168 92 192 126Q204 160 176 168Z" fill="#3b4f48" ' + ES + '/>' +
+      '<path d="M86 160Q90 124 120 116Q156 112 176 134" fill="none" stroke="#5b6a86" stroke-width="1.2"/>' +
+      '<g fill="none" stroke="#86b892" stroke-width="1.3"><path d="M122 132c-4-8 2-14 9-13 6 1 6 7 2 9"/><path d="M150 128c0-8 7-12 13-8 4 3 2 7-1 8"/></g>' +
+      '<path d="M96 110Q80 70 60 56" fill="none" stroke="' + K + '" stroke-width="20" stroke-linecap="round"/><path d="M96 110Q80 70 60 56" fill="none" stroke="#3b4f48" stroke-width="14" stroke-linecap="round"/>' +
+      '<path d="M22 64Q24 40 52 36Q78 36 80 58Q78 76 52 78Q30 78 22 64Z" fill="#4a625a" ' + ES + '/>' +
+      '<path d="M50 38Q46 18 60 8Q58 22 66 30" fill="#d9cfb8" ' + ES + '/><path d="M62 40Q66 22 82 16Q76 30 80 40" fill="#d9cfb8" ' + ES + '/>' +
+      '<circle cx="46" cy="56" r="22" fill="url(#gE3)"/><ellipse cx="46" cy="56" rx="5" ry="4" fill="#c8ff8a"/><circle cx="46" cy="56" r="2" fill="#f4ffe8"/>' +
+      '<path d="M22 68q8 6 22 4" fill="none" stroke="' + K + '" stroke-width="2.4"/><path d="M26 72l3 7 4-6M36 73l3 7 4-6" fill="' + BONE + '" stroke="' + K + '" stroke-width="1.6"/>' +
+      '<path d="M16 76q-8 8-4 18q6-6 10-4q-2-8 4-12" fill="#9be36a" opacity=".55"/>' +
+      '<path d="M96 168v-16M150 168v-14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/>')
+  ];
+  return { art, eart };
+  })();
+
   const SKIN_N = { art: Object.assign({}, ART), eart: EART.slice(), names: ENEMIES.map((e) => e.name), boss: BOSS.name, lines: EN_LINES.slice() };
+  // 通常の見た目は v5.1.31 からゴシック調（名前と文は通常のまま、絵と背景だけを差し替え）
+  const GOTH_SKIN = Object.assign({}, SKIN_N, { art: GOTH_ART.art, eart: GOTH_ART.eart });
   const hwSeason = () => new Date().getMonth() === 9;  // 10月だけ
   let SKIN = 'normal';
   function skinApply(k) {
     SKIN = k === 'hw' && hwSeason() ? 'hw' : 'normal';
-    const d = SKIN === 'hw' ? HW_SKIN : SKIN_N;
+    const d = SKIN === 'hw' ? HW_SKIN : GOTH_SKIN;
     Object.assign(ART, d.art);
     EART.splice(0, d.eart.length, ...d.eart);
     ENEMIES.forEach((e, i) => { if (d.names[i]) e.name = d.names[i]; });
@@ -4490,8 +4692,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     EN_LINES.splice(0, d.lines.length, ...d.lines);
     Object.keys(faceMemo).forEach((x) => { delete faceMemo[x]; });
     const r = document.documentElement;
-    if (SKIN === 'hw') { r.setAttribute('data-skin', 'hw'); r.setAttribute('data-theme', 'dark'); }
-    else { r.removeAttribute('data-skin'); r.removeAttribute('data-theme'); }
+    r.setAttribute('data-skin', SKIN === 'hw' ? 'hw' : 'goth'); r.setAttribute('data-theme', 'dark');
     $('o1').innerHTML = ART.warrior; $('o2').innerHTML = ART.witch; $('o3').innerHTML = ART.cleric;
     const box = $('skinSel');
     box.hidden = !hwSeason();
@@ -4593,7 +4794,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
     hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
     healMax: 3,   // 報酬「手当て」：全快＋全員の最大HP+3
-    swap: true, swapBonus: { ups: 1, hp: 4 },   // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回・最大HP+4
+    swap: true, swapBonus: { ups: 1, hp: 4 }, refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
+      // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回・最大HP+4
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
     // 休むたびに章の主が強くなる（HP・威力の割合）。休めば安全だが、主が強くなる
@@ -5541,6 +5743,17 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
       const have = new Set(run.members.map((x) => x.job)), pool = JOBS.filter((j) => !have.has(j.id)), nm = newMember(pick(pool.length ? pool : JOBS).id, EXP.age);
+      // 補充：仲間が欠けているときは、誰も抜けずに空いたマスへ加わる（自動対戦 tools/expsim.mjs と同じ規則）
+      if (EXP.refill && run.members.length < EXP.party.length) {
+        if (EXP.refillBonus !== false) { nm.bonus.hp = (nm.bonus.hp || 0) + EXP.swapBonus.hp; for (let k = 0; k < EXP.swapBonus.ups; k++) expUpgrade(nm); }
+        if (EXP.refillMax != null) nm.bonus.hp = (nm.bonus.hp || 0) - (nm.max - Math.round(nm.max * EXP.refillMax));   // 見習い：最大HPを refillMax 倍に（自動対戦と同じ丸め）
+        applyAge(nm, true);
+        const gap = EXP.party.length - run.members.length;
+        cards.push({ ico: '<span class="uc-disc c-' + nm.cls + '">' + face(nm) + '</span>', t: '仲間の補充　' + nm.name + '（' + nm.jname + '）',
+          d: (EXP.refillMax != null ? '見習い（HP' + nm.max + '）' : 'HP' + nm.max) + '・突入技「' + nm.entry.name + '」' + (EXP.refillBonus !== false ? '（強化済み）' : '') + '。誰も抜けずに、空いたマスへ加わる（空き' + gap + '人分）。',
+          act: () => { nm.r = null; nm.c = null; run.members.push(nm); roster = run.members; run.events.push('地点' + (run.node + 1) + '　' + nm.name + '（' + nm.jname + '）が加わった'); SFX.recruit(); return nm.name + '（' + nm.jname + '）が隊に加わった。'; } });
+        expRewardShow(pre, cards); return;
+      }
       nm.bonus.hp = (nm.bonus.hp || 0) + EXP.swapBonus.hp; for (let k = 0; k < EXP.swapBonus.ups; k++) expUpgrade(nm); applyAge(nm, true);
       cards.push({ ico: '<span class="uc-disc c-' + nm.cls + '">' + face(nm) + '</span>', t: '仲間の入れ替え　' + nm.name + '（' + nm.jname + '）', swap: nm,
         d: 'HP' + nm.max + '・突入技「' + nm.entry.name + '」（強化済み）。いまの仲間1人と入れ替える。' });

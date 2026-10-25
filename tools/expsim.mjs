@@ -200,7 +200,14 @@ export function playRun(seed, policy, strat = {}, over = {}) {
       let t = strat.reward ? strat.reward(tags) : pick(tags); if (!tags.includes(t)) t = pick(tags);
       // 入れ替え候補：いまの隊にいない職業から（全職業がいれば全体から）
       const have = new Set(members.map((m) => m.job)), pool = JOBS.filter((j) => !have.has(j.id)), job = (pool.length ? pick(pool) : pick(JOBS)).id;
-      if (t === 'swap') {
+      if (t === 'swap' && cfg.refill && members.length < cfg.party.length) {
+        // 補充：仲間が欠けているときは、誰も抜けずに空いたマスへ加わる（ゲームの runGrid と同じく回復列→補助列→攻撃列の順で空きを探す）
+        const used = new Set(members.map((m) => m.r + ',' + m.c)); let pos = null;
+        for (const r of [2, 1, 0]) for (let c = 0; c < cols; c++) if (!pos && !used.has(r + ',' + c)) pos = [r, c];
+        const nm = member(job, pos[0], pos[1], 'f' + step, cfg); members.push(nm);
+        if (cfg.swapBonus && cfg.refillBonus !== false) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }
+        if (cfg.refillMax != null) { nm.max = Math.round(nm.max * cfg.refillMax); nm.hp = nm.max; }   // 補充の仲間は見習い：最大HPが低い
+      } else if (t === 'swap') {
         // 誰と入れ替えるか：strat.swapOut（既定は「強さ」がいちばん低い仲間）
         const pw = (m) => m.hp * (m.atk + (m.heal || 0) * 2 + (m.defSup || 0) + 4);
         const out = strat.swapOut ? strat.swapOut(members, job, R) : members.reduce((a, b) => (pw(b) < pw(a) ? b : a));
