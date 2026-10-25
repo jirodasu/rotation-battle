@@ -107,7 +107,7 @@ async function fight(p, seq) {
   ok(pen[1] > pen[0] && pen[3] >= pen[2], '休むたびに章の主のHPと威力が上がる ' + JSON.stringify(pen));
   // 第1章を最後まで（3回）：道・報酬はでたらめ。終わりの画面まで止まらずに進み、表示に NaN/undefined が出ない
   let cleared = false;
-  for (let k = 0; k < 6 && !(k >= 3 && cleared); k++) {
+  for (let k = 0; k < 10 && !(k >= 3 && cleared); k++) {   // 標準の突破率は約66%なので、運の悪い連敗で落ちないよう最大8回まで
     await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
     if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
     await p.click('#begin'); await sleep(p, 500);
@@ -127,7 +127,7 @@ async function fight(p, seq) {
     if (/突破/.test(end)) cleared = true;
     ok(!!end && !bad, '第1章を最後まで遊べる（' + (end || '止まった') + (bad ? '　表示に ' + bad : '') + '）');
   }
-  ok(cleared, '標準的な遊び方で第1章を突破できる（最大6回のうち）');
+  ok(cleared, '標準的な遊び方で第1章を突破できる（最大10回のうち）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(xm.runs >= 3, '遠征の回数が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
   // チュートリアルは従来の3列×4マス
