@@ -85,6 +85,14 @@ async function fight(p, seq) {
     const rs = await p.evaluate(() => ({ node: window.__rb.run.node, relics: window.__rb.run.relics.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
     ok(rs.node === 1 && rs.relics === 1 && rs.cols === 2 && rs.slots === 6, '再開すると地点・レリック・盤の幅が保たれる ' + JSON.stringify(rs));
   } else ok(false, '1戦目に勝てなかったため、報酬と保存の確認ができない（' + r1 + '）');
+  // 第1章だけだった頃（v5.1.25 まで）の途中保存：地図の中身が第1章だけ・章の休息回数が無い → 再開すると補われる
+  {
+    await p.evaluate(() => { const o = JSON.parse(localStorage.getItem('rb-exp-save')); Object.keys(o.run.map).forEach((id) => { if (!/^s[123]-/.test(id)) delete o.run.map[id]; }); delete o.run.chRests; o.run.rests = 1; localStorage.setItem('rb-exp-save', JSON.stringify(o)); window.__rb.goTitle(); });
+    await sleep(p, 200); if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
+    await p.click('#resume'); await sleep(p, 600);
+    const old = await p.evaluate(() => { const run = window.__rb.run; return { s6: !!run.map['s6-0'], s10: !!run.map['s10-0'], ch: run.chRests, node: run.node }; });
+    ok(old.s6 && old.s10 && old.ch === 1 && old.node === 1, '第1章だけの古い途中保存も再開でき、第2・3章の中身が補われる ' + JSON.stringify(old));
+  }
   // 気力：回すと2減り、毎ターン1たまる。足りないと「回す」が押せない
   await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
   if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
@@ -105,38 +113,62 @@ async function fight(p, seq) {
   // 休むと章の主が強くなる
   const pen = await p.evaluate(() => { const R = window.__rb; const a = R.expEnemy(3, null, 0, 0), b = R.expEnemy(3, null, 0, 2); return [a.hp, b.hp, a.pattern.find((x) => x.dmg).dmg, b.pattern.find((x) => x.dmg).dmg]; });
   ok(pen[1] > pen[0] && pen[3] >= pen[2], '休むたびに章の主のHPと威力が上がる ' + JSON.stringify(pen));
-  // 第1章を最後まで（3回）：道・報酬はでたらめ。終わりの画面まで止まらずに進み、表示に NaN/undefined が出ない
-  let cleared = false;
-  for (let k = 0; k < 10 && !(k >= 3 && cleared); k++) {   // 標準の突破率は約66%なので、運の悪い連敗で落ちないよう最大8回まで
+  // 遠征を最後まで（2回、標準的な遊び方）：道・報酬はでたらめ。終わりの画面まで止まらずに進み、表示に NaN/undefined が出ない
+  for (let k = 0; k < 3; k++) {
     await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
     if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
     await p.click('#begin'); await sleep(p, 500);
-    let end = '', bad = '';
-    for (let i = 0; i < 60 && !end; i++) {
-      const st = await p.evaluate(() => ({ rv: !document.getElementById('runv').hidden, title: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length, txt: document.body.innerText }));
+    let end = '', bad = '', far = 0;
+    for (let i = 0; i < 400 && !end; i++) {
+      const st = await p.evaluate(() => ({ rv: !document.getElementById('runv').hidden, title: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length, txt: document.body.innerText, node: window.__rb.run ? window.__rb.run.node : 0 }));
+      far = Math.max(far, st.node + 1);
       if (/NaN|undefined/.test(st.txt)) { bad = (st.txt.match(/.{0,20}(NaN|undefined).{0,20}/) || [''])[0]; break; }
-      if (st.rv && /突破|ここまで/.test(st.title)) { end = st.title; break; }
+      if (st.rv && /踏破|ここまで/.test(st.title)) { end = st.title; break; }
       if (st.rv) {
         await p.click('#rvCards .rv-card[data-i="' + Math.floor(Math.random() * st.n) + '"]').catch(() => {});
         if (await p.evaluate(() => !!document.getElementById('rvGo'))) await p.click('#rvGo').catch(() => {});
         await sleep(p, 300); continue;
       }
       if (await p.evaluate(() => !document.getElementById('result').hidden)) { await p.click('#next'); await sleep(p, 300); continue; }
-      if (k < 2) await fight(p, [Math.random() < 0.5, true, false]); else await fightSmart(p);
+      if (k === 0) await fight(p, [Math.random() < 0.5, true, false]); else await fightSmart(p);
     }
-    if (/突破/.test(end)) cleared = true;
-    ok(!!end && !bad, '第1章を最後まで遊べる（' + (end || '止まった') + (bad ? '　表示に ' + bad : '') + '）');
+    ok(!!end && !bad, '遠征を最後まで遊べる（' + (end || '止まった') + '・地点' + far + 'まで' + (bad ? '　表示に ' + bad : '') + '）');
   }
-  ok(cleared, '標準的な遊び方で第1章を突破できる（最大10回のうち）');
+  // 章の主を倒すと：報酬のあと次の章へ。全員全快し、欠けた仲間の代わりが合流して4人に戻る
+  async function goTo(step) {   // 地点 step の手前まで道を進めた状態にする
+    await p.evaluate((step) => { const R = window.__rb, run = R.run; let cur = 'start'; const path = []; for (let i = 1; i < step; i++) { cur = R.ROUTE.nodes[cur].next[0]; path.push(cur); } run.path = path; run.node = step - 1; run.choices = R.routeChoices(); R.expShowMap([]); }, step);
+    await sleep(p, 400);
+    await p.click('#rvCards .rv-card[data-i="0"]'); if (await p.evaluate(() => !!document.getElementById('rvGo') && !document.getElementById('runv').hidden)) await p.click('#rvGo'); await sleep(p, 700);
+    await p.evaluate(() => { window.__rb.enemy.hp = 1; });
+    await fight(p, [false]);
+    const w = await p.evaluate(() => document.getElementById('rTitle').textContent);
+    await p.click('#next'); await sleep(p, 600);
+    return w;
+  }
+  await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
+  if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
+  await p.click('#begin'); await sleep(p, 500);
+  await p.evaluate(() => { const run = window.__rb.run; run.members.pop(); run.members[0].hp = 5; run.chRests = 2; });
+  const w3 = await goTo(3);
+  const rw3 = await p.evaluate(() => document.getElementById('rvTitle').textContent);
+  await p.click('#rvCards .rv-card[data-i="1"]'); await sleep(p, 600);
+  const c2 = await p.evaluate(() => { const run = window.__rb.run; return { node: run.node, n: run.members.length, full: run.members.every((m) => m.hp === m.max), ch: run.chRests, small: document.getElementById('rvSmall').textContent, ev: document.getElementById('rvEvents').textContent }; });
+  ok(/勝利/.test(w3) && /報酬/.test(rw3), '第1章の主に勝つと報酬を選べる');
+  ok(c2.node === 3 && c2.n === 4 && c2.full && c2.ch === 0 && /第2章/.test(c2.small) && /合流/.test(c2.ev), '報酬のあと第2章へ：全員全快、欠けた仲間の代わりが合流して4人、章の休息回数は0 ' + JSON.stringify(c2));
+  // 最後の主（毒竜）に勝つと踏破
+  const w10 = await goTo(10);
+  const end10 = await p.evaluate(() => ({ t: document.getElementById('rvTitle').textContent, boss: document.body.classList.contains('boss-stage') }));
+  ok(/勝利/.test(w10) && /踏破/.test(end10.t), '地点10の毒竜に勝つと「全3章を踏破」になる（' + end10.t + '）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
-  ok(xm.runs >= 3, '遠征の回数が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
-  // チュートリアルは従来の3列×4マス
+  ok(xm.runs >= 3 && xm.clears >= 1, '遠征の回数と踏破が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
+  // チュートリアルは本番と同じ盤
   await p.evaluate(() => window.__rb.goTitle()); await sleep(p, 300);
   await p.click('#beginTut'); await sleep(p, 900);
   const m4 = await p.evaluate(() => ({ cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
-  ok(m4.cols === 4 && m4.slots === 12, '遠征のあとチュートリアルを開くと3列×4マスに戻る ' + JSON.stringify(m4));
+  const tu = await p.evaluate(() => [...document.querySelectorAll('#board .tok[data-id]')].length);
+  ok(m4.cols === 2 && m4.slots === 6 && tu === 4, 'チュートリアルも本番と同じ4人・3列×2マス ' + JSON.stringify(Object.assign(m4, { units: tu })));
   const tel = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
-  ok(Array.isArray(tel.hist) && tel.hist.length >= 3 && tel.hist.every((h) => typeof h.ms === 'number' && h.node >= 1), '遠征ごとに遊んだ時間と到達地点が端末内に残る（' + (tel.hist || []).map((h) => h.node + '地点/' + Math.round(h.ms / 1000) + '秒').join(' ') + '）');
+  ok(Array.isArray(tel.hist) && tel.hist.length >= 4 && tel.hist.every((h) => typeof h.ms === 'number' && h.node >= 1), '遠征ごとに遊んだ時間と到達地点が端末内に残る（' + (tel.hist || []).map((h) => h.node + '地点/' + Math.round(h.ms / 1000) + '秒').join(' ') + '）');
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));
   await ctx.close(); await b.close();
   console.log(fails ? '不合格 ' + fails : '全て合格'); process.exit(fails ? 1 : 0);

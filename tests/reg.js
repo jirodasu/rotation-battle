@@ -16,7 +16,8 @@ const { launch, indexURL } = require('./_env');
       const can = await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden');
       if (can) {
         if (!opened) { await p.click('#eart'); await p.waitForTimeout(300); await p.keyboard.press('Escape'); await p.waitForTimeout(200); opened = true; }
-        await p.click(i % 2 ? '#btnRotate' : '#btnStay');
+        const dis = await p.evaluate(() => document.getElementById('btnRotate').disabled);   // 縛り・気力不足では回せない
+        await p.click(i % 2 && !dis ? '#btnRotate' : '#btnStay');
       }
     }
     console.log('main:', await p.evaluate(() => document.getElementById('rTitle').textContent));
@@ -27,7 +28,7 @@ const { launch, indexURL } = require('./_env');
     p.on('pageerror', e => errs.push('tut: ' + e.message));
     await p.goto(indexURL); await p.waitForTimeout(400);
     await p.click('#cover'); await p.waitForTimeout(300); await p.click('#beginTut'); await p.waitForTimeout(1300);
-    const acts = { '仲間を動かす ①': '.slot[data-r="2"][data-c="2"]', '仲間を動かす ②': '.slot[data-r="0"][data-c="2"]', '戦闘開始': '#btnStart', '先読みしてみよう': '#btnPreview', 'まず「維持」': '#btnStay', '回す': '#btnRotate' };
+    const acts = { '仲間を動かす ①': '.slot[data-r="2"][data-c="1"]', '仲間を動かす ②': '.slot[data-r="0"][data-c="1"]', '戦闘開始': '#btnStart', '先読みしてみよう': '#btnPreview', 'まず「維持」': '#btnStay', '回す': '#btnRotate' };
     let steps = 0;
     for (let i = 0; i < 200; i++) {
       const st = await p.evaluate(() => ({ vis: !document.getElementById('coach').hidden, t: document.getElementById('coTitle').textContent, nx: !document.getElementById('coNext').hidden, res: !document.getElementById('result').hidden }));
@@ -35,7 +36,8 @@ const { launch, indexURL } = require('./_env');
       if (st.vis) { steps++; if (acts[st.t]) await p.click(acts[st.t]); else if (st.nx) await p.click('#coNext'); }
       else {
         const can = await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden');
-        if (can) await p.click(i % 2 ? '#btnRotate' : '#btnStay');
+        const dis = await p.evaluate(() => document.getElementById('btnRotate').disabled);   // 気力が足りないと回せない
+        if (can) await p.click(i % 2 && !dis ? '#btnRotate' : '#btnStay');
       }
       await p.waitForTimeout(350);
     }
