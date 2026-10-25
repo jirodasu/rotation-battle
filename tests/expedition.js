@@ -1,4 +1,4 @@
-// 試作：遠征（4人・3列×2マス・第1章）。30年モードと別の入口・別の保存で、戦闘の規則が自動対戦（tools/expsim.mjs）と一致すること
+// 遠征（本番。4人・3列×2マス・第1章）。以前の騎士団の30年の保存は読まず消さない。戦闘の規則は自動対戦（tools/expsim.mjs）と一致すること
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const sleep = (p, ms) => p.waitForTimeout(ms);
@@ -43,9 +43,9 @@ async function fight(p, seq) {
   await p.addInitScript(([a, m]) => { try { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('rb-run-save', a); localStorage.setItem('rb-meta', m); sessionStorage.setItem('seeded', '1'); } } catch (e) { /* */ } }, [RUNSAVE, META]);
   await p.goto(testPage()); await sleep(p, 500);
   await p.click('#cover'); await sleep(p, 300);
-  const vis = await p.evaluate(() => { const e = document.getElementById('beginExp'), r = e.getBoundingClientRect(); return getComputedStyle(e).display !== 'none' && r.width > 0 && r.bottom <= innerHeight + 2; });
-  ok(vis, '表紙に「試作：遠征」の入口が見えている');
-  await p.click('#beginExp'); await sleep(p, 600);
+  const vis = await p.evaluate(() => { const e = document.getElementById('begin'), r = e.getBoundingClientRect(); return getComputedStyle(e).display !== 'none' && r.width > 0 && r.bottom <= innerHeight + 2; });
+  ok(vis && /遠征/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)), '表紙の「本番モード」が遠征になっている');
+  await p.click('#begin'); await sleep(p, 600);
   const s0 = await p.evaluate(() => ({ mode: window.__rb.run.mode, n: window.__rb.run.members.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length, title: document.getElementById('rvTitle').textContent, cards: document.querySelectorAll('#rvCards .rv-card').length, ages: [...document.querySelectorAll('#rvRoster small')].map((e) => e.textContent).join(',') }));
   ok(s0.mode === 'exp' && s0.n === 4 && s0.cols === 2 && s0.slots === 6, '遠征は4人・3列×2マスの盤で始まる ' + JSON.stringify([s0.n, s0.cols, s0.slots]));
   ok(/どちらへ/.test(s0.title) && s0.cards === 2, '地図で2つの道（戦闘・休息）から選べる');
@@ -77,11 +77,11 @@ async function fight(p, seq) {
     ok(rl.length === 1, '回転レリックを手に入れると持ち物に入る ' + JSON.stringify(rl));
     // 途中保存：別の保存で、30年モードの保存と記録は変わらない
     const sv = await p.evaluate(() => ({ exp: !!localStorage.getItem('rb-exp-save'), main: localStorage.getItem('rb-run-save'), meta: localStorage.getItem('rb-meta') }));
-    ok(sv.exp && sv.main === RUNSAVE && JSON.parse(sv.meta).runs === 3, '遠征の途中保存は別の項目で、30年モードの保存・記録は変わらない');
+    ok(sv.exp && sv.main === RUNSAVE && JSON.parse(sv.meta).runs === 3, '遠征の途中保存は別の項目で、以前の騎士団の30年の保存・記録は消えない');
     await p.reload(); await sleep(p, 500); await p.click('#cover'); await sleep(p, 300);
-    const sub = await p.evaluate(() => document.getElementById('expSub').textContent);
-    ok(/続きから/.test(sub), '表紙の遠征ボタンに「続きから」が出る（' + sub + '）');
-    await p.click('#beginExp'); await sleep(p, 600);
+    const sub = await p.evaluate(() => (document.getElementById('resume').hidden ? '' : document.getElementById('resumeSub').textContent));
+    ok(/遠征/.test(sub), '表紙に遠征の「続きから」が出る（' + sub + '）');
+    await p.click('#resume'); await sleep(p, 600);
     const rs = await p.evaluate(() => ({ node: window.__rb.run.node, relics: window.__rb.run.relics.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
     ok(rs.node === 1 && rs.relics === 1 && rs.cols === 2 && rs.slots === 6, '再開すると地点・レリック・盤の幅が保たれる ' + JSON.stringify(rs));
   } else ok(false, '1戦目に勝てなかったため、報酬と保存の確認ができない（' + r1 + '）');
@@ -89,7 +89,8 @@ async function fight(p, seq) {
   let cleared = false;
   for (let k = 0; k < 6 && !(k >= 3 && cleared); k++) {
     await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
-    await p.click('#beginExp'); await sleep(p, 500);
+    if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
+    await p.click('#begin'); await sleep(p, 500);
     let end = '', bad = '';
     for (let i = 0; i < 60 && !end; i++) {
       const st = await p.evaluate(() => ({ rv: !document.getElementById('runv').hidden, title: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length, txt: document.body.innerText }));
@@ -109,11 +110,13 @@ async function fight(p, seq) {
   ok(cleared, '標準的な遊び方で第1章を突破できる（最大6回のうち）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(xm.runs >= 3, '遠征の回数が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
-  // 30年モードに戻ると、盤は4マス幅に戻る
+  // チュートリアルは従来の3列×4マス
   await p.evaluate(() => window.__rb.goTitle()); await sleep(p, 300);
-  await p.evaluate(() => window.__rb.beginMain()); await sleep(p, 500);
-  const m4 = await p.evaluate(() => ({ cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length, mode: window.__rb.run.mode }));
-  ok(m4.cols === 4 && m4.slots === 12 && !m4.mode, '30年モードに戻ると3列×4マスに戻る ' + JSON.stringify(m4));
+  await p.click('#beginTut'); await sleep(p, 900);
+  const m4 = await p.evaluate(() => ({ cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length }));
+  ok(m4.cols === 4 && m4.slots === 12, '遠征のあとチュートリアルを開くと3列×4マスに戻る ' + JSON.stringify(m4));
+  const tel = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
+  ok(Array.isArray(tel.hist) && tel.hist.length >= 3 && tel.hist.every((h) => typeof h.ms === 'number' && h.node >= 1), '遠征ごとに遊んだ時間と到達地点が端末内に残る（' + (tel.hist || []).map((h) => h.node + '地点/' + Math.round(h.ms / 1000) + '秒').join(' ') + '）');
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));
   await ctx.close(); await b.close();
   console.log(fails ? '不合格 ' + fails : '全て合格'); process.exit(fails ? 1 : 0);

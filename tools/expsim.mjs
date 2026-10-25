@@ -72,7 +72,7 @@ export function battle(en, party, policy, o) {
         if (act.rule === 'random') { for (let i = 0; i < act.hits; i++) { const f2 = frontRow(grid); if (f2 < 0) break; const L2 = unitsOf(grid).filter((x) => x.r === f2); hit(L2[Math.floor(rand() * L2.length)].c); } }
         else if (act.rule === 'all') L.map((x) => x.c).forEach(hit);
         else {
-          let t = act.rule === 'job' ? L.find((x) => x.u.name === act.job) : null;
+          let t = act.rule === 'job' ? L.find((x) => (x.u.jname || x.u.name) === act.job) : null;
           if (!t) t = L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p));
           for (let i = 0; i < (act.hits || 1); i++) hit(t.c);
         }
@@ -127,8 +127,8 @@ export const SMART = (s) => {
 // ---- 1ラン（第1章） ----
 function member(job, r, c, uid, cfg) {
   const j = JOBS.find((x) => x.id === job);
-  // name は個人名（ゲームの本番と同じ）。そのため「職業を狙う」攻撃は、ゲームと同じく職業名に一致せず「HP最低」に切り替わる
-  return Object.assign({}, j, { uid, name: '団員' + uid, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
+  // name は個人名、jname は職業名（ゲームの本番と同じ）。「職業を狙う」攻撃は jname で照合する
+  return Object.assign({}, j, { uid, name: '団員' + uid, jname: j.name, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
 }
 // 亜種（vkey）は30年モードの VARIANTS をそのまま使う（runsim.mjs の runEnemy と同じ変形）
 export function enemyAt(step, k, cfg, vkey) {
@@ -151,7 +151,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
   const cfg = Object.assign({}, EXP, over), R = rng(seed), pick = (a) => a[Math.floor(R() * a.length)];
   const form = cfg.size === 5 ? cfg.party5 : cfg.party, cols = cfg.size === 5 ? 3 : cfg.cols;
   let members = form.map(([j, r, c], i) => member(j, r, c, 'm' + i, cfg));
-  const relics = []; let fallen = 0, battles = 0;
+  const relics = (cfg.startRelics || []).slice(); let fallen = 0, battles = 0;
   for (let step = 1; step <= cfg.nodes; step++) {
     const type = step === cfg.nodes ? 'battle' : (strat.node ? strat.node(['battle', 'rest'], step, R) : pick(['battle', 'rest']));
     if (type === 'rest') { members.forEach((m) => { m.hp = m.max; }); continue; }

@@ -731,11 +731,6 @@ body.boss-stage .en-u b { color: var(--ink); }
 }
 .c-btns { display: flex; flex-direction: column; gap: 20px; width: min(320px, 100%); margin-top: 4px; }
 .c-btns .btn { width: 100%; }
-/* チュートリアルと試作の遠征は横に並べ、表紙のボタンの段数を増やさない */
-.c-pair { display: flex; gap: 8px; }
-.c-pair .btn.stack { flex: 1 1 0; min-width: 0; padding-left: 8px; padding-right: 8px; }
-.c-pair .btn.stack b { font-size: 17px; white-space: nowrap; }
-.c-pair .btn.stack small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 .c-ver { position: fixed; right: 14px; bottom: calc(env(safe-area-inset-bottom, 0px) + 8px); margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--ink-soft); opacity: 0.75; }
 /* タイトル：最初のタップで音楽を鳴らし、メニューを出す（ブラウザは操作の前に音を出せないため） */
 .c-press { display: none; border: 0; background: none; color: var(--ink); cursor: pointer; font-family: inherit; padding: 18px 24px; min-height: 150px; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
@@ -1895,13 +1890,10 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
       <button class="btn primary big stack" id="resume" type="button" hidden><b class="disp">続きから</b><small id="resumeSub"></small></button>
-      <button class="btn primary big stack" id="begin" type="button"><b class="disp">本番モード</b><small id="beginSub">騎士団の30年に挑む</small></button>
+      <button class="btn primary big stack" id="begin" type="button"><b class="disp">本番モード</b><small id="beginSub">4人で遠征に挑む</small></button>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
       <p class="install" id="installIos">全画面で遊ぶには、Safariの<b>共有</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>から<b>「ホーム画面に追加」</b></p>
-      <div class="c-pair">
-        <button class="btn big stack" id="beginTut" type="button"><em class="tag" id="tutTag">はじめての方はこちら</em><b class="disp">チュートリアル</b><small>一つずつ覚える</small></button>
-        <button class="btn big stack" id="beginExp" type="button"><b class="disp">試作：遠征</b><small id="expSub">4人で第1章</small></button>
-      </div>
+      <button class="btn big stack" id="beginTut" type="button"><em class="tag" id="tutTag">はじめての方はこちら</em><b class="disp">チュートリアル</b><small>操作しながら一つずつ覚える</small></button>
       <div class="c-skin" id="skinSel" role="group" aria-label="キャラの見た目" hidden><span>見た目</span><button type="button" data-skin="normal" aria-pressed="true">通常</button><button type="button" data-skin="hw" aria-pressed="false">ハロウィン</button></div>
     </div>
   </div>
@@ -1919,13 +1911,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
       <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>騎士団の30年（本番）</b>10の地点を進み、1つ進むごとに3年たつ。団員は若手→盛り→円熟→衰えと年をとり、55歳で引退。倒れた仲間は戦死して戻らない。入団希望者は戦闘に勝ったあとと休息のときに現れる。出撃は7人まで、残りは留守番で、戦闘のあと全快する。継承・稽古で世代をつなぎ、最後の大災厄を倒そう。入団者には「早熟」「大器晩成」「頑丈」などの素質があり、引退した団員は教官として同じ職業の仲間を鍛える。道の途中では祭りや縁談などの出来事も起きる。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征（本番）</b>4人で地図を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当てから1つを選べる。倒れた仲間は戻らない。地点3の章の主を倒せば突破。</div></li>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。先読み（目のボタン）で「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃と「その次」の行動が出る。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。本番では★3つそろうと、勝利の報酬が1つ増える。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。</div></li>
     </ul>
     <div class="h-foot"><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
   </div>
@@ -3038,7 +3030,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (act.rule === 'all') return { cols: L.map((x) => x.c).sort(), desc: '狙い　一番前の列の全員' };
     if (act.rule === 'random') return { cols: null, desc: '狙い　一番前の列からランダム（' + act.hits + '回）' };
     if (act.rule === 'job') {
-      const t = L.find((x) => x.u.name === act.job);
+      const t = L.find((x) => (x.u.jname || x.u.name) === act.job);   // 本番の団員は個人名なので職業名で照合する
       if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + COLN[t.c] + '）' };
     }
     const t = L.reduce((a, b) => (b.u.hp < a.u.hp ? b : a));
@@ -4052,14 +4044,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function loadStars() { try { const a = JSON.parse(localStorage.getItem('rb-stars') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
   function saveStars(a) { try { localStorage.setItem('rb-stars', JSON.stringify(a)); } catch (e) { /* 保存できない環境 */ } }
   function coverProgress() {
-    let b = 0; try { b = +localStorage.getItem('rb-run-best') || 0; } catch (e) { /* 保存できない環境 */ }
-    const sv = runSaved();
+    // 本番は遠征。騎士団の30年は削除した（以前の保存 rb-run-save・rb-meta は消さずに残し、読まない）
+    const sv = expSaved(), xm = expMeta();
     $('resume').hidden = !sv;
     $('cover').classList.toggle('has-save', !!sv);
-    if (sv) $('resumeSub').textContent = '騎士団 ' + sv.run.year + '年目・地点 ' + Math.min(sv.run.node + 1, RUN.nodes) + ' / ' + RUN.nodes;
+    if (sv) $('resumeSub').textContent = '遠征・地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes;
     $('begin').classList.toggle('primary', !sv);
-    { const xs = expSaved(), xm = expMeta(); $('expSub').textContent = xs ? '続きから　地点' + Math.min(xs.run.node + 1, EXP.nodes) + '/' + EXP.nodes : '4人で第1章' + (+xm.clears ? '　突破' + xm.clears + '回' : ''); }
-    $('beginSub').textContent = (sv ? '新しい騎士団で始める' : '騎士団の30年に挑む') + (b ? '　最高 ' + Math.min(b, 10) + ' / 10' : '') + (metaLoad().runs > 0 ? '　騎士団 ' + squadList().filter((q) => squadOpen(q.id, metaLoad())).length + ' / ' + squadList().length : '');
+    $('beginSub').textContent = (sv ? '新しい遠征を始める' : '4人で遠征に挑む') + (+xm.clears ? '　突破 ' + xm.clears + '回' : '');
   }
   function showStats(win) {
     const par = enemy.par || 99, turns = turn;
@@ -4094,7 +4085,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       $('rSmall').textContent = chapLabel() + '　完';
       $('rTitle').textContent = tut ? '完了' : (last && !EXPM() ? '大団円' : '勝利');
       $('rTitle').className = 'disp';
-      $('rSub').textContent = tut ? '基本はこれで完了。本番「騎士団の30年」に挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
+      $('rSub').textContent = tut ? '基本はこれで完了。本番の遠征に挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
       const gotStars = tut ? 3 : showStats(true);
       if (tut) $('rStats').innerHTML = '';
       if (!tut && !run && gotStars < 3) { $('resultAlt').textContent = 'もう一度挑んで★を集める'; $('resultAlt').hidden = false; }
@@ -4119,7 +4110,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   }
 
   $('next').addEventListener('click', () => {
-    if (tut) { if (lastResult === 'win') beginMain(); else beginTutorial(); return; }
+    if (tut) { if (lastResult === 'win') beginExp(); else beginTutorial(); return; }
     if (EXPM()) {
       $('result').hidden = true;
       if (lastResult === 'win') { const ev = expAfterBattle(true); if (run.node + 1 >= EXP.nodes) expEnd(true, ev); else expReward(ev); }
@@ -4836,7 +4827,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     let yrs = '';
     G.span.forEach(([st, x]) => { yrs += '<text class="rt-y' + (st === ROUTE.nodes[here].step + 1 ? ' now' : '') + '" x="' + x.toFixed(1) + '" y="' + (RT_H - 4) + '">' + (st === 0 ? '出陣' : EXPM() ? '地点' + st : (1 + RUN.years * (st - 1)) + '年') + '</text>'; });
     const names = ['序盤', '中盤', '終盤'], chips = [];
-    for (let i = 0; i < (EXPM() ? 1 : ROUTE.chapters); i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + (EXPM() ? '第1章（試作）' : names[i] || '第' + (i + 1) + '章') + '</span>');
+    for (let i = 0; i < (EXPM() ? 1 : ROUTE.chapters); i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + (EXPM() ? '第1章' : names[i] || '第' + (i + 1) + '章') + '</span>');
     return '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div><svg class="route" viewBox="0 0 ' + RT_W + ' ' + RT_H + '" role="group" aria-label="遠征地図（' + (names[ch] || '') + '）。' + (here === 'start' ? '出陣前' : '現在地は地点' + ROUTE.nodes[here].step) + '。光っている領地へ進める">' +
       '<path class="isle" d="' + rtD(G.isl) + '"/>' + land + '<g class="rt-roads">' + road + '</g>' + mark + yrs + '</svg>';
   }
@@ -5353,7 +5344,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     });
   }
   const expFoeOf = (c) => (run.map && run.map[c.rid] && run.map[c.rid].foe) || 0;
-  const expSmall = () => '遠征（試作）　·　地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes;
+  const expSmall = () => '遠征　·　地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes;
   const relicLine = () => (run.relics.length ? '回転レリック：' + run.relics.map((id) => relD(id).name).join('・') : '回転レリックはまだない');
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
@@ -5364,6 +5355,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   function expShowMap(events) {
     phase = 'map';
     expSave();
+    try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '全員のHPが全快する。報酬はない。', tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまのHP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] }));
     rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : '第1章の主', sub: step === EXP.nodes ? '章の主が待つ。勝てば第1章を突破。　' + relicLine() : relicLine(), events, cards,
@@ -5380,7 +5372,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       benchSel = null;
       toPrep(false);
       showChapter();
-      setTimeout(() => { if (phase === 'prep') tipsCheck(curAct()); }, RM ? 50 : 1900);
+      // 最初の戦闘だけ、触らずに待つと入れ替えの見本を見せる（30年モードと同じ）
+      if (run.node === 0) setTimeout(() => { if (phase === 'prep') { demoArm(); tipsCheck(curAct()); } }, RM ? 50 : 900);
+      else setTimeout(() => { if (phase === 'prep') tipsCheck(curAct()); }, RM ? 50 : 1900);
       return;
     }
     run.hist[run.node] = 'rest';
@@ -5427,6 +5421,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     const mm = expMeta(), fal = run.gone.length;
     mm.runs = (+mm.runs || 0) + 1; if (clear) mm.clears = (+mm.clears || 0) + 1;
     mm.best = Math.max(+mm.best || 0, clear ? EXP.nodes : run.node);
+    actTick();
+    mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal: run.gone.length, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now() });
+    mm.last = null;
     try { localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 保存できない環境 */ }
     coverProgress();
     if (clear) confetti();
@@ -5492,10 +5489,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   }
   $('cover').addEventListener('click', (ev) => { if (gated) { ev.preventDefault(); ev.stopPropagation(); ungate(); } }, true);
   document.addEventListener('keydown', (ev) => { if (gated && !$('cover').hidden && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ungate(true); } });
-  $('begin').addEventListener('click', () => startFlow());
-  $('resume').addEventListener('click', resumeRun);
+  $('begin').addEventListener('click', () => beginExp());
+  $('resume').addEventListener('click', resumeExp);
   $('beginTut').addEventListener('click', beginTutorial);
-  $('beginExp').addEventListener('click', () => { if (expSaved()) resumeExp(); else beginExp(); });
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
   $('tutTag').hidden = tutDone();
   coverProgress();

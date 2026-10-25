@@ -33,7 +33,7 @@ async function fight(p, seq) {
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.goto(testPage()); await p.waitForTimeout(400);
     await p.click('#cover'); await p.waitForTimeout(200);
-    await p.click('#beginExp'); await p.waitForTimeout(500);
+    await p.click('#begin'); await p.waitForTimeout(500);
     // 地図の戦闘地点を、このケースの敵（亜種なし）にして入る
     const party = await p.evaluate((k) => {
       const R = window.__rb, run = R.run;
@@ -51,7 +51,7 @@ async function fight(p, seq) {
       if (k.up) run.members.forEach((m) => { if (m.up) R.applyAge(m, false); });
       const e = R.expEnemy(k.step, null, k.foe === 'chief' ? 0 : k.foe);
       run.enemy = e;
-      return { e, members: run.members.map((m) => ({ uid: m.uid, name: m.name, r: m.r, c: m.c, hp: m.hp, max: m.max, atk: m.atk, ranged: m.ranged, atkSup: m.atkSup, defSup: m.defSup, heal: m.heal, rest: m.rest, staMax: m.staMax, spd: m.spd, hits: m.hits, entry: m.entry })) };
+      return { e, members: run.members.map((m) => ({ uid: m.uid, name: m.name, jname: m.jname, r: m.r, c: m.c, hp: m.hp, max: m.max, atk: m.atk, ranged: m.ranged, atkSup: m.atkSup, defSup: m.defSup, heal: m.heal, rest: m.rest, staMax: m.staMax, spd: m.spd, hits: m.hits, entry: m.entry })) };
     }, k);
     await p.evaluate(() => window.__rb.toPrepForTest && window.__rb.toPrepForTest());
     await fight(p, k.seq);
