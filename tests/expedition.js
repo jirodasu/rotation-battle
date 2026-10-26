@@ -44,18 +44,18 @@ async function fight(p, seq) {
   await p.goto(testPage()); await sleep(p, 500);
   await p.click('#cover'); await sleep(p, 300);
   const vis = await p.evaluate(() => { const e = document.getElementById('begin'), r = e.getBoundingClientRect(); return getComputedStyle(e).display !== 'none' && r.width > 0 && r.bottom <= innerHeight + 2; });
-  ok(vis && /遠征/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)), '表紙の「本番モード」が遠征になっている');
+  ok(vis && /環廊/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)), '表紙の「本番モード」が環廊を下る遠征になっている');
   await p.click('#begin'); await sleep(p, 600);
   const s0 = await p.evaluate(() => ({ mode: window.__rb.run.mode, n: window.__rb.run.members.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length, title: document.getElementById('rvTitle').textContent, cards: document.querySelectorAll('#rvCards .rv-card').length, ages: [...document.querySelectorAll('#rvRoster small')].map((e) => e.textContent).join(',') }));
   ok(s0.mode === 'exp' && s0.n === 4 && s0.cols === 2 && s0.slots === 6, '遠征は4人・3列×2マスの盤で始まる ' + JSON.stringify([s0.n, s0.cols, s0.slots]));
   ok(/どちらへ/.test(s0.title) && s0.cards === 2, '地図で2つの道（戦闘・休息）から選べる');
   ok(!/歳/.test(s0.ages), '名簿に年齢が出ない（' + s0.ages + '）');
-  // 道の1つ目の戦闘を「しばりネズミ」にして進む
+  // 道の1つ目の戦闘を「鎖ネズミ」にして進む
   await p.evaluate(() => { const R = window.__rb, c = R.run.choices.find((x) => x.type === 'battle'); R.run.map[c.rid] = { foe: 'binder', variant: null }; });
   await p.evaluate(() => window.__rb.run.choices.findIndex((x) => x.type === 'battle')).then((i) => p.click('#rvCards .rv-card[data-i="' + i + '"]'));
   await p.click('#rvGo'); await sleep(p, 700);
   const e1 = await p.evaluate(() => ({ name: window.__rb.enemy.name, binds: window.__rb.enemy.pattern.some((a) => a.rule === 'bind') }));
-  ok(/しばりネズミ/.test(e1.name) && e1.binds, '「縛る」敵と戦える（' + e1.name + '）');
+  ok(/鎖ネズミ/.test(e1.name) && e1.binds, '「縛る」敵と戦える（' + e1.name + '）');
   // 縛りのターン：回すボタンが押せない
   await p.click('#btnStart'); let boundSeen = false, tries = 0;
   while (tries++ < 200) {
@@ -137,7 +137,7 @@ async function fight(p, seq) {
       const st = await p.evaluate(() => ({ rv: !document.getElementById('runv').hidden, title: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length, txt: document.body.innerText, node: window.__rb.run ? window.__rb.run.node : 0 }));
       far = Math.max(far, st.node + 1);
       if (/NaN|undefined/.test(st.txt)) { bad = (st.txt.match(/.{0,20}(NaN|undefined).{0,20}/) || [''])[0]; break; }
-      if (st.rv && /踏破|ここまで/.test(st.title)) { end = st.title; break; }
+      if (st.rv && /踏破|ここまで|途絶えた/.test(st.title)) { end = st.title; break; }
       if (st.rv) {
         await p.click('#rvCards .rv-card[data-i="' + Math.floor(Math.random() * st.n) + '"]').catch(() => {});
         if (await p.evaluate(() => !!document.getElementById('rvGo'))) await p.click('#rvGo').catch(() => {});
@@ -172,7 +172,7 @@ async function fight(p, seq) {
   // 最後の主（毒竜）に勝つと踏破
   const w10 = await goTo(10);
   const end10 = await p.evaluate(() => ({ t: document.getElementById('rvTitle').textContent, boss: document.body.classList.contains('boss-stage') }));
-  ok(/勝利/.test(w10) && /踏破/.test(end10.t), '地点10の毒竜に勝つと「全3章を踏破」になる（' + end10.t + '）');
+  ok(/勝利/.test(w10) && /踏破/.test(end10.t), '地点10の毒竜に勝つと「環廊を踏破」になる（' + end10.t + '）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(xm.runs >= 3 && xm.clears >= 1, '遠征の回数と踏破が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
   // チュートリアルは本番と同じ盤

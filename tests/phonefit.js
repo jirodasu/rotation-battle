@@ -4,7 +4,7 @@ const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 // [幅, 高さ, 説明]。高さは「画面の高さ − 上の安全領域 − 下の安全領域」の目安
 const SIZES = [[430, 839, 'iPhone Pro Max・ホーム画面'], [393, 759, 'iPhone Pro・ホーム画面'], [390, 750, 'iPhone・ホーム画面'], [375, 600, 'iPhone SE（Safari）'], [360, 740, 'Android 小'], [430, 932, 'iPhone Pro Max（安全領域なし）']];
-const FOES = [[3, 'poison', 0, 'ハロウィン・章の主（毒）'], [2, 'swarm', 'binder', '群れのしばりネズミ'], [6, 'armor', 0, '第2章の主（鎧）'], [10, null, 0, '最後の主（毒竜）']];
+const FOES = [[3, 'poison', 0, 'ハロウィン・章の主（毒）'], [2, 'swarm', 'binder', '群れの鎖ネズミ'], [6, 'armor', 0, '第2章の主（鎧）'], [10, null, 0, '最後の主（毒竜）']];
 (async () => {
   const b = await launch();
   for (const [w, h, label] of SIZES) for (const [step, vk, foe, fl] of FOES) {
