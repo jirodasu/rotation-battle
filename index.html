@@ -1942,6 +1942,63 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 :root[data-skin="goth"] .rv-tags .tg-var, :root[data-skin="goth"] .rv-tags .tg-bt, :root[data-skin="goth"] .rv-tags .tg-warn, :root[data-skin="goth"] .ctag.hit { color: #1a0c06; }
 :root[data-skin="goth"] .seal.off { color: var(--ink-soft); }
 :root[data-skin="goth"] .btn .tag { color: #1a0c06; }
+
+/* ==== 設定画面・文字サイズ（v5.1.38） ==== */
+.settings { z-index: 47; }
+.set-card { max-width: 420px; text-align: left; align-items: stretch; }
+.set-card h2 { text-align: center; }
+.set-list { display: grid; gap: 14px; margin: 6px 0 4px; }
+.set-row { display: grid; gap: 6px; }
+.set-row label { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; color: var(--ink); }
+.set-row label b, .set-row > span b { font-size: 15px; color: var(--ink); }
+.set-row output { font-size: 14px; font-variant-numeric: tabular-nums lining-nums; color: var(--ink-soft); }
+.set-row.inline { grid-template-columns: 1fr auto; align-items: center; gap: 12px; }
+.set-row.inline > span { display: grid; gap: 1px; }
+.set-row small { font-size: 12px; color: var(--ink-soft); line-height: 1.4; }
+.set-row input[type=range] { width: 100%; height: 44px; margin: 0; background: transparent; accent-color: var(--accent); touch-action: pan-y; }
+.set-sw { position: relative; min-width: 92px; height: 44px; padding: 0 14px 0 50px; border: 0; border-radius: 22px; background: var(--paper-2); color: var(--ink-soft); font: 700 14px/1 inherit; font-family: inherit; text-align: left; cursor: pointer; box-shadow: inset 0 0 0 1px var(--rule-a); }
+.set-sw i { position: absolute; left: 6px; top: 6px; width: 32px; height: 32px; border-radius: 50%; background: var(--paper-line); transition: transform .15s; }
+.set-sw[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+.set-sw[aria-checked="true"] i { background: var(--accent-ink); opacity: .85; }
+.set-sw[aria-checked="false"] { padding: 0 14px 0 50px; }
+.set-sw[aria-checked="true"] { padding: 0 50px 0 14px; }
+.set-sw[aria-checked="true"] i { transform: translateX(38px); }
+.set-sw:disabled { opacity: .45; cursor: default; }
+.set-sw em { font-style: normal; }
+.set-seg { display: inline-flex; border-radius: 22px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--rule-a); padding: 3px; }
+.set-seg button { min-width: 56px; height: 38px; border: 0; border-radius: 19px; background: transparent; color: var(--ink-soft); font: 700 14px/1 inherit; font-family: inherit; cursor: pointer; }
+.set-seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.set-about { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule-a); display: grid; gap: 6px; }
+.set-about h3 { margin: 0; font-size: 16px; color: var(--ink); }
+.set-about p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); }
+.set-about dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+.set-about dt { color: var(--ink); font-weight: 700; }
+.set-about dd { margin: 0; }
+.set-contact { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
+.set-contact b { color: var(--ink); }
+.set-contact a { color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; min-height: 32px; display: inline-flex; align-items: center; }
+.set-open { min-height: 44px; font-size: 14px; }
+.h-foot { display: flex; gap: 10px; }
+.h-foot .btn.primary { flex: 1; }
+.c-btns #setBtn { min-height: 44px; font-size: 14px; padding: 0 22px; }
+@media (max-height: 640px) { .c-btns #setBtn { min-height: 38px; } }
+/* 文字の大きさ「大」：読む文字だけ、約1.15倍に（盤の名札は枠が広いときだけ） */
+html[data-text="lg"] .rv-txt b, html[data-text="lg"] .runv.is-map .rv-txt b { font-size: 16.5px; }
+html[data-text="lg"] .rv-txt span, html[data-text="lg"] .runv.is-map .rv-txt span { font-size: 13.5px; }
+@media (max-height: 700px) { html[data-text="lg"] .runv.is-map .rv-txt b { font-size: 15.5px; } html[data-text="lg"] .runv.is-map .rv-txt span { font-size: 12.5px; } }
+html[data-text="lg"] #rvSub, html[data-text="lg"] .r-card p { font-size: 14.5px; }
+html[data-text="lg"] .t-main > span { font-size: 13.5px; }
+html[data-text="lg"] .steps li { font-size: 15px; }
+html[data-text="lg"] .steps b { font-size: 17px; }
+html[data-text="lg"] .co-text { font-size: 16px; }
+html[data-text="lg"] .co-title { font-size: 21px; }
+html[data-text="lg"] .tip p { font-size: 15px; }
+html[data-text="lg"] .pk-extra, html[data-text="lg"] .pk-extra b { font-size: 14px; }
+html[data-text="lg"] .set-about p, html[data-text="lg"] .set-about dl, html[data-text="lg"] .set-row small { font-size: 14px; }
+html[data-text="lg"] .tok .nm b, html[data-text="lg"] .tok .nm u { font-size: 14px; }
+@container (max-width: 80px) { html[data-text="lg"] .tok .nm b, html[data-text="lg"] .tok .nm u { font-size: 12px; } }
+@container (max-width: 56px) { html[data-text="lg"] .tok .nm b, html[data-text="lg"] .tok .nm u { font-size: 11px; } }
+html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 26px; }
 </style>
 </head>
 <body class="is-cover">
@@ -2037,12 +2094,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.37</p>
+    <p class="c-ver" id="cVer">ver 5.1.38</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
       <button class="btn primary big stack" id="resume" type="button" hidden><b class="disp">続きから</b><small id="resumeSub"></small></button>
       <button class="btn primary big stack" id="begin" type="button"><b class="disp">本番モード</b><small id="beginSub">4人で環廊を下る</small></button>
+      <button class="btn set-open" id="setBtn" type="button">設定</button>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
       <p class="install" id="installIos">全画面で遊ぶには、Safariの<b>共有</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>から<b>「ホーム画面に追加」</b></p>
       <button class="btn big stack" id="beginTut" type="button"><em class="tag" id="tutTag">はじめての方はこちら</em><b class="disp">チュートリアル</b><small>操作しながら一つずつ覚える</small></button>
@@ -2071,7 +2129,34 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。</div></li>
     </ul>
-    <div class="h-foot"><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
+    <div class="h-foot"><button class="btn set-open" id="helpSet" type="button">設定</button><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
+  </div>
+</div>
+
+<div class="result help settings" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle" hidden>
+  <div class="r-card h-card set-card">
+    <button class="h-x" id="setX" type="button" aria-label="閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></button>
+    <h2 class="disp" id="setTitle">設定</h2>
+    <div class="set-list">
+      <div class="set-row"><label for="setBgm"><b>BGM</b><output id="setBgmV">100</output></label><input type="range" id="setBgm" min="0" max="100" step="5" value="100"></div>
+      <div class="set-row"><label for="setSfx"><b>効果音</b><output id="setSfxV">100</output></label><input type="range" id="setSfx" min="0" max="100" step="5" value="100"></div>
+      <div class="set-row inline"><span><b>すべての音</b><small>右上の ♪ ボタンと同じ</small></span><button class="set-sw" id="setAll" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
+      <div class="set-row inline"><span><b>振動</b><small id="setVibNote">攻撃を受けたときなど</small></span><button class="set-sw" id="setVib" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
+      <div class="set-row inline"><span><b>文字の大きさ</b><small>説明文・報酬・チュートリアル</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
+    </div>
+    <div class="set-about">
+      <h3 class="disp">このゲームについて</h3>
+      <p class="set-ver" id="setVer"></p>
+      <dl>
+        <dt>企画・制作</dt><dd>jirodasu</dd>
+        <dt>制作協力</dt><dd>Claude（Anthropic）</dd>
+        <dt>書体</dt><dd>Shippori Mincho B1／Zen Kaku Gothic New（Google Fonts・SIL Open Font License）</dd>
+        <dt>絵と音</dt><dd>すべてこのゲームのために、コードで描き、その場で合成しています。</dd>
+      </dl>
+      <p class="set-note">進行の記録は、この端末のブラウザの中にだけ保存され、サーバーには送られません。（文字は Google Fonts から読み込みます）</p>
+      <p class="set-contact"><b>不具合・ご意見</b><a href="https://github.com/jirodasu/rotation-battle/issues" target="_blank" rel="noopener noreferrer">GitHub の Issues へ</a></p>
+    </div>
+    <div class="h-foot"><button class="btn primary big" id="setClose" type="button">閉じる</button></div>
   </div>
 </div>
 
@@ -2325,7 +2410,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.37';
+  const APP_VERSION = '5.1.38';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2364,6 +2449,14 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
      調は D マイナー（タイトル・戦闘）。主題の3音は前作から引き継ぐ。
      テーマ「ひと回り」＝ F・A・C の3音（攻撃列・補助列・回復列）。
      ローテーションのたびに、3音の並びが一つずつ回る。 */
+  // 設定（v5.1.38）：BGM・効果音の音量、振動、文字の大きさ。保存は rb-set（足しただけ。既存の保存には触らない）
+  const SET = { bgm: 1, sfx: 1, vib: true, text: 0 };
+  try {
+    const o = JSON.parse(localStorage.getItem('rb-set') || '{}'), cl = (v) => Math.max(0, Math.min(1, +v));
+    if (isFinite(o.bgm)) SET.bgm = cl(o.bgm); if (isFinite(o.sfx)) SET.sfx = cl(o.sfx);
+    if (o.vib === false) SET.vib = false; if (o.text === 1) SET.text = 1;
+  } catch (e) { /* 保存できない環境・壊れた保存は初期値のまま */ }
+  const setSave = () => { try { localStorage.setItem('rb-set', JSON.stringify(SET)); } catch (e) { /* 保存できない環境 */ } };
   let sndOn = true, ac = null, bus = null, noiseBuf = null, rotIdx = 0;
   try { if (localStorage.getItem('rb-snd') === '0') sndOn = false; } catch (e) { /* 保存できない環境 */ }
   const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -2395,8 +2488,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     lim.threshold.value = -3; lim.knee.value = 0; lim.ratio.value = 20; lim.attack.value = 0.001; lim.release.value = 0.08;
     master.connect(comp); comp.connect(lim); lim.connect(a.destination);
     const music = a.createGain(); music.gain.value = 0.42; music.connect(master);
-    const bgm = a.createGain(); bgm.connect(master);   // BGMの出口（大きな効果音の瞬間だけ少し下げる）
-    const sfx = a.createGain(); sfx.gain.value = 0.72; sfx.connect(master);
+    const bgmVol = a.createGain(); bgmVol.gain.value = SET.bgm; bgmVol.connect(master);   // 設定のBGM音量（録音の中には焼き込まない）
+    const bgm = a.createGain(); bgm.connect(bgmVol);   // BGMの出口（大きな効果音の瞬間だけ少し下げる）
+    const sfx = a.createGain(); sfx.gain.value = 0.72 * SET.sfx; sfx.connect(master);
     const rev = a.createConvolver(); rev.buffer = impulse(1.8, 2.1);   // 環廊：石の大空間。残響の長さは据え置きで、減衰をゆるくして長く聞かせる（録音の重さを増やさない）
     const revIn = a.createGain(), revLP = a.createBiquadFilter(), revOut = a.createGain();
     revLP.type = 'lowpass'; revLP.frequency.value = 2900; revOut.gain.value = 0.38;
@@ -2404,7 +2498,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     const n = a.sampleRate, nk = 'nz' + n;
     if (!bufMemo[nk]) { const nb = a.createBuffer(1, n, n), nd = nb.getChannelData(0); for (let i = 0; i < n; i++) nd[i] = Math.random() * 2 - 1; bufMemo[nk] = nb; }
     noiseBuf = bufMemo[nk];
-    bus = { master, music, sfx, rev: revIn, comp, lim, bgm };
+    bus = { master, music, sfx, rev: revIn, comp, lim, bgm, bgmVol };
   }
   /* --- 部品 --- */
   function outNode(dest, wet) {
@@ -2999,7 +3093,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       if (!ac || !bus) return;
       const t = ac.currentTime;
       if (on && !drone) {
-        const g = ac.createGain(); g.gain.value = 0.0001; g.connect(bus.music);
+        const dg = ac.createGain(); dg.gain.value = 0.42; dg.connect(bus.bgmVol);   // 以前は music(0.42) に直結。設定のBGM音量に従わせる
+        const g = ac.createGain(); g.gain.value = 0.0001; g.connect(dg);
         const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 380; lp.Q.value = 3; lp.connect(g);
         const lfo = ac.createOscillator(), ld = ac.createGain(); lfo.frequency.value = 0.35; ld.gain.value = 160; lfo.connect(ld); ld.connect(lp.frequency); lfo.start();
         const o = [osc('sawtooth', mtof(38), t, t + 600, lp, -7), osc('sawtooth', mtof(38), t, t + 600, lp, 7), osc('triangle', mtof(39), t, t + 600, lp)];
@@ -3046,7 +3141,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     else wake();
   });
   if (/[?&]audiodebug/.test(location.search)) { window.__rbAudio = () => Music.debug(); window.__rbBreak = () => Music._break(); }
-  const vib = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* 非対応 */ } };
+  const vib = (ms) => { if (!SET.vib) return; try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* 非対応 */ } };
 
   /* ============ 状態 ============ */
   let roster, grid, snapshot, enemy, battleIdx, turn, phase, sel, inspect, logLines, lastResult, previewOn = false;
@@ -4548,13 +4643,45 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     try { localStorage.setItem('rb-fast', SPD === 2 ? '1' : '0'); } catch (e) { /* 保存できない環境 */ }
   });
   $('snd').setAttribute('aria-pressed', String(sndOn));
-  $('snd').addEventListener('click', () => {
+  function toggleSnd() {
     sndOn = !sndOn;
-    $('snd').setAttribute('aria-pressed', String(sndOn));
+    $('snd').setAttribute('aria-pressed', String(sndOn)); setUi();
     try { localStorage.setItem('rb-snd', sndOn ? '1' : '0'); } catch (e) { /* 保存できない環境 */ }
     if (bus) bus.master.gain.setTargetAtTime(sndOn ? 0.85 : 0, ac.currentTime, 0.05);
     if (sndOn) { actx(); if (bus) bus.master.gain.setTargetAtTime(0.85, ac.currentTime, 0.05); Music.resume(); SFX.tap(); }
-  });
+  }
+  $('snd').addEventListener('click', toggleSnd);
+
+  /* ---- 設定画面 ---- */
+  const vibOk = typeof navigator.vibrate === 'function';   // iPhone の Safari / ホーム画面アプリは振動に対応していない
+  const swSet = (el, on) => { el.setAttribute('aria-checked', String(on)); el.querySelector('em').textContent = on ? 'オン' : 'オフ'; };
+  function applySet() {
+    document.documentElement.setAttribute('data-text', SET.text ? 'lg' : 'md');
+    if (bus && ac) { const t = ac.currentTime; bus.sfx.gain.setTargetAtTime(0.72 * SET.sfx, t, 0.03); bus.bgmVol.gain.setTargetAtTime(SET.bgm, t, 0.03); }
+  }
+  function setUi() {
+    $('setBgm').value = Math.round(SET.bgm * 100); $('setBgmV').textContent = Math.round(SET.bgm * 100);
+    $('setSfx').value = Math.round(SET.sfx * 100); $('setSfxV').textContent = Math.round(SET.sfx * 100);
+    swSet($('setAll'), sndOn); swSet($('setVib'), vibOk && SET.vib);
+    $('setVib').disabled = !vibOk; $('setVibNote').textContent = vibOk ? '攻撃を受けたときなど' : 'この端末（iPhoneなど）は振動に対応していません';
+    document.querySelectorAll('.set-seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.text === SET.text)));
+    $('setVer').textContent = 'ローグライク・ローテーションバトル　ver ' + APP_VERSION;
+  }
+  let setFrom = null;
+  const openSet = () => { setFrom = document.activeElement; setUi(); $('settings').hidden = false; $('setClose').focus(); };
+  const closeSet = () => { $('settings').hidden = true; try { if (setFrom && setFrom.focus) setFrom.focus(); } catch (e) { /* 戻せない */ } };
+  $('setBtn').addEventListener('click', () => { SFX.tap(); openSet(); });
+  $('helpSet').addEventListener('click', () => { SFX.tap(); openSet(); });
+  $('setX').addEventListener('click', closeSet); $('setClose').addEventListener('click', closeSet);
+  $('settings').addEventListener('click', (ev) => { if (ev.target === $('settings')) closeSet(); });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('settings').hidden) { ev.stopPropagation(); closeSet(); } }, true);
+  $('setBgm').addEventListener('input', () => { SET.bgm = $('setBgm').value / 100; $('setBgmV').textContent = $('setBgm').value; applySet(); setSave(); });
+  $('setSfx').addEventListener('input', () => { SET.sfx = $('setSfx').value / 100; $('setSfxV').textContent = $('setSfx').value; applySet(); setSave(); });
+  $('setSfx').addEventListener('change', () => { SFX.page(); });
+  $('setAll').addEventListener('click', toggleSnd);
+  $('setVib').addEventListener('click', () => { if (!vibOk) return; SET.vib = !SET.vib; swSet($('setVib'), SET.vib); setSave(); if (SET.vib) vib(30); });
+  document.querySelectorAll('.set-seg button').forEach((b) => b.addEventListener('click', () => { SET.text = +b.dataset.text; applySet(); setUi(); setSave(); SFX.tap(); }));
+  applySet(); setUi();
 
   // 表紙
   $('o1').innerHTML = ART.warrior; $('o2').innerHTML = ART.witch; $('o3').innerHTML = ART.cleric;
