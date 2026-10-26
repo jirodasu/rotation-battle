@@ -2034,7 +2034,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.34</p>
+    <p class="c-ver" id="cVer">ver 5.1.35</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2322,7 +2322,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.34';
+  const APP_VERSION = '5.1.35';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2357,7 +2357,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   };
 
   /* ============ 音（Web Audio でその場で合成） ============
-     世界観：切り紙絵本ののどかな丘。調は F メジャー。
+     世界観：地の底の大聖堂「環廊」（v5.1.35〜）。石の残響、鐘、パイプオルガン、聖歌隊。
+     調は D マイナー（タイトル・戦闘）。主題の3音は前作から引き継ぐ。
      テーマ「ひと回り」＝ F・A・C の3音（攻撃列・補助列・回復列）。
      ローテーションのたびに、3音の並びが一つずつ回る。 */
   let sndOn = true, ac = null, bus = null, noiseBuf = null, rotIdx = 0;
@@ -2393,9 +2394,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     const music = a.createGain(); music.gain.value = 0.42; music.connect(master);
     const bgm = a.createGain(); bgm.connect(master);   // BGMの出口（大きな効果音の瞬間だけ少し下げる）
     const sfx = a.createGain(); sfx.gain.value = 0.72; sfx.connect(master);
-    const rev = a.createConvolver(); rev.buffer = impulse(1.7, 2.8);
+    const rev = a.createConvolver(); rev.buffer = impulse(1.8, 2.1);   // 環廊：石の大空間。残響の長さは据え置きで、減衰をゆるくして長く聞かせる（録音の重さを増やさない）
     const revIn = a.createGain(), revLP = a.createBiquadFilter(), revOut = a.createGain();
-    revLP.type = 'lowpass'; revLP.frequency.value = 3800; revOut.gain.value = 0.32;
+    revLP.type = 'lowpass'; revLP.frequency.value = 2900; revOut.gain.value = 0.38;
     revIn.connect(revLP); revLP.connect(rev); rev.connect(revOut); revOut.connect(master);
     const n = a.sampleRate, nk = 'nz' + n;
     if (!bufMemo[nk]) { const nb = a.createBuffer(1, n, n), nd = nb.getChannelData(0); for (let i = 0; i < n; i++) nd[i] = Math.random() * 2 - 1; bufMemo[nk] = nb; }
@@ -2424,79 +2425,95 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     s.connect(f); f.connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
     return f;
   }
-  /* --- 楽器 --- */
+  /* --- 楽器（環廊：地の底の大聖堂。石と蝋燭と鐘とオルガン） ---
+     音作りの方針（30年の現場の流儀で、最短の手で効かせる）：
+     ・旋律と和音は「パイプオルガン」の2種（フルー管＝柔らかい笛、リード管＝芯のある金管）で、同じ譜面のまま聖堂の響きに変える
+     ・合図の音は「鐘」。小さな燭台の鐘から大鐘まで、倍音の比率だけを変えて同じ部品で鳴らす
+     ・打楽器は、石の床を打つ太鼓と鎖。紙の擦れは、回廊を抜ける風に
+     ・残響は長く暗く（石の大空間）。そのぶん各楽器の高域は控えめにして、濁らせない
+     関数名は以前のまま（譜面と効果音の呼び出しを書き換えずに済ませる） */
   const INST = {
-    // ピチカートの弦：明るい爪弾き、すぐ減衰
+    // リュート：暗く柔らかい爪弾き（旧：ピチカート）
     pizz(t, m, v, dest, wet) {
-      const g = outNode(dest, wet), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 2;
-      lp.frequency.setValueAtTime(3600, t); lp.frequency.exponentialRampToValueAtTime(500, t + 0.25); lp.connect(g);
-      amp(g, t, 0.004, v, 0.38);
-      const f = mtof(m); osc('triangle', f, t, t + 0.45, lp); osc('sine', f * 2, t, t + 0.2, lp);
+      const g = outNode(dest, wet), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 1.2;
+      lp.frequency.setValueAtTime(2400, t); lp.frequency.exponentialRampToValueAtTime(380, t + 0.35); lp.connect(g);
+      amp(g, t, 0.004, v, 0.5);
+      const f = mtof(m); osc('triangle', f, t, t + 0.6, lp); osc('sine', f * 2, t, t + 0.25, lp, 4);
     },
-    // マリンバ：木の温かい打鍵
+    // 燭台の小鐘：澄んだ短い金属（旧：マリンバ）。回すたびに灯を受け渡す音
     marimba(t, m, v, dest, wet) {
-      const g = outNode(dest, wet), f = mtof(m);
-      amp(g, t, 0.003, v, 0.55); osc('sine', f, t, t + 0.6, g);
-      const h = ac.createGain(); h.connect(g); amp(h, t, 0.002, 0.22, 0.07); osc('sine', f * 3.93, t, t + 0.1, h);
-      const c = ac.createGain(); c.connect(g); amp(c, t, 0.001, 0.12, 0.015); nz(t, 0.03, c, 'bandpass', 2400, 3);
-    },
-    // 木琴：硬く明るい、短い
-    xylo(t, m, v, dest, wet) {
-      const g = outNode(dest, wet), f = mtof(m);
-      amp(g, t, 0.002, v, 0.28); osc('sine', f, t, t + 0.32, g);
-      const h = ac.createGain(); h.connect(g); amp(h, t, 0.002, 0.35, 0.09); osc('sine', f * 3, t, t + 0.12, h);
-    },
-    // 鈴：やわらかい金属、長い余韻
-    bell(t, m, v, dest, wet) {
-      const g = outNode(dest, wet == null ? 0.5 : wet), f = mtof(m);
-      amp(g, t, 0.003, v, 1.5); osc('sine', f, t, t + 1.6, g);
-      const h = ac.createGain(); h.connect(g); amp(h, t, 0.002, 0.3, 0.6); osc('sine', f * 2.76, t, t + 0.7, h);
-      const k = ac.createGain(); k.connect(g); amp(k, t, 0.002, 0.12, 0.25); osc('sine', f * 5.4, t, t + 0.3, k);
-    },
-    // リコーダー風の笛：息とビブラート
-    flute(t, m, dur, v, dest, wet) {
-      const g = outNode(dest, wet == null ? 0.35 : wet), f = mtof(m), end = t + dur;
-      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = f * 4; lp.connect(g);
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(v, t + 0.045);
-      g.gain.setTargetAtTime(v * 0.78, t + 0.06, 0.1);
-      g.gain.setTargetAtTime(0.0001, end - 0.02, 0.05);
-      const o1 = osc('sine', f, t, end + 0.3, lp), o2 = osc('triangle', f, t, end + 0.3, lp);
-      const bal = ac.createGain(); bal.gain.value = 0.18; o2.disconnect(); o2.connect(bal); bal.connect(lp);
-      if (dur > 0.35) {
-        const l = ac.createOscillator(), ld = ac.createGain(); l.frequency.value = 5.3; ld.gain.setValueAtTime(0, t); ld.gain.linearRampToValueAtTime(7, t + 0.3);
-        l.connect(ld); ld.connect(o1.detune); ld.connect(o2.detune); l.start(t); l.stop(end + 0.3);
-      }
-      const b = ac.createGain(); b.connect(g); amp(b, t, 0.01, 0.05, 0.08); nz(t, 0.1, b, 'bandpass', f * 2, 2);
-    },
-    // フェルトピアノ：丸く柔らかい
-    piano(t, m, v, dest, wet) {
       const g = outNode(dest, wet == null ? 0.35 : wet), f = mtof(m);
-      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(2200, t); lp.frequency.exponentialRampToValueAtTime(700, t + 1); lp.connect(g);
-      amp(g, t, 0.006, v, 1.6);
-      osc('triangle', f, t, t + 1.7, lp, -3); osc('sine', f, t, t + 1.7, lp, 3);
-      const h = ac.createGain(); h.connect(lp); amp(h, t, 0.004, 0.25, 0.3); osc('sine', f * 2, t, t + 0.4, h);
+      amp(g, t, 0.002, v * 0.8, 0.9); osc('sine', f, t, t + 1, g);
+      const h = ac.createGain(); h.connect(g); amp(h, t, 0.002, 0.3, 0.35); osc('sine', f * 2.76, t, t + 0.4, h);
+      const c = ac.createGain(); c.connect(g); amp(c, t, 0.001, 0.08, 0.012); nz(t, 0.02, c, 'bandpass', 5200, 4);
     },
-    // 低音
+    // ガラスのチェレスタ：細く冷たい（旧：木琴）
+    xylo(t, m, v, dest, wet) {
+      const g = outNode(dest, wet == null ? 0.3 : wet), f = mtof(m);
+      amp(g, t, 0.002, v * 0.85, 0.6); osc('sine', f, t, t + 0.65, g);
+      const h = ac.createGain(); h.connect(g); amp(h, t, 0.002, 0.25, 0.14); osc('sine', f * 4, t, t + 0.18, h);
+    },
+    // 鐘：低い唸り（半オクターブ下）と短三度の倍音を持つ、聖堂の鐘
+    bell(t, m, v, dest, wet) {
+      const g = outNode(dest, wet == null ? 0.6 : wet), f = mtof(m);
+      amp(g, t, 0.003, v, 2.2); osc('sine', f, t, t + 2.3, g);
+      const u = ac.createGain(); u.connect(g); amp(u, t, 0.004, 0.35, 2.6); osc('sine', f * 0.5, t, t + 2.7, u);
+      const k = ac.createGain(); k.connect(g); amp(k, t, 0.002, 0.26, 0.9); osc('sine', f * 1.19, t, t + 1, k);
+    },
+    // オルガンのフルー管：息の少ない柔らかな笛と、1オクターブ上の明るさ（旧：リコーダー）
+    flute(t, m, dur, v, dest, wet) {
+      const g = outNode(dest, wet == null ? 0.45 : wet), f = mtof(m), end = t + dur;
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = Math.min(5200, f * 3.2); lp.connect(g);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.linearRampToValueAtTime(v, t + 0.06);
+      g.gain.setTargetAtTime(v * 0.86, t + 0.08, 0.12);
+      g.gain.setTargetAtTime(0.0001, end - 0.02, 0.07);
+      const o1 = osc('triangle', f, t, end + 0.4, lp), o2 = osc('sine', f * 2, t, end + 0.4, lp, 2);
+      const b2 = ac.createGain(); b2.gain.value = 0.3; o2.disconnect(); o2.connect(b2); b2.connect(lp);
+      if (dur > 0.5) {   // トレモラント（オルガンの揺れ）は浅く遅く
+        const l = ac.createOscillator(), ld = ac.createGain(); l.frequency.value = 4.6; ld.gain.setValueAtTime(0, t); ld.gain.linearRampToValueAtTime(4, t + 0.4);
+        l.connect(ld); ld.connect(o1.detune); l.start(t); l.stop(end + 0.4);
+      }
+      
+    },
+    // くすんだピアノ：低く丸く、聖堂の奥で鳴る
+    piano(t, m, v, dest, wet) {
+      const g = outNode(dest, wet == null ? 0.45 : wet), f = mtof(m);
+      const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.setValueAtTime(1600, t); lp.frequency.exponentialRampToValueAtTime(450, t + 1.2); lp.connect(g);
+      amp(g, t, 0.008, v, 1.9);
+      osc('triangle', f, t, t + 2, lp, -4); osc('sine', f, t, t + 2, lp, 4);
+      const h = ac.createGain(); h.connect(lp); amp(h, t, 0.004, 0.18, 0.3); osc('sine', f * 2, t, t + 0.4, h);
+    },
+    // オルガンのペダル：低音は太く、立ち上がりは遅め
     bass(t, m, dur, v, dest) {
-      const g = outNode(dest, 0), f = mtof(m), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700; lp.connect(g);
-      amp(g, t, 0.008, v, dur); osc('triangle', f, t, t + dur + 0.1, lp); osc('sine', f, t, t + dur + 0.1, lp);
+      const g = outNode(dest, 0.06), f = mtof(m), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520; lp.connect(g);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.02 + dur);
+      osc('triangle', f, t, t + dur + 0.1, lp); osc('sine', f, t, t + dur + 0.1, lp); osc('sine', f * 2, t, t + dur + 0.1, lp, 3);
     },
-    // 木の板・木魚
+    // 石の床を打つ音（旧：木の板）
     wood(t, f, v, dest, wet) {
-      const g = outNode(dest, wet || 0.1); amp(g, t, 0.001, v, 0.06); nz(t, 0.08, g, 'bandpass', f, 9);
-      const s = ac.createGain(); s.connect(g); amp(s, t, 0.001, 0.6, 0.04); osc('sine', f * 0.5, t, t + 0.06, s);
+      const g = outNode(dest, wet || 0.18); amp(g, t, 0.001, v * 0.9, 0.07); nz(t, 0.09, g, 'bandpass', f * 0.75, 5);
+      const s = ac.createGain(); s.connect(g); amp(s, t, 0.001, 0.55, 0.05); osc('sine', f * 0.4, t, t + 0.07, s);
     },
-    // 紙や布がこすれる音
+    // 回廊を抜ける風（旧：紙の擦れ）
     swish(t, dur, v, dest, from, to) {
-      const g = outNode(dest, 0.2); amp(g, t, dur * 0.35, v, dur * 0.65);
-      const f = nz(t, dur, g, 'bandpass', from || 500, 1.4); f.frequency.exponentialRampToValueAtTime(to || 3200, t + dur);
+      const g = outNode(dest, 0.35); amp(g, t, dur * 0.4, v, dur * 0.6);
+      const f = nz(t, dur, g, 'bandpass', (from || 500) * 0.7, 1.1); f.frequency.exponentialRampToValueAtTime((to || 3200) * 0.6, t + dur);
     },
     // 低い打撃音
     thud(t, v, dest, from) {
-      const g = outNode(dest, 0.08); amp(g, t, 0.002, v, 0.22);
-      const o = osc('sine', from || 150, t, t + 0.3, g); o.frequency.exponentialRampToValueAtTime(48, t + 0.2);
-      const n = ac.createGain(); n.connect(g); amp(n, t, 0.001, 0.5, 0.06); nz(t, 0.08, n, 'lowpass', 900, 0.7);
+      const g = outNode(dest, 0.14); amp(g, t, 0.002, v, 0.3);
+      const o = osc('sine', from || 150, t, t + 0.36, g); o.frequency.exponentialRampToValueAtTime(42, t + 0.26);
+      const n = ac.createGain(); n.connect(g); amp(n, t, 0.001, 0.45, 0.07); nz(t, 0.09, n, 'lowpass', 700, 0.7);
+    },
+    // 聖歌隊の「あー」：のこぎり波を2つの声の共鳴（フォルマント）に通す
+    choir(t, m, dur, v, dest, wet) {
+      const g = outNode(dest, wet == null ? 0.6 : wet), f = mtof(m), end = t + dur;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + Math.min(0.35, dur * 0.4)); g.gain.setTargetAtTime(0.0001, end - 0.05, 0.18);
+      const mixG = ac.createGain(); mixG.gain.value = 0.5;
+      [[750, 5, 1], [1150, 7, 0.65]].forEach(([fq, q, lv]) => { const b = ac.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = fq; b.Q.value = q; const bg = ac.createGain(); bg.gain.value = lv; mixG.connect(b); b.connect(bg); bg.connect(g); });
+      const l = ac.createOscillator(), ld = ac.createGain(); l.frequency.value = 5.1; ld.gain.value = 9; l.connect(ld); l.start(t); l.stop(end + 0.5);
+      [-8, 7].forEach((d) => { const o = osc('sawtooth', f, t, end + 0.5, mixG, d); ld.connect(o.detune); });
     }
   };
   const can = () => sndOn && actx() && bus;
@@ -2585,28 +2602,32 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 
   /* --- 戦闘用の楽器と、攻撃音の素材 --- */
   Object.assign(INST, {
+    // 大太鼓：石の床に響く低い胴鳴り
     kick(t, v, dest) {
-      const g = outNode(dest, 0); amp(g, t, 0.002, v, 0.28);
-      const o = osc('sine', 150, t, t + 0.32, g); o.frequency.exponentialRampToValueAtTime(42, t + 0.22);
-      const c = ac.createGain(); c.connect(g); amp(c, t, 0.001, 0.35, 0.012); nz(t, 0.02, c, 'highpass', 3000, 0.7);
+      const g = outNode(dest, 0.12); amp(g, t, 0.002, v, 0.4);
+      const o = osc('sine', 118, t, t + 0.45, g); o.frequency.exponentialRampToValueAtTime(40, t + 0.3);
+      const c = ac.createGain(); c.connect(g); amp(c, t, 0.001, 0.22, 0.02); nz(t, 0.03, c, 'bandpass', 900, 1);
     },
+    // 枠太鼓と鎖：乾いた皮の音に、鎖の擦れを少し
     snare(t, v, dest) {
-      const g = outNode(dest, 0.18); amp(g, t, 0.001, v, 0.15); nz(t, 0.2, g, 'bandpass', 1900, 0.6);
-      const b = ac.createGain(); b.connect(g); amp(b, t, 0.001, 0.55, 0.07); osc('triangle', 196, t, t + 0.1, b);
+      const g = outNode(dest, 0.3); amp(g, t, 0.001, v * 0.85, 0.12); nz(t, 0.16, g, 'bandpass', 1300, 0.9);
+      const b = ac.createGain(); b.connect(g); amp(b, t, 0.001, 0.5, 0.09); osc('triangle', 165, t, t + 0.12, b);
+      const ch = ac.createGain(); ch.connect(g); amp(ch, t + 0.01, 0.004, 0.18, 0.08); nz(t + 0.01, 0.1, ch, 'bandpass', 6200, 3);
     },
-    hat(t, v, dest) { const g = outNode(dest, 0); amp(g, t, 0.001, v, 0.035); nz(t, 0.05, g, 'highpass', 7500, 0.7); },
+    // 鎖の鈴（旧：ハイハット）
+    hat(t, v, dest) { const g = outNode(dest, 0.1); amp(g, t, 0.002, v * 0.8, 0.045); nz(t, 0.06, g, 'bandpass', 6800, 2.5); },
     timp(t, m, v, dest) {
-      const g = outNode(dest, 0.3), f = mtof(m), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900; lp.connect(g);
-      amp(g, t, 0.003, v, 0.9); const o = osc('sine', f * 1.03, t, t + 1, lp); o.frequency.exponentialRampToValueAtTime(f, t + 0.08);
+      const g = outNode(dest, 0.4), f = mtof(m), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 800; lp.connect(g);
+      amp(g, t, 0.003, v, 1.1); const o = osc('sine', f * 1.03, t, t + 1.2, lp); o.frequency.exponentialRampToValueAtTime(f, t + 0.08);
       const h = ac.createGain(); h.connect(lp); amp(h, t, 0.002, 0.3, 0.2); osc('sine', f * 1.5, t, t + 0.25, h);
-      const n = ac.createGain(); n.connect(g); amp(n, t, 0.001, 0.25, 0.04); nz(t, 0.05, n, 'lowpass', 700, 0.7);
+      const n = ac.createGain(); n.connect(g); amp(n, t, 0.001, 0.25, 0.04); nz(t, 0.05, n, 'lowpass', 600, 0.7);
     },
-    // 金管風のスタブ（絵本の楽隊のラッパ）
+    // オルガンのリード管（旧：楽隊のラッパ）：芯はあるが、吹き上がらない
     brass(t, m, dur, v, dest, wet) {
-      const g = outNode(dest, wet == null ? 0.25 : wet), f = mtof(m), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 1.5;
-      lp.frequency.setValueAtTime(450, t); lp.frequency.linearRampToValueAtTime(2800, t + 0.04); lp.frequency.exponentialRampToValueAtTime(1300, t + dur); lp.connect(g);
-      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.025); g.gain.setTargetAtTime(v * 0.7, t + 0.05, 0.08); g.gain.setTargetAtTime(0.0001, t + dur, 0.04);
-      osc('sawtooth', f, t, t + dur + 0.3, lp, -9); osc('sawtooth', f, t, t + dur + 0.3, lp, 9);
+      const g = outNode(dest, wet == null ? 0.35 : wet), f = mtof(m), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.9;
+      lp.frequency.setValueAtTime(700, t); lp.frequency.linearRampToValueAtTime(1900, t + 0.05); lp.frequency.setTargetAtTime(1300, t + 0.06, 0.2); lp.connect(g);
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.035); g.gain.setTargetAtTime(v * 0.8, t + 0.05, 0.1); g.gain.setTargetAtTime(0.0001, t + dur, 0.06);
+      osc('sawtooth', f, t, t + dur + 0.4, lp, -6); osc('square', f, t, t + dur + 0.4, lp, 6);
     },
     // 剣：空を切る音 → 刃の鳴り → 手応え
     slash(t, v, dest, w) {
@@ -2676,8 +2697,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   };
 
   /* --- BGM：1曲を層に分け、場面に合わせて重ねる ---
-     タイトル：F メジャー 84（フェルトピアノと鈴）
-     戦闘　　：D マイナー 136（ギャロップの低音、楽隊の太鼓とラッパ、笛の旋律） */
+     タイトル：D マイナー 72（聖歌隊とオルガンの和音、鐘の主題）
+     戦闘　　：D マイナー 124（ペダルの低音、石の太鼓と鎖、オルガンの旋律） */
   const Music = (() => {
     const CH = { F: [53, 57, 60], Dm: [50, 53, 57], Bb: [46, 50, 53], C: [48, 52, 55], Am: [45, 48, 52], A: [45, 49, 52], Gm: [43, 46, 50], Eb: [51, 55, 58] };
     const T_BARS = [['F'], ['Dm'], ['Bb'], ['C'], ['F'], ['Am'], ['Bb', 'C'], ['F']];
@@ -2706,7 +2727,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       [[0, 86, 1], [1, 82, 1], [2, 85, 1], [3, 88, 1]],
       [[0, 86, 2], [2, 81, 1], [3, 74, 1]]
     ];
-    const BOSS_BPM = 152;
+    const BOSS_BPM = 144, TITLE_BPM = 72, BATTLE_BPM = 124;
+    // タイトル（環廊の入口）：D マイナー 72。聖歌隊とオルガンの和音、鐘が F・A・C の主題を打つ
+    const G_BARS = [['Dm'], ['Bb'], ['Gm'], ['A'], ['Dm'], ['F'], ['Gm', 'A'], ['Dm']];
     // エンディング：テーマ（F・A・C）を長調で歌い上げる
     const END_MEL = [
       [[0, 72, 1], [1, 77, 1], [2, 81, 1.5], [3.5, 79, .5]],
@@ -2758,12 +2781,15 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       }
       if (state === 'title') {
         if (e % 2 || !on('title')) return;
-        const e8 = e / 2, ch = chordAt(T_BARS, bar, beat);
-        if (e8 === 0 || e8 === 4) ch.forEach((m, i) => INST.piano(t + i * 0.014, m + 12, e8 === 0 ? 0.16 : 0.11, L.title, 0.5));
-        if (e8 === 0) INST.bass(t, ch[0] - 12, spb * 3.6, 0.32, L.title);
-        if ((bar === 0 || bar === 4) && e8 < 3) INST.bell(t, [77, 81, 84][e8], 0.14, L.title, 0.6);
-        if ((bar === 3 || bar === 7) && e8 >= 4) INST.bell(t, [84, 81, 77, 72][e8 - 4], 0.08, L.title, 0.6);
-        if (e8 % 2 === 1) INST.pizz(t, ch[[0, 1, 2, 1][(e8 >> 1) % 4]] + 24, 0.09, L.title, 0.35);
+        const e8 = e / 2, ch = chordAt(G_BARS, bar, beat), split = G_BARS[bar].length > 1;
+        // 聖歌隊：小節（和音が2つなら半小節）ごとに長く
+        if (e8 === 0 || (split && e8 === 4)) [ch[1], ch[2]].forEach((m, i) => INST.choir(t, m + 12, spb * (split ? 1.9 : 3.8), 0.08 - i * 0.012, L.title, 0.7));   // 聖歌隊は3度と5度の2声（根音はオルガンとペダル）
+        if (e8 === 0) INST.flute(t, ch[0], spb * 3.7, 0.08, L.title, 0.6);   // オルガンは根音だけ（和音は聖歌隊に任せて軽く）
+        if (e8 === 0) INST.bass(t, ch[0] - 12, spb * 3.8, 0.3, L.title);
+        // 主題（F・A・C）を鐘で：灯を一つずつ受け渡すように
+        if ((bar === 0 || bar === 4) && e8 < 3) INST.bell(t, [77, 81, 84][e8], 0.13, L.title, 0.75);
+        if ((bar === 3 || bar === 7) && e8 >= 4) INST.bell(t, [84, 81, 77, 74][e8 - 4], 0.075, L.title, 0.75);
+        if (e8 % 2 === 1) INST.pizz(t, ch[[0, 1, 2, 1][(e8 >> 1) % 4]] + 12, 0.08, L.title, 0.45);
         return;
       }
       if (boss) {   // ---- 最後の戦い ----
@@ -2782,7 +2808,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
         }
         if (on('brs')) {
           // 小節頭の低い金管の和音を長く鳴らし、裏で鋭く刺す
-          if (e === 0) ch.forEach((m) => INST.brass(t, m, spb * 3.6, 0.08, L.brs, 0.35));
+          if (e === 0) { ch.forEach((m, i) => INST.choir(t, m + 12, spb * 3.6, 0.075 - i * 0.012, L.brs, 0.6)); INST.brass(t, ch[0], spb * 3.6, 0.07, L.brs, 0.35); }
           if (e === 6 || e === 10 || e === 14) ch.forEach((m) => INST.brass(t, m + 12, spb * 0.22, 0.1, L.brs));
           if (bar === 7 && e >= 8) INST.snare(t, 0.2 + (e - 8) * 0.05, L.brs);
         }
@@ -2852,7 +2878,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     async function renderLoop(st, layer) {
       const OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
       if (!OC) throw new Error('no offline');
-      const SR = ac.sampleRate, bpm = st === 'title' ? 84 : (st === 'ending' ? 96 : st === 'boss' ? BOSS_BPM : 136), spb = 60 / bpm;
+      const SR = ac.sampleRate, bpm = st === 'title' ? TITLE_BPM : (st === 'ending' ? 96 : st === 'boss' ? BOSS_BPM : BATTLE_BPM), spb = 60 / bpm;
       const barLen = 4 * spb, n = Math.round(8 * barLen * SR), tail = 2.2, len = Math.ceil((barLen + tail) * SR);
       const out = ac.createBuffer(2, n, SR), ch = [out.getChannelData(0), out.getChannelData(1)];
       // 小節ごとに並列録音。タイトル曲は最優先で全力、それ以外は端末のコア数に合わせて控えめにし画面の動きを止めない
@@ -2893,7 +2919,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     }
     // ---- 予備：その場で演奏する（録音が間に合わない／できないとき） ----
     let live = null, nextT = 0, step = 0, FB = null;
-    const spbOf = (st) => 60 / (st === 'title' ? 84 : (st === 'ending' ? 96 : boss ? BOSS_BPM : 136));
+    const spbOf = (st) => 60 / (st === 'title' ? TITLE_BPM : (st === 'ending' ? 96 : boss ? BOSS_BPM : BATTLE_BPM));
     function fbLayers() {
       if (FB) return FB;
       layers(); FB = {};
@@ -3001,7 +3027,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       get state() { return state; },
       resume() { if (!can()) return; layers(); startGroup(groupOf(state)); applyMix(0.2); if (charged) setDrone(true); },
       debug() { return { ctx: ac && ac.state, state, era, gains: L ? Object.fromEntries(Object.keys(L).map((k) => [k, +L[k].gain.value.toFixed(2)])) : null, group: cur.group, playing: cur.srcs.length, live: !!live, broken, ready: Object.keys(bufs), bufs }; },
-      _break() { broken = true; }
+      _break() { broken = true; },
+      _render(st, layer) { return renderLoop(st, layer); }   // 確認用：1曲ぶんを録音して返す（テスト・音の確認だけで使う）
     };
   })();
   // 端末が音を止めたら（着信・他アプリ・画面ロックなど）、次のタップで必ず鳴らし直す
