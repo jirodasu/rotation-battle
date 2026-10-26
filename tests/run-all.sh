@@ -3,7 +3,7 @@
 #   bash tests/run-all.sh          # fuzz 以外
 #   FUZZ=1 bash tests/run-all.sh   # fuzz も（FUZZ_RUNS=ラン数 既定3 / FUZZ_LIMIT=秒 既定900。打ち切りは不合格として数える）
 cd "$(dirname "$0")/.." || exit 2
-LIST="reg nav tutheal layout phonefit route speed skin expedition expparity gaugeui refill world ux2 sound wording"   # 騎士団の30年専用のテスト(rogue・squads・telemetry)は、モードの削除に合わせて外した
+LIST="reg nav tutheal layout phonefit route speed skin expedition expparity gaugeui refill world ux2 sound wording settings"   # 騎士団の30年専用のテスト(rogue・squads・telemetry)は、モードの削除に合わせて外した
 [ -n "$FUZZ" ] && LIST="$LIST fuzz"
 LIMIT="${FUZZ_LIMIT:-900}"
 fail=0; failed=""
