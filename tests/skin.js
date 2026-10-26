@@ -45,7 +45,7 @@ const state = (p) => p.evaluate(() => ({
   ok(!m0.shown && m0.skin === 'goth' && m0.theme === 'dark', '11月は切り替えが出ず、通常（ゴシック調）の見た目になる');
   await p.click('#begin'); await p.waitForTimeout(900); await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
   const m1 = await state(p);
-  ok(/ヒュージラット/.test(m1.ename) && !m1.toks.includes('#8d8478') && m1.toks.includes('#ece6d6'), '11月の戦闘は通常の敵・ゴシック調の団員（' + m1.ename + '）');
+  ok(/灯喰いネズミ/.test(m1.ename) && !m1.toks.includes('#8d8478') && m1.toks.includes('#ece6d6'), '11月の戦闘は通常の敵・ゴシック調の団員（' + m1.ename + '）');
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs)); await ctx.close();
   // 10月でも通常を選び直せる
   ({ ctx, p, errs } = await open(b, '2026-10-10T12:00:00+09:00', { 'rb-skin': 'hw' }));

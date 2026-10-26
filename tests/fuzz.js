@@ -64,7 +64,7 @@ const INVARIANTS = () => {
       if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
       if (st.en) { outcome = 'クリア'; break; }
       if (st.rv) {
-        if (/ここまで/.test(st.title)) { outcome = '全滅（地点' + (st.node + 1) + '）'; break; }
+        if (/ここまで|途絶えた/.test(st.title)) { outcome = '全滅（地点' + (st.node + 1) + '）'; break; }
         if (/踏破/.test(st.title)) { outcome = 'クリア'; break; }
         // ときどき「中断して再開」：ページを読み直して続きから
         if (/どちらへ/.test(st.title) && rnd() < 0.15) {
