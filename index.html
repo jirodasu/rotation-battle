@@ -1910,6 +1910,24 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 @media (min-aspect-ratio: 6/5) and (min-width: 1200px) and (min-height: 900px) {
   :root[data-skin="goth"] .dm, :root[data-skin="goth"] .inc { height: 27px; font-size: 16px; padding: 0 9px 0 7px; }
 }
+/* v5.1.34 突入技の出る条件を詳細に添える */
+.pk-when { display: block; font-style: normal; font-size: 11.5px; color: var(--ink-soft); margin-top: 1px; }
+/* v5.1.34 盤の名前とHP：10px → 12px（狭い枠でも11px）。HPの「HP」は狭い枠では省く */
+.tok .nm b, .tok .nm u { font-size: 12px; }
+@container (max-width: 80px) {
+  .tok .nm { padding: 1px 5px 2px; gap: 3px; }
+  .tok .nm b, .tok .nm u { font-size: 12px; letter-spacing: -0.02em; }
+}
+@container (max-width: 56px) {
+  .tok .nm { padding: 1px 3px 2px; gap: 2px; }
+  .tok .nm b, .tok .nm u { font-size: 11px; letter-spacing: -0.04em; }
+}
+@media (min-aspect-ratio: 6/5) and (min-width: 1200px) and (min-height: 900px) { .tok .nm b, .tok .nm u { font-size: 14px; } }
+/* v5.1.34 上の丸ボタン：押せる範囲を44×44に。隣と重ならないよう、中心の間隔を44px以上あける */
+.icon-btn::after { width: 44px; height: 44px; }
+.top-r .icon-btn + .icon-btn { margin-left: 2px; }
+@media (max-height: 700px) { .top-r .icon-btn + .icon-btn { margin-left: 6px; } }
+@media (min-aspect-ratio: 6/5) and (min-width: 1200px) and (min-height: 900px) { .top-r .icon-btn + .icon-btn { margin-left: 0; } }
 /* 空きマス：霧に沈む破線 */
 :root[data-skin="goth"] .sock { background: rgba(214, 236, 255, 0.04); border-color: rgba(142, 154, 176, 0.45); }
 /* 表紙：洞窟聖堂の大アーチと薔薇窓 */
@@ -2016,7 +2034,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.33</p>
+    <p class="c-ver" id="cVer">ver 5.1.34</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2298,13 +2316,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     { id: 'knight', name: '騎士', cls: 'tank', hp: 36, spd: 4, atk: 8, ranged: 0, atkSup: 2, defSup: 8, heal: 0, rest: 10, hits: 1, sta: 3, entry: { name: '盾構え', guard: 6, desc: 'このターン自分の列の被ダメージ-6' } },
     { id: 'samurai', name: 'サムライ', cls: 'atk', hp: 26, spd: 8, atk: 12, ranged: 0, atkSup: 5, defSup: 0, heal: 0, rest: 8, hits: 1, sta: 2, entry: { name: '居合', spd: 10, atk: 3, desc: 'このターン先に動き、攻撃+3' } },
     { id: 'witch', name: '魔女', cls: 'sup', hp: 20, spd: 7, atk: 4, ranged: 0, atkSup: 7, defSup: 7, heal: 0, rest: 7, hits: 1, sta: 2, entry: { name: '雷撃', atk: 5, desc: 'このターン攻撃+5' } },
-    { id: 'cleric', name: '神官', cls: 'heal', hp: 24, spd: 3, atk: 3, ranged: 0, atkSup: 0, defSup: 5, heal: 5, rest: 8, hits: 1, sta: 2, entry: { name: '祝福', heal: 6, desc: '攻撃列の全員をHP+6' } },
+    { id: 'cleric', name: '神官', cls: 'heal', hp: 24, spd: 3, atk: 3, ranged: 0, atkSup: 0, defSup: 5, heal: 5, rest: 8, hits: 1, sta: 2, entry: { name: '祝福', heal: 6, desc: '攻撃列の全員をHP+6（最大HPまで）' } },
     { id: 'monk', name: '僧侶', cls: 'heal', hp: 32, spd: 4, atk: 7, ranged: 0, atkSup: 2, defSup: 2, heal: 6, rest: 10, hits: 1, sta: 3, entry: { name: '喝', teamGuard: 2, desc: 'このターン攻撃列の被ダメージ-2' } },
     { id: 'archer', name: 'アーチャー', cls: 'atk', hp: 28, spd: 5, atk: 9, ranged: 8, atkSup: 2, defSup: 1, heal: 0, rest: 8, hits: 1, sta: 3, entry: { name: '速射', hits: 1, desc: 'このターン攻撃回数+1' } }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.33';
+  const APP_VERSION = '5.1.34';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3426,7 +3444,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       '<span class="pk-hp"><b class="disp">' + ICON.heart + u.hp + '<small> / ' + u.max + '</small></b><span class="uc-hpbar' + (p <= 35 ? ' low' : '') + '"><i style="width:' + p + '%"></i></span></span>' +
       '<button type="button" class="pk-x" aria-label="閉じる">' + ICON.x + '</button></div>' +
       (r >= 0 ? '<p class="pk-role">' + roleText(u, r) + '</p>' : '') +
-      ((RX().entry && u.entry) || (RX().stamina && u.staMax) ? '<p class="pk-extra">' + (RX().stamina && u.staMax ? '<span>スタミナ ' + u.sta + '/' + u.staMax + '</span>' : '') + (RX().entry && u.entry ? '<span><b class="disp">突入技「' + u.entry.name + '」</b>' + u.entry.desc + '</span>' : '') + (u.inherit ? '<span>' + u.inherit.from + '（' + u.inherit.fromJob + '）から継承</span>' : '') + (u.trait ? '<span>素質「' + TRAITS[u.trait].name + '」' + TRAITS[u.trait].desc + '</span>' : '') + (run && run.mentors && run.mentors[u.job] && run.mentors[u.job].uid !== u.uid ? '<span>教官' + run.mentors[u.job].name + 'の指導：攻撃+' + RUN.mentorAtk + '・最大HP+' + RUN.mentorHp + '</span>' : '') + (u.equips && u.equips.length ? '<span>装備：' + u.equips.join('・') + '</span>' : '') + '</p>' : '') +
+      ((RX().entry && u.entry) || (RX().stamina && u.staMax) ? '<p class="pk-extra">' + (RX().stamina && u.staMax ? '<span>スタミナ ' + u.sta + '/' + u.staMax + '</span>' : '') + (RX().entry && u.entry ? '<span><b class="disp">突入技「' + u.entry.name + '」</b>' + u.entry.desc + '<em class="pk-when">回して攻撃列に入ったターンだけ出る</em></span>' : '') + (u.inherit ? '<span>' + u.inherit.from + '（' + u.inherit.fromJob + '）から継承</span>' : '') + (u.trait ? '<span>素質「' + TRAITS[u.trait].name + '」' + TRAITS[u.trait].desc + '</span>' : '') + (run && run.mentors && run.mentors[u.job] && run.mentors[u.job].uid !== u.uid ? '<span>教官' + run.mentors[u.job].name + 'の指導：攻撃+' + RUN.mentorAtk + '・最大HP+' + RUN.mentorHp + '</span>' : '') + (u.equips && u.equips.length ? '<span>装備：' + u.equips.join('・') + '</span>' : '') + '</p>' : '') +
       '<div class="uc-grid pk-grid">' +
       statTile('spd', '素早さ', u, ICON.bolt, 'var(--shield)', act) +
       statTile('atk', '攻撃', u, ICON.sword, 'var(--atk)', act) +
@@ -4883,7 +4901,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
     if (o.hits) p.push('攻撃回数+' + o.hits);
     if (o.guard) p.push('自分の列の被ダメージ-' + o.guard);
     if (o.teamGuard) p.push('攻撃列の被ダメージ-' + o.teamGuard);
-    if (o.heal) return '攻撃列の全員をHP+' + o.heal;
+    if (o.heal) return '攻撃列の全員をHP+' + o.heal + '（最大HPまで）';
     return 'このターン' + p.join('、');
   }
   function scaleEntry(e, k, inh) {
