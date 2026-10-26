@@ -15,7 +15,7 @@
 <title>ローグライク・ローテーションバトル</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
 :root {
   color-scheme: light dark;
@@ -1895,6 +1895,21 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 :root[data-skin="goth"] body.boss-stage { --sky-top: #0c1416; --sky-bot: #1c2e2a; --ground: #101a18; --sun: #b8f56a; }
 :root[data-skin="goth"] body.boss-stage .sun { border-color: rgba(184, 245, 106, .5);
   background: radial-gradient(circle, rgba(184, 245, 106, .5) 0 18%, transparent 19%), repeating-conic-gradient(from 0deg, rgba(184, 245, 106, .3) 0 4deg, transparent 4deg 30deg); }
+/* ダメージの数字（v5.1.33）：暗い縁取りの白文字、線の太さが均一なゴシックの極太で。明るい縁取りが背景に溶けていたのを直す */
+:root[data-skin="goth"] .pop { font-family: var(--sans); font-weight: 900; font-size: 34px; --ol: #0c1019; --w: 2.8px; letter-spacing: 0.01em; font-variant-numeric: tabular-nums lining-nums; }
+:root[data-skin="goth"] .pop text { font-weight: 900; }
+:root[data-skin="goth"] .pop.dmg { color: #ffffff; }
+:root[data-skin="goth"] .pop.heal { color: #c9ffe0; --ol: #0c1019; }
+:root[data-skin="goth"] .pop.guard { font-size: 24px; color: #dbe9ff; --ol: #0c1019; }
+:root[data-skin="goth"] .pop.big { font-size: 54px; --w: 4px; }
+:root[data-skin="goth"] .pop.sub { font-weight: 700; font-size: 13px; letter-spacing: 0; }
+:root[data-skin="goth"] .wfx.ono text { stroke: #0c1019; }
+/* 盤の札（受けるダメージ・与えるダメージ）：12px → 14px、数字を太く */
+:root[data-skin="goth"] .dm, :root[data-skin="goth"] .inc { height: 23px; font-size: 14px; font-weight: 900; padding: 0 8px 0 6px; }
+:root[data-skin="goth"] .dm svg { width: 12px; height: 12px; }
+@media (min-aspect-ratio: 6/5) and (min-width: 1200px) and (min-height: 900px) {
+  :root[data-skin="goth"] .dm, :root[data-skin="goth"] .inc { height: 27px; font-size: 16px; padding: 0 9px 0 7px; }
+}
 /* 空きマス：霧に沈む破線 */
 :root[data-skin="goth"] .sock { background: rgba(214, 236, 255, 0.04); border-color: rgba(142, 154, 176, 0.45); }
 /* 表紙：洞窟聖堂の大アーチと薔薇窓 */
@@ -2001,7 +2016,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.32</p>
+    <p class="c-ver" id="cVer">ver 5.1.33</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2289,7 +2304,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.32';
+  const APP_VERSION = '5.1.33';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
