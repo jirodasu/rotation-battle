@@ -271,7 +271,7 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .t-dmg small { font-size: 11px; color: var(--ink-soft); }
 
 /* ---------- 隊列の盤 ---------- */
-.board.narrow { grid-template-columns: 30px repeat(var(--cols, 2), minmax(0, calc((100% - 48px) / 4))); justify-content: center; }   /* 1マスの大きさは4マス幅の盤と同じ */
+.board.narrow { grid-template-columns: 30px repeat(var(--cols, 2), minmax(0, var(--cell, calc((100% - 48px) / 4)))); justify-content: center; }   /* 1マスの大きさは4マス幅の盤と同じ */
 .board {
   position: relative; display: grid; grid-template-columns: 30px repeat(var(--cols, 4), minmax(0, 1fr)); gap: 8px 6px; padding: 4px 12px 10px; margin: 0 -12px; isolation: isolate;
 }
@@ -2142,6 +2142,14 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   .runv.many .rv-cards > .rv-skip, .runv.many .rv-cards > .rv-btnrow { grid-column: 1 / -1; }
   .runv.many .rv-left { flex-direction: row; justify-content: center; flex-wrap: wrap; }
 }
+/* 縦画面で盤を大きくしたとき、敵の舞台は残りの高さに合わせて縮む（下限は fitBoard が守る）。v5.1.46 */
+.app.fit { height: 100vh; height: 100dvh; }
+.app.fit .stage { min-height: 0; max-height: none; flex: 1 1 0; }
+@media (max-height: 760px) { .app.fit .ehp { top: 44px; } .app.fit .eart { top: 0; } }
+@media (max-height: 700px) { .app.fit .ehp { top: 38px; } }
+/* 三位一体のパネル：文字の行は縮めず、先に小さな絵が縮む（状態の札が行動の行に重ならない）。v5.1.46 */
+.fc > * { flex-shrink: 0; }
+.fc > .fc-art { flex: 0 1 36px; min-height: 18px; height: auto; }
 </style>
 </head>
 <body class="is-cover">
@@ -2238,7 +2246,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.45</p>
+    <p class="c-ver" id="cVer">ver 5.1.46</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2562,7 +2570,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.45';
+  const APP_VERSION = '5.1.46';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3371,6 +3379,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     COLS = n;
     const b = $('board'); b.style.setProperty('--cols', n); b.classList.toggle('narrow', n < 4);
     buildBoard();
+    requestAnimationFrame(() => fitBoard());
   }
 
   function expDmg(u, r, c, src, fresh, entering, F) {
@@ -3750,7 +3759,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   }
   function renderParty() {
     const st = $('stage'), on = !!(enemy && enemy.party);
-    st.classList.toggle('trio', on);
+    if (st.classList.contains('trio') !== on) { st.classList.toggle('trio', on); requestAnimationFrame(() => fitBoard()); }
     if (!on) return;
     const pa = $('party'), h = partyHTML();
     if (pa.__h !== h) { pa.innerHTML = h; pa.__h = h; }
@@ -6633,7 +6642,36 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   $('tutTag').hidden = tutDone();
   coverProgress();
 
+  // 縦画面の盤をできるだけ大きく。v5.1.46
+  //   敵の名前・HP・絵・予告札・三位一体のパネル・記録が収まる範囲で、1マスの大きさを二分探索で決める。横画面は今まで通り
+  const WIDE = matchMedia('(min-aspect-ratio: 6/5) and (min-width: 560px)');
+  function fitBoard() {
+    const b = $('board'), st = $('stage');
+    b.style.removeProperty('--cell'); $('app').classList.remove('fit');
+    if (WIDE.matches || !b.classList.contains('narrow') || !b.querySelector('.slot') || $('app').offsetParent === null) return;
+    const base = b.querySelector('.slot').getBoundingClientRect().width;
+    const trio = st.classList.contains('trio');
+    const max = Math.max(base, Math.min((b.clientWidth - 48) / 3, base * 1.6));
+    const min = trio ? base * 0.85 : base;   // 三位一体だけは、パネルが収まらなければ盤を少し縮める
+    $('app').classList.add('fit');
+    const ok = () => {
+      const de = document.documentElement;
+      if (de.scrollHeight > innerHeight + 1) return false;
+      const sr = st.getBoundingClientRect(), tk = $('ticket').getBoundingClientRect();
+      if (trio) return [...$('party').children].every((e) => e.scrollHeight <= e.clientHeight + 1) && $('party').getBoundingClientRect().bottom <= tk.top + 2;
+      const low = [document.querySelector('#stage .ehp'), $('espd')].filter((e) => e && getComputedStyle(e).display !== 'none').reduce((m, e) => Math.max(m, e.getBoundingClientRect().bottom), 0);
+      const art = $('eart').getBoundingClientRect().height;
+      return low <= tk.top - 4 && art >= (innerHeight < 760 ? 48 : 90);
+    };
+    let lo = min, hi = max;
+    b.style.setProperty('--cell', base + 'px');
+    if (!ok()) hi = base; else lo = base;
+    for (let i = 0; i < 8; i++) { const m = (lo + hi) / 2; b.style.setProperty('--cell', m + 'px'); if (ok()) lo = m; else hi = m; }
+    b.style.setProperty('--cell', lo + 'px');
+    if (Math.abs(lo - base) < 2 || !ok()) { b.style.removeProperty('--cell'); $('app').classList.remove('fit'); } else b.style.setProperty('--cell', Math.floor(lo) + 'px');
+  }
   function layout() {
+    fitBoard();
     const r = $('stage').getBoundingClientRect();
     document.querySelector('.scene').style.setProperty('--hz', Math.round(r.bottom + window.scrollY - 24) + 'px');
   }
