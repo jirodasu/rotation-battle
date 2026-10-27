@@ -1999,6 +1999,86 @@ html[data-text="lg"] .tok .nm b, html[data-text="lg"] .tok .nm u { font-size: 14
 @container (max-width: 80px) { html[data-text="lg"] .tok .nm b, html[data-text="lg"] .tok .nm u { font-size: 12px; } }
 @container (max-width: 56px) { html[data-text="lg"] .tok .nm b, html[data-text="lg"] .tok .nm u { font-size: 11px; } }
 html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 26px; }
+
+/* ---------- 敵の3体（三位一体）v5.1.39 ---------- */
+.foes { display: none; }
+.stage.trio .plate, .stage.trio .ehp, .stage.trio .espd, .stage.trio .eart { display: none; }
+.stage.trio .foes { display: flex; position: absolute; left: 0; right: 0; top: 0; bottom: 50px; gap: 5px; z-index: 2; }
+.fc { container-type: inline-size; flex: 1 1 0; min-width: 0; position: relative; display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 4px 4px 4px; border-radius: 12px; border: 2px solid var(--paper-line); background: var(--paper); color: var(--ink); text-align: center; font: inherit; cursor: pointer; overflow: hidden; -webkit-tap-highlight-color: transparent; transition: transform 0.12s, box-shadow 0.12s; }
+.fc:active { transform: scale(0.97); }
+.fc:focus-visible { outline: 3px solid var(--accent); outline-offset: 1px; }
+.fc.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.fc.dead { opacity: 0.42; filter: grayscale(1); cursor: default; }
+.fc.charged { border-color: var(--danger); }
+.fc-art { display: block; height: 36px; flex: none; }
+.fc-art svg { display: block; height: 100%; width: auto; margin: 0 auto; overflow: visible; }
+.fc-aim { font-style: normal; font-size: 11px; color: var(--accent); margin-right: 2px; }
+.fc.sel .fc-nm { color: var(--accent); }
+.fc-nm { font-size: 13px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc-row { display: flex; align-items: center; gap: 3px; }
+.fc-def { flex: none; display: inline-flex; align-items: baseline; gap: 1px; font-size: 12px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+.fc-def small { font-size: 9px; font-weight: 700; color: var(--ink-soft); }
+.fc-hp { position: relative; display: block; flex: 1; min-width: 0; height: 15px; line-height: 15px; border-radius: 8px; background: rgba(35, 49, 74, 0.28); overflow: hidden; }
+.fc-hp i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--danger); border-radius: 8px; }
+.fc-hp u { position: relative; display: block; text-align: center; text-decoration: none; font-size: 11px; font-weight: 800; line-height: 15px; color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55); font-variant-numeric: tabular-nums; }
+.fc-hp u small { font-size: 9px; opacity: 0.85; }
+.fc-st { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-content: flex-start; min-height: 16px; }
+.fc-chip { display: inline-flex; align-items: center; gap: 2px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 10px; font-weight: 800; line-height: 1; font-style: normal; color: var(--ink); background: rgba(74, 134, 217, 0.22); border: 1px solid rgba(74, 134, 217, 0.65); white-space: nowrap; }
+.fc-chip svg { width: 10px; height: 10px; }
+.fc-chip b { font-weight: 800; }
+.fc-chip.hl { background: rgba(63, 155, 106, 0.22); border-color: rgba(63, 155, 106, 0.7); }
+.fc-chip.ch { background: var(--danger); border-color: transparent; color: #fff; }
+.fc-chip.plan { background: transparent; border-style: dashed; }
+.fc-chip .seal { position: static; width: 12px; height: 12px; min-width: 0; font-size: 8px; line-height: 12px; margin: 0; padding: 0; box-shadow: none; transform: none; }
+.fc-act { display: flex; align-items: center; justify-content: center; gap: 3px; min-height: 17px; padding: 0 3px; border-radius: 9px; font-size: 11px; font-weight: 700; background: rgba(229, 96, 77, 0.16); white-space: nowrap; overflow: hidden; }
+.fc-act.big { background: var(--danger); color: #fff; }
+.fc-act .fc-g { font-style: normal; font-size: 11px; }
+.fc-act b { font-weight: 800; font-size: 12px; }
+.fc-dmg { display: flex; align-items: baseline; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 11px; font-weight: 700; line-height: 1.15; }
+.fc-dmg b { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.fc-dmg small { font-size: 9px; color: var(--ink-soft); }
+.fc-dmg em { font-style: normal; font-size: 9px; font-weight: 800; padding: 0 4px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
+.fc-dmg.kill b { color: var(--danger); }
+.fc-gone { font-size: 12px; font-weight: 800; padding: 6px 0; }
+.stage.trio .ticket { bottom: 3px; }
+.ticket.p { grid-template-columns: 32px 1fr auto; gap: 8px; padding: 4px 12px 4px 8px; }
+.ticket.p .t-ico { width: 32px; height: 32px; font-size: 16px; }
+.ticket.p .t-main b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ticket.p .t-main span { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ticket.p .t-dmg b { font-size: 20px; }
+.stage.trio.peeking .foes { opacity: 0.18; transition: opacity 0.2s; }
+.pc-foe { display: block; padding: 6px 0 2px; border-top: 1px solid var(--paper-line); text-align: left; }
+.pc-foe.dead { opacity: 0.45; }
+.pc-h { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.pc-art { width: 54px; flex: none; }
+.pc-art svg { width: 100%; height: auto; display: block; }
+.pc-id b { display: block; font-size: 16px; }
+.pc-id small { display: block; font-size: 12px; color: var(--ink-soft); }
+@media (max-height: 760px) {
+  .fc-art { display: none; }
+}
+@media (min-height: 800px) { .fc-art { height: 62px; } }
+@media (max-height: 640px) {
+  .stage.trio .foes { bottom: 46px; }
+  .fc { gap: 1px; padding: 3px 3px; }
+  .fc-nm { font-size: 12px; }
+  .fc-hp { height: 14px; line-height: 14px; } .fc-hp u { line-height: 14px; font-size: 10px; }
+  .fc-act { min-height: 15px; font-size: 10px; } .fc-act b { font-size: 11px; }
+  .fc-dmg small { display: none; }
+}
+@container (max-width: 100px) {
+  .fc-nm { font-size: 12px; }
+  .fc-act { font-size: 10px; gap: 2px; } .fc-act b { font-size: 11px; }
+  .fc-chip { font-size: 9px; padding: 0 3px; height: 15px; }
+  .fc-dmg { font-size: 10px; } .fc-dmg b { font-size: 13px; }
+}
+@media (min-width: 900px) and (min-height: 700px) {
+  .fc-art { height: 72px; } .fc-nm { font-size: 16px; } .fc-hp { height: 18px; } .fc-hp u { line-height: 18px; font-size: 13px; }
+  .fc-chip { height: 20px; font-size: 12px; } .fc-chip svg { width: 12px; height: 12px; }
+  .fc-act { min-height: 22px; font-size: 13px; } .fc-act b { font-size: 14px; }
+  .fc-dmg { font-size: 13px; } .fc-dmg b { font-size: 17px; }
+  .stage.trio .foes { bottom: 70px; }
+}
 </style>
 </head>
 <body class="is-cover">
@@ -2041,6 +2121,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     <div class="ehp" aria-label="敵のHP"><div class="ebar"><b id="ebarLag"></b><i id="ebar"></i></div><span class="ehpn" id="ehpn"></span></div>
     <div class="espd" id="espd"></div>
     <div class="eart" id="eart"></div>
+    <div class="foes" id="party" role="group" aria-label="敵の3体（タップで攻撃対象を選ぶ）"></div>
     <div class="ticket" id="ticket"></div>
   </section>
   <div class="peek" id="peek" role="region" aria-label="仲間の詳細" aria-live="polite" hidden></div>
@@ -2094,7 +2175,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.38</p>
+    <p class="c-ver" id="cVer">ver 5.1.39</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2410,7 +2491,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.38';
+  const APP_VERSION = '5.1.39';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2441,6 +2522,28 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       { name: '毒の息吹', glyph: '毒', rule: 'all', dmg: 24, pierce: true },
       { name: '翼のはばたき', glyph: '翼', rule: 'all', dmg: 12 },
       { name: '尾の一撃', glyph: '尾', rule: 'lowhp', dmg: 34, pierce: true }
+    ]
+  };
+  // 敵編成「三位一体」（v5.1.39）：3体を倒す順番を考えるパズル戦。数値はすべてここに集める（テスト用の初期値）。
+  //   steps：登場する地点の番号（空にすると出ない。章の主・最後の戦いには置かない）。第2章に置くと防御補助の価値が下がる点に注意
+  //   share：鎮守の像が生きている間、ほかの2体が受けるダメージの倍率（0.5＝半分）
+  //   warnAhead：断罪者の大技が、何ターン前から予告に見えるか（祈り手が生きている間／倒れたあと）。周期は3ターンなので最大2
+  //   foes の順番が、ターゲットを選ばなかったときの狙う順（上から生きている最初の1体）
+  const TRI = {
+    name: '三位一体', par: 9, allowFallen: 1, steps: [5], share: 0.5, warnAhead: { withPriest: 2, noPriest: 1 },
+    foes: [
+      { id: 'statue', name: '鎮守の像', short: '像', art: 'statue', voice: 'club', hp: 60, def: 4, spd: 3, pattern: [
+        { name: '防御構え', glyph: '守', rule: 'guard', def: 4, brief: '防御構え' },
+        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5, brief: '通常攻撃' },
+        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5, brief: '通常攻撃' }] },
+      { id: 'priest', name: '祈り手', short: '祈', art: 'priest', voice: 'bite', hp: 18, def: 1, spd: 6, pattern: [
+        { name: '癒やしの祈り', glyph: '癒', rule: 'mend', heal: 10, brief: '回復' },
+        { name: '守りの祈り', glyph: '護', rule: 'aid', def: 3, brief: '防御補助' },
+        { name: '癒やしの祈り', glyph: '癒', rule: 'mend', heal: 10, brief: '回復' }] },
+      { id: 'judge', name: '断罪者', short: '断', art: 'judge', voice: 'horn', hp: 32, def: 2, spd: 5, pattern: [
+        { name: '断罪の一閃', glyph: '断', rule: 'lowhp', dmg: 8, brief: '通常攻撃' },
+        { name: 'ちからをためる', glyph: '溜', rule: 'charge', brief: 'ため' },
+        { name: '断罪の大技', glyph: '罪', rule: 'lowhp', dmg: 20, big: true, brief: '大技' }] }
     ]
   };
 
@@ -3199,7 +3302,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     buildBoard();
   }
 
-  function expDmg(u, r, c, src, fresh, entering) {
+  function expDmg(u, r, c, src, fresh, entering, F) {
     if (!(r === 0 || (r === 1 && u.ranged > 0))) return null;
     const R = RX();
     let power = r === 0 ? u.atk : u.ranged, tired = false;
@@ -3211,16 +3314,19 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     let sup = 0;
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
     let t = 0;
-    for (let i = 0; i < hitsN; i++) t += Math.max(1, power + (i === 0 ? sup : 0) - enemy.def);
-    return { val: t, buf: sup > 0, tired };
+    const T = F || targetFoe();
+    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T);
+    return { val: t, buf: sup > 0, tired, half: foeShare(T) < 1 };
   }
   function incoming(src, fresh, entering) {
-    const out = {}, act = curAct();
-    if (!act || act.rule === 'charge' || act.rule === 'random' || act.rule === 'bind') return out;
-    const info = targetInfo(act, src), fr = frontRow(src);
-    if (fr < 0 || !info.cols || !info.cols.length) return out;
+    const out = {}, used = {}, fr = frontRow(src);
+    if (fr < 0) return out;
+    const acts = enemy.party ? enemy.party.filter(foeAlive).sort((a, b) => b.spd - a.spd).map((F) => ({ F, act: actOf(F) })) : [{ F: enemy, act: curAct() }];
+    acts.forEach(({ F, act }) => {
+    if (!act || !act.dmg || act.rule === 'charge' || act.rule === 'random' || act.rule === 'bind') return;
+    const info = targetInfo(act, src, F);
+    if (!info.cols || !info.cols.length) return;
     const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
-    const used = {};
     cols.forEach((c) => {
       const u = src[fr][c]; if (!u) return;
       let d = act.dmg;
@@ -3230,6 +3336,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       if (fr === 0 && entering && relOn('shield')) d -= relD('shield').guard;
       const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d);
     });
+    });
     Object.keys(out).forEach((k) => {
       const [r, c] = k.split(',').map(Number), u = src[r][c], h = src[2][c];
       const heal = 0;
@@ -3238,7 +3345,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     return out;
   }
   function actorList(src, entering) {
-    const a = [{ kind: 'e', spd: enemy.spd }];
+    const a = enemy.party ? enemy.party.filter(foeAlive).map((F) => ({ kind: 'e', foe: F, spd: F.spd })) : [{ kind: 'e', spd: enemy.spd }];
     const bonus = (u, r) => { if (r !== 0 || !RX().entry || !u.entry || !u.entry.spd) return 0; return (entryNow[u.uid] || entering) ? u.entry.spd : 0; };
     units(src).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) a.push({ kind: 'p', u, r, c, spd: u.spd + bonus(u, r) }); });
     a.sort((x, y) => y.spd - x.spd || (x.kind === 'p' ? -1 : 1));
@@ -3249,7 +3356,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const list = live ? order : actorList(showGhost() ? previewGrid() : grid, showGhost());
     const items = list.map((a, i) => {
       const st = live ? (i < orderIdx ? ' done' : (i === orderIdx ? ' now' : '')) : '';
-      return a.kind === 'e' ? '<i class="od foe' + st + '" title="' + enemy.name + '">' + '<b class="disp">' + curAct().glyph + '</b></i>'
+      return a.kind === 'e' ? '<i class="od foe' + st + '" title="' + (a.foe || enemy).name + '">' + '<b class="disp">' + actOf(a.foe || enemy).glyph + '</b></i>'
         : '<i class="od c-' + a.u.cls + st + '" title="' + a.u.name + '">' + face(a.u) + '</i>';
     }).join('');
     return '<div class="order"><span class="od-l">行動順</span><span class="od-list">' + items + '</span></div>';
@@ -3297,10 +3404,12 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   /* ============ 敵の予告 ============ */
   // 敵は「一番前の列」（通常は攻撃列）の仲間だけを狙う
   function frontRow(g) { const G = g || grid; for (let r = 0; r < ROWS; r++) if (G[r].some(Boolean)) return r; return -1; }
-  const nextAct = () => enemy.pattern[turn % enemy.pattern.length];
-  function targetInfo(act, g) {
+  const nextActOf = (F) => F.pattern[turn % F.pattern.length];
+  const nextAct = () => nextActOf(enemy);
+  function targetInfo(act, g, F) {
     if (act.rule === 'bind') return { cols: [], desc: '縛られると、次のターンは隊列を回せない' };
-    if (act.rule === 'charge') { const n = nextAct(); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' }; }
+    if (act.rule === 'charge') { const n = nextActOf(F || enemy); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' }; }
+    if (act.rule === 'guard' || act.rule === 'mend' || act.rule === 'aid') return { cols: [], desc: '' };
     const fr = frontRow(g);
     if (fr < 0) return { cols: [], desc: '' };
     const L = units(g).filter((x) => x.r === fr);
@@ -3313,7 +3422,49 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const t = L.reduce((a, b) => (b.u.hp < a.u.hp ? b : a));
     return { cols: [t.c], desc: act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + COLN[t.c] + '）' };
   }
-  const curAct = () => enemy.pattern[(turn - 1) % enemy.pattern.length];
+  const actOf = (F, t) => F.pattern[((t || turn) - 1) % F.pattern.length];
+  const curAct = () => (enemy.party ? actOf(leadFoe()) : actOf(enemy));
+
+  /* ============ 敵の編成（三位一体）：敵が複数体のときだけ働く ============
+     enemy は「編成」そのもの。enemy.party があれば3体（なければ従来どおり1体）。
+     hp・def・charged などは1体ずつ、その体に持たせる。 */
+  const foeList = () => (enemy.party ? enemy.party : [enemy]);
+  const foeById = (id) => (enemy.party || []).find((f) => f.id === id);
+  const foeAlive = (F) => !!F && F.hp > 0;
+  const leadFoe = () => { const P = enemy.party; return P.find((f) => f.id === 'judge' && f.hp > 0) || P.find((f) => f.hp > 0) || P[0]; };
+  const statueUp = () => { const S = foeById('statue'); return !!S && S.hp > 0; };
+  const priestUp = () => { const P = foeById('priest'); return !!P && P.hp > 0; };
+  let tgtId = null;   // プレイヤーが選んだ攻撃対象（敵の id）
+  function targetFoe() {
+    if (!enemy.party) return enemy;
+    const P = enemy.party, t = P.find((f) => f.id === tgtId && f.hp > 0);
+    return t || P.find((f) => f.hp > 0) || P[0];
+  }
+  const foeDef = (F) => (F.party ? 0 : F.def + (F.defUp || 0));
+  // 肩代わり：鎮守の像が生きている間、像以外が受けるダメージは share 倍
+  const foeShare = (F) => (enemy.party && F.id !== 'statue' && statueUp() ? TRI.share : 1);
+  // 1回の攻撃が F に与えるダメージ（防御を引いて、肩代わりで減らす。最低1）
+  function foeHit(raw, F) {
+    let d = Math.max(1, raw - foeDef(F));
+    const sh = foeShare(F);
+    if (sh < 1) d = Math.max(1, Math.floor(d * sh));
+    return d;
+  }
+  function syncParty() { if (enemy.party) { enemy.hp = enemy.party.reduce((a, f) => a + f.hp, 0); } }
+  // 祈り手の行動先：防御補助は、像か断罪者のうち残りHPの割合が低いほう（同じなら像）／回復は像（像がいなければ断罪者）
+  function aidTarget() { const c = ['statue', 'judge'].map(foeById).filter(foeAlive); return c.length ? c.reduce((a, b) => (b.hp / b.max < a.hp / a.max ? b : a)) : null; }
+  function mendTarget() { return foeAlive(foeById('statue')) ? foeById('statue') : (foeAlive(foeById('judge')) ? foeById('judge') : null); }
+  // 断罪者の大技の予告：あと何ターンで来るか（0＝このターン）と、いま予告に見えるか
+  function foeWarn() {
+    const J = foeById('judge'); if (!enemy.party || !foeAlive(J)) return null;
+    const n = J.pattern.length;
+    for (let k = 0; k < n; k++) {
+      const a = J.pattern[(turn - 1 + k) % n];
+      if (a.big) { const need = priestUp() ? TRI.warnAhead.withPriest : TRI.warnAhead.noPriest; return { ahead: k, dmg: a.dmg, name: a.name, seen: k <= need }; }
+    }
+    return null;
+  }
+  const foeEl = (F) => (enemy.party ? document.querySelector('#party .fc[data-f="' + F.id + '"]') : $('eart')) || $('eart');
 
   let shownHp = null, hitSeq = 0;
   function tweenHp(from, to) {
@@ -3327,6 +3478,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     requestAnimationFrame(f);
   }
   function renderEnemy(enter) {
+    renderParty();
+    if (enemy.party) { $('chap').textContent = chapLabel(); $('ename').textContent = enemy.name; return; }
     $('chap').textContent = chapLabel();
     $('ename').textContent = enemy.name;
     $('espd').textContent = '素早さ ' + enemy.spd + '　防御 ' + enemy.def;
@@ -3413,6 +3566,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。目のボタンの先読みで「突」が付く。'],
+    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。<em>鎮守の像が生きている間</em>、祈り手と断罪者が受けるダメージは<em>半分</em>。パネルの「与」が、いまの並びで与えられるダメージ。像を先に倒すか、祈り手を先に落とすかで戦いが変わる。'],
     stamina: () => ['疲れている', '攻撃列で戦うたびに<em>スタミナ</em>（キャラ右横の点）が減り、0で攻撃が半分に。回復列で休めば全快。']
   };
   let tipKey = null;
@@ -3426,7 +3580,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (tipKey) return;
     const seen = tipSeen();
     let k = null;
-    if (battleIdx === 0 && ((phase === 'prep' && swappedOnce) || phase === 'choose') && !seen.stars) k = 'stars';
+    if (enemy.party && !seen.trinity) k = 'trinity';
+    else if (battleIdx === 0 && ((phase === 'prep' && swappedOnce) || phase === 'choose') && !seen.stars) k = 'stars';
     else if (run && phase === 'prep' && benchList().length && !seen.bench) k = 'bench';
     else if (phase === 'choose' && units().some((x) => x.r === 0 && x.u.staMax > 0 && x.u.sta <= 0) && !seen.stamina) k = 'stamina';
     else if (EXPM() && phase === 'choose' && !seen.gauge) k = 'gauge';
@@ -3445,7 +3600,111 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     el.style.top = Math.round(Math.max(8, bk.bottom - h)) + 'px';
     $('ticket').classList.remove('tip-ping'); void $('ticket').offsetWidth; $('ticket').classList.add('tip-ping');
   }
+  /* --- 敵の3体のパネル（三位一体）--- */
+  const NO_FOE_ART = '';
+  const FOE_ST = (F) => {
+    // 状態：肩代わり・防御・ため。アイコンと数値で
+    const c = [];
+    if (F.hp > 0) {
+      if (F.id === 'statue') c.push('<i class="fc-chip sh" title="肩代わり：ほかの2体が受けるダメージを半分にする">' + ICON.shield + '<b>肩代わり</b></i>');
+      else if (foeShare(F) < 1) c.push('<i class="fc-chip sh" title="像の肩代わりで、受けるダメージが半分">' + ICON.shield + '<b>×½</b></i>');
+      if (F.defUp > 0) c.push('<i class="fc-chip df" title="防御アップ中（いまのターン）"><i class="seal d">防</i><b>+' + F.defUp + '</b></i>');
+      if (F.charged) c.push('<i class="fc-chip ch" title="ためている：このターンは大技">溜<b>大技</b></i>');
+      if (phase === 'choose' || phase === 'prep') {
+        const a = actOf(F);
+        const P = foeById('priest');
+        if (foeAlive(P)) {
+          const pa = actOf(P);
+          if (pa.rule === 'mend' && mendTarget() === F) c.push('<i class="fc-chip hl plan" title="このターン、祈り手が回復する">' + ICON.plus + '<b>+' + pa.heal + '</b></i>');
+          if (pa.rule === 'aid' && aidTarget() === F) c.push('<i class="fc-chip df plan" title="このターン、祈り手が防御を付ける（次のターンに働く）"><i class="seal d">防</i><b>次+' + pa.def + '</b></i>');
+        }
+        if (a.rule === 'guard') c.push('<i class="fc-chip df plan" title="このターン構える（次のターンに働く）"><i class="seal d">防</i><b>次+' + a.def + '</b></i>');
+      }
+    }
+    return c.join('');
+  };
+  function foeDealt(F) {
+    const gh = showGhost(), src = gh ? previewGrid() : grid;
+    let t = 0;
+    units(src).forEach(({ u, r, c }) => { const d = expDmg(u, r, c, src, gh || phase === 'prep', gh, F); if (d) t += d.val; });
+    return t;
+  }
+  function partyHTML() {
+    const tgt = targetFoe(), live = phase === 'prep' || phase === 'choose';
+    return enemy.party.map((F) => {
+      const dead = F.hp <= 0, p = Math.round(F.hp / F.max * 100), a = actOf(F), half = foeShare(F) < 1;
+      let dmgTxt = '';
+      if (a.dmg) dmgTxt = '<b>' + a.dmg + (a.hits > 1 ? '×' + a.hits : '') + '</b>';
+      else if (a.rule === 'mend') dmgTxt = '<b>+' + a.heal + '</b>';
+      const brief = (F.charged && a.big) ? '大技' : a.brief;
+      const dl = live && !dead ? foeDealt(F) : 0, kill = dl >= F.hp && dl > 0;
+      return '<button type="button" class="fc' + (dead ? ' dead' : '') + (!dead && F === tgt ? ' sel' : '') + (half && !dead ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp > 0 && F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '"' + (dead ? ' disabled' : '') + ' aria-pressed="' + (!dead && F === tgt) + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (dead ? '（倒れた）' : (F === tgt ? '（攻撃対象）' : '（タップで攻撃対象にする）')) + '">' +
+        '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
+        '<b class="fc-nm disp">' + (!dead && F === tgt ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
+        '<span class="fc-row"><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span>' +
+        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span></span>' +
+        '<span class="fc-st">' + FOE_ST(F) + '</span>' +
+        (dead ? '<span class="fc-gone">倒れた</span>' : '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
+        (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '')) +
+        '</button>';
+    }).join('');
+  }
+  function renderParty() {
+    const st = $('stage'), on = !!(enemy && enemy.party);
+    st.classList.toggle('trio', on);
+    if (!on) return;
+    const pa = $('party'), h = partyHTML();
+    if (pa.__h !== h) { pa.innerHTML = h; pa.__h = h; }
+  }
+  function pickTarget(id) {
+    if (!enemy.party || (phase !== 'prep' && phase !== 'choose')) return;
+    const F = foeById(id);
+    if (!F || F.hp <= 0) { SFX.nope(); return; }
+    if (tgtId !== id || targetFoe() !== F) { tgtId = id; SFX.pick(0); }
+    inspect = null; render();
+  }
+  function renderPartyTicket(gh, src) {
+    const t = $('ticket'), alive = enemy.party.filter(foeAlive), warn = foeWarn();
+    const J = foeById('judge'), Ja = foeAlive(J) ? actOf(J) : null, L = leadFoe(), La = actOf(L);
+    const cols = new Set(); let maybe = false;
+    alive.forEach((F) => {
+      const a = actOf(F); if (!a.dmg) return;
+      const info = targetInfo(a, src, F);
+      if (!info.cols) { maybe = true; return; }
+      if (a.rule === 'all') info.cols.forEach((c) => cols.add(c)); else if (info.cols.length) cols.add(info.cols[0]);
+    });
+    const jinfo = Ja ? targetInfo(Ja, src, J) : null, lead = targetInfo(La, src, L);
+    const verb = (d) => (phase === 'choose' ? d.replace('狙い　', gh ? '回すと　' : '維持だと　') : d);
+    let ico = Ja ? Ja.glyph : La.glyph, head, sub = '', dmg = null, big = false, chg = false;
+    if (warn && warn.seen) {
+      dmg = warn.dmg;
+      if (warn.ahead === 0) { ico = '罪'; head = '断罪者の大技！'; big = true; sub = verb(jinfo.desc); }
+      else if (warn.ahead === 1) { ico = '溜'; head = '断罪者が大技をためる'; chg = true; sub = '次のターンに ' + warn.dmg + ' ダメージ'; }
+      else { ico = '罪'; head = warn.ahead + 'ターン後に大技'; sub = 'いまは「' + Ja.brief + '」　祈り手が予告を早めている'; }
+    } else if (Ja) {
+      head = '断罪者　' + Ja.brief; dmg = Ja.dmg || null; sub = verb(jinfo.desc || '') || '次に大技が来る';
+      sub += (priestUp() ? '' : '　大技の予告は直前まで見えない');
+    } else { ico = La.glyph; head = L.name + '　' + La.brief; dmg = La.dmg || null; sub = verb(lead.desc || ''); }
+    t.classList.add('p');
+    t.classList.toggle('busy', phase === 'resolve' || phase === 'over');
+    t.classList.toggle('charge', chg);
+    t.classList.toggle('big', big);
+    t.innerHTML = '<span class="t-ico disp">' + ico + '</span>' +
+      '<span class="t-main"><b class="disp">' + head + '</b><span>' + sub + '</span></span>' +
+      '<span class="t-dmg"><b class="disp">' + (dmg != null ? dmg : '—') + '</b><small>' + (warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
+    tipsCheck(curAct());
+    const showBeam = phase === 'prep' || phase === 'choose', bfr = frontRow(src);
+    document.querySelectorAll('.beam').forEach((b) => {
+      const c = +b.dataset.c, has = bfr >= 0 && !!src[bfr][c];
+      b.style.gridRow = bfr >= 0 ? (bfr + 2) + ' / ' + (bfr + 3) : '';
+      b.classList.toggle('on', showBeam && has && cols.has(c));
+      b.classList.toggle('maybe', showBeam && has && maybe && !cols.has(c));
+    });
+    document.querySelectorAll('.ctag').forEach((g) => { g.classList.toggle('hit', showBeam && cols.has(+g.dataset.c)); });
+  }
   function renderTicket() {
+    if (enemy.party) { const g = showGhost(); renderPartyTicket(g, g ? previewGrid() : grid); return; }
+    $('ticket').classList.remove('p');
     const act = curAct(), gh = showGhost(), info = targetInfo(act, gh ? previewGrid() : grid);
     if (phase === 'choose') info.desc = info.desc.replace('狙い　', gh ? '回すと　' : '維持だと　');
     const t = $('ticket');
@@ -3534,7 +3793,26 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (a.rule === 'bind') return '隊列を縛る（次のターンは回せない）';
     return '';
   }
+  function partyCardHTML() {
+    const rows = enemy.party.map((F) => {
+      const n = F.pattern.length, cur = (turn - 1) % n, dead = F.hp <= 0;
+      let list = '';
+      for (let k = 0; k < n; k++) {
+        const i = (cur + k) % n, a = F.pattern[i];
+        const lbl = k === 0 ? (phase === 'resolve' ? 'いま' : '次') : (k === 1 ? 'その次' : k + '手先');
+        const val = a.dmg ? a.dmg : a.rule === 'mend' ? '+' + a.heal : a.rule === 'charge' ? '—' : '防+' + a.def;
+        list += '<span class="ep' + (k === 0 ? ' now' : '') + '"><span class="ep-ic disp">' + a.glyph + '</span><span class="ep-n"><b class="disp"><i class="ep-badge"' + (k === 0 ? '' : ' style="background:var(--paper);color:var(--ink-soft);box-shadow:0 1.5px 0 var(--paper-line)"') + '>' + lbl + '</i>' + a.name + '</b><span>' + ruleShort2(a) + '</span></span><span class="ep-d"><b class="disp">' + val + '</b><small>' + (a.dmg ? 'ダメージ' : '') + '</small></span></span>';
+      }
+      return '<span class="pc-foe' + (dead ? ' dead' : '') + '"><span class="pc-h"><span class="pc-art">' + PARTY_ART[F.art] + '</span><span class="pc-id"><b class="disp">' + F.name + '</b><small>HP ' + F.hp + ' / ' + F.max + '　防御 ' + foeDef(F) + '　素早さ ' + F.spd + (dead ? '　倒れた' : '') + '</small></span></span>' + (dead ? '' : '<span class="ep-list">' + list + '</span>') + '</span>';
+    }).join('');
+    return '<button type="button" class="ucard" id="cardClose" aria-label="閉じる">' +
+      '<span class="uc-head"><span class="uc-id"><b class="uc-name disp">' + enemy.name + '</b><span class="uc-tags"><span class="uc-tag foe">敵</span><span class="uc-tag">' + chapLabel() + '</span></span></span><span class="uc-x">' + ICON.x + '</span></span>' +
+      '<span class="uc-role" style="display:block">鎮守の像が生きている間、祈り手と断罪者が受けるダメージは<b>半分</b>。断罪者は3ターンごとに大技（' + foeById('judge').pattern.find((a) => a.big).dmg + '）。祈り手が生きている間は、大技の予告が1ターン早く見える。パネルをタップすると攻撃対象を選べる。</span>' +
+      rows + '</button>';
+  }
+  const ruleShort2 = (a) => (a.rule === 'guard' ? '自分の防御が上がる（次のターンに働く）' : a.rule === 'mend' ? '鎮守の像のHPを回復' : a.rule === 'aid' ? '像か断罪者に防御を付ける（次のターンに働く）' : ruleShort(a));
   function enemyCardHTML() {
+    if (enemy.party) return partyCardHTML();
     const e = enemy, p = Math.round(e.hp / e.max * 100), n = e.pattern.length, cur = (turn - 1) % n;
     const faster = units().filter((x) => x.u.spd > e.spd).map((x) => x.u.name);
     let list = '';
@@ -3704,6 +3982,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     renderGauge();
     renderBoard();
     renderTicket();
+    renderParty();
     renderBook();
     $('btnStart').hidden = phase !== 'prep';
     $('btnPrepRot').hidden = phase !== 'prep' || !!tut;
@@ -3894,13 +4173,18 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     resetFlags();
     const edef = tut ? TUT_ENEMY : (run && run.enemy) || ENEMIES[battleIdx];
     enemy = Object.assign({}, edef, { max: edef.hp });
+    tgtId = null;
+    if (edef.party) {
+      enemy.party = edef.party.map((m) => Object.assign({}, m, { pattern: m.pattern.map((a) => Object.assign({}, a)), max: m.hp, charged: false, defUp: 0, defNext: 0 }));
+      enemy.def = 0; enemy.spd = Math.max.apply(null, enemy.party.map((f) => f.spd)); syncParty(); enemy.max = enemy.hp;
+    }
     const lastFight = !!(run && !tut && enemy.boss);
     document.body.classList.toggle('boss-stage', lastFight);
     Music.boss(lastFight);
     Music.era(run && !tut ? run.node / (RUN.nodes - 1) : 1);
     turn = 1; phase = 'prep'; sel = null; inspect = null; previewOn = false; order = []; orderIdx = -1;
     $('stage').classList.remove('charged');
-    logLines = [chapLabel() + '　' + enemy.name + 'があらわれた。'];
+    logLines = [chapLabel() + '　' + enemy.name + (enemy.party ? '（' + enemy.party.map((f) => f.name).join('・') + '）' : '') + 'があらわれた。'];
     $('result').hidden = true;
     renderEnemy(true);
     render();
@@ -3997,11 +4281,16 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     render();
   }
   $('stage').addEventListener('click', toggleFoe);
+  $('party').addEventListener('click', (ev) => {
+    const fc = ev.target.closest('.fc'); if (!fc) return;
+    ev.stopPropagation();
+    pickTarget(fc.dataset.f);
+  });
   const closeFoe = () => { if (inspect) { const wasFoe = inspect === FOE; inspect = null; render(); if (wasFoe) { try { $('stage').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ } } } };
   $('foeBg').addEventListener('click', closeFoe);
   $('foeSheet').addEventListener('click', (ev) => { if (ev.target.closest('#cardClose')) closeFoe(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeFoe(); });
-  $('stage').addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); sheetByKey = true; toggleFoe(); if (inspect) { try { $('cardClose').focus(); } catch (e) { /* 非対応 */ } } } });
+  $('stage').addEventListener('keydown', (ev) => { if (ev.target.closest && ev.target.closest('.fc')) return; if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); sheetByKey = true; toggleFoe(); if (inspect) { try { $('cardClose').focus(); } catch (e) { /* 非対応 */ } } } });
   $('book').addEventListener('click', (ev) => {
 
   });
@@ -4107,24 +4396,35 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     }
     if (tired) await tutNote('tired', '疲れて半減', u.name + 'はスタミナが0。攻撃が半分になる。回して回復列で休ませよう。', () => tokEl(0, c), 'bottom');
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
+    const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
     let total = 0;
-    for (let i = 0; i < hitsN; i++) total += Math.max(1, power + (i === 0 ? sup : 0) - enemy.def);
-    enemy.hp = Math.max(0, enemy.hp - total);
+    for (let i = 0; i < hitsN; i++) total += foeHit(power + (i === 0 ? sup : 0), T);
+    T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
-    say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (sup ? '（攻撃補助+' + sup + '）' : '') + (tired ? '（疲れて半減）' : '') + '　' + total + 'ダメージ');
+    say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (tired ? '（疲れて半減）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
     if (tired) SFX.tired();
     renderBook();
     lunge(tokEl(r, c), r === 1 ? 14 : 24);
     await wait(170);
+    const ea = foeEl(T);
     SFX.attack(u.id, total >= 15); vib(12);
-    weaponFX(u.id, tokEl(r, c)); shake($('eart'), 8); flashBright($('eart').firstElementChild);
+    weaponFX(u.id, tokEl(r, c)); shake(ea, 8); flashBright(ea.firstElementChild);
     const jx = (hitSeq++ % 2 ? 1 : -1) * (34 + Math.random() * 16);
-    popAt($('eart'), '-' + total, 'dmg big', -40, jx);
-    popAt($('eart'), u.name + '　' + power + (tired ? '（疲労½）' : '') + (sup ? ' ＋補助' + sup : '') + ' － 防御' + enemy.def + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
-    const ec = center($('eart')); sparks(ec.x, ec.y, '#fff3d6', 9);
-    renderEnemy(false);
+    popAt(ea, '-' + total, 'dmg big', -40, jx);
+    popAt(ea, u.name + '　' + power + (tired ? '（疲労½）' : '') + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
+    const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
+    if (!enemy.party) renderEnemy(false);
     await wait(460);
-    if (enemy.hp <= 0) { say(u.name + 'がとどめを刺した。'); finish('win'); }
+    if (enemy.party) renderEnemy(false);   // 3体のパネルは、ゆれの演出が終わってから数字を更新する（作り直すと演出が消えるため）
+    if (T.hp <= 0) {
+      if (!enemy.party) { say(u.name + 'がとどめを刺した。'); finish('win'); return; }
+      say(u.name + 'が' + T.name + 'を倒した。' + (T.id === 'statue' ? '肩代わりが消えた。' : T.id === 'priest' ? '回復と大技の早期予告が止まる。' : ''));
+      anim(ea, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0.35, transform: 'scale(.94)' }], { duration: 260, fill: 'forwards' });
+      await wait(300);
+      if (tgtId === T.id) tgtId = null;
+      if (foeList().every((f) => f.hp <= 0)) { say(u.name + 'がとどめを刺した。'); finish('win'); return; }
+      render();
+    }
   }
 
   async function hitColumn(col, dmg, pierce) {
@@ -4169,15 +4469,46 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (!units().length) finish('lose');
   }
 
-  async function enemyAct() {
-    const act = curAct(), info = targetInfo(act);
-    say(enemy.name + 'の' + act.name + '！');
+  async function enemyAct(foe) {
+    const F = foe || enemy, act = actOf(F), info = targetInfo(act, grid, F);
+    const sup = act.rule === 'guard' || act.rule === 'mend' || act.rule === 'aid';
+    say((enemy.party ? F.name : enemy.name) + 'の' + act.name + '！');
     renderBook();
-    const ec = $('eart');
-    if (act.rule !== 'charge') SFX.foe(enemy.voice || 'bite', !!enemy.charged);
+    const ec = foeEl(F);
+    if (act.rule !== 'charge' && !sup) SFX.foe(F.voice || enemy.voice || 'bite', !!F.charged);
     anim(ec, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(16px) scale(1.07)', offset: 0.4 }, { transform: 'translateY(0) scale(1)' }], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
     await wait(420);
     await tutNote('enemyAct', '敵の番', '予告どおりに、敵が一番前の列の仲間を攻撃してくる。', () => $('ticket'), 'bottom');
+    if (act.rule === 'guard') {
+      F.defNext = (F.defNext || 0) + act.def;
+      SFX.buff(); popAt(ec, '防+' + act.def + '（次ターン）', 'sub', -30, 0);
+      say(F.name + 'は身構えた。次のターン、防御+' + act.def + '。');
+      renderEnemy(false); renderBook();
+      await wait(650);
+      return;
+    }
+    if (act.rule === 'aid') {
+      const T = aidTarget();
+      if (T) {
+        T.defNext = (T.defNext || 0) + act.def;
+        SFX.buff(); popAt(foeEl(T), '防+' + act.def + '（次ターン）', 'sub', -30, 0);
+        say(F.name + 'が' + T.name + 'を守った。次のターン、防御+' + act.def + '。');
+        renderEnemy(false); renderBook();
+      }
+      await wait(650);
+      return;
+    }
+    if (act.rule === 'mend') {
+      const T = mendTarget(), g = T ? Math.min(act.heal, T.max - T.hp) : 0;
+      if (T && g > 0) {
+        T.hp += g; syncParty();
+        SFX.heal(); popAt(foeEl(T), '+' + g, 'heal');
+        say(F.name + 'が' + T.name + 'を回復。+' + g);
+        renderEnemy(false); renderBook();
+      } else say(F.name + 'の祈りは、届かなかった。');
+      await wait(650);
+      return;
+    }
     if (act.rule === 'bind') {
       enemy.bound = true;
       SFX.charge(); vib(30);
@@ -4188,19 +4519,19 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       return;
     }
     if (act.rule === 'charge') {
-      enemy.charged = true;
+      F.charged = true;
       SFX.charge(); Music.charge(true); vib(30);
       $('stage').classList.add('charged');
-      popAt($('eart'), 'ためている…', 'sub', -30, 0);
-      say(enemy.name + 'は力をためている。次のターンに大技が来る。');
-      renderBook();
+      popAt(ec, 'ためている…', 'sub', -30, 0);
+      say((enemy.party ? F.name : enemy.name) + 'は力をためている。次のターンに大技が来る。');
+      renderEnemy(false); renderBook();
       await wait(700);
       return;
     }
-    const wasCharged = !!enemy.charged;
-    enemy.charged = false;
-    $('stage').classList.remove('charged');
-    if (wasCharged) { flashBright($('eart').firstElementChild); vib(40); Music.charge(false); }
+    const wasCharged = !!F.charged;
+    F.charged = false;
+    if (!foeList().some((f) => f.charged)) $('stage').classList.remove('charged');
+    if (wasCharged) { flashBright(ec.firstElementChild); vib(40); Music.charge(false); }
     if (act.rule === 'random') {
       for (let i = 0; i < act.hits; i++) {
         if (phase === 'over') return;
@@ -4233,10 +4564,11 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     for (const a of actors) {
       if (phase === 'over') return;
       orderIdx += 1; renderBook();
-      if (a.kind === 'e') await enemyAct();
+      if (a.kind === 'e') { if (!a.foe || foeAlive(a.foe)) await enemyAct(a.foe); }
       else if (a.u.hp > 0 && grid[a.r][a.c] === a.u) await playerAttack(a.u, a.r, a.c);
     }
     if (phase === 'over') return;
+    if (enemy.party) enemy.party.forEach((f) => { f.defUp = f.defNext || 0; f.defNext = 0; });   // 構え・補助は、次のターンに働く
     turn += 1;
     if (gaugeOn()) gauge = Math.min(EXP.rot.cap, gauge + EXP.rot.gain);
     units().forEach(({ u }) => { u.entered = false; });
@@ -4864,8 +5196,41 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       '<path d="M16 76q-8 8-4 18q6-6 10-4q-2-8 4-12" fill="#9be36a" opacity=".55"/>' +
       '<path d="M96 168v-16M150 168v-14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/>')
   ];
-  return { art, eart };
+  // 三位一体の3体（v5.1.39）：石の像・祈り手・断罪者。大きさは敵と同じ 240×180
+  const party = {
+    statue: E('<defs>' + halo('gP0', '#ffb86a') + '</defs>' +
+      '<path d="M48 168h144v-12H48z" fill="#4a5268" ' + ES + '/>' +
+      '<path d="M70 156Q62 98 96 72Q120 58 144 72Q178 98 170 156z" fill="#6f7a92" ' + ES + '/>' +
+      '<path d="M98 152V100M120 152V90M142 152V100" stroke="#4b556c" stroke-width="2" fill="none"/>' +
+      '<path d="M92 64Q92 28 120 26Q148 28 148 64Q148 84 120 86Q92 84 92 64z" fill="#7d889f" ' + ES + '/>' +
+      '<path d="M101 60Q120 50 139 60Q139 78 120 80Q101 78 101 60z" fill="#232838"/>' +
+      eye(111, 66, 'gP0') + eye(129, 66, 'gP0') +
+      '<path d="M130 92l8 12-6 8 8 14" fill="none" stroke="' + K + '" stroke-width="1.8"/>' +
+      '<path d="M52 92Q52 132 82 148Q112 132 112 92Q82 84 52 92z" fill="#8f99ae" ' + ES + '/>' +
+      '<circle cx="82" cy="112" r="11" fill="none" stroke="#d8b660" stroke-width="2.4"/><path d="M82 98v28M68 112h28" stroke="#d8b660" stroke-width="2"/>'),
+    priest: E('<defs>' + halo('gP1', '#ffe3a0') + '</defs>' +
+      '<circle cx="120" cy="66" r="52" fill="url(#gP1)"/>' +
+      '<path d="M74 168Q68 116 98 96Q120 86 142 96Q172 116 166 168z" fill="#ece6d6" ' + ES + '/>' +
+      '<path d="M120 102v64M100 112q8 30 4 54M140 112q-8 30-4 54" stroke="#b7aa8c" stroke-width="1.6" fill="none"/>' +
+      '<path d="M92 82Q92 44 120 42Q148 44 148 82Q148 98 120 100Q92 98 92 82z" fill="#d9cfb8" ' + ES + '/>' +
+      '<ellipse cx="120" cy="80" rx="16" ry="18" fill="#232838"/>' +
+      '<path d="M110 80q4-3 8 0M122 80q4-3 8 0" stroke="#ece6d6" stroke-width="2" fill="none" stroke-linecap="round"/>' +
+      '<ellipse cx="120" cy="34" rx="22" ry="6" fill="none" stroke="#ffd98a" stroke-width="3"/>' +
+      '<path d="M107 124Q120 110 133 124Q127 138 120 140Q113 138 107 124z" fill="#ece6d6" ' + ES + '/>'),
+    judge: E('<defs>' + halo('gP2', '#ff7a4a') + '</defs>' +
+      '<path d="M180 16L198 150" stroke="' + K + '" stroke-width="16" stroke-linecap="round"/><path d="M180 16L198 150" stroke="#b9c2d4" stroke-width="10" stroke-linecap="round"/>' +
+      '<path d="M178 118l34-6" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/><path d="M178 118l34-6" stroke="#d8b660" stroke-width="5" stroke-linecap="round"/>' +
+      '<path d="M64 168Q56 112 92 86Q120 74 148 86Q184 112 176 168z" fill="#3a3140" ' + ES + '/>' +
+      '<path d="M72 98q-18 4-20 22q16 2 30-8zM168 98q18 4 20 22q-16 2-30-8z" fill="#59506a" ' + ES + '/>' +
+      '<path d="M94 74Q94 36 120 34Q146 36 146 74Q146 92 120 94Q94 92 94 74z" fill="#2c2634" ' + ES + '/>' +
+      '<path d="M102 66h36v14q-18 8-36 0z" fill="' + BONE + '" ' + ES + '/>' +
+      '<circle cx="112" cy="72" r="14" fill="url(#gP2)"/><circle cx="128" cy="72" r="14" fill="url(#gP2)"/>' +
+      '<path d="M107 72h10M123 72h10" stroke="#ff7a4a" stroke-width="3.2" stroke-linecap="round"/>' +
+      '<path d="M96 130q24 12 48 0" fill="none" stroke="#8e9ab0" stroke-width="2" stroke-dasharray="1 5" stroke-linecap="round"/>')
+  };
+  return { art, eart, party };
   })();
+  const PARTY_ART = GOTH_ART.party;
 
   const SKIN_N = { art: Object.assign({}, ART), eart: EART.slice(), names: ENEMIES.map((e) => e.name), boss: BOSS.name, lines: EN_LINES.slice() };
   // 通常の見た目は v5.1.31 からゴシック調。v5.1.32 から名前と文も環廊の世界に合わせる
@@ -5008,6 +5373,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     ] },
     foes: [[0, 'binder'], [1, 'binder'], [1, 2]]
   };
+  EXP.trinity = { name: TRI.name, party: TRI.foes, par: TRI.par, allowFallen: TRI.allowFallen };   // 三位一体（定数は TRI）。tools/expsim.mjs が EXP を取り出すので、リテラルの外に置く
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, sta: 0, ent: 1 },
     { max: 34, key: 'prime', label: '盛り', mul: 1, sta: 0, ent: 1 },
@@ -5860,7 +6226,10 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const m = {}, VK = Object.keys(VARIANTS);
     Object.keys(ROUTE.nodes).forEach((id) => {
       const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
-      if (isFightKind(n.kind)) m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < EXP.variantRate ? pick(VK) : null };
+      if (isFightKind(n.kind)) {
+        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < EXP.variantRate ? pick(VK) : null };
+        if (!chief && !last && TRI.steps.includes(n.step)) { m[id].foe = 'trinity'; m[id].variant = null; }   // 三位一体：乱数の並びは変えずに、置き換えるだけ
+      }
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
     });
     return m;
@@ -5871,6 +6240,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const nr = chief ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
     const base = k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
     const v = vkey ? VARIANTS[vkey] : null;
+    if (base.party) return { name: base.name, party: base.party, chief: false, ch, variant: null, vf: null, art: 0, boss: false, restUp: 0, par: base.par, allowFallen: base.allowFallen, hp: base.party.reduce((a, f) => a + f.hp, 0), spd: 0, def: 0, voice: 'club', pattern: [{ name: '三位一体', glyph: '三', rule: 'party' }] };
     return Object.assign({}, base, {
       name: (v ? v.pre : '') + (k === 'binder' ? BINDER_NAME : base.name), chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
       hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1)), boss: k === 'boss', restUp: nr,
@@ -5887,6 +6257,9 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   const relicLine = () => (run.relics.length ? '回転レリック：' + run.relics.map((id) => relD(id).name).join('・') : '回転レリックはまだない');
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
+    if (e.party) return { ico: '<span class="ev-var" style="--vf:none">' + PARTY_ART.statue + '</span>', t: '戦闘　' + e.name,
+      d: '敵は3体（' + e.party.map((f) => f.name + f.hp).join('・') + '）。倒す順番を考えるパズル戦。鎮守の像が生きている間、ほかの2体へのダメージは半分。勝てば報酬を4つから1つ。',
+      tags: [{ t: '第' + (e.ch + 1) + '章の敵', k: 'foe' }, { t: '3体', k: 'var' }, { t: '戦闘あり', k: 'bt' }] };
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
       d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
       tags: [{ t: last ? '最後の主' : chief ? '第' + (e.ch + 1) + '章の主' : '第' + (e.ch + 1) + '章の敵', k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], binds ? [{ t: '縛り', k: 'var' }] : [], [{ t: '戦闘あり', k: 'bt' }]) };
