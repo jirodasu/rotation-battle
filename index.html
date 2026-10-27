@@ -2097,9 +2097,6 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 }
 /* ===== v5.1.43 仕上げ：読みやすさ・押しやすさ（自己審査の第1回） ===== */
 .nw { white-space: nowrap; }
-/* 上のアイコンボタン：見た目はそのまま、押せる範囲を44px角に */
-.icon-btn { position: relative; }
-.icon-btn::after { content: ""; position: absolute; inset: -5px; }
 /* 濃い地の上の小さな文字：コントラスト4.5以上に */
 .pierce { color: var(--on-danger); }
 .tok .ent { color: var(--on-danger); }
@@ -2110,14 +2107,14 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 @media (max-height: 500px) { .settings .h-foot { position: static; background: none; padding-top: 4px; } }
 #chipTurn .gp:not(.on) { color: var(--rule); }
 /* 小さな閉じる・終了ボタンも、押せる範囲を広げる */
-.h-x, .co-quit, .pk-x, .set-contact a, .tip button { position: relative; }
+.co-quit, .pk-x, .set-contact a, .tip button { position: relative; }
 .h-x::after, .co-quit::after, .pk-x::after, .set-contact a::after { content: ""; position: absolute; inset: -7px; }
 .tip button::after { content: ""; position: absolute; inset: -4px; }
 .set-row.inline > .set-seg { display: inline-flex; flex: none; flex-direction: row; align-items: center; gap: 0; }
 /* 上の帯：ボタンは潰さない。狭い画面では札の字間を詰める */
 .top .icon-btn { flex: none; }
 .top-r { min-width: 0; }
-@media (max-width: 390px) { #chipTurn { padding: 0 8px; letter-spacing: -0.02em; } .top-r { gap: 6px; } }
+@media (max-width: 390px) { #chipTurn { padding: 0 8px; letter-spacing: -0.02em; } }
 @media (max-width: 360px) { #chipTurn .gp { width: 0.8em; } }
 @media (max-width: 340px) { #chipTurn .gz > b { display: none; } #chipTurn { padding: 0 7px; } }
 /* 横画面の地図：札の説明（亜種の効き目など）を2行まで見せる。横画面だけ効き目が読めなかった */
