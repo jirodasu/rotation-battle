@@ -1405,6 +1405,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .rv-tags .tg-var, .rv-tags .tg-bt { background: var(--rubric); color: #fff3e0; }
 .rv-tags .tg-warn { background: var(--danger); color: #fff3e0; }
 .rv-tags .tg-calm { color: color-mix(in srgb, var(--heal) 72%, var(--ink)); }
+.rv-tags .tg-st { color: var(--ink); font-variant-numeric: tabular-nums; }
 .rv-events p, .rv-log summary { background: transparent; border-radius: 0; box-shadow: none; padding: 6px 4px 6px 16px; border-bottom: 1px dotted var(--rule-a); position: relative; }
 .rv-events p::before, .rv-log summary::before { content: ""; position: absolute; left: 3px; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; transform: rotate(45deg); background: var(--rubric); opacity: 0.8; }
 .rv-log > div { gap: 0; margin-top: 0; }
@@ -1947,6 +1948,15 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .settings { z-index: 47; }
 .set-card { max-width: 420px; text-align: left; align-items: stretch; }
 .set-card h2 { text-align: center; }
+/* 新しく始める確認（v5.1.41）：「続きから」があるときだけ出す。押し間違いを防ぐため、やめるが既定 */
+.confirm { z-index: 48; }
+.nc-card { max-width: 380px; }
+.nc-body { margin: 6px 0 4px; line-height: 1.75; text-align: center; }
+.nc-body b { color: var(--danger); }
+.nc-foot { flex-wrap: wrap-reverse; }
+.nc-foot .btn { flex: 1 1 140px; }
+#ncGo { color: var(--danger); box-shadow: inset 0 0 0 1.5px var(--danger); }
+#ncGo[disabled] { opacity: .5; }
 .set-list { display: grid; gap: 14px; margin: 6px 0 4px; }
 .set-row { display: grid; gap: 6px; }
 .set-row label { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; color: var(--ink); }
@@ -2046,6 +2056,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ticket.p .t-main b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ticket.p .t-main span { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ticket.p .t-dmg b { font-size: 20px; }
+.t-dmg.cut small { white-space: nowrap; }
+.t-dmg.rng b { font-size: 18px; letter-spacing: -0.02em; } .ticket.p .t-dmg.rng b { font-size: 15px; }
 .stage.trio.peeking .foes { opacity: 0.18; transition: opacity 0.2s; }
 .pc-foe { display: block; padding: 6px 0 2px; border-top: 1px solid var(--paper-line); text-align: left; }
 .pc-foe.dead { opacity: 0.45; }
@@ -2071,6 +2083,10 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   .fc-act { font-size: 10px; gap: 2px; } .fc-act b { font-size: 11px; }
   .fc-chip { font-size: 9px; padding: 0 3px; height: 15px; }
   .fc-dmg { font-size: 10px; } .fc-dmg b { font-size: 13px; }
+}
+/* 技名をログと同じ正式名にしたので（v5.1.41）、狭いカードでは字間とすき間を詰めて1行に収める */
+@container (max-width: 92px) {
+  .fc-act { padding: 0 1px; gap: 1px; letter-spacing: -0.06em; } .fc-act .fc-g { font-size: 10px; }
 }
 @media (min-width: 900px) and (min-height: 700px) {
   .fc-art { height: 72px; } .fc-nm { font-size: 16px; } .fc-hp { height: 18px; } .fc-hp u { line-height: 18px; font-size: 13px; }
@@ -2175,7 +2191,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.40</p>
+    <p class="c-ver" id="cVer">ver 5.1.41</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2238,6 +2254,14 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <p class="set-contact"><b>不具合・ご意見</b><a href="https://github.com/jirodasu/rotation-battle/issues" target="_blank" rel="noopener noreferrer">GitHub の Issues へ</a></p>
     </div>
     <div class="h-foot"><button class="btn primary big" id="setClose" type="button">閉じる</button></div>
+  </div>
+</div>
+
+<div class="result help settings confirm" id="newConf" role="alertdialog" aria-modal="true" aria-labelledby="ncTitle" aria-describedby="ncBody" hidden>
+  <div class="r-card h-card set-card nc-card">
+    <h2 class="disp" id="ncTitle">新しく始めますか？</h2>
+    <p class="nc-body" id="ncBody"></p>
+    <div class="h-foot nc-foot"><button class="btn big" id="ncGo" type="button">記録を消して始める</button><button class="btn primary big" id="ncNo" type="button">やめる</button></div>
   </div>
 </div>
 
@@ -2491,7 +2515,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.40';
+  const APP_VERSION = '5.1.41';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2533,17 +2557,17 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     name: '三位一体', par: 9, allowFallen: 1, steps: [5], share: 0.5, warnAhead: { withPriest: 2, noPriest: 1 },
     foes: [
       { id: 'statue', name: '鎮守の像', short: '像', art: 'statue', voice: 'club', hp: 30, def: 4, spd: 3, pattern: [
-        { name: '防御構え', glyph: '守', rule: 'guard', def: 4, brief: '防御構え' },
-        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5, brief: '通常攻撃' },
-        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5, brief: '通常攻撃' }] },
+        { name: '防御構え', glyph: '守', rule: 'guard', def: 4 },
+        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5 },
+        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5 }] },
       { id: 'priest', name: '祈り手', short: '祈', art: 'priest', voice: 'bite', hp: 14, def: 0, spd: 6, pattern: [
-        { name: '癒やしの祈り', glyph: '癒', rule: 'mend', heal: 5, brief: '回復' },
-        { name: '守りの祈り', glyph: '護', rule: 'aid', def: 3, brief: '防御補助' },
-        { name: '癒やしの祈り', glyph: '癒', rule: 'mend', heal: 5, brief: '回復' }] },
+        { name: '癒しの祈り', glyph: '癒', rule: 'mend', heal: 5 },
+        { name: '守りの祈り', glyph: '護', rule: 'aid', def: 3 },
+        { name: '癒しの祈り', glyph: '癒', rule: 'mend', heal: 5 }] },
       { id: 'judge', name: '断罪者', short: '断', art: 'judge', voice: 'horn', hp: 22, def: 0, spd: 5, pattern: [
-        { name: '断罪の一閃', glyph: '断', rule: 'lowhp', dmg: 8, brief: '通常攻撃' },
-        { name: 'ちからをためる', glyph: '溜', rule: 'charge', brief: 'ため' },
-        { name: '断罪の大技', glyph: '罪', rule: 'lowhp', dmg: 12, big: true, brief: '大技' }] }
+        { name: '断罪の一閃', glyph: '断', rule: 'lowhp', dmg: 8 },
+        { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+        { name: '断罪の大技', glyph: '罪', rule: 'lowhp', dmg: 12, big: true }] }
     ]
   };
 
@@ -3319,7 +3343,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     return { val: t, buf: sup > 0, tired, half: foeShare(T) < 1 };
   }
   function incoming(src, fresh, entering) {
-    const out = {}, used = {}, fr = frontRow(src);
+    const out = {}, used = {}, fr = frontRow(src), per = [];
+    Object.defineProperty(out, 'per', { value: per });   // 技ごと・列ごとの内訳（予告の数字に使う。数えるときは列挙されない）
     if (fr < 0) return out;
     const acts = enemy.party ? enemy.party.filter(foeAlive).sort((a, b) => b.spd - a.spd).map((F) => ({ F, act: actOf(F) })) : [{ F: enemy, act: curAct() }];
     acts.forEach(({ F, act }) => {
@@ -3335,6 +3360,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       if (fr === 0 && entering && RX().entry) { src[0].forEach((x) => { if (x && x.entry && x.entry.teamGuard) d -= x.entry.teamGuard; }); if (u.entry && u.entry.guard) d -= u.entry.guard; }
       if (fr === 0 && entering && relOn('shield')) d -= relD('shield').guard;
       const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d);
+      per.push({ F, act, c, d: Math.max(1, d) });
     });
     });
     Object.keys(out).forEach((k) => {
@@ -3343,6 +3369,16 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       out[k] = { d: out[k], ko: out[k] >= Math.min(u.max, u.hp + heal) };
     });
     return out;
+  }
+  // 予告の数字：その技で実際に受けるダメージ（防御補助・突入技・レリックの軽減と、攻撃列が空の2倍を反映）。v5.1.41
+  // 列ごとの合計。全員が同じなら1つの数、違えば「少ない〜多い」。当たる相手がいなければ null
+  function actHit(F, act) {
+    if (phase !== 'prep' && phase !== 'choose') return null;
+    const gh = showGhost(), src = gh ? previewGrid() : grid, per = incoming(src, gh || phase === 'prep', gh).per.filter((x) => x.F === F && x.act === act);
+    if (!per.length) return null;
+    const by = {}; per.forEach((x) => { by[x.c] = (by[x.c] || 0) + x.d; });
+    const v = Object.keys(by).map((c) => by[c]), lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
+    return { lo, hi, txt: lo === hi ? String(lo) : lo + '〜' + hi };
   }
   function actorList(src, entering) {
     const a = enemy.party ? enemy.party.filter(foeAlive).map((F) => ({ kind: 'e', foe: F, spd: F.spd })) : [{ kind: 'e', spd: enemy.spd }];
@@ -3636,12 +3672,12 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       let dmgTxt = '';
       if (a.dmg) dmgTxt = '<b>' + a.dmg + (a.hits > 1 ? '×' + a.hits : '') + '</b>';
       else if (a.rule === 'mend') dmgTxt = '<b>+' + a.heal + '</b>';
-      const brief = (F.charged && a.big) ? '大技' : a.brief;
+      const brief = a.name;   // パネルの技名は、ログ・行動パターンと同じ名前（v5.1.41）
       const dl = live && !dead ? foeDealt(F) : 0, kill = dl >= F.hp && dl > 0;
       return '<button type="button" class="fc' + (dead ? ' dead' : '') + (!dead && F === tgt ? ' sel' : '') + (half && !dead ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp > 0 && F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '"' + (dead ? ' disabled' : '') + ' aria-pressed="' + (!dead && F === tgt) + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (dead ? '（倒れた）' : (F === tgt ? '（攻撃対象）' : '（タップで攻撃対象にする）')) + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (!dead && F === tgt ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
-        '<span class="fc-row"><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span>' +
+        '<span class="fc-row"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span>' +
         '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span></span>' +
         '<span class="fc-st">' + FOE_ST(F) + '</span>' +
         (dead ? '<span class="fc-gone">倒れた</span>' : '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
@@ -3680,18 +3716,22 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       dmg = warn.dmg;
       if (warn.ahead === 0) { ico = '罪'; head = '断罪者の大技！'; big = true; sub = verb(jinfo.desc); }
       else if (warn.ahead === 1) { ico = '溜'; head = '断罪者が大技をためる'; chg = true; sub = '次のターンに ' + warn.dmg + ' ダメージ'; }
-      else { ico = '罪'; head = warn.ahead + 'ターン後に大技'; sub = 'いまは「' + Ja.brief + '」　祈り手が予告を早めている'; }
+      else { ico = '罪'; head = warn.ahead + 'ターン後に大技'; sub = 'いまは「' + Ja.name + '」　祈り手が予告を早めている'; }
     } else if (Ja) {
-      head = '断罪者　' + Ja.brief; dmg = Ja.dmg || null; sub = verb(jinfo.desc || '') || '次に大技が来る';
+      head = '断罪者　' + Ja.name; dmg = Ja.dmg || null; sub = verb(jinfo.desc || '') || '次に大技が来る';
       sub += (priestUp() ? '' : '　大技の予告は直前まで見えない');
-    } else { ico = La.glyph; head = L.name + '　' + La.brief; dmg = La.dmg || null; sub = verb(lead.desc || ''); }
+    } else { ico = La.glyph; head = L.name + '　' + La.name; dmg = La.dmg || null; sub = verb(lead.desc || ''); }
     t.classList.add('p');
     t.classList.toggle('busy', phase === 'resolve' || phase === 'over');
     t.classList.toggle('charge', chg);
     t.classList.toggle('big', big);
+    // いまのターンの攻撃なら、軽減後の数字にする（先の大技の予告は元の数字のまま）
+    const nowF = warn && warn.seen ? (warn.ahead === 0 ? J : null) : Ja ? J : L, h = nowF && dmg != null ? actHit(nowF, actOf(nowF)) : null, raw = h ? dmg * (actOf(nowF).hits || 1) : dmg,
+      dbl = !!h && frontRow(src) > 0, cut = !!h && !dbl && h.lo < raw;
+    if (dbl) dmg = h.txt;   // 攻撃列が空：2倍
     t.innerHTML = '<span class="t-ico disp">' + ico + '</span>' +
       '<span class="t-main"><b class="disp">' + head + '</b><span>' + sub + '</span></span>' +
-      '<span class="t-dmg"><b class="disp">' + (dmg != null ? dmg : '—') + '</b><small>' + (warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
+      '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + '"><b class="disp">' + (dmg == null ? '—' : cut ? h.txt : dmg) + '</b><small>' + (cut ? '軽減後（元' + raw + '）' : dbl ? '2倍ダメージ' : warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
     tipsCheck(curAct());
     const showBeam = phase === 'prep' || phase === 'choose', bfr = frontRow(src);
     document.querySelectorAll('.beam').forEach((b) => {
@@ -3715,7 +3755,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     t.innerHTML = '<span class="t-ico disp">' + act.glyph + '</span>' +
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b><span>' + info.desc + '</span>' + (chg ? '' : (() => { const n = nextAct(); return '<span class="t-nx">その次 ▸ ' + n.name + (n.dmg ? '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' : '（攻撃なし）') + '</span>'; })()) + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
-        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random'; return '<span class="t-dmg' + (dbl ? ' dbl' : '') + '"><b class="disp">' + (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '') + '</b><small>' + (dbl ? '2倍ダメージ' : 'ダメージ') + '</small></span>'; })());
+        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo < raw;
+          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? '軽減後（元' + raw + '）' : dbl ? '2倍ダメージ' : 'ダメージ') + '</small></span>'; })());
     tipsCheck(act);
     const showBeam = phase === 'prep' || phase === 'choose';
     // 赤い枠は、実際にダメージを受ける仲間（一番前の列のそのマス）だけに出す
@@ -4744,7 +4785,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     $('resultAlt').hidden = true;
     if (result === 'win') {
       Music.charge(false); Music.set('off'); SFX.win();
-      $('rSmall').textContent = chapLabel() + '　完';
+      // 「完」は章の終わり（章の主・チュートリアル）だけ。ふつうの戦闘は地点を出す
+      $('rSmall').textContent = run && EXPM() && !enemy.chief ? chapLabel() + '　地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes : chapLabel() + '　完';
       $('rTitle').textContent = tut ? '完了' : (last && !EXPM() ? '大団円' : '勝利');
       $('rTitle').className = 'disp';
       $('rSub').textContent = tut ? '基本はこれで完了。本番の遠征に挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
@@ -4772,7 +4814,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   }
 
   $('next').addEventListener('click', () => {
-    if (tut) { if (lastResult === 'win') beginExp(); else beginTutorial(); return; }
+    if (tut) { if (lastResult === 'win') askNewRun(); else beginTutorial(); return; }
     if (EXPM()) {
       $('result').hidden = true;
       if (lastResult === 'win') { const ev = expAfterBattle(true); if (run.node + 1 >= EXP.nodes) expEnd(true, ev); else expReward(ev); }
@@ -6258,11 +6300,11 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
     if (e.party) return { ico: '<span class="ev-var" style="--vf:none">' + PARTY_ART.statue + '</span>', t: '戦闘　' + e.name,
-      d: '敵は3体（' + e.party.map((f) => f.name + f.hp).join('・') + '）。倒す順番を考えるパズル戦。鎮守の像が生きている間、ほかの2体へのダメージは半分。勝てば報酬を4つから1つ。',
-      tags: [{ t: '第' + (e.ch + 1) + '章の敵', k: 'foe' }, { t: '3体', k: 'var' }, { t: '戦闘あり', k: 'bt' }] };
+      d: '敵は3体（' + e.party.map((f) => f.name + ' HP' + f.hp + '・防御' + f.def + '・素早さ' + f.spd).join('／') + '）。倒す順番を考えるパズル戦。鎮守の像が生きている間、ほかの2体へのダメージは半分。勝てば報酬を4つから1つ。',
+      tags: [{ t: '第' + (e.ch + 1) + '章の敵', k: 'foe' }, { t: '3体', k: 'var' }, { t: e.party.map((f) => f.short + ' HP' + f.hp).join(' '), k: 'st' }, { t: '戦闘あり', k: 'bt' }] };
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
-      d: 'HP ' + e.hp + '。' + (e.variant ? VARIANTS[e.variant].desc : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
-      tags: [{ t: last ? '最後の主' : chief ? '第' + (e.ch + 1) + '章の主' : '第' + (e.ch + 1) + '章の敵', k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], binds ? [{ t: '縛り', k: 'var' }] : [], [{ t: '戦闘あり', k: 'bt' }]) };
+      d: 'HP ' + e.hp + '　防御 ' + e.def + (e.variant && VARIANTS[e.variant].def ? '（亜種で+' + VARIANTS[e.variant].def + '）' : '') + '　素早さ ' + e.spd + '。' + (e.variant ? '亜種「' + VARIANTS[e.variant].pre.replace(/の$/, '') + '」：' + VARIANTS[e.variant].desc.replace(/^防御\+\d+。/, '') : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
+      tags: [{ t: last ? '最後の主' : chief ? '第' + (e.ch + 1) + '章の主' : '第' + (e.ch + 1) + '章の敵', k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], binds ? [{ t: '縛り', k: 'var' }] : [], [{ t: 'HP' + e.hp + ' 防' + e.def, k: 'st' }, { t: '戦闘あり', k: 'bt' }]) };
   }
   function expShowMap(events) {
     phase = 'map';
@@ -6454,7 +6496,23 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   }
   $('cover').addEventListener('click', (ev) => { if (gated) { ev.preventDefault(); ev.stopPropagation(); ungate(); } }, true);
   document.addEventListener('keydown', (ev) => { if (gated && !$('cover').hidden && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ungate(true); } });
-  $('begin').addEventListener('click', () => beginExp());
+  // 「続きから」がある状態で新しく始めるときは確認する（誤タップで途中の記録を消さない）。押してすぐは「始める」を受け付けない
+  let ncFrom = null, ncTimer = 0;
+  function askNewRun() {
+    const sv = expSaved();
+    if (!sv) { beginExp(); return; }
+    SFX.tap();
+    ncFrom = document.activeElement;
+    $('ncBody').innerHTML = 'いまの遠征（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '）の記録は<b>消えて、元に戻せません</b>。';
+    $('ncGo').disabled = true; clearTimeout(ncTimer); ncTimer = setTimeout(() => { $('ncGo').disabled = false; }, 450);
+    $('newConf').hidden = false; $('ncNo').focus();
+  }
+  const closeNc = () => { clearTimeout(ncTimer); $('newConf').hidden = true; try { if (ncFrom && ncFrom.focus) ncFrom.focus(); } catch (e) { /* 戻せない */ } };
+  $('ncNo').addEventListener('click', () => { SFX.tap(); closeNc(); });
+  $('ncGo').addEventListener('click', () => { if ($('ncGo').disabled) return; clearTimeout(ncTimer); $('newConf').hidden = true; expClearSave(); beginExp(); });
+  $('newConf').addEventListener('click', (ev) => { if (ev.target === $('newConf')) closeNc(); });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('newConf').hidden) closeNc(); });
+  $('begin').addEventListener('click', askNewRun);
   $('resume').addEventListener('click', resumeExp);
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
