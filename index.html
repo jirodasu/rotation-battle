@@ -264,7 +264,7 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .t-main span { display: block; font-size: 12px; color: var(--ink-soft); line-height: 1.35; }
 .t-dmg { text-align: center; line-height: 1; }
 .t-dmg b { display: block; font-size: 26px; color: var(--danger); -webkit-text-stroke: 0; }
-.t-dmg small { font-size: 10px; color: var(--ink-soft); }
+.t-dmg small { font-size: 11px; color: var(--ink-soft); }
 
 /* ---------- 隊列の盤 ---------- */
 .board.narrow { grid-template-columns: 30px repeat(var(--cols, 2), minmax(0, calc((100% - 48px) / 4))); justify-content: center; }   /* 1マスの大きさは4マス幅の盤と同じ */
@@ -320,7 +320,7 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .dm svg { width: 11px; height: 11px; }
 .dm.buf { background: var(--accent); color: var(--accent-ink); }
 .seals { position: absolute; top: -3px; right: -3px; display: flex; flex-direction: column; gap: 2px; z-index: 2; }
-.seal { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 10px; font-weight: 700; line-height: 1; box-shadow: 0 2px 0 rgba(35, 49, 74, 0.25); }
+.seal { width: 19px; height: 19px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 700; line-height: 1; box-shadow: 0 2px 0 rgba(35, 49, 74, 0.25); }
 .seal.a { background: var(--accent); color: var(--accent-ink); }
 .seal.d { background: var(--shield-strong); color: var(--on-shield); }
 .seal.off { background: var(--paper); color: var(--ink-soft); box-shadow: inset 0 0 0 1.5px var(--paper-line); opacity: 0.85; }
@@ -375,7 +375,7 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .st-ic svg { width: 15px; height: 15px; }
 .st-ic .seal { width: 26px; height: 26px; font-size: 13px; box-shadow: none; }
 .st b { font-size: 18px; line-height: 1.15; font-weight: 700; margin-top: 2px; }
-.st small { font-size: 9.5px; line-height: 1.2; color: var(--ink-soft); font-weight: 700; white-space: nowrap; }
+.st small { font-size: 10.5px; line-height: 1.2; color: var(--ink-soft); font-weight: 700; white-space: nowrap; }
 .st-bar { display: block; width: 76%; height: 4px; margin-top: 3px; border-radius: 2px; background: var(--track); overflow: hidden; }
 .st-bar s { display: block; height: 100%; border-radius: 2px; background: var(--sc); }
 .uc-legend { margin: 7px 0 0; font-size: 10.5px; color: var(--ink-soft); display: flex; align-items: center; gap: 6px; }
@@ -432,14 +432,14 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .peek .st-ic svg { width: 13px; height: 13px; }
 .peek .st-ic .seal { width: 22px; height: 22px; font-size: 11px; }
 .peek .st b { font-size: 16px; margin-top: 1px; }
-.peek .st small { font-size: 9px; }
+.peek .st small { font-size: 10.5px; }
 @media (max-height: 700px) {
   .peek { padding: 9px 11px; }
   .pk-role { display: none; }
   .pk-head { grid-template-columns: 36px 1fr auto 28px; gap: 8px; }
   .pk-head .uc-disc { width: 36px; height: 36px; }
   .pk-id b { font-size: 16px; }
-  .pk-id .uc-tag { height: 18px; font-size: 10px; }
+  .pk-id .uc-tag { height: 18px; font-size: 11px; }
   .peek .st-bar { display: none; }
   .pk-grid { margin-top: 6px; }
 }
@@ -476,7 +476,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .en-u { display: flex; flex-direction: column; align-items: center; gap: 2px; transform: translateY(var(--y)) scale(var(--s, 1)); animation: enhop 0.7s cubic-bezier(.2, 1.5, .4, 1) both; animation-delay: calc(var(--d) * 1s); }
 .en-disc { width: clamp(40px, 11.5vw, 54px); height: clamp(40px, 11.5vw, 54px); border-radius: 50%; overflow: hidden; background: var(--c); box-shadow: 0 0 0 3px var(--paper), 0 4px 0 3px var(--paper-line); animation: enbob 2.4s ease-in-out infinite; animation-delay: var(--b); }
 .en-disc svg { display: block; width: 100%; height: 100%; }
-.en-u b { padding: 0 6px; border-radius: 8px; background: var(--paper); font-size: 10px; line-height: 1.5; box-shadow: 0 2px 0 var(--paper-line); white-space: nowrap; }
+.en-u b { padding: 0 6px; border-radius: 8px; background: var(--paper); font-size: 11px; line-height: 1.5; box-shadow: 0 2px 0 var(--paper-line); white-space: nowrap; }
 @keyframes enhop { from { opacity: 0; transform: translateY(calc(var(--y) + 40px)) scale(calc(var(--s, 1) * 0.6)); } }
 @keyframes enbob { 50% { transform: translateY(-4px); } }
 .en-foes { position: absolute; right: 8px; top: 2px; display: flex; gap: 2px; opacity: 0.85; }
@@ -534,17 +534,17 @@ body.boss-stage .en-u b { color: var(--ink); }
 .ep-n span { display: block; font-size: 11px; color: var(--ink-soft); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ep-d { text-align: right; line-height: 1; }
 .ep-d b { font-size: 20px; color: var(--danger); }
-.ep-d small { display: block; font-size: 9.5px; color: var(--ink-soft); margin-top: 2px; }
-.ep-badge { display: inline-block; vertical-align: 2px; margin-right: 6px; font-style: normal; padding: 1px 7px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 10px; font-weight: 700; box-shadow: 0 1.5px 0 var(--accent-deep); }
+.ep-d small { display: block; font-size: 10.5px; color: var(--ink-soft); margin-top: 2px; }
+.ep-badge { display: inline-block; vertical-align: 2px; margin-right: 6px; font-style: normal; padding: 1px 7px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 700; box-shadow: 0 1.5px 0 var(--accent-deep); }
 .inc {
   position: absolute; left: -6px; bottom: 30%; z-index: 3; display: inline-flex; align-items: center; gap: 3px; height: 21px; padding: 0 7px; border-radius: 11px;
   background: var(--danger-strong); color: var(--on-danger); font-style: normal; font-size: 12px; font-weight: 700; line-height: 1; box-shadow: 0 2px 0 rgba(35, 49, 74, 0.25);
 }
 .inc.ko { background: #7e1d14; color: #fff; animation: kopulse 1s ease-in-out infinite; }
-.inc s { text-decoration: none; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: #7e1d14; font-size: 10px; }
+.inc s { text-decoration: none; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: #7e1d14; font-size: 11px; }
 @keyframes kopulse { 50% { box-shadow: 0 0 0 4px rgba(229, 96, 77, 0.35), 0 2px 0 rgba(35, 49, 74, 0.25); } }
 .order { display: flex; align-items: center; gap: 8px; margin: -2px 0 6px; min-height: 30px; }
-.od-l { flex: none; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); }
+.od-l { flex: none; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); }
 .od-list { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 3px; overflow: hidden; }
 .od { position: relative; flex: none; width: 26px; height: 26px; border-radius: 50%; overflow: hidden; background: var(--c); font-style: normal; box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px var(--paper-line); transition: transform 0.2s, opacity 0.2s; }
 .od svg { width: 100%; height: 100%; display: block; }
@@ -554,7 +554,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .od.now { transform: scale(1.22); box-shadow: 0 0 0 2px var(--accent), 0 2px 0 2px var(--accent-deep); margin: 0 3px; }
 .ticket.charge .t-ico { background: var(--accent); color: var(--accent-ink); animation: kopulse 0.9s ease-in-out infinite; }
 .ticket.big .t-ico { background: #7e1d14; }
-.pierce { display: inline-block; vertical-align: 3px; margin-left: 6px; padding: 1px 7px 2px; border-radius: 8px; background: #7e1d14; color: #fff; font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif; font-style: normal; font-size: 10px; font-weight: 700; }
+.pierce { display: inline-block; vertical-align: 3px; margin-left: 6px; padding: 1px 7px 2px; border-radius: 8px; background: #7e1d14; color: #fff; font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif; font-style: normal; font-size: 11px; font-weight: 700; }
 .stage.charged .eart svg { animation: bob 4.8s ease-in-out infinite, chg 0.8s ease-in-out infinite; }
 @keyframes chg { 50% { filter: drop-shadow(0 0 14px #ffb03a) drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)); } }
 .r-stats { width: min(300px, 74vw); margin: 2px 0 10px; }
@@ -883,7 +883,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-m { display: flex; flex-direction: column; align-items: center; width: 54px; gap: 3px; }
 .rv-m .uc-disc { width: 42px; height: 42px; }
 .rv-m b { font-size: 11px; line-height: 1.2; }
-.r-card .rv-m small { font-size: 10px; letter-spacing: 0; padding: 0; line-height: 1; }
+.r-card .rv-m small { font-size: 11px; letter-spacing: 0; padding: 0; line-height: 1; }
 .r-card .rv-m small { white-space: nowrap; }   /* 遠征では年齢の代わりに職業名（サムライ等）を出すので折り返さない */
 .rv-m.ph-young .uc-disc, .tok.ph-young .disc { outline: 3px solid var(--age-young); outline-offset: 1px; }
 .rv-m.ph-prime .uc-disc, .tok.ph-prime .disc { outline: 3px solid var(--age-prime); outline-offset: 1px; }
@@ -934,7 +934,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-ico > .ev-var > svg { display: block; width: 100%; height: 100%; }
 #eart.vary svg { filter: var(--vf, none); }
 .bench { display: flex; align-items: center; gap: 8px; margin-top: 4px; min-height: 40px; }
-.bench .bn-l { flex: none; font-size: 10px; font-weight: 700; line-height: 1.3; color: var(--ink-soft); }
+.bench .bn-l { flex: none; font-size: 11px; font-weight: 700; line-height: 1.3; color: var(--ink-soft); }
 .bench .bn-l b { display: block; font-size: 13px; color: var(--ink); }
 .bench .bn-list { display: flex; align-items: center; gap: 7px; min-width: 0; padding: 4px 3px; overflow-x: auto; }
 .bn { position: relative; flex: none; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; background: var(--c); box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px var(--paper-line); cursor: pointer; transition: transform 0.15s; }
@@ -984,7 +984,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .ticket.tip-ping { animation: tipping 0.9s ease-out 2; }
 @keyframes tipping { 0% { box-shadow: 0 0 0 0 rgba(240, 169, 58, 0.75); } 100% { box-shadow: 0 0 0 14px rgba(240, 169, 58, 0); } }
 .tip b { font-size: 16px; line-height: 1.3; }
-.tip b::before { content: "はじめての仕掛け"; display: block; font-family: inherit; font-size: 10px; letter-spacing: .18em; color: var(--accent-deep); margin-bottom: 1px; }
+.tip b::before { content: "はじめての仕掛け"; display: block; font-family: inherit; font-size: 11px; letter-spacing: .18em; color: var(--accent-deep); margin-bottom: 1px; }
 .tip p { margin: 0; grid-column: 1; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }
 .tip p em { font-style: normal; color: var(--danger); font-weight: 700; }
 .tip button { grid-row: 1 / span 2; grid-column: 2; min-height: 44px; min-width: 56px; padding: 0 14px; }
@@ -1070,7 +1070,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   .runv > .r-card > #rvRoster { gap: 3px 2px; }
   .runv .rv-m { width: 38px; gap: 1px; }
   .runv .rv-m .uc-disc { width: 27px; height: 27px; }
-  .runv .rv-m b { font-size: 10px; }
+  .runv .rv-m b { font-size: 11px; }
   .runv .rv-m .hpb { width: 26px; height: 3px; }
 }
 /* 背の低い横画面：「眠る者」「教官」の行が増えても、右上の敵と団員が上端で切れないように、下の文字欄を詰めて舞台を縮められるようにする */
@@ -1090,7 +1090,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .slot { container-type: inline-size; }
 @container (max-width: 80px) {
   .tok .nm { padding: 1px 4px 2px; gap: 2px; }
-  .tok .nm b, .tok .nm u { font-size: 10px; letter-spacing: -0.02em; }
+  .tok .nm b, .tok .nm u { font-size: 11px; letter-spacing: -0.02em; }
   .tok .nm u::before { display: none; }
 }
 @keyframes sheetin { from { transform: translateX(100%); } to { transform: none; } }
@@ -1165,7 +1165,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   background: radial-gradient(120% 90% at 50% 40%, #f7edcf, #ead9ac 80%); box-shadow: 0 0 0 2px #7a5527, 0 0 0 5px #f2e6c6, 0 0 0 6.5px #7a5527aa, 0 14px 34px var(--shadow); }
 .runv.is-map .rv-track::before { background: repeating-linear-gradient(90deg, #7a5527 0 6px, transparent 6px 10px); height: 2px; top: 16px; opacity: 0.7; }
 .rv-track { padding-bottom: 15px; }
-.rv-track i s { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; font-size: 9px; font-weight: 500; text-decoration: none; color: var(--ink-soft); white-space: nowrap; letter-spacing: 0; }
+.rv-track i s { position: absolute; top: 100%; left: 50%; transform: translateX(-50%); margin-top: 2px; font-size: 10.5px; font-weight: 500; text-decoration: none; color: var(--ink-soft); white-space: nowrap; letter-spacing: 0; }
 .rv-track i.bt { border-radius: 6px; }
 .rv-track i.boss { border-radius: 6px; }
 .rv-tags { display: flex !important; flex-wrap: wrap; gap: 4px; margin-top: 5px !important; }
@@ -1174,7 +1174,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-tags .tg-bt { background: #9a2a1b; color: #fff; box-shadow: none; } .rv-tags .tg-calm { color: #2d6a45; } .rv-tags .tg-warn { background: #b8412e; color: #fff; box-shadow: none; }
 .rv-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 @media (hover: hover) and (pointer: fine) { .runv .rv-card:not([disabled]):hover { box-shadow: 0 6px 0 var(--paper-line), 0 0 0 2px var(--accent); } }   /* 札は動かさない（縁のポインタで震えるため）。中身の持ち上げは上の規則 */
-@media (max-height: 460px), (max-height: 700px) and (max-aspect-ratio: 6/5) { .runv .rv-card { padding: 7px 10px; gap: 9px; border-radius: 14px; } .rv-ico { width: 42px; height: 42px; } .rv-txt b { font-size: 14.5px; } .rv-txt span { font-size: 11.5px; line-height: 1.35; margin-top: 1px; } .rv-tags { margin-top: 3px !important; gap: 3px; } .rv-tags em { font-size: 10px; padding: 2px 5px 3px; } .runv > .r-card { padding-top: 14px; padding-bottom: 12px; row-gap: 5px; } .rv-track { padding-bottom: 13px; } }
+@media (max-height: 460px), (max-height: 700px) and (max-aspect-ratio: 6/5) { .runv .rv-card { padding: 7px 10px; gap: 9px; border-radius: 14px; } .rv-ico { width: 42px; height: 42px; } .rv-txt b { font-size: 14.5px; } .rv-txt span { font-size: 11.5px; line-height: 1.35; margin-top: 1px; } .rv-tags { margin-top: 3px !important; gap: 3px; } .rv-tags em { font-size: 11px; padding: 2px 5px 3px; } .runv > .r-card { padding-top: 14px; padding-bottom: 12px; row-gap: 5px; } .rv-track { padding-bottom: 13px; } }
 /* @@CHRONICLE-BEGIN@@ */
 /* ==================== 騎士団年代記（見た目の層） ====================
    ゲーム全体を「騎士団の戦いを記した古い記録書」として見せる。ルール・数値・動きには触れず、色・文字・枠だけを上書きする。
@@ -1665,7 +1665,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .runv.is-map .rv-m { width: 46px; gap: 1px; }
 .runv.is-map .rv-m .uc-disc { width: 32px; height: 32px; }
 .runv.is-map .rv-m b { font-size: 10.5px; }
-.runv.is-map .r-card .rv-m small { font-size: 9px; }
+.runv.is-map .r-card .rv-m small { font-size: 10.5px; }
 .runv.is-map .rv-m .hpb { width: 30px; height: 3px; }
 .runv.is-map .rv-cards { gap: 6px; margin-top: 0; }
 .runv.is-map .rv-card { padding: 7px 10px; gap: 9px; border-radius: 14px; }
@@ -1673,7 +1673,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .runv.is-map .rv-txt b { font-size: 14.5px; line-height: 1.25; }
 .runv.is-map .rv-txt span { font-size: 11.5px; line-height: 1.35; margin-top: 1px; }
 .runv.is-map .rv-tags { margin-top: 3px !important; gap: 3px; }
-.runv.is-map .rv-tags em { font-size: 10px; padding: 2px 6px 3px; }
+.runv.is-map .rv-tags em { font-size: 11px; padding: 2px 6px 3px; }
 .runv.is-map .rv-go { min-height: 44px; margin-top: 0; font-size: 15px; }
 .runv.is-map .rv-events p, .runv.is-map .rv-log summary { padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1.4; }
 .runv.is-map .rv-log summary { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -2027,13 +2027,13 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .fc-nm { font-size: 13px; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fc-row { display: flex; align-items: center; gap: 3px; }
 .fc-def { flex: none; display: inline-flex; align-items: baseline; gap: 1px; font-size: 12px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
-.fc-def small { font-size: 9px; font-weight: 700; color: var(--ink-soft); }
+.fc-def small { font-size: 10.5px; font-weight: 700; color: var(--ink-soft); }
 .fc-hp { position: relative; display: block; flex: 1; min-width: 0; height: 15px; line-height: 15px; border-radius: 8px; background: rgba(35, 49, 74, 0.28); overflow: hidden; }
 .fc-hp i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--danger); border-radius: 8px; }
 .fc-hp u { position: relative; display: block; text-align: center; text-decoration: none; font-size: 11px; font-weight: 800; line-height: 15px; color: #fff; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.55); font-variant-numeric: tabular-nums; }
-.fc-hp u small { font-size: 9px; opacity: 0.85; }
+.fc-hp u small { font-size: 10.5px; opacity: 0.85; }
 .fc-st { display: flex; flex-wrap: wrap; gap: 2px; justify-content: center; align-content: flex-start; min-height: 16px; }
-.fc-chip { display: inline-flex; align-items: center; gap: 2px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 10px; font-weight: 800; line-height: 1; font-style: normal; color: var(--ink); background: rgba(74, 134, 217, 0.22); border: 1px solid rgba(74, 134, 217, 0.65); white-space: nowrap; }
+.fc-chip { display: inline-flex; align-items: center; gap: 2px; height: 16px; padding: 0 4px; border-radius: 8px; font-size: 11px; font-weight: 800; line-height: 1; font-style: normal; color: var(--ink); background: rgba(74, 134, 217, 0.22); border: 1px solid rgba(74, 134, 217, 0.65); white-space: nowrap; }
 .fc-chip svg { width: 10px; height: 10px; }
 .fc-chip b { font-weight: 800; }
 .fc-chip.hl { background: rgba(63, 155, 106, 0.22); border-color: rgba(63, 155, 106, 0.7); }
@@ -2046,8 +2046,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .fc-act b { font-weight: 800; font-size: 12px; }
 .fc-dmg { display: flex; align-items: baseline; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 11px; font-weight: 700; line-height: 1.15; }
 .fc-dmg b { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
-.fc-dmg small { font-size: 9px; color: var(--ink-soft); }
-.fc-dmg em { font-style: normal; font-size: 9px; font-weight: 800; padding: 0 4px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
+.fc-dmg small { font-size: 10.5px; color: var(--ink-soft); }
+.fc-dmg em { font-style: normal; font-size: 10.5px; font-weight: 800; padding: 0 4px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
 .fc-dmg.kill b { color: var(--danger); }
 .fc-gone { font-size: 12px; font-weight: 800; padding: 6px 0; }
 .stage.trio .ticket { bottom: 3px; }
@@ -2074,19 +2074,19 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   .stage.trio .foes { bottom: 46px; }
   .fc { gap: 1px; padding: 3px 3px; }
   .fc-nm { font-size: 12px; }
-  .fc-hp { height: 14px; line-height: 14px; } .fc-hp u { line-height: 14px; font-size: 10px; }
-  .fc-act { min-height: 15px; font-size: 10px; } .fc-act b { font-size: 11px; }
+  .fc-hp { height: 14px; line-height: 14px; } .fc-hp u { line-height: 14px; font-size: 11px; }
+  .fc-act { min-height: 15px; font-size: 11px; } .fc-act b { font-size: 11px; }
   .fc-dmg small { display: none; }
 }
 @container (max-width: 100px) {
   .fc-nm { font-size: 12px; }
-  .fc-act { font-size: 10px; gap: 2px; } .fc-act b { font-size: 11px; }
-  .fc-chip { font-size: 9px; padding: 0 3px; height: 15px; }
-  .fc-dmg { font-size: 10px; } .fc-dmg b { font-size: 13px; }
+  .fc-act { font-size: 11px; gap: 2px; } .fc-act b { font-size: 11px; }
+  .fc-chip { font-size: 10.5px; padding: 0 3px; height: 15px; }
+  .fc-dmg { font-size: 11px; } .fc-dmg b { font-size: 13px; }
 }
 /* 技名をログと同じ正式名にしたので（v5.1.41）、狭いカードでは字間とすき間を詰めて1行に収める */
 @container (max-width: 92px) {
-  .fc-act { padding: 0 1px; gap: 1px; letter-spacing: -0.06em; } .fc-act .fc-g { font-size: 10px; }
+  .fc-act { padding: 0 1px; gap: 1px; letter-spacing: -0.06em; } .fc-act .fc-g { font-size: 11px; }
 }
 @media (min-width: 900px) and (min-height: 700px) {
   .fc-art { height: 72px; } .fc-nm { font-size: 16px; } .fc-hp { height: 18px; } .fc-hp u { line-height: 18px; font-size: 13px; }
@@ -2094,6 +2094,49 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   .fc-act { min-height: 22px; font-size: 13px; } .fc-act b { font-size: 14px; }
   .fc-dmg { font-size: 13px; } .fc-dmg b { font-size: 17px; }
   .stage.trio .foes { bottom: 70px; }
+}
+/* ===== v5.1.43 仕上げ：読みやすさ・押しやすさ（自己審査の第1回） ===== */
+.nw { white-space: nowrap; }
+/* 濃い地の上の小さな文字：コントラスト4.5以上に */
+.pierce { color: var(--on-danger); }
+.tok .ent { color: var(--on-danger); }
+.seal.d { background: radial-gradient(circle at 38% 32%, #d6e9fb, #8fbde9 72%); color: #0c1a2c; box-shadow: inset 0 0 0 1px #2b4f7a; }
+.r-conds li.ok i { color: #08130b; }
+.pk-extra b { color: var(--danger-strong); }
+/* 横画面の設定：下の「閉じる」が中身に重ならない（右上の×でも閉じられる） */
+@media (max-height: 500px) { .settings .h-foot { position: static; background: none; padding-top: 4px; } }
+#chipTurn .gp:not(.on) { color: #7f8ba4; }
+/* 小さな閉じる・終了ボタンも、押せる範囲を広げる */
+.co-quit, .pk-x, .set-contact a, .tip button { position: relative; }
+.h-x::after, .co-quit::after, .pk-x::after, .set-contact a::after { content: ""; position: absolute; inset: -7px; }
+.tip button::after { content: ""; position: absolute; inset: -4px; }
+.set-row.inline > .set-seg { display: inline-flex; flex: none; flex-direction: row; align-items: center; gap: 0; }
+/* 上の帯：ボタンは潰さない。狭い画面では札の字間を詰める */
+.top .icon-btn { flex: none; }
+.top-r { min-width: 0; }
+@media (max-width: 390px) { #chipTurn { padding: 0 8px; letter-spacing: -0.02em; } }
+@media (max-width: 360px) { #chipTurn .gp { width: 0.8em; } }
+@media (max-width: 340px) { #chipTurn .gz > b { display: none; } #chipTurn { padding: 0 7px; } }
+/* 横画面の地図：札の説明（亜種の効き目など）を2行まで見せる。横画面だけ効き目が読めなかった */
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) and (max-height: 440px) and (min-height: 372px) {
+  .runv.is-map .rv-txt > span:not(.rv-tags) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; line-height: 1.4; margin-top: 1px; }
+}
+/* 踏破の画面：遠征でいちばん大きな瞬間。題字を金の光で一度だけ立ち上げる（ほかの画面は静かなまま） */
+.runv.is-clear > .r-card { box-shadow: inset 0 150px 120px -110px rgba(240, 220, 154, 0.16), 0 0 0 1px var(--gold-lo), 0 0 80px -10px rgba(216, 182, 96, 0.35), 0 30px 60px -20px var(--shadow); }
+
+.runv.is-clear #rvTitle { position: relative; background: linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, #b08a3a); -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none; filter: drop-shadow(0 0 14px rgba(240, 220, 154, 0.35)); animation: clearRise 1.6s cubic-bezier(.2, .8, .2, 1) both; }
+.runv.is-clear #rvRoster .rv-m:not(.gone) .uc-disc { box-shadow: 0 0 0 2px var(--gold), 0 0 16px rgba(240, 220, 154, 0.45); }
+@keyframes clearRise { 0% { opacity: 0; letter-spacing: 0.4em; filter: drop-shadow(0 0 0 rgba(240, 220, 154, 0)); } 60% { opacity: 1; } 100% { letter-spacing: normal; filter: drop-shadow(0 0 14px rgba(240, 220, 154, 0.35)); } }
+@media (prefers-reduced-motion: reduce) { .runv.is-clear #rvTitle { animation: none; } }
+/* 名簿：顔の外側の縁取り（3px）と名前が重ならない */
+.rv-m .uc-disc { flex: none; margin-bottom: 3px; } .runv:not(.is-map) .rv-m .uc-disc { margin-bottom: 5px; }
+/* 横画面で選択肢が4つ（報酬など）：札を下に2列で並べ、スクロールなしで全部見せる */
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) {
+  .runv.many .rv-main { grid-template-columns: minmax(0, 1fr); row-gap: 8px; }
+  .runv.many .rv-cards { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+  .runv.many .rv-cards > .rv-skip, .runv.many .rv-cards > .rv-btnrow { grid-column: 1 / -1; }
+  .runv.many .rv-left { flex-direction: row; justify-content: center; flex-wrap: wrap; }
 }
 </style>
 </head>
@@ -2191,7 +2234,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.42</p>
+    <p class="c-ver" id="cVer">ver 5.1.44</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2239,7 +2282,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <div class="set-row"><label for="setSfx"><b>効果音</b><output id="setSfxV">100</output></label><input type="range" id="setSfx" min="0" max="100" step="5" value="100"></div>
       <div class="set-row inline"><span><b>すべての音</b><small>右上の ♪ ボタンと同じ</small></span><button class="set-sw" id="setAll" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>振動</b><small id="setVibNote">攻撃を受けたときなど</small></span><button class="set-sw" id="setVib" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
-      <div class="set-row inline"><span><b>文字の大きさ</b><small>説明文・報酬・チュートリアル</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
+      <div class="set-row inline"><span><b>文字の大きさ</b><small>説明・報酬・練習の文</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
     </div>
     <div class="set-about">
       <h3 class="disp">このゲームについて</h3>
@@ -2515,7 +2558,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.42';
+  const APP_VERSION = '5.1.44';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3515,8 +3558,9 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   }
   function renderEnemy(enter) {
     renderParty();
-    if (enemy.party) { $('chap').textContent = chapLabel(); $('ename').textContent = enemy.name; return; }
-    $('chap').textContent = chapLabel();
+    // 章の名前と「章の主」は、それぞれ途中で折り返さない（狭い画面で「最後の／主」と割れないように）
+    $('chap').innerHTML = chapLabel().split('　').map((x) => '<span class="nw">' + x + '</span>').join('　');
+    if (enemy.party) { $('ename').textContent = enemy.name; return; }
     $('ename').textContent = enemy.name;
     $('espd').textContent = '素早さ ' + enemy.spd + '　防御 ' + enemy.def;
     const pctNow = Math.round(enemy.hp / enemy.max * 100) + '%';
@@ -3609,6 +3653,21 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
   function tipMark(k) { const o = tipSeen(); o[k] = 1; try { localStorage.setItem('rb-tips', JSON.stringify(o)); } catch (e) { /* 保存できない環境 */ } }
   const tipSession = {};
+  function placeTip() {
+    const el = $('tip'); if (el.hidden) return;
+    el.style.left = ''; el.style.right = ''; el.style.top = '';
+    const bk = $('book').getBoundingClientRect(), r0 = el.getBoundingClientRect(), h = r0.height, w = r0.width;
+    const avoid = [$('ticket')].concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0);
+    const land = innerWidth > innerHeight && innerWidth >= 640, bd = $('board').getBoundingClientRect(), st = $('stage').getBoundingClientRect();
+    const cands = [{ top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];
+    if (land) cands.push({ top: Math.max(8, bd.top), left: Math.max(8, Math.min(innerWidth - w - 8, bd.left + (bd.width - w) / 2)) });
+    const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(8, c.top); return avoid.reduce((a, r) => a + Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
+    let best = cands[0], bv = ov(best);
+    cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
+    el.style.top = Math.round(Math.max(8, best.top)) + 'px';
+    if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
+  }
+  addEventListener('resize', () => placeTip());
   function hideTip() { if (tipKey) { tipMark(tipKey); tipKey = null; } $('tip').hidden = true; }
   function tipsCheck(act) {
     if (tut || !$('result').hidden || document.body.classList.contains('is-cover')) { if (tipKey) hideTip(); return; }
@@ -3629,11 +3688,11 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     tipSession[k] = 1; tipKey = k;
     const [ti, bo] = TIPS[k]();
     $('tipT').textContent = ti; $('tipB').innerHTML = bo;
-    // 盤面（受けるダメージの表示）を隠さないよう、下の行動順カードの上に重ねる
-    const bk = $('book').getBoundingClientRect(), el = $('tip');
+    // 置き場所：ヒントが指す予告札（三位一体は3体のパネルも）を隠さない所。v5.1.43
+    //   ①下の行動順カードの上に重ねる（縦画面はほぼここ）②敵の絵の上 ③横画面は右の盤の上。重なりがいちばん少ない所を選ぶ
+    const el = $('tip');
     el.dataset.k = k; el.hidden = false;
-    const h = el.getBoundingClientRect().height;
-    el.style.top = Math.round(Math.max(8, bk.bottom - h)) + 'px';
+    placeTip();
     $('ticket').classList.remove('tip-ping'); void $('ticket').offsetWidth; $('ticket').classList.add('tip-ping');
   }
   /* --- 敵の3体のパネル（三位一体）--- */
@@ -5792,7 +5851,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     return '<details class="rv-log"><summary>' + list[0] + '　<em>ほか' + (list.length - 1) + '件 ▸</em></summary><div>' + list.slice(1).map((e) => '<p>' + e + '</p>').join('') + '</div></details>';
   }
   function rvShow(o) {
-    $('rvSmall').textContent = o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)));
+    // 区切り（·）ごとに折り返さないまとまりにする（「地点 10 /」で割れないように）
+    $('rvSmall').innerHTML = (o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)))).split('　·　').map((x) => '<span class="nw">' + x.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>').join('　·　');
     $('rvTitle').textContent = o.title;
     $('rvSub').textContent = o.sub || '';
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '')).join('');
@@ -5806,7 +5866,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (o.map) routeRefresh();
     $('rvCards').__on = o.on;
     const v = $('runv');
-    v.hidden = false; v.classList.toggle('is-map', !!o.map); v.classList.toggle('is-squad', !!o.squad); v.classList.toggle('is-legacy', !!o.legacy);
+    v.hidden = false; v.classList.toggle('is-map', !!o.map); v.classList.toggle('is-squad', !!o.squad); v.classList.toggle('is-legacy', !!o.legacy); v.classList.toggle('is-clear', !!o.clear); v.classList.toggle('many', !o.map && !o.squad && !o.legacy && o.cards.length >= 4);
     v.style.setProperty('--rr', (o.roster || (run ? run.members : [])).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
@@ -6473,8 +6533,9 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     try { localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 保存できない環境 */ }
     coverProgress();
     if (clear) confetti();
-    rvShow({ small: expSmall(), calm: true, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
-      events: (ev || []).concat(run.events.slice(-6)), cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' }], skip: 'タイトルへ',
+    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
+      // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
+      events: (ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた')))), cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' }], skip: 'タイトルへ',
       on: (i) => { $('runv').hidden = true; if (i >= 0) beginExp(); else goTitle(); } });
   }
   function beginExp() {
