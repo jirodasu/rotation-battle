@@ -2191,7 +2191,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.41</p>
+    <p class="c-ver" id="cVer">ver 5.1.42</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2515,7 +2515,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.41';
+  const APP_VERSION = '5.1.42';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3697,6 +3697,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const F = foeById(id);
     if (!F || F.hp <= 0) { SFX.nope(); return; }
     if (tgtId !== id || targetFoe() !== F) { tgtId = id; SFX.pick(0); }
+    if (phase === 'choose') battleSave('choose');   // 選び直した攻撃対象も、途中保存に残す
     inspect = null; render();
   }
   function renderPartyTicket(gh, src) {
@@ -4345,6 +4346,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     roster.forEach((u) => { u.entered = false; u.sta = u.staMax; });   // 突入技は「回して攻撃列に入った」ときだけ
     sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = gaugeOn() ? EXP.rot.start : 0;
     logLines = ['戦闘開始。'];
+    battleSave('start');
     runTurn();
   }
 
@@ -4617,6 +4619,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     order = []; orderIdx = -1;
     phase = 'choose';
     Music.set('choose');
+    battleSave('choose');
     render();
     tutOnChoose();
   }
@@ -4738,6 +4741,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (rot && enemy.bound) { say('縛られていて、このターンは回せない。'); render(); return; }
     if (rot && !gaugeOk()) { say('気力が足りない（回すには' + EXP.rot.cost + '）。'); render(); return; }
     actx();
+    battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
     if (rot) doRotate();
     else { stayN += 1; say('隊列を維持。' + (relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
@@ -4751,7 +4755,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const sv = expSaved(), xm = expMeta();
     $('resume').hidden = !sv;
     $('cover').classList.toggle('has-save', !!sv);
-    if (sv) $('resumeSub').textContent = '遠征・地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes;
+    if (sv) $('resumeSub').textContent = '遠征・地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : sv.battle ? '　戦闘のあと' : '');
     $('begin').classList.toggle('primary', !sv);
     $('beginSub').textContent = (sv ? '新しく環廊を下る' : '4人で環廊を下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' : '');
   }
@@ -4778,6 +4782,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   function finish(result) {
     phase = 'over';
     lastResult = result;
+    battleSave('over', { result });
     render();
     const NODES = EXPM() ? EXP.nodes : RUN.nodes;
     const last = run ? run.node + 1 >= NODES : battleIdx === ENEMIES.length - 1;
@@ -6261,7 +6266,42 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   function expSaved() {
     try { const o = JSON.parse(localStorage.getItem(EXP_KEY) || 'null'); return o && o.run && o.run.mode === 'exp' && Array.isArray(o.run.members) && o.run.members.length ? o : null; } catch (e) { return null; }
   }
-  function expSave() { try { localStorage.setItem(EXP_KEY, JSON.stringify({ v: APP_VERSION, rseed, uidSeq, run: Object.assign({}, run, { enemy: null }) })); } catch (e) { /* 保存できない環境 */ } }
+  // 戦闘の途中保存（v5.1.42〜。保存に battle を足しただけで、無い保存は従来どおり地図から再開）
+  //   at: 'start'（戦闘開始を押した）／'choose'（回す・維持を選ぶところ）／'over'（決着）
+  //   commit: 選んだ手（'rot'・'stay'）。選んだあとに閉じても、再開するとその手のまま進む（結果を見てから選び直せない）
+  let bsave = null;
+  function expSave() { try { localStorage.setItem(EXP_KEY, JSON.stringify(Object.assign({ v: APP_VERSION, rseed, uidSeq, run: Object.assign({}, run, { enemy: null }) }, bsave ? { battle: bsave } : {}))); } catch (e) { /* 保存できない環境 */ } }
+  function battleSave(at, extra) {
+    if (!EXPM() || tut) return;
+    const uid = (u) => (u ? u.uid : null), un = {};
+    run.members.forEach((m) => { un[m.uid] = { hp: m.hp, sta: m.sta, atkReady: m.atkReady, defReady: m.defReady, entered: m.entered }; });
+    bsave = Object.assign({ at, commit: null, result: null, pend: run.pendId || null, turn, gauge, stayN, tgtId, swapped: swappedOnce, edef: run.enemy, enemy: JSON.parse(JSON.stringify(enemy)), units: un,
+      grid: grid.map((row) => row.map(uid)), snap: (snapshot || []).map((x) => ({ uid: x.u.uid, r: x.r, c: x.c })),
+      stats: stats ? { dealt: stats.dealt, who: Object.keys(stats.who).reduce((o, k) => { o[k] = uid(stats.who[k]); return o; }, {}), taken: stats.taken, fallen: stats.fallen } : null,
+      log: (logLines || []).slice(-30) }, extra || {});
+    expSave();
+  }
+  // 保存した戦闘を、その場面から戻す
+  function battleRestore(B) {
+    const byId = {}; run.members.forEach((m) => { byId[m.uid] = m; });
+    const U = (id) => (id && byId[id]) || null;
+    run.enemy = B.edef; run.pendId = B.pend || null;   // 入った地点（決着後に通った道へ足す）
+    grid = B.grid.map((row) => row.map(U));
+    toPrep(false);
+    enemy = B.enemy;
+    run.members.forEach((m) => { const x = B.units[m.uid]; if (x) Object.assign(m, x); });
+    turn = B.turn; gauge = B.gauge; stayN = B.stayN; tgtId = B.tgtId; swappedOnce = true;
+    snapshot = B.snap.map((x) => ({ u: U(x.uid), r: x.r, c: x.c })).filter((x) => x.u);
+    stats = B.stats ? { dealt: B.stats.dealt, who: Object.keys(B.stats.who).reduce((o, k) => { const u = U(B.stats.who[k]); if (u) o[k] = u; return o; }, {}), taken: B.stats.taken, fallen: B.stats.fallen } : null;
+    logLines = (B.log || []).concat(['（中断したところから再開した）']);
+    bsave = B;
+    if (B.at === 'start') { phase = 'prep'; renderEnemy(true); render(); startBattle(); return; }
+    phase = 'choose'; renderEnemy(true);
+    if (B.at === 'over') { finish(B.result); return; }
+    Music.set('choose'); render();
+    if (B.commit) setTimeout(() => { if (phase === 'choose') choose(B.commit === 'rot'); }, RM ? 30 : 500);
+    else tutOnChoose();
+  }
   function expClearSave() { try { localStorage.removeItem(EXP_KEY); } catch (e) { /* 保存できない環境 */ } }
   // 地図の中身：戦闘の敵（章ごとに EXP.foes から。章の主は EXP.chiefFoe）と亜種。休息系はすべて休息
   function expFill() {
@@ -6308,6 +6348,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   }
   function expShowMap(events) {
     phase = 'map';
+    bsave = null;
     expSave();
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
@@ -6464,6 +6505,14 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     setCols(EXP.cols);
     battleIdx = 0; run.enemy = expEnemy(Math.min(run.node + 1, EXP.nodes), null, 0);
     grid = runGrid();
+    if (o.battle && o.battle.edef && o.battle.enemy && Array.isArray(o.battle.grid)) {
+      // 戦闘の途中で閉じた：その戦闘の、その場面から
+      if (!$('cover').hidden) closeCover();
+      $('runv').hidden = true;
+      rseed = o.rseed || 7;   // 古い保存の補完（expFill）で進んだ乱数を戻す：報酬の候補が、閉じなかった場合と同じになる
+      battleRestore(o.battle);
+      return;
+    }
     toPrep(false);
     if (!$('cover').hidden) closeCover();
     swappedOnce = true;
