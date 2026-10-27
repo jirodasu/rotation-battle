@@ -2105,7 +2105,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .pk-extra b { color: var(--danger-strong); }
 /* 横画面の設定：下の「閉じる」が中身に重ならない（右上の×でも閉じられる） */
 @media (max-height: 500px) { .settings .h-foot { position: static; background: none; padding-top: 4px; } }
-#chipTurn .gp:not(.on) { color: var(--rule); }
+#chipTurn .gp:not(.on) { color: #7f8ba4; }
 /* 小さな閉じる・終了ボタンも、押せる範囲を広げる */
 .co-quit, .pk-x, .set-contact a, .tip button { position: relative; }
 .h-x::after, .co-quit::after, .pk-x::after, .set-contact a::after { content: ""; position: absolute; inset: -7px; }
@@ -2282,7 +2282,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <div class="set-row"><label for="setSfx"><b>効果音</b><output id="setSfxV">100</output></label><input type="range" id="setSfx" min="0" max="100" step="5" value="100"></div>
       <div class="set-row inline"><span><b>すべての音</b><small>右上の ♪ ボタンと同じ</small></span><button class="set-sw" id="setAll" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>振動</b><small id="setVibNote">攻撃を受けたときなど</small></span><button class="set-sw" id="setVib" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
-      <div class="set-row inline"><span><b>文字の大きさ</b><small>説明文・報酬・チュートリアル</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
+      <div class="set-row inline"><span><b>文字の大きさ</b><small>説明・報酬・練習の文</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
     </div>
     <div class="set-about">
       <h3 class="disp">このゲームについて</h3>
