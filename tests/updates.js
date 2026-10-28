@@ -1,5 +1,8 @@
 // v5.1.48〜 品質改善（更新1・2…）。
 // 合格の基準（測る前に決めたもの）：
+//  更新6. 表紙に「攻撃／補助／回復」の3列の実演がある。動きを減らさない設定では、約2.3秒ごとに3人の列が1つずつ進み（先頭は後ろへ）、3回で元に戻る。
+//         動きを減らす設定では止まったまま。実演中でも「本番モード」「設定」等のボタンがすぐ押せる（実演が前面でクリックを奪わない）。
+//         見た目（通常／ハロウィン）を切り替えると、実演の3人の絵も入れ替わる。表紙を閉じると止まる。3列・各ボタンが画面幅からはみ出さない
 //  更新4. 章ごとの背景：body の data-ch が、いま・次に行く地点の章（地点1〜3＝0、4〜6＝1、7〜10＝2）と一致（戦闘・地図・報酬・タイトル）。
 //         重ね絵は、その章の1枚だけが見え（他は透明）、3枚の絵が互いに違う。切り替えはふつうの設定で1秒以上かけて入れ替わる。
 //         最後の戦い（boss-stage）は従来の毒の色のままで、重ね絵は出ない。通常・ハロウィンのどちらでも同じ。
@@ -167,6 +170,40 @@ async function toChoose(p) {
       const a = await p.evaluate('(' + AU + ')()'); a.lowContrast.forEach((x) => bad.push(node + ':' + x));
     }
     ok(bad.length === 0, '3章の戦闘画面にコントラスト4.5未満の文字なし ' + JSON.stringify(bad));
+    await ctx.close();
+  }
+
+  /* ---- 更新6：表紙の実演 ---- */
+  {
+    const { ctx, p } = await page(b, { rm: false });
+    await p.click('#cover'); await p.waitForTimeout(300);
+    const pos = () => p.evaluate(() => ['dt1', 'dt2', 'dt3'].map((i) => getComputedStyle(document.getElementById(i)).getPropertyValue('--p').trim()).join(''));
+    const rows = await p.evaluate(() => [...document.querySelectorAll('#demo .d-row .d-lbl')].map((e) => e.textContent).join('/'));
+    ok(rows === '攻撃/補助/回復', '実演に3列（' + rows + '）');
+    const a = await pos(); await p.waitForTimeout(2500); const c = await pos(); await p.waitForTimeout(2400); const d = await pos(); await p.waitForTimeout(2400); const e = await pos();
+    ok(a === '012' && c === '120' && d === '201' && e === '012', '列が1つずつ進み、3回で元に戻る（' + [a, c, d, e].join('→') + '）');
+    const hit = await p.evaluate(() => { const r = document.getElementById('demo').getBoundingClientRect(); const cv = document.querySelector('.c-inner').getBoundingClientRect(); return r.left >= cv.left - 1 && r.right <= cv.right + 1 && r.right <= innerWidth; });
+    ok(hit, '実演は画面幅からはみ出さない');
+    // ボタンが押せる：実演の上でもなく、押せば進む
+    await p.click('#begin'); await p.waitForTimeout(500);
+    ok(await p.evaluate(() => !document.getElementById('runv').hidden), '実演中でも「本番モード」がすぐ押せる');
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  {
+    const { ctx, p } = await page(b);   // 動きを減らす
+    await p.click('#cover'); await p.waitForTimeout(300);
+    const pos = () => p.evaluate(() => ['dt1', 'dt2', 'dt3'].map((i) => getComputedStyle(document.getElementById(i)).getPropertyValue('--p').trim()).join(''));
+    const a = await pos(); await p.waitForTimeout(2800); const c = await pos();
+    ok(a === c, '動きを減らす設定では実演は止まったまま（' + a + '→' + c + '）'); await ctx.close();
+  }
+  {
+    const { ctx, p } = await page(b, { rm: false });
+    await p.click('#cover'); await p.waitForTimeout(300);
+    const before = await p.evaluate(() => document.getElementById('dt1').innerHTML);
+    await p.clock.setFixedTime(new Date('2026-10-20T10:00:00')); await p.evaluate(() => { localStorage.setItem('rb-skin', 'hw'); }); await p.reload(); await p.waitForTimeout(400);
+    const after = await p.evaluate(() => ({ d: document.getElementById('dt1').innerHTML, o: document.getElementById('o1').innerHTML, sk: document.documentElement.getAttribute('data-skin') }));
+    ok(after.sk === 'hw' && after.d !== before && after.d === after.o && after.d.length > 50, '実演の絵は、表紙の飾りと同じ見た目（スキン ' + after.sk + '）に揃う');
+    ok(before === (await (async () => { await p.evaluate(() => { localStorage.setItem('rb-skin', 'normal'); }); await p.reload(); await p.waitForTimeout(400); return p.evaluate(() => document.getElementById('dt1').innerHTML); })()), '通常に戻すと元の絵に戻る');
     await ctx.close();
   }
 

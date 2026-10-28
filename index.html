@@ -690,6 +690,23 @@ body.boss-stage .en-u b { color: var(--ink); }
 .orbit .core { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; color: var(--accent); filter: drop-shadow(0 3px 0 rgba(35, 49, 74, 0.3)); animation: spin 8s linear infinite reverse; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes counter { to { transform: rotate(-360deg); } }
+.demo { position: relative; width: 236px; height: 90px; margin: 6px 0 0; --rh: 28px; --rg: 3px; }
+.d-row { position: absolute; left: 0; right: 0; height: var(--rh); border-radius: 12px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--paper-line); display: flex; align-items: center; padding-left: 11px; }
+.d-row.d-0 { top: 0; } .d-row.d-1 { top: calc(var(--rh) + var(--rg)); } .d-row.d-2 { top: calc((var(--rh) + var(--rg)) * 2); }
+.d-0 { background: color-mix(in srgb, var(--atk, #b4473a) 22%, var(--paper)); }
+.d-1 { background: color-mix(in srgb, var(--sup, #73579b) 22%, var(--paper)); }
+.d-2 { background: color-mix(in srgb, var(--heal, #478455) 22%, var(--paper)); }
+.d-lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink); opacity: 0.9; }
+.d-row.hit { animation: dhit 0.7s ease-out; }
+@keyframes dhit { 0% { box-shadow: inset 0 0 0 1.5px var(--paper-line), 0 0 0 0 rgba(255, 220, 150, 0.9); } 100% { box-shadow: inset 0 0 0 1.5px var(--paper-line), 0 0 0 9px rgba(255, 220, 150, 0); } }
+.d-tok { position: absolute; right: 14px; top: 0; width: 24px; height: 24px; margin-top: 2px; border-radius: 50%; overflow: hidden; background: var(--c, var(--paper)); box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px var(--paper-line);
+  transform: translateY(calc(var(--p) * (var(--rh) + var(--rg)))); transition: transform 0.9s cubic-bezier(.5, 0, .2, 1); }
+.d-tok svg { display: block; width: 100%; height: 100%; }
+#dt1 { --c: var(--tank); } #dt2 { --c: var(--sup); } #dt3 { --c: var(--heal); }
+.d-tok.wrap { transition-duration: 0.9s; }
+.d-tok.lead { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px #e8b94a, 0 0 12px 2px rgba(232, 185, 74, 0.7); }
+@media (prefers-reduced-motion: reduce) { .d-tok { transition: none; } .d-row.hit { animation: none; } }
+@media (max-height: 900px) { .orbit { transform: scale(0.8); margin: -22px 0; } }
 .c-copy { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink); }
 .result { z-index: 45; background: var(--scrim); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
 .result[hidden] { display: none; }
@@ -2326,7 +2343,13 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.51</p>
+    <div class="demo" id="demo" aria-hidden="true">
+      <div class="d-row d-0"><span class="d-lbl">攻撃</span></div>
+      <div class="d-row d-1"><span class="d-lbl">補助</span></div>
+      <div class="d-row d-2"><span class="d-lbl">回復</span></div>
+      <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
+    </div>
+    <p class="c-ver" id="cVer">ver 5.1.52</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2653,7 +2676,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.51';
+  const APP_VERSION = '5.1.52';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5280,6 +5303,23 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 
   // 表紙
   $('o1').innerHTML = ART.warrior; $('o2').innerHTML = ART.witch; $('o3').innerHTML = ART.cleric;
+  $('dt1').innerHTML = ART.warrior; $('dt2').innerHTML = ART.witch; $('dt3').innerHTML = ART.cleric;
+  /* 表紙の実演：攻撃・補助・回復の3列で、仲間が1つずつ前へ進み、先頭は後ろへ回る。ほんとうの戦闘の「回す」と同じ動き。
+     ボタンの邪魔をしない（押せる・見た目だけ）。表紙が見えていないとき・タブが裏のときは止まる。動きを減らす設定では止めたまま */
+  (function demo() {
+    const toks = [$('dt1'), $('dt2'), $('dt3')], cv = $('cover');
+    let k = 0;
+    const place = () => toks.forEach((t, i) => { const p = (i + k) % 3; t.style.setProperty('--p', p); t.classList.toggle('wrap', p === 2 && k > 0); });
+    place();
+    if (RM) return;
+    setInterval(() => {
+      if (cv.hidden || cv.classList.contains('out') || document.hidden) return;
+      k += 1; place();
+      const front = toks[(3 - (k % 3)) % 3];
+      toks.forEach((t) => t.classList.toggle('lead', t === front));
+      const row = document.querySelector('.d-0'); row.classList.remove('hit'); void row.offsetWidth; row.classList.add('hit');
+    }, 2300);
+  })();
   (function stars() {
     const box = document.querySelector('.stars');
     for (let i = 0; i < 30; i++) {
@@ -5515,6 +5555,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const r = document.documentElement;
     r.setAttribute('data-skin', SKIN === 'hw' ? 'hw' : 'goth'); r.setAttribute('data-theme', 'dark');
     $('o1').innerHTML = ART.warrior; $('o2').innerHTML = ART.witch; $('o3').innerHTML = ART.cleric;
+    $('dt1').innerHTML = ART.warrior; $('dt2').innerHTML = ART.witch; $('dt3').innerHTML = ART.cleric;
     const box = $('skinSel');
     box.hidden = !hwSeason();
     box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skin === SKIN)));
