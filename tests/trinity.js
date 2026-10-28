@@ -64,10 +64,14 @@ async function auto(p, order) {
     const calc = (id, share1) => p.evaluate(([id, s1]) => { const R = window.__rb, g = R.grid, F = R.foeById(id), keep = R.TRI.share; if (s1) R.TRI.share = 1; let t = 0; R.units(g).forEach(({ u, r, c }) => { const d = R.expDmg(u, r, c, g, true, false, F); if (d) t += d.val; }); R.TRI.share = keep; return t; }, [id, !!share1]);
     let s = await card('statue'), pr = await card('priest'), j = await card('judge');
     ok(s.sel && !pr.sel && !j.sel, '何も選ばないと、上から生きている1体（鎮守の像）が狙いになる');
-    ok(/肩代わり/.test(s.t) && pr.half && j.half, '像に「肩代わり」、祈り手と断罪者に「×½」が常に出ている');
+    // v5.1.55（C6）：×½の札は祈り手・断罪者に繰り返さず、像の「肩代わり」1か所に集約。半減の注記（「半減後」）は、攻撃対象に選んだ敵のカードにだけ出す
+    ok(/肩代わり/.test(s.t) && s.half && !pr.half && !j.half, '像に「肩代わり」の札、祈り手と断罪者には×½の札を出さない');
     const dS = await calc('statue'), dP = await calc('priest'), dPfull = await calc('priest', true), dJ = await calc('judge'), dJfull = await calc('judge', true);
     ok(+(s.dealt || '').replace(/[^\d]/g, '') === dS && +(pr.dealt || '').replace(/[^\d]/g, '') === dP && +(j.dealt || '').replace(/[^\d]/g, '') === dJ, 'パネルの「与」が計算と一致（像' + dS + '／祈り手' + dP + '／断罪者' + dJ + '）' + JSON.stringify([s.dealt, pr.dealt, j.dealt]));
-    ok(dP < dPfull && dJ < dJfull && /半減後/.test(pr.t) && /半減後/.test(j.t), '祈り手・断罪者の数字は半減後（' + dP + ' < ' + dPfull + '、' + dJ + ' < ' + dJfull + '）で、「半減後」と書いてある');
+    await p.click('#party .fc[data-f="priest"]'); await p.waitForTimeout(100);
+    const prX = await card('priest'), jX = await card('judge');
+    ok(dP < dPfull && dJ < dJfull && /半減後/.test(prX.t) && !/半減後/.test(jX.t), '祈り手・断罪者の数字は半減後（' + dP + ' < ' + dPfull + '、' + dJ + ' < ' + dJfull + '）。「半減後」は攻撃対象の祈り手のカードにだけ書いてある');
+    await p.click('#party .fc[data-f="statue"]'); await p.waitForTimeout(100);   // 狙いを像に戻す（この先の確認は、像が狙いの状態から始める）
     const one = await p.evaluate(() => { const R = window.__rb; return [R.foeHit(20, R.foeById('priest')), R.foeHit(20, R.foeById('statue')), R.foeHit(1, R.foeById('judge'))]; });
     ok(one[0] === 10 && one[1] === 16 && one[2] === 1, '1発の計算：祈り手に20→(20−防御0)÷2＝10、像に20→20−防御4＝16、最低でも1 ' + JSON.stringify(one));
     // タップで対象を切り替え
@@ -110,8 +114,9 @@ async function auto(p, order) {
     await p.evaluate(() => { const R = window.__rb; R.foeById('statue').hp = 50; });
     await p.click('#btnStart');
     for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
-    const st = await p.evaluate(() => { const R = window.__rb, S = R.foeById('statue'); return { turn: R.turn, hp: S.hp, def: S.defUp, chip: document.querySelector('#party .fc[data-f="statue"] .fc-chip.df').textContent }; });
-    ok(st.turn === 2 && st.def === 4 && /\+4/.test(st.chip) && !/次/.test(st.chip), '1ターン目の「防御構え」は、2ターン目に防御+4として働く（チップ ' + st.chip + '）');
+    const st = await p.evaluate(() => { const R = window.__rb, S = R.foeById('statue'); return { turn: R.turn, hp: S.hp, def: S.defUp, def2: document.querySelectorAll('#party .fc[data-f="statue"] .fc-def')[1].textContent, base: R.foeById('statue').def }; });
+    // v5.1.55（C6）：「防 次+4」「防+4」の札はやめ、防の数字（現ターンの防御値）に統合。次ターンの効果は敵の詳細に書く
+    ok(st.turn === 2 && st.def === 4 && +st.def2.replace(/\D/g, '') === st.base + 4 && !(await p.evaluate(() => !!document.querySelector('#party .fc-chip.df'))), '1ターン目の「防御構え」は、2ターン目に防御+4として働き、カードの「防」の数字が ' + st.def2 + '（元' + st.base + '）になる。「防+4」の札はない');
     ok(st.hp > 50 - 40, '1ターン目：祈り手の回復（+10まで）で、像のHPが戻る可能性あり（像HP ' + st.hp + '）');
     // 祈り手の防御補助は、2ターン目に付いて3ターン目に効く
     await p.click('#btnStay');
@@ -119,7 +124,7 @@ async function auto(p, order) {
     const t3 = await p.evaluate(() => { const R = window.__rb; return R.TRI.foes.map((f) => R.foeById(f.id).id + ':' + R.foeById(f.id).defUp).join(' '); });
     ok(/statue:0/.test(t3) === false || /judge:3|statue:3/.test(t3), '2ターン目の「防御補助」（+3）は、3ターン目に像か断罪者で働く ' + t3);
     // 敵の詳細
-    await p.click('#ticket'); await p.waitForTimeout(200);
+    await p.click(await p.evaluate(() => (document.getElementById('foeMore').hidden ? '#ticket' : '#foeMore'))); await p.waitForTimeout(200);
     const sh = await p.evaluate(() => ({ open: !document.getElementById('foeSheet').hidden, t: document.getElementById('foeSheet').textContent }));
     ok(sh.open && /鎮守の像/.test(sh.t) && /祈り手/.test(sh.t) && /断罪者/.test(sh.t) && /半分/.test(sh.t), '予告の札をタップで敵の詳細（3体の行動表と肩代わりの説明）が開く');
     await p.keyboard.press('Escape'); await p.waitForTimeout(150);

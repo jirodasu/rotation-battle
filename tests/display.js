@@ -176,7 +176,8 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
           // 予告札：ひとつの敵・ひとりを狙う技のときは、受けたダメージの合計と一致。全員を狙う技は、一人ひとりが範囲内
           if (pred.tk && pred.tk.n != null) {
             tix++; const sum = Object.values(got.m).reduce((a, x) => a + x, 0), vals = Object.values(got.m);
-            const okT = pred.tk.all ? vals.every((v) => v >= pred.tk.lo && v <= pred.tk.hi) : sum === pred.tk.n;
+            // v5.1.55（C7）：全員に当たる技は、札に範囲（1〜8）を出さず元の数字を出す。味方ごとの違いは味方カードの予測に一本化。札の数字＝いちばん大きい被ダメージ
+            const okT = pred.tk.all ? (Math.max.apply(null, vals) === pred.tk.hi && vals.every((v) => v <= pred.tk.hi)) : sum === pred.tk.n;
             if (!okT) { tixBad++; if (ex.length < 6) ex.push(['札', cs.k, JSON.stringify(pred.tk), JSON.stringify(got.m)]); }
             if (pred.tk.cut && okT) cut++;
           }

@@ -707,8 +707,6 @@ body.boss-stage .en-u b { color: var(--ink); }
 .d-tok.lead { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px #e8b94a, 0 0 12px 2px rgba(232, 185, 74, 0.7); }
 @media (prefers-reduced-motion: reduce) { .d-tok { transition: none; } .d-row.hit { animation: none; } }
 @media (max-height: 900px) { .orbit { transform: scale(0.8); margin: -22px 0; } }
-@media (max-height: 760px) { .orbit { transform: scale(0.62); margin: -44px 0 -40px; } .demo { transform: scale(0.86); transform-origin: top center; height: 78px; margin: 0; } .c-copy { display: none; } }
-@media (max-height: 620px) { .demo { display: none; } .orbit { transform: scale(0.7); margin: -34px 0; } }
 .c-copy { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink); }
 .result { z-index: 45; background: var(--scrim); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
 .result[hidden] { display: none; }
@@ -2084,6 +2082,24 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ticket.p .t-dmg b { font-size: 20px; }
 .t-dmg.cut small { white-space: nowrap; }
 .t-dmg.rng b { font-size: 18px; letter-spacing: -0.02em; } .ticket.p .t-dmg.rng b { font-size: 15px; }
+/* ===== v5.1.55 UI監査 ===== */
+/* 文字の階層は3段階にそろえる：①主（予測ダメージ・今ターンの技名）②本文 ③補助（速・防・説明）。数字は太く、補助は細く・薄く */
+:root { --fs-1: 17px; --fs-2: 13px; --fs-3: 10.5px; --fw-1: 800; --fw-2: 700; --fw-3: 600; }
+.inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
+.inc-w { font-style: normal; font-size: 9.5px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
+.t-dmg b { font-weight: var(--fw-1); }
+.t-main > span { font-size: var(--fs-3); font-weight: var(--fw-3); color: var(--ink-soft); }
+.t-main > b { font-weight: var(--fw-1); }
+.fc-sub, .fc-sub .fc-def { font-weight: var(--fw-3); opacity: 0.85; }
+.fc-dmg b, .fc-act b { font-weight: var(--fw-1); }
+/* 大技の予告がないときは、下の札を出さない。敵のパネルを下まで広げる（v5.1.55） */
+.ticket.p.off { display: none; }
+.stage.trio.noticket .foes { bottom: 30px; }
+.foe-more { position: absolute; left: 50%; bottom: 3px; transform: translateX(-50%); z-index: 3; height: 24px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--paper-line); background: var(--paper); color: var(--ink-soft); font: inherit; font-size: var(--fs-3); font-weight: var(--fw-2); white-space: nowrap; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.foe-more[hidden] { display: none; }
+.foe-more i { font-style: normal; margin-left: 4px; }
+.fc.dead { gap: 0; padding: 5px 4px; }
+.fc.dead .fc-nm { font-size: 12px; } .fc.dead .fc-gone { font-size: 11px; padding: 2px 0 0; color: var(--ink-soft); }
 .stage.trio.peeking .foes { opacity: 0.18; transition: opacity 0.2s; }
 .pc-foe { display: block; padding: 6px 0 2px; border-top: 1px solid var(--paper-line); text-align: left; }
 .pc-foe.dead { opacity: 0.45; }
@@ -2274,6 +2290,10 @@ body:not(.boss-stage)[data-ch="2"] :is(#runv, #result) .r-card { --rule-a: rgba(
 body:not(.boss-stage)[data-ch="0"] #runv.is-map .r-card { background-image: linear-gradient(180deg, rgba(236, 170, 80, 0.13), transparent 42%), radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%); }
 body:not(.boss-stage)[data-ch="1"] #runv.is-map .r-card { background-image: linear-gradient(180deg, rgba(70, 180, 186, 0.15), transparent 42%), radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%); }
 body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: linear-gradient(180deg, rgba(220, 70, 60, 0.15), transparent 42%), radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%); }
+/* 表紙：背の低い画面では、飾りと実演を縮める（後ろにある同名の規則に負けないよう、最後に置く）。v5.1.55 */
+@media (max-height: 760px) { .orbit { transform: scale(0.62); margin: -44px 0 -40px; } .demo { transform: scale(0.86); transform-origin: top center; height: 78px; margin: 0; } .c-copy { display: none; } }
+@media (max-height: 700px) { .c-inner { gap: 8px; } .c-title { font-size: clamp(26px, 8.4vw, 36px); } .c-kicker { font-size: 12px; } .orbit { transform: scale(0.6); margin: -50px 0 -46px; } .demo { transform: scale(0.86); height: 78px; margin: 0 0 -6px; } }
+@media (max-height: 620px) { .demo { display: none; } .orbit { transform: scale(0.7); margin: -34px 0; } }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2319,6 +2339,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     <div class="eart" id="eart"></div>
     <div class="foes" id="party" role="group" aria-label="敵の3体（タップで攻撃対象を選ぶ）"></div>
     <div class="ticket" id="ticket"></div>
+    <button class="foe-more" id="foeMore" type="button" aria-label="敵の詳細を開く（行動パターン・その次の行動）" hidden>敵の詳細（その次の行動）<i aria-hidden="true">▸</i></button>
   </section>
   <div class="peek" id="peek" role="region" aria-label="仲間の詳細" aria-live="polite" hidden></div>
 
@@ -2409,7 +2430,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征（本番）</b>地の底の大聖堂「環廊」を、4人で下っていく。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。<br><b>気力</b>　回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。先読み（目のボタン）で「突」が付いた仲間が対象。</div></li>
-      <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃と「その次」の行動が出る。2手先を見て回すかどうかを決めよう。</div></li>
+      <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃が出る。敵をタップすると「その次」の行動も見える。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。</div></li>
@@ -3572,19 +3593,21 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
     cols.forEach((c) => {
       const u = src[fr][c]; if (!u) return;
-      let d = act.dmg;
-      if (fr > 0) d *= 2;
-      else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup; used[c] = 1; }  }
+      let d = act.dmg, why = '';
+      if (fr > 0) { d *= 2; why = '×2'; }
+      else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup; used[c] = 1; why = '防'; }  }
       if (fr === 0 && entering && RX().entry) { src[0].forEach((x) => { if (x && x.entry && x.entry.teamGuard) d -= x.entry.teamGuard; }); if (u.entry && u.entry.guard) d -= u.entry.guard; }
       if (fr === 0 && entering && relOn('shield')) d -= relD('shield').guard;
       const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d);
-      per.push({ F, act, c, d: Math.max(1, d) });
+      per.push({ F, act, c, d: Math.max(1, d), why });
     });
     });
     Object.keys(out).forEach((k) => {
       const [r, c] = k.split(',').map(Number), u = src[r][c], h = src[2][c];
       const heal = 0;
-      out[k] = { d: out[k], ko: out[k] >= Math.min(u.max, u.hp + heal) };
+      const mine = per.filter((x) => r === fr && x.c === c);
+      // 合計と内訳（複数の敵・複数回の攻撃を、味方1人に1つの数で。内訳は小さく添える）。v5.1.55
+      out[k] = { d: out[k], ko: out[k] >= Math.min(u.max, u.hp + heal), parts: mine.map((x) => ({ n: x.act.name, d: x.d })), why: mine.map((x) => x.why).filter(Boolean)[0] || '' };
     });
     return out;
   }
@@ -3628,7 +3651,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp" title="突入技 ' + u.entry.name + '">突</i>' : '';
     return '<span class="tok ' + u.cls + (tired ? ' tired' : '') + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '"><span class="disc">' + face(u) + '</span>' + pips + ent +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' +
-      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.tired ? ' tired' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
+      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.tired ? ' tired' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
 
@@ -3877,8 +3900,6 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const c = [];
     if (F.hp > 0) {
       if (F.id === 'statue') c.push('<i class="fc-chip sh" title="肩代わり：ほかの2体が受けるダメージを半分にする">' + ICON.shield + '<b>肩代わり</b></i>');
-      else if (foeShare(F) < 1) c.push('<i class="fc-chip sh" title="像の肩代わりで、受けるダメージが半分">' + ICON.shield + '<b>×½</b></i>');
-      if (F.defUp > 0) c.push('<i class="fc-chip df" title="防御アップ中（いまのターン）"><i class="seal d">防</i><b>+' + F.defUp + '</b></i>');
       if (F.charged) c.push('<i class="fc-chip ch" title="ためている：このターンは大技">溜<b>大技</b></i>');
       if (phase === 'choose' || phase === 'prep') {
         const a = actOf(F);
@@ -3886,9 +3907,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
         if (foeAlive(P)) {
           const pa = actOf(P);
           if (pa.rule === 'mend' && mendTarget() === F) c.push('<i class="fc-chip hl plan" title="このターン、祈り手が回復する">' + ICON.plus + '<b>+' + pa.heal + '</b></i>');
-          if (pa.rule === 'aid' && aidTarget() === F) c.push('<i class="fc-chip df plan" title="このターン、祈り手が防御を付ける（次のターンに働く）"><i class="seal d">防</i><b>次+' + pa.def + '</b></i>');
         }
-        if (a.rule === 'guard') c.push('<i class="fc-chip df plan" title="このターン構える（次のターンに働く）"><i class="seal d">防</i><b>次+' + a.def + '</b></i>');
       }
     }
     return c.join('');
@@ -3908,12 +3927,14 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       else if (a.rule === 'mend') dmgTxt = '<b>+' + a.heal + '</b>';
       const brief = a.name;   // パネルの技名は、ログ・行動パターンと同じ名前（v5.1.41）
       const dl = live && !dead ? foeDealt(F) : 0, kill = dl >= F.hp && dl > 0;
-      return '<button type="button" class="fc' + (dead ? ' dead' : '') + (!dead && F === tgt ? ' sel' : '') + (half && !dead ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp > 0 && F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '"' + (dead ? ' disabled' : '') + ' aria-pressed="' + (!dead && F === tgt) + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (dead ? '（倒れた）' : (F === tgt ? '（攻撃対象）' : '（タップで攻撃対象にする）')) + '">' +
+      if (dead) return '<button type="button" class="fc dead" data-f="' + F.id + '" disabled aria-label="' + F.name + '（倒れた）"><b class="fc-nm disp">' + F.name + '</b><span class="fc-gone">倒れた</span></button>';   // 倒れた敵は、名前と「倒れた」だけに折りたたむ（v5.1.55）
+      const sel = F === tgt, tg = targetInfo(a, showGhost() ? previewGrid() : grid, F), tgt2 = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? COLN[tg.cols[0]] + 'の列' : a.rule === 'random' ? '一番前の列からランダム' : '';
+      return '<button type="button" class="fc' + (sel ? ' sel' : '') + (half ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '" aria-pressed="' + sel + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (sel ? '（攻撃対象）' : '（タップで攻撃対象にする）') + (tgt2 ? '　今ターン：' + a.name + '→' + tgt2 : '') + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
-        '<b class="fc-nm disp">' + (!dead && F === tgt ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
+        '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
         '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
-        (dead ? '<span class="fc-gone">倒れた</span>' : '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
-        (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '')) +
+        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
+        (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half && sel ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '') +
         '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
     }).join('');
@@ -3950,11 +3971,14 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       dmg = warn.dmg;
       if (warn.ahead === 0) { ico = '罪'; head = '断罪者の大技！'; big = true; sub = verb(jinfo.desc); }
       else if (warn.ahead === 1) { ico = '溜'; head = '断罪者が大技をためる'; chg = true; sub = '次のターンに ' + warn.dmg + ' ダメージ'; }
-      else { ico = '罪'; head = warn.ahead + 'ターン後に大技'; sub = 'いまは「' + Ja.name + '」　祈り手が予告を早めている'; }
+      else { ico = '罪'; head = '断罪者　' + warn.ahead + 'ターン後に大技'; sub = '祈り手が予告を早めている（いまは「' + Ja.name + '」）'; }
     } else if (Ja) {
       head = '断罪者　' + Ja.name; dmg = Ja.dmg || null; sub = verb(jinfo.desc || '') || '次に大技が来る';
       sub += (priestUp() ? '' : '　大技の予告は直前まで見えない');
     } else { ico = La.glyph; head = L.name + '　' + La.name; dmg = La.dmg || null; sub = verb(lead.desc || ''); }
+    // 下の予告の札は、大技の予告のときだけ出す（普段の技・予測は、敵のパネルに集約。v5.1.55）
+    const showT = !!(warn && warn.seen);
+    t.classList.toggle('off', !showT); $('stage').classList.toggle('noticket', !showT); $('foeMore').hidden = showT;
     t.classList.add('p');
     t.classList.toggle('busy', phase === 'resolve' || phase === 'over');
     t.classList.toggle('charge', chg);
@@ -3978,7 +4002,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   }
   function renderTicket() {
     if (enemy.party) { const g = showGhost(); renderPartyTicket(g, g ? previewGrid() : grid); return; }
-    $('ticket').classList.remove('p');
+    $('ticket').classList.remove('p', 'off'); $('stage').classList.remove('noticket'); $('foeMore').hidden = true;
     const act = curAct(), gh = showGhost(), info = targetInfo(act, gh ? previewGrid() : grid);
     if (phase === 'choose') info.desc = info.desc.replace('狙い　', gh ? '回すと　' : '維持だと　');
     const t = $('ticket');
@@ -3987,10 +4011,10 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     t.classList.toggle('charge', chg);
     t.classList.toggle('big', !!enemy.charged && !chg);
     t.innerHTML = '<span class="t-ico disp">' + act.glyph + '</span>' +
-      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b><span>' + info.desc + '</span>' + (chg ? '' : (() => { const n = nextAct(); return '<span class="t-nx">その次 ▸ ' + n.name + (n.dmg ? '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' : '（攻撃なし）') + '</span>'; })()) + '</span>' +
+      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b><span>' + info.desc + '</span>' + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
-        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo < raw;
-          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? '軽減後（元' + raw + '）' : dbl ? '2倍ダメージ' : 'ダメージ') + '</small></span>'; })());
+        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
+          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? '軽減後（元' + raw + '）' : dbl ? '2倍ダメージ' : 'ダメージ') + '</small></span>'; })());
     tipsCheck(act);
     const showBeam = phase === 'prep' || phase === 'choose';
     // 赤い枠は、実際にダメージを受ける仲間（一番前の列のそのマス）だけに出す
@@ -5147,7 +5171,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     { t: '補助は縦、回復は横', x: '魔女の補助は、同じ縦の列（一）の戦士に届く。神官の回復は、回復列の横の仲間（サムライ）に届く。', pos: 'top', spot: () => [bd().querySelector('.ctag[data-c="0"]'), slotEl(1, 0)], next: true },
     { t: '敵の予告', x: '敵は次の行動を予告する。赤く光る仲間が狙われる。敵が狙うのは一番前の列の仲間だけ。', pos: 'bottom', spot: () => [$('ticket'), bd().querySelector('.ctag.hit')], next: true },
     { t: '敵の詳細', x: '敵の名前や絵（ⓘの所）をタップすると、敵の詳細が開く。行動の一覧や特徴を、戦闘中いつでも確かめられる。', pos: 'bottom', spot: () => [$('stage').querySelector('.plate'), $('eart')].filter(Boolean), next: true },
-    { t: '2手先の予兆', x: '予告の下の「その次」は、次のターンの行動。2手先を見て、回すかどうかを決めよう。', pos: 'bottom', spot: () => $('ticket').querySelector('.t-nx') || $('ticket'), next: true },
+    { t: '2手先の予兆', x: '敵をタップすると、詳細に「その次」の行動が出る。次のターンの行動なので、2手先を見て、回すかどうかを決めよう。', pos: 'bottom', spot: () => $('stage'), next: true },
     { t: '与えるダメージ', x: '剣マークの数字は、次に与えるダメージの見込み。金色は攻撃補助が乗っている印。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
     { t: 'スタミナ', x: 'キャラ右横の点はスタミナ。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
     { t: '仲間を動かす ①', x: 'サムライは回復列にいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
