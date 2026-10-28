@@ -1,5 +1,9 @@
 // v5.1.48〜 品質改善（更新1・2…）。
 // 合格の基準（測る前に決めたもの）：
+//  更新4. 章ごとの背景：body の data-ch が、いま・次に行く地点の章（地点1〜3＝0、4〜6＝1、7〜10＝2）と一致（戦闘・地図・報酬・タイトル）。
+//         重ね絵は、その章の1枚だけが見え（他は透明）、3枚の絵が互いに違う。切り替えはふつうの設定で1秒以上かけて入れ替わる。
+//         最後の戦い（boss-stage）は従来の毒の色のままで、重ね絵は出ない。通常・ハロウィンのどちらでも同じ。
+//         文字の読みやすさ：通常の見た目の3章の戦闘画面で、コントラスト4.5未満の文字が増えない（0件）
 //  更新3. 勝利パネルに「このあと…最大HPの30％（切り上げ）ぶん回復する」の一文。報酬パネルの名簿に、実際に増えた分の「+N」札
 //         （N＝回復後のHP−回復前のHP）と一文。満タンで増えなかった仲間には札を付けない。全員満タンなら「回復はなかった」の一文で札なし。
 //         回復の計算は変えない（回復後のHP＝min(最大HP, 回復前+切り上げ(最大HP×0.3))）。
@@ -107,6 +111,62 @@ async function toChoose(p) {
     if (mode === 'allfull') ok(/回復はなかった/.test(r.note) && r.chips.every((c) => !c.chip), '全員満タンなら「回復はなかった」の一文で札なし：「' + r.note + '」');
     else ok(/最大HPの30％（切り上げ）ぶん回復した/.test(r.note) && r.chips.some((c) => c.chip), '報酬パネルに回復の一文と札：「' + r.note + '」');
     ok(!p.__errs.length, mode + '：ページのエラーなし ' + p.__errs.join(' / '));
+    await ctx.close();
+  }
+
+  /* ---- 更新4：章ごとの背景 ---- */
+  for (const sk of [{ name: '通常', date: '2026-11-10T10:00:00', hw: false }, { name: 'ハロウィン', date: '2026-10-20T10:00:00', hw: true }]) {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' }); const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.clock.setFixedTime(new Date(sk.date));
+    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); sessionStorage.setItem('seeded', '1'); } } catch (e) { /* 保存できない */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(200);
+    if (sk.hw) await p.click('#skinSel button[data-skin="hw"]');
+    ok(await p.evaluate(() => document.body.dataset.ch === '0'), sk.name + '：タイトルは第1章の色');
+    await p.click('#begin'); await p.waitForTimeout(400);
+    const layers = () => p.evaluate(() => ['c0', 'c1', 'c2'].map((c) => +getComputedStyle(document.querySelector('.chl.' + c)).opacity));
+    const rows = [];
+    for (const [node, ch] of [[0, 0], [1, 0], [2, 0], [3, 1], [4, 1], [5, 1], [6, 2], [7, 2], [8, 2]]) {
+      await p.evaluate((node) => { const R = window.__rb; R.run.node = node; R.run.enemy = R.expEnemy(node + 1, null, 0); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, node);
+      await p.waitForTimeout(80);
+      const d = await p.evaluate(() => document.body.dataset.ch), l = await layers();
+      rows.push([node + 1, ch, d, l.join('/')]);
+      if (d !== String(ch) || l.map((x, i) => (i === ch ? x === 1 : x === 0)).includes(false)) ok(false, sk.name + '：地点' + (node + 1) + ' で章の背景が違う ' + JSON.stringify([ch, d, l]));
+    }
+    ok(rows.every((r) => r[2] === String(r[1])), sk.name + '：戦闘の背景は、地点1〜3＝第1章・4〜6＝第2章・7〜9＝第3章 ' + rows.map((r) => r[0] + ':' + r[2]).join(' '));
+    // 地図・報酬：次に行く地点の章
+    for (const [node, ch] of [[2, 0], [3, 1], [6, 2]]) { await p.evaluate((node) => { const R = window.__rb; R.run.node = node; R.expShowMap([]); }, node); await p.waitForTimeout(80);
+      ok(await p.evaluate((ch) => document.body.dataset.ch === String(ch) && !document.getElementById('runv').hidden, ch), sk.name + '：地図（いま地点' + (node + 1) + 'に進む前）は第' + (ch + 1) + '章の色'); }
+    // 三つの絵がちがう・ふつうの設定では切り替えに時間をかける
+    const bg = await p.evaluate(() => ['c0', 'c1', 'c2'].map((c) => getComputedStyle(document.querySelector('.chl.' + c)).backgroundImage));
+    ok(new Set(bg).size === 3 && bg.every((x) => /gradient/.test(x)), sk.name + '：3枚の絵は互いに違う');
+    const cm = await p.evaluate(() => ['c0', 'c1', 'c2'].map((c) => ['::before', '::after'].map((pe) => getComputedStyle(document.querySelector('.chl.' + c), pe).backgroundImage.replace(/\(.*$/, ''))));
+    ok(cm.every((r) => r.every((x) => x !== 'none')), sk.name + '：どの章にも2つの飾り（柱・床の絵）がある ' + JSON.stringify(cm.map((r) => r.map((x) => x.slice(0, 6)))));
+    // 最後の戦い
+    await p.evaluate(() => { const R = window.__rb; R.run.node = 9; R.run.enemy = R.expEnemy(10, null, 'chief'); document.getElementById('runv').hidden = true; R.toPrepForTest(); }); await p.waitForTimeout(100);
+    const bo = await p.evaluate(() => ({ boss: document.body.classList.contains('boss-stage'), l: ['c0', 'c1', 'c2'].map((c) => +getComputedStyle(document.querySelector('.chl.' + c)).opacity) }));
+    ok(bo.boss && bo.l.every((x) => x === 0), sk.name + '：最後の戦いは重ね絵なし（毒の色のまま）');
+    ok(!p.__errs.length, sk.name + '：ページのエラーなし ' + p.__errs.join(' / '));
+    await ctx.close();
+  }
+  {
+    // ふつうの動き設定では、章が変わると1秒以上かけて入れ替わる
+    const { ctx, p } = await page(b, { rm: false });
+    await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(500);
+    const dur = await p.evaluate(() => parseFloat(getComputedStyle(document.querySelector('.chl.c1')).transitionDuration));
+    ok(dur >= 1, '章の背景は ' + dur + ' 秒かけて入れ替わる（動きを減らす設定のときは即時）');
+    await ctx.close();
+  }
+  {
+    // 文字の読みやすさ（通常の見た目・3章の戦闘画面）
+    const AU = require('./_audit.js').toString();
+    const { ctx, p } = await page(b);
+    await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(500);
+    const bad = [];
+    for (const [node, kind] of [[0, 0], [3, 0], [6, 0], [2, 'trinity']]) {
+      await p.evaluate(([node, kind]) => { const R = window.__rb; R.run.node = node; R.run.enemy = R.expEnemy(node + 1, null, kind); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, [node, kind]); await p.waitForTimeout(200);
+      const a = await p.evaluate('(' + AU + ')()'); a.lowContrast.forEach((x) => bad.push(node + ':' + x));
+    }
+    ok(bad.length === 0, '3章の戦闘画面にコントラスト4.5未満の文字なし ' + JSON.stringify(bad));
     await ctx.close();
   }
 
