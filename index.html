@@ -1982,7 +1982,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .nc-body b { color: var(--danger); }
 .nc-foot { flex-wrap: wrap-reverse; }
 .nc-foot .btn { flex: 1 1 140px; }
-#ncGo { color: var(--danger); box-shadow: inset 0 0 0 1.5px var(--danger); }
+#ncGo { color: #5a1209; }   /* 進む＝金（全体の規則）。消える操作なので、文字は暗い赤 */
 #ncGo[disabled] { opacity: .5; }
 .set-list { display: grid; gap: 14px; margin: 6px 0 4px; }
 .set-row { display: grid; gap: 6px; }
@@ -2309,6 +2309,14 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 @media (max-height: 760px) { .orbit { transform: scale(0.62); margin: -44px 0 -40px; } .demo { transform: scale(0.86); transform-origin: top center; height: 78px; margin: 0; } .c-copy { display: none; } }
 @media (max-height: 700px) { .c-inner { gap: 8px; } .c-title { font-size: clamp(26px, 8.4vw, 36px); } .c-kicker { font-size: 12px; } .orbit { transform: scale(0.6); margin: -50px 0 -46px; } .demo { transform: scale(0.86); height: 78px; margin: 0 0 -6px; } }
 @media (max-height: 620px) { .demo { display: none; } .orbit { transform: scale(0.7); margin: -34px 0; } }
+/* 詳細系のダイアログ（敵の詳細・ログ）は、どの画面でも「右から出る側面シート」にそろえる。確認・選択系（設定・報酬・勝利・新規確認）は中央のダイアログ。v5.1.55
+   ※ 味方の詳細は、編成の入れ替え（仲間→入れ替え先をタップ）の途中で出すので、盤を隠さない吹き出しのまま */
+.sheet { left: auto; right: 0; top: 0; bottom: 0; width: min(92vw, 440px); max-height: none; margin: 0; border-radius: 10px 0 0 10px;
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(18px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) 18px;
+  box-shadow: inset 1px 0 0 var(--rule-a), -18px 0 40px -12px var(--shadow); animation: sheetin 0.32s cubic-bezier(.2, .9, .3, 1); }
+.sheet::before { display: none; }
+.ls-list { max-height: calc(100dvh - 110px); }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2426,7 +2434,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <button class="btn set-open" id="setBtn" type="button">設定</button>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
       <p class="install" id="installIos">全画面で遊ぶには、Safariの<b>共有</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>から<b>「ホーム画面に追加」</b></p>
-      <button class="btn big stack" id="beginTut" type="button"><em class="tag" id="tutTag">はじめての方はこちら</em><b class="disp">チュートリアル</b><small>操作しながら一つずつ覚える</small></button>
+      <button class="btn big stack" id="beginTut" type="button"><b class="disp">チュートリアル</b><small id="tutSub">操作しながら一つずつ覚える</small></button>
       <div class="c-skin" id="skinSel" role="group" aria-label="キャラの見た目" hidden><span>見た目</span><button type="button" data-skin="normal" aria-pressed="true">通常</button><button type="button" data-skin="hw" aria-pressed="false">ハロウィン</button></div>
     </div>
   </div>
@@ -2458,7 +2466,6 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 
 <div class="result help settings" id="settings" role="dialog" aria-modal="true" aria-labelledby="setTitle" hidden>
   <div class="r-card h-card set-card">
-    <button class="h-x" id="setX" type="button" aria-label="閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     <h2 class="disp" id="setTitle">設定</h2>
     <div class="set-list">
       <div class="set-row"><label for="setBgm"><b>BGM</b><output id="setBgmV">100</output></label><input type="range" id="setBgm" min="0" max="100" step="5" value="100"></div>
@@ -2487,7 +2494,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   <div class="r-card h-card set-card nc-card">
     <h2 class="disp" id="ncTitle">新しく始めますか？</h2>
     <p class="nc-body" id="ncBody"></p>
-    <div class="h-foot nc-foot"><button class="btn big" id="ncGo" type="button">記録を消して始める</button><button class="btn primary big" id="ncNo" type="button">やめる</button></div>
+    <div class="h-foot nc-foot"><button class="btn primary big" id="ncGo" type="button">記録を消して始める</button><button class="btn big" id="ncNo" type="button">やめる</button></div>
   </div>
 </div>
 
@@ -4093,7 +4100,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       '<span class="uc-grid">' +
       statTile('spd', '素早さ', u, ICON.bolt, 'var(--shield)', act) +
       statTile('atk', '攻撃', u, ICON.sword, 'var(--atk)', act) +
-      statTile('ranged', '間接', u, ICON.bow, 'var(--atk)', act) +
+      (u.ranged > 0 ? statTile('ranged', '間接', u, ICON.bow, 'var(--atk)', act) : '') +
       statTile('atkSup', '攻撃補助', u, '<i class="seal a">攻</i>', 'var(--accent)', act) +
       statTile('defSup', '防御補助', u, '<i class="seal d">防</i>', 'var(--shield)', act) +
       statTile('rest', '休んで回復', u, ICON.plus, 'var(--heal)', act) +
@@ -4167,7 +4174,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       '<div class="uc-grid pk-grid">' +
       statTile('spd', '素早さ', u, ICON.bolt, 'var(--shield)', act) +
       statTile('atk', '攻撃', u, ICON.sword, 'var(--atk)', act) +
-      statTile('ranged', '間接', u, ICON.bow, 'var(--atk)', act) +
+      (u.ranged > 0 ? statTile('ranged', '間接', u, ICON.bow, 'var(--atk)', act) : '') +
       statTile('atkSup', '攻撃補助', u, '<i class="seal a">攻</i>', 'var(--accent)', act) +
       statTile('defSup', '防御補助', u, '<i class="seal d">防</i>', 'var(--shield)', act) +
       statTile('rest', '休んで回復', u, ICON.plus, 'var(--heal)', act) + '</div>';
@@ -5106,7 +5113,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       '<div class="r-stars">' + [0, 1, 2].map((i) => '<i class="' + (i < got ? 'on' : '') + '" style="animation-delay:' + (0.35 + i * 0.18) + 's">' + STAR + '</i>').join('') + '</div>' +
       '<ul class="r-conds">' + conds.map((c) => '<li class="' + (c[0] ? 'ok' : '') + '"><i>' + (c[0] ? '✓' : '—') + '</i>' + c[1] + '</li>').join('') + '</ul>' +
       (mu ? '<div class="r-mvp"><span class="uc-disc c-' + mu.cls + '">' + face(mu) + '</span><span><small>いちばん活躍</small><b class="disp">' + mu.name + '</b></span><span class="r-num"><b class="disp">' + stats.dealt[mvp] + '</b><small>与ダメージ</small></span></div>' : '') +
-      '<p class="r-best">' + (run ? (win && run.node + 1 < (EXPM() ? EXP.nodes : RUN.nodes) && !EXPM() ? (got >= 3 ? '戦果★3　報酬が1つ増える' : '戦果★' + got + '　★3で報酬が1つ増える') + '　名声+' + got : '戦果★' + got) : (got > prev && prev > 0 ? 'ベスト更新！' : 'ベスト ★' + Math.max(got, prev))) + '　受けたダメージ ' + stats.taken + '</p>';
+      '<p class="r-best">' + (() => { const best = run ? (win && run.node + 1 < (EXPM() ? EXP.nodes : RUN.nodes) && !EXPM() ? (got >= 3 ? '戦果★3　報酬が1つ増える' : '戦果★' + got + '　★3で報酬が1つ増える') + '　名声+' + got : '') : (got > prev && prev > 0 ? 'ベスト更新！' : 'ベスト ★' + Math.max(got, prev)); return (best ? best + '　' : '') + '受けたダメージ ' + stats.taken; })() + '</p>';   // 遠征では「戦果★N」の文字は出さず、大きな★だけにする（v5.1.55）
     if (run) { run.lastStars = win ? got : 0; if (win) run.fame = (run.fame || 0) + got; }
     coverProgress();
     return got;
@@ -5390,7 +5397,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   const closeSet = () => { $('settings').hidden = true; try { if (setFrom && setFrom.focus) setFrom.focus(); } catch (e) { /* 戻せない */ } };
   $('setBtn').addEventListener('click', () => { SFX.tap(); openSet(); });
   $('helpSet').addEventListener('click', () => { SFX.tap(); openSet(); });
-  $('setX').addEventListener('click', closeSet); $('setClose').addEventListener('click', closeSet);
+  $('setClose').addEventListener('click', closeSet);
   $('settings').addEventListener('click', (ev) => { if (ev.target === $('settings')) closeSet(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('settings').hidden) { ev.stopPropagation(); closeSet(); } }, true);
   $('setBgm').addEventListener('input', () => { SET.bgm = $('setBgm').value / 100; $('setBgmV').textContent = $('setBgm').value; applySet(); setSave(); });
@@ -5726,7 +5733,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     document.body.classList.add('is-cover');
     coverProgress();
     Music.charge(false); Music.set('title');
-    $('tutTag').hidden = tutDone();
+    $('tutSub').textContent = tutDone() ? '操作しながら一つずつ覚える' : 'はじめての方はこちら　操作しながら覚える';
     try { $('begin').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ }
     if (bat0) toast(bat0.at === 'over' ? '戦闘のあとまで保存しました' : '戦闘の途中まで保存しました（ターン' + bat0.turn + '）');
   }
@@ -6107,7 +6114,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : { g: '休', t: '休息', s: '' }; }
     const tier = n.step <= 3 ? 0 : n.step <= 6 ? 1 : 2;
     if (n.kind === 'boss') return { g: '災', t: '決戦', s: '★★★★' };
-    return { g: '戦', t: n.kind === 'fort' ? (EXPM() ? '章の主' : '砦の戦い') : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
+    return { g: n.kind === 'fort' && EXPM() ? '主' : '戦', t: n.kind === 'fort' ? (EXPM() ? '章の主' : '砦の戦い') : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
   }
   function trackHTML() {
     const here = routeCur(), done = new Set(['start'].concat(run.path || []));
@@ -6126,7 +6133,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       mark += '<g class="' + cls + ' mk"' + (avail[id] != null ? ' data-pick="' + avail[id] + '"' : '') + '>' +
         '<circle class="seal" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="9.5"/>' + (st === 'here' ? '<circle class="halo" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="13"/>' : '') +
         '<text class="g" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 0.6).toFixed(1) + '">' + (st === 'done' ? '✓' : inf.g) + '</text>' +
-        '<text class="lb" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 21).toFixed(1) + '">' + inf.t + '</text>' + (inf.s && st !== 'done' ? '<text class="st" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 31).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';
+        (inf.s && st !== 'done' ? '<text class="st" x="' + p[0].toFixed(1) + '" y="' + (p[1] + 31).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';
       ROUTE.nodes[id].next.forEach((t) => {
         if (G.all.indexOf(t) < 0) return;
         const q = G.pt[t], taken = seq.indexOf(t) > 0 && seq[seq.indexOf(t) - 1] === id, go = id === here && avail[t] != null;
@@ -6714,10 +6721,10 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
     if (e.party) return { ico: '<span class="ev-var" style="--vf:none">' + PARTY_ART.statue + '</span>', t: '戦闘　' + e.name,
       d: '敵は3体（' + e.party.map((f) => f.name + ' HP' + f.hp + '・防御' + f.def + '・素早さ' + f.spd).join('／') + '）。倒す順番を考えるパズル戦。鎮守の像が生きている間、ほかの2体へのダメージは半分。勝てば報酬を4つから1つ。',
-      tags: [{ t: '第' + (e.ch + 1) + '章の敵', k: 'foe' }, { t: '3体', k: 'var' }, { t: e.party.map((f) => f.short + ' HP' + f.hp).join(' '), k: 'st' }, { t: '戦闘あり', k: 'bt' }] };
+      };   // 本文と同じ数字のピル（章・HP・防・戦闘あり）は付けない（v5.1.55）
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
       d: 'HP ' + e.hp + '　防御 ' + e.def + (e.variant && VARIANTS[e.variant].def ? '（亜種で+' + VARIANTS[e.variant].def + '）' : '') + '　素早さ ' + e.spd + '。' + (e.variant ? '亜種「' + VARIANTS[e.variant].pre.replace(/の$/, '') + '」：' + VARIANTS[e.variant].desc.replace(/^防御\+\d+。/, '') : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
-      tags: [{ t: last ? '最後の主' : chief ? '第' + (e.ch + 1) + '章の主' : '第' + (e.ch + 1) + '章の敵', k: 'foe' }].concat(e.variant ? [{ t: '亜種', k: 'var' }] : [], binds ? [{ t: '縛り', k: 'var' }] : [], [{ t: 'HP' + e.hp + ' 防' + e.def, k: 'st' }, { t: '戦闘あり', k: 'bt' }]) };
+      };   // 本文・題と同じ内容のピルは付けない。亜種・縛り・章の主は、題と本文に書いてある（v5.1.55）
   }
   function expShowMap(events) {
     phase = 'map';
@@ -6725,7 +6732,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     expSave();
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
-    const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する。報酬はなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', tags: [{ t: '戦闘なし', k: 'calm' }, { t: 'いまのHP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }] }));
+    const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する。報酬はなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', tags: [{ t: '戦闘なし', k: 'calm' }].concat(hpAvg() >= 100 ? [] : [{ t: 'いまのHP ' + hpAvg() + '%', k: hpAvg() <= 60 ? 'warn' : 'calm' }]) }));
     rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + relicLine() : relicLine(), events, cards,
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
@@ -6777,7 +6784,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id));
     if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
     const m = pick(run.members);
-    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.name + '（' + m.jname + '）の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
     cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
@@ -6945,7 +6952,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   $('resume').addEventListener('click', () => { actx(); Music.warm(); resumeExp(); });
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
-  $('tutTag').hidden = tutDone();
+  $('tutSub').textContent = tutDone() ? '操作しながら一つずつ覚える' : 'はじめての方はこちら　操作しながら覚える';
   coverProgress();
 
   // 縦画面の盤をできるだけ大きく。v5.1.46

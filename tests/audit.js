@@ -9,6 +9,11 @@
 //  C6. 「×½」の札は像の「肩代わり」だけ。防御アップ・次ターンの防の札は出ず、防の数字（現在の防御値）に統合
 //  C7. 常時表示に「その次」「1〜8」のような範囲がない。敵の詳細には「その次」がある。補助行の攻・防の札には数値が付く
 //  C8. ログは直近2行のまま、タップで全履歴（スクロール可・Escapeで閉じる）。案内（回す？維持する？）は別の枠。気力不足の説明はボタンの理由文言だけ（案内文・ログには出ない）
+//  C5. 地図の戦闘カードに、本文と同じ内容のピル（章・HP・防・戦闘あり）が付かない（ピル0個）
+//  C9. 回す＝常に金の主要（primary）、維持＝常に副次（気力が足りなくても入れ替わらない）。設定のダイアログの閉じる手段は1つ（×なし・「閉じる」）。
+//      新規開始の確認は「記録を消して始める」が金（進む）で、やめるが副次。ただし最初にフォーカスが当たるのは「やめる」のまま。詳細（敵・ログ）は右の側面シート
+//  C10. 地図のノードに分類の文字ラベルがなく、漢字のアイコンだけ。全快のとき休息カードに「いまのHP」のピルがない。遠征の勝利パネルに「戦果★」の文字がない（大きな★だけ）。
+//       突入技の強化カードの本文に仲間の名前が繰り返されない。間接のない味方の詳細に「間接」の行がない。タイトルのチュートリアルに重なるピルがなく、副文に統合
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"bench":1}';
@@ -144,6 +149,70 @@ async function open(b, w, h, kind, node) {
     await p.evaluate(() => document.getElementById('btnRotate').click()); await p.waitForTimeout(100);
     ok(await p.evaluate((n) => window.__rb.log.length === n, g.n0), 'C8 押せない「回す」を押しても、ログに気力不足の文は増えない');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  /* ---- C5・C9・C10 ---- */
+  {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300);
+    await p.click('#cover'); await p.waitForTimeout(250);
+    const tt = await p.evaluate(() => ({ tag: !!document.getElementById('tutTag'), sub: document.getElementById('beginTut').querySelector('small').textContent, pill: !!document.querySelector('#beginTut .tag') }));
+    ok(!tt.tag && !tt.pill && /はじめての方/.test(tt.sub), 'C10 タイトルのチュートリアルに重なるピルはなく、副文に統合（' + tt.sub + '）');
+    // 設定
+    await p.click('#setBtn'); await p.waitForTimeout(200);
+    const st = await p.evaluate(() => { const d = document.getElementById('settings'); return { x: !!document.getElementById('setX'), closers: [...d.querySelectorAll('button')].filter((x) => /閉じる/.test(x.textContent + (x.getAttribute('aria-label') || ''))).length }; });
+    ok(!st.x && st.closers === 1, 'C9 設定の閉じる手段は1つ（×なし・「閉じる」' + st.closers + '個）');
+    await p.click('#setClose'); await p.waitForTimeout(150);
+    // 地図
+    await p.click('#begin'); await p.waitForTimeout(600);
+    const mp = await p.evaluate(() => ({ lb: document.querySelectorAll('#rvTrack text.lb').length, gl: document.querySelectorAll('#rvTrack text.g').length, tags: [...document.querySelectorAll('#rvCards .rv-card')].map((c) => [c.querySelector('b').textContent, [...c.querySelectorAll('.rv-tags em')].map((e) => e.textContent)]) }));
+    ok(mp.lb === 0 && mp.gl > 3, 'C10 地図のノードは漢字アイコンのみ（文字ラベル ' + mp.lb + '、アイコン ' + mp.gl + '）');
+    const bt = mp.tags.filter((x) => /戦闘/.test(x[0])), rest = mp.tags.filter((x) => /休息/.test(x[0]));
+    ok(bt.length > 0 && bt.every((x) => x[1].length === 0), 'C5 戦闘カードにピルがない（' + JSON.stringify(bt.map((x) => x[1])) + '）');
+    ok(rest.every((x) => x[1].every((s) => !/いまの.*HP/.test(s))), 'C10 全快のとき休息カードに「いまのHP」のピルがない（' + JSON.stringify(rest.map((x) => x[1])) + '）');
+    await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
+    // 味方の詳細：間接のない味方
+    await p.click('#board .slot[data-r="0"][data-c="0"]'); await p.waitForTimeout(250);
+    const pk = await p.evaluate(() => document.getElementById('peek').textContent);
+    ok(!/間接/.test(pk) && /素早さ/.test(pk), 'C10 間接のない味方の詳細に「間接」の行がない');
+    await p.keyboard.press('Escape');
+    // 敵の詳細は右の側面シート
+    await p.evaluate(() => document.getElementById('stage').click()); await p.waitForTimeout(350);
+    const sh = await p.evaluate(() => { const s = getComputedStyle(document.getElementById('foeSheet')), r = document.getElementById('foeSheet').getBoundingClientRect(); return { pos: s.position, right: Math.round(innerWidth - r.right), top: Math.round(r.top), h: Math.round(r.height), vh: innerHeight, w: Math.round(r.width) }; });
+    ok(sh.pos === 'fixed' && sh.right === 0 && sh.top === 0 && sh.h === sh.vh && sh.w <= 440, 'C9 敵の詳細は右から出る側面シート（幅 ' + sh.w + '、高さ ' + sh.h + '）');
+    await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+    // 回す・維持
+    await p.click('#btnStart'); for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
+    const bt1 = await p.evaluate(() => ({ r: document.getElementById('btnRotate').className, s: document.getElementById('btnStay').className }));
+    await p.evaluate(() => { window.__rb.setGauge(0); });
+    const bt2 = await p.evaluate(() => ({ r: document.getElementById('btnRotate').className, s: document.getElementById('btnStay').className, dis: document.getElementById('btnRotate').disabled }));
+    ok(/primary/.test(bt1.r) && !/primary|only/.test(bt1.s) && /primary/.test(bt2.r) && !/primary|only/.test(bt2.s) && bt2.dis, 'C9 気力があってもなくても、回す＝主要（金）・維持＝副次。足りないときは「回す」が無効表示（' + bt2.r + ' / ' + bt2.s + '）');
+    // 報酬：突入技の強化に名前が繰り返されない
+    await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; }); });
+    await p.click('#btnStay'); for (let i = 0; i < 80; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden)) break; await p.waitForTimeout(150); }
+    const wp = await p.evaluate(() => document.querySelector('#result .r-best') ? document.querySelector('#result .r-best').textContent : '');
+    ok(!/戦果★/.test(wp) && /受けたダメージ/.test(wp), 'C10 勝利パネルに「戦果★」の文字がない（' + wp + '）');
+    await p.click('#next'); await p.waitForTimeout(600);
+    let rw = null;
+    for (let k = 0; k < 8 && !rw; k++) { rw = await p.evaluate(() => { const c = [...document.querySelectorAll('#rvCards .rv-card')].find((x) => /突入技の強化/.test(x.textContent)); return c ? { t: c.querySelector('b').textContent, d: c.querySelector('.rv-txt > span').textContent, names: window.__rb.run.members.map((m) => m.name) } : null; }); if (!rw) { await p.evaluate(() => { const R = window.__rb; R.expReward([]); }); await p.waitForTimeout(300); } }
+    ok(rw && rw.names.some((n) => rw.t.includes(n)) && !rw.names.some((n) => rw.d.includes(n)), 'C10 突入技の強化カード：名前は題だけで、本文に繰り返さない（' + (rw ? rw.t + ' / ' + rw.d : 'カードなし') + '）');
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  {
+    // 新規開始の確認
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const p = await ctx.newPage(); p.__errs = [];
+    await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(600);
+    await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
+    await p.evaluate(() => window.__rb.goTitle()); await p.waitForTimeout(600);
+    await p.click('#begin'); await p.waitForTimeout(500);
+    const nc = await p.evaluate(() => ({ open: !document.getElementById('newConf').hidden, go: document.getElementById('ncGo').className, no: document.getElementById('ncNo').className, focus: document.activeElement && document.activeElement.id }));
+    ok(nc.open && /primary/.test(nc.go) && !/primary/.test(nc.no) && nc.focus === 'ncNo', 'C9 新規確認：「記録を消して始める」が金（進む）、「やめる」が副次。最初のフォーカスは「やめる」のまま（' + nc.go + ' / ' + nc.no + ' / ' + nc.focus + '）');
+    await p.close(); await ctx.close();
   }
   await b.close();
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
