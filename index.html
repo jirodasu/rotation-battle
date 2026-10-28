@@ -588,6 +588,9 @@ body.boss-stage .en-u b { color: var(--ink); }
 /* ---------- ボタン ---------- */
 .dock { margin-top: auto; display: flex; gap: 12px; padding: 12px 0 calc(8px + env(safe-area-inset-bottom, 0px)); min-height: 84px; }
 .dock[hidden], .btn[hidden] { display: none; }
+.btn.skip { flex: 1; font-size: 14px; opacity: 0.9; }
+.fx .flash, .flash { position: fixed; inset: 0; background: #fff; pointer-events: none; opacity: 0; z-index: 60; }
+:root .pop.sub.fin { font-weight: 900; font-size: 22px; color: #3a2400; background: #ffe9a8; box-shadow: 0 3px 0 #b8892a; padding: 4px 16px; animation: popbig 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
 .btn {
   --b: var(--paper); --bd: var(--paper-line);
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; min-height: 56px; padding: 0 14px; white-space: nowrap; border: 0; border-radius: 18px;
@@ -2282,6 +2285,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       回す
     </button>
     <button class="btn primary" id="btnStart" type="button" hidden>戦闘開始</button>
+    <button class="btn skip" id="btnSkip" type="button" aria-label="この演出を飛ばして先へ進む" hidden>演出を飛ばす ▶▶</button>
     <button class="btn primary" id="btnRotate" type="button" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="rot-lbl">回す</span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span>
@@ -2322,7 +2326,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.50</p>
+    <p class="c-ver" id="cVer">ver 5.1.51</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2470,13 +2474,14 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   /* 戦闘2倍速：待ち時間と演出（Web Animations・CSS）をまとめて速くする。戦闘の進行中だけ効く */
   let SPD = 1;
   try { if (localStorage.getItem('rb-fast') === '1') SPD = 2; } catch (e) { /* 保存できない環境 */ }
-  const wait = (ms) => sleep((RM ? Math.min(ms, 80) : ms) / SPD);
+  let SKIP = false;   // 「演出を飛ばす」：このターンの残りの待ち時間と演出をほぼ省く（次の判断の場面で戻る）。v5.1.51
+  const wait = (ms) => sleep((SKIP ? Math.min(ms, 24) : RM ? Math.min(ms, 80) : ms) / SPD);
   (function () {
     const orig = Element.prototype.animate;
     if (!orig) return;
     Element.prototype.animate = function () {
       const a = orig.apply(this, arguments);
-      try { if (SPD !== 1 && (phase === 'resolve' || phase === 'choose')) a.playbackRate = SPD; } catch (e) { /* 対象外 */ }
+      try { const rate = SKIP ? 8 : SPD; if (rate !== 1 && (phase === 'resolve' || phase === 'choose')) a.playbackRate = rate; } catch (e) { /* 対象外 */ }
       return a;
     };
   })();
@@ -2648,7 +2653,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.50';
+  const APP_VERSION = '5.1.51';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2939,6 +2944,10 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       INST.bell(t + 0.4, MOTIF[rotIdx % 3] + 12, 0.16, bus.sfx);
       rotIdx = (rotIdx + 1) % 3;
     },
+    // 大技の着弾：低く重い一撃＋短い衝撃音（通常の被弾より長く、低い）
+    smash() { if (!can()) return; duck(0.5, 0.5); const t = now(); INST.thud(t, 1, bus.sfx, 220); INST.thud(t + 0.03, 0.8, bus.sfx, 70); INST.snare(t, 0.22, bus.sfx); INST.pizz(t + 0.03, 40, 0.5, bus.sfx, 0.12); INST.swish(t, 0.2, 0.1, bus.sfx, 3000, 300); },
+    // とどめ：重い一打のあと、鐘が明るく抜ける（終わりの合図）
+    finish() { if (!can()) return; duck(0.45, 1.0); const t = now(); INST.thud(t, 1, bus.sfx, 200); INST.snare(t, 0.2, bus.sfx); [0, 0.08, 0.16].forEach((s, i) => INST.bell(t + 0.05 + s, [84, 88, 91][i], 0.14, bus.sfx, 0.8)); },
     down() { if (!can()) return; const t = now(); [69, 65, 62].forEach((m, i) => INST.pizz(t + i * 0.12, m, 0.4, bus.sfx, 0.3)); INST.thud(t, 0.5, bus.sfx, 120); },
     win() {
       if (!can()) return; duck(0.35, 2.2); const t = now() + 0.05, b = 60 / 120;
@@ -4191,7 +4200,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     $('btnStay').hidden = phase !== 'choose';
     $('btnPreview').hidden = phase !== 'choose';
     $('btnPreview').setAttribute('aria-pressed', String(previewOn));
-    $('dock').style.visibility = (phase === 'resolve' || phase === 'over') ? 'hidden' : 'visible';
+    $('btnSkip').hidden = phase !== 'resolve' || !!tut;
+    $('dock').style.visibility = (phase === 'over' || (phase === 'resolve' && $('btnSkip').hidden)) ? 'hidden' : 'visible';
     tutRefresh();
     $('homeBtn').disabled = phase === 'resolve' && !(tut && tut.noteDone);
   }
@@ -4219,6 +4229,41 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-a) + 'px)' }, { transform: 'translateX(' + a + 'px)' }, { transform: 'translateX(' + (-a * 0.6) + 'px)' }, { transform: 'translateX(0)' }], { duration: 340, easing: 'ease-out' });
   }
   function flashBright(el) { anim(el, [{ filter: 'brightness(1.9) saturate(.6)' }, { filter: 'none' }], { duration: 260 }); }
+  /* ---- 大技・とどめの演出（v5.1.51）：通常 < 大技 < とどめ の順に、重さを付ける ----
+     ヒットストップ（着弾の瞬間に動きを止める）・画面の揺れ・白いフラッシュ・のけぞり・音と振動。
+     「動きを減らす」設定では、揺れ・フラッシュ・ヒットストップは出さない（anim が何もしない）。フラッシュは1回に1度だけ（点滅を連打しない） */
+  async function hitStop(ms) {
+    if (RM || SKIP || !document.getAnimations) return;
+    const run = document.getAnimations().filter((a) => a.playState === 'running');
+    run.forEach((a) => { try { a.pause(); } catch (e) { /* 対象外 */ } });
+    await sleep(ms / SPD);
+    run.forEach((a) => { try { if (a.playState === 'paused') a.play(); } catch (e) { /* 対象外 */ } });
+  }
+  function screenShake(amp, ms) {
+    const a = amp || 8;
+    anim($('app'), [{ transform: 'translate(0, 0)' }, { transform: 'translate(' + (-a) + 'px, ' + (a * 0.5) + 'px)' }, { transform: 'translate(' + a + 'px, ' + (-a * 0.4) + 'px)' }, { transform: 'translate(' + (-a * 0.6) + 'px, ' + (a * 0.2) + 'px)' }, { transform: 'translate(0, 0)' }], { duration: ms || 320, easing: 'ease-out' });
+  }
+  function whiteFlash(op, ms) {
+    if (RM) return;
+    const i = document.createElement('i'); i.className = 'flash'; $('fx').appendChild(i);
+    anim(i, [{ opacity: op }, { opacity: 0 }], { duration: ms || 240, easing: 'ease-out', fill: 'forwards' });
+    setTimeout(() => i.remove(), (ms || 240) / SPD + 200);
+  }
+  function knockback(el, dist) {
+    anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (dist || 12) + 'px) scale(.9)', offset: 0.22 }, { transform: 'translateY(' + (-(dist || 12) / 4) + 'px) scale(1.03)', offset: 0.6 }, { transform: 'translateY(0) scale(1)' }], { duration: 420, easing: 'ease-out' });
+  }
+  // とどめ：最後の一撃だけの特別な演出（約0.5秒）。敵の絵が白く光って砕けるように広がって消える
+  async function finisherFX(ea) {
+    SFX.finish(); vib([30, 40, 90]);
+    whiteFlash(0.5, 300); screenShake(10, 360);
+    const art = ea && (ea.firstElementChild || ea);
+    anim(art, [{ filter: 'brightness(1)', transform: 'scale(1)', opacity: 1 }, { filter: 'brightness(2.6)', transform: 'scale(1.06)', opacity: 1, offset: 0.3 }, { filter: 'brightness(3.2)', transform: 'scale(1.28)', opacity: 0 }], { duration: 520, easing: 'ease-out', fill: 'forwards' });
+    const c = center(ea);
+    sparks(c.x, c.y, '#ffe9a8', 26); sparks(c.x, c.y, '#fff7de', 12);
+    popAt(ea, 'とどめ！', 'sub fin', -52, 0);
+    await hitStop(90);
+    await wait(430);
+  }
   function lunge(el, dist) {
     anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (-(dist || 24)) + 'px) scale(1.12)', offset: 0.38 }, { transform: 'translateY(0) scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,.7,.3,1)' });
   }
@@ -4613,7 +4658,9 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     popAt(ea, u.name + '　' + power + (tired ? '（疲労½）' : '') + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
     const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
     if (!enemy.party) renderEnemy(false);
-    await wait(460);
+    const fin = T.hp <= 0 && foeList().every((f) => f === T || f.hp <= 0);   // これが最後の一撃（とどめ）
+    await wait(fin ? 200 : 460);
+    if (fin) { say(u.name + 'がとどめを刺した。'); await finisherFX(foeEl(T)); finish('win'); return; }
     if (enemy.party) renderEnemy(false);   // 3体のパネルは、ゆれの演出が終わってから数字を更新する（作り直すと演出が消えるため）
     if (T.hp <= 0) {
       if (!enemy.party) { say(u.name + 'がとどめを刺した。'); finish('win'); return; }
@@ -4626,7 +4673,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     }
   }
 
-  async function hitColumn(col, dmg, pierce) {
+  async function hitColumn(col, dmg, pierce, big) {
     const row = frontRow();
     if (row < 0 || !grid[row][col]) return;
     const v = grid[row][col], before = pct(v);
@@ -4652,10 +4699,16 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     say(v.name + 'に' + d + 'ダメージ' + note);
     renderBoard(); renderBook();
     const el = tokEl(row, col);
-    animRing(el, before, pct(v)); shake(el, 7); flashBright(el.querySelector('.disc'));
-    popAt(el, '-' + d, 'dmg'); SFX.hurt(); vib(24);
-    const cc = center(el); sparks(cc.x, cc.y, '#ff8a72', 8);
-    await wait(480);
+    animRing(el, before, pct(v)); shake(el, big ? 12 : 7); flashBright(el.querySelector('.disc'));
+    popAt(el, '-' + d, big ? 'dmg big' : 'dmg');
+    const cc = center(el);
+    if (big) {   // 大技：ヒットストップ・画面の揺れ・白いフラッシュ・のけぞり・重い音と長い振動
+      SFX.smash(); vib([40, 30, 60]);
+      whiteFlash(0.32, 240); screenShake(9, 340); knockback(el, 16);
+      sparks(cc.x, cc.y, '#ff8a72', 18); sparks(cc.x, cc.y, '#ffd9a0', 8);
+      await hitStop(100);
+    } else { SFX.hurt(); vib(24); sparks(cc.x, cc.y, '#ff8a72', 8); }
+    await wait(big ? 400 : 480);
     if (v.hp === 0) {
       say(v.name + 'が倒れた…');
       SFX.down();
@@ -4737,19 +4790,19 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
         const fr = frontRow();
         if (fr < 0) return;
         const L = units().filter((x) => x.r === fr);
-        await hitColumn(L[Math.floor(Math.random() * L.length)].c, act.dmg, act.pierce);
+        await hitColumn(L[Math.floor(Math.random() * L.length)].c, act.dmg, act.pierce, wasCharged || act.big);
       }
       return;
     }
     const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
     for (const col of cols) {
       if (phase === 'over') return;
-      await hitColumn(col, act.dmg, act.pierce);
+      await hitColumn(col, act.dmg, act.pierce, wasCharged || act.big);
     }
   }
 
   async function runTurn() {
-    previewOn = false; hitSeq = 0;
+    previewOn = false; hitSeq = 0; SKIP = false;
     phase = 'resolve';
     Music.set('resolve');
     sel = null; inspect = null;
@@ -4773,7 +4826,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     units().forEach(({ u }) => { u.entered = false; });
     entryNow = {};
     order = []; orderIdx = -1;
-    phase = 'choose';
+    phase = 'choose'; SKIP = false;
     Music.set('choose');
     battleSave('choose');
     render();
@@ -5160,6 +5213,12 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const b = $('btnRotate'); if (!b.disabled || b.hidden || e.target.closest('button')) return;
     const r = b.getBoundingClientRect();
     if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) rotDenied();
+  });
+  // 演出を飛ばす：このターンの残りの待ち時間と動きを一気に進める（敵のタップは詳細表示のまま、競合しない）
+  $('btnSkip').addEventListener('click', () => {
+    if (phase !== 'resolve' || SKIP) return;
+    SKIP = true; $('btnSkip').hidden = true; $('dock').style.visibility = 'hidden';
+    try { document.getAnimations().forEach((a) => { try { a.playbackRate = 8; } catch (e) { /* 対象外 */ } }); } catch (e) { /* 非対応 */ }
   });
   $('btnRotate').addEventListener('click', () => { if (!tutBtnOk('btnRotate')) { tutNudge(); return; } choose(true); tutAdvance(); });
   $('btnStay').addEventListener('click', () => { if (!tutBtnOk('btnStay')) { tutNudge(); return; } choose(false); tutAdvance(); });
