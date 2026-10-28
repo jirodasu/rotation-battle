@@ -588,6 +588,9 @@ body.boss-stage .en-u b { color: var(--ink); }
 /* ---------- ボタン ---------- */
 .dock { margin-top: auto; display: flex; gap: 12px; padding: 12px 0 calc(8px + env(safe-area-inset-bottom, 0px)); min-height: 84px; }
 .dock[hidden], .btn[hidden] { display: none; }
+.btn.skip { flex: 1; font-size: 14px; opacity: 0.9; }
+.fx .flash, .flash { position: fixed; inset: 0; background: #fff; pointer-events: none; opacity: 0; z-index: 60; }
+:root .pop.sub.fin { font-weight: 900; font-size: 22px; color: #3a2400; background: #ffe9a8; box-shadow: 0 3px 0 #b8892a; padding: 4px 16px; animation: popbig 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
 .btn {
   --b: var(--paper); --bd: var(--paper-line);
   display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; min-height: 56px; padding: 0 14px; white-space: nowrap; border: 0; border-radius: 18px;
@@ -687,6 +690,25 @@ body.boss-stage .en-u b { color: var(--ink); }
 .orbit .core { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px; color: var(--accent); filter: drop-shadow(0 3px 0 rgba(35, 49, 74, 0.3)); animation: spin 8s linear infinite reverse; }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes counter { to { transform: rotate(-360deg); } }
+.demo { position: relative; width: 236px; height: 90px; margin: 6px 0 0; --rh: 28px; --rg: 3px; }
+.d-row { position: absolute; left: 0; right: 0; height: var(--rh); border-radius: 12px; background: var(--paper); box-shadow: inset 0 0 0 1.5px var(--paper-line); display: flex; align-items: center; padding-left: 11px; }
+.d-row.d-0 { top: 0; } .d-row.d-1 { top: calc(var(--rh) + var(--rg)); } .d-row.d-2 { top: calc((var(--rh) + var(--rg)) * 2); }
+.d-0 { background: color-mix(in srgb, var(--atk, #b4473a) 22%, var(--paper)); }
+.d-1 { background: color-mix(in srgb, var(--sup, #73579b) 22%, var(--paper)); }
+.d-2 { background: color-mix(in srgb, var(--heal, #478455) 22%, var(--paper)); }
+.d-lbl { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink); opacity: 0.9; }
+.d-row.hit { animation: dhit 0.7s ease-out; }
+@keyframes dhit { 0% { box-shadow: inset 0 0 0 1.5px var(--paper-line), 0 0 0 0 rgba(255, 220, 150, 0.9); } 100% { box-shadow: inset 0 0 0 1.5px var(--paper-line), 0 0 0 9px rgba(255, 220, 150, 0); } }
+.d-tok { position: absolute; right: 14px; top: 0; width: 24px; height: 24px; margin-top: 2px; border-radius: 50%; overflow: hidden; background: var(--c, var(--paper)); box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px var(--paper-line);
+  transform: translateY(calc(var(--p) * (var(--rh) + var(--rg)))); transition: transform 0.9s cubic-bezier(.5, 0, .2, 1); }
+.d-tok svg { display: block; width: 100%; height: 100%; }
+#dt1 { --c: var(--tank); } #dt2 { --c: var(--sup); } #dt3 { --c: var(--heal); }
+.d-tok.wrap { transition-duration: 0.9s; }
+.d-tok.lead { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px #e8b94a, 0 0 12px 2px rgba(232, 185, 74, 0.7); }
+@media (prefers-reduced-motion: reduce) { .d-tok { transition: none; } .d-row.hit { animation: none; } }
+@media (max-height: 900px) { .orbit { transform: scale(0.8); margin: -22px 0; } }
+@media (max-height: 760px) { .orbit { transform: scale(0.62); margin: -44px 0 -40px; } .demo { transform: scale(0.86); transform-origin: top center; height: 78px; margin: 0; } .c-copy { display: none; } }
+@media (max-height: 620px) { .demo { display: none; } .orbit { transform: scale(0.7); margin: -34px 0; } }
 .c-copy { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink); }
 .result { z-index: 45; background: var(--scrim); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
 .result[hidden] { display: none; }
@@ -2070,7 +2092,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .pc-art svg { width: 100%; height: auto; display: block; }
 .pc-id b { display: block; font-size: 16px; }
 .pc-id small { display: block; font-size: 12px; color: var(--ink-soft); }
-@media (max-height: 760px) {
+@media (max-height: 760px) and (orientation: portrait), (max-height: 560px) {
   .fc-art { display: none; }
 }
 @media (min-height: 800px) { .fc-art { height: 62px; } }
@@ -2149,16 +2171,119 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 @media (max-height: 700px) { .app.fit .ehp { top: 38px; } }
 /* 三位一体のパネル：文字の行は縮めず、先に小さな絵が縮む（状態の札が行動の行に重ならない）。v5.1.46 */
 .fc > * { flex-shrink: 0; }
-.fc > .fc-art { flex: 0 1 36px; min-height: 18px; height: auto; }
+.fc > .fc-art { flex: 0 1 clamp(36px, 70cqw, 120px); min-height: 18px; height: auto; position: relative; overflow: hidden; }
+.fc > .fc-art svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; }
+/* ===== v5.1.53 更新7：複数敵のカード ＝ 主な情報（HP・次の行動・与ダメージ）を大きく、副次（速・防・状態）を補助に。高さは中身に合わせ、余った高さは絵に回す ===== */
+.stage.trio .foes { align-items: flex-start; }
+.fc { max-height: 100%; }
+.fc-hp { flex: none; height: 18px; line-height: 18px; border-radius: 9px; } .fc-hp i { border-radius: 9px; }
+.fc-hp u { font-size: 13px; line-height: 18px; } .fc-hp u small { font-size: 11px; }
+.fc-act { min-height: 20px; font-size: 12px; } .fc-act b { font-size: 13px; }
+.fc-dmg b { font-size: 17px; } .fc-dmg { font-size: 12px; }
+.fc-sub { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 6px; }
+.fc-sub .fc-def { font-size: 11px; font-weight: 700; color: var(--ink-soft); } .fc-sub .fc-def small { font-size: 10.5px; }
+.fc-sub .fc-st { display: contents; }
+/* 「文字の大きさ：大」：主な情報をさらに大きく（背の高い画面だけ。低い画面は切れないことを優先） */
+@media (min-height: 761px) {
+  html[data-text="lg"] .fc-nm { font-size: 14px; } html[data-text="lg"] .fc-hp u { font-size: 14px; }
+  html[data-text="lg"] .fc-act { font-size: 13px; min-height: 22px; } html[data-text="lg"] .fc-act b { font-size: 14px; }
+  html[data-text="lg"] .fc-dmg b { font-size: 19px; } html[data-text="lg"] .fc-sub .fc-def { font-size: 12px; }
+}
+/* 背の低い画面（スマホ縦など）は、これまでの大きさに戻して、行を詰める（切れないことを優先） */
+@media (max-height: 760px) and (orientation: portrait), (max-height: 560px) {
+  .fc-hp { height: 15px; line-height: 15px; } .fc-hp u { font-size: 11px; line-height: 15px; } .fc-hp u small { font-size: 10.5px; }
+  .fc-act { min-height: 17px; font-size: 11px; } .fc-act b { font-size: 12px; }
+  .fc-dmg b { font-size: 14px; } .fc-dmg { font-size: 11px; }
+  .fc-sub { gap: 1px 5px; } .fc-sub .fc-def, .fc-sub .fc-def small { font-size: 10.5px; line-height: 1.1; }
+}
+@media (max-height: 640px) {
+  .fc { padding: 2px 3px; } .fc-chip { height: 13px; font-size: 10.5px; } .fc-sub .fc-def, .fc-sub .fc-def small { font-size: 10.5px; } .fc-sub { gap: 0 4px; }
+  .fc-act { min-height: 15px; } .fc-hp { height: 14px; line-height: 14px; } .fc-hp u { line-height: 14px; } .fc-nm { line-height: 1.05; }
+}
+/* 勝利・報酬・地図のパネルを出している間は、背面の戦闘表示（旧HP・撃破済みの敵・次の行動）を読めなくする。v5.1.47
+   スキンの絵（.scene）は残すので、ぼかした背景はそのまま。あそびかた・設定は戦闘を見ながら開くものなので対象外 */
+body:has(#result:not([hidden]), #runv:not([hidden])) .app { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s, visibility 0s 0.25s; }
+/* 短い通知（保存したとき・途中から再開したとき）。v5.1.48 */
+.toast { position: fixed; left: 16px; right: 16px; margin: 0 auto; width: fit-content; top: calc(env(safe-area-inset-top, 0px) + 10px); z-index: 90; max-width: 420px; transform: translateY(-6px); padding: 10px 18px 11px; border-radius: 3px; background: var(--paper); color: var(--ink); border: 1px solid var(--accent); box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), inset 0 0 0 3px var(--paper), inset 0 0 0 4px var(--rule-a, rgba(216, 182, 96, 0.35)); font: 700 14px/1.5 var(--sans); letter-spacing: 0.04em; text-align: center; opacity: 0; pointer-events: none; transition: opacity 0.25s, transform 0.25s; }
+.toast.on { opacity: 1; transform: none; }
+.toast[hidden] { display: none; }
+.toast b { color: var(--accent-text, var(--accent)); font-weight: 800; }
+@media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+/* 戦闘のあとの回復の説明（勝利パネルの一文・報酬パネルの「+N」札と一文）。v5.1.49 */
+.r-heal, .rv-heal-note { margin: 0; max-width: 30em; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); text-align: center; }
+.r-heal[hidden], .rv-heal-note[hidden] { display: none; }
+.rv-m { position: relative; }
+.rv-m .rv-heal { position: absolute; top: -7px; right: -3px; z-index: 2; padding: 2px 5px 3px; border-radius: 8px; background: #9bd8b3; color: #0f2a1b; font: 800 11px/1 var(--sans); font-style: normal; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 2px var(--paper); }
+
+/* ---- 章ごとの背景（v5.1.50）：背景の絵の上に、章の重ね絵を重ねる。章が変わると、ゆっくり入れ替わる ----
+   第1章 祈りの間＝蝋燭の暖かい灯と、窓から差す光／第2章 貝殻の書庫＝青緑の水と書架・貝／第3章 竜の眠る祭壇＝赤紫の祭壇と鱗・燃えさし。
+   文字の下は暗く保つ（重ね絵は薄く、下の1/3は何も描かない）。最後の戦い（boss-stage）は従来の毒の色のまま */
+.chl { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity 1.6s ease; }
+.chl::before, .chl::after { content: ""; position: absolute; pointer-events: none; }
+body[data-ch="0"] .chl.c0, body[data-ch="1"] .chl.c1, body[data-ch="2"] .chl.c2 { opacity: 1; }
+body.boss-stage[data-ch] .chl.chl { opacity: 0; }
+@media (prefers-reduced-motion: reduce) { .chl { transition: none; } }
+/* 第1章：祈りの間 */
+.chl.c0 { background:
+  radial-gradient(58% 36% at 50% 24%, rgba(255, 184, 96, 0.24), transparent 72%),
+  linear-gradient(180deg, rgba(64, 40, 22, 0.52), rgba(44, 30, 34, 0.30) 58%, rgba(22, 18, 28, 0.46)); }
+.chl.c0::before { left: 0; right: 0; top: 0; height: calc(var(--hz) + 30px); opacity: 0.9;
+  background: repeating-linear-gradient(104deg, rgba(255, 206, 130, 0.085) 0 16px, transparent 16px 54px);
+  -webkit-mask-image: linear-gradient(180deg, #000 10%, transparent 92%); mask-image: linear-gradient(180deg, #000 10%, transparent 92%); }
+.chl.c0::after { left: 0; right: 0; top: calc(var(--hz) - 92px); height: 120px; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='120' viewBox='0 0 96 120'><defs><radialGradient id='g' cx='50%' cy='50%' r='50%'><stop offset='0' stop-color='%23ffd28a' stop-opacity='.55'/><stop offset='1' stop-color='%23ffb060' stop-opacity='0'/></radialGradient></defs><g><circle cx='14' cy='56' r='20' fill='url(%23g)'/><rect x='9' y='64' width='10' height='56' rx='1.5' fill='%233b2c26'/><path d='M14 44c4 5 5 9 0 13-5-4-4-8 0-13z' fill='%23ffcf86'/><circle cx='46' cy='34' r='24' fill='url(%23g)'/><rect x='41' y='44' width='10' height='76' rx='1.5' fill='%2343322a'/><path d='M46 21c4.5 5.5 5.5 10 0 14.5-5.5-4.5-4.5-9 0-14.5z' fill='%23ffd691'/><circle cx='78' cy='64' r='18' fill='url(%23g)'/><rect x='73' y='72' width='10' height='48' rx='1.5' fill='%233b2c26'/><path d='M78 53c3.5 4.5 4.5 8 0 11.5-4.5-3.5-3.5-7 0-11.5z' fill='%23ffc97c'/></g></svg>") repeat-x left bottom / 96px 120px; opacity: 0.78; animation: candle 3.4s ease-in-out infinite alternate; }
+@keyframes candle { 0% { opacity: 0.66; } 45% { opacity: 0.86; } 100% { opacity: 0.74; } }
+/* 第2章：貝殻の書庫 */
+.chl.c1 { background:
+  radial-gradient(52% 34% at 30% 22%, rgba(120, 224, 222, 0.18), transparent 70%),
+  linear-gradient(180deg, rgba(6, 46, 56, 0.74), rgba(10, 62, 72, 0.46) 58%, rgba(6, 34, 42, 0.66)); }
+.chl.c1::before { left: 0; right: 0; top: 0; height: calc(var(--hz) + 40px);
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='210' viewBox='0 0 64 210'><rect width='64' height='210' fill='%230b2a32' fill-opacity='.55'/><g stroke='%230a1e24' stroke-width='2'><rect x='4' y='8' width='8' height='54' fill='%232f7f86'/><rect x='13' y='14' width='6' height='48' fill='%233c9aa0'/><rect x='20' y='6' width='10' height='56' fill='%2325636b'/><rect x='31' y='18' width='7' height='44' fill='%234aa8a2'/><rect x='39' y='10' width='9' height='52' fill='%232c7078'/><rect x='49' y='16' width='8' height='46' fill='%2337898e'/><rect x='4' y='78' width='9' height='54' fill='%233c9aa0'/><rect x='14' y='84' width='7' height='48' fill='%232a6c74'/><rect x='22' y='76' width='10' height='56' fill='%234aa8a2'/><rect x='33' y='88' width='8' height='44' fill='%232f7f86'/><rect x='42' y='80' width='7' height='52' fill='%233c9aa0'/><rect x='50' y='86' width='8' height='46' fill='%2325636b'/><rect x='4' y='148' width='7' height='54' fill='%232c7078'/><rect x='12' y='154' width='9' height='48' fill='%234aa8a2'/><rect x='22' y='146' width='8' height='56' fill='%2337898e'/><rect x='31' y='158' width='10' height='44' fill='%233c9aa0'/><rect x='42' y='150' width='7' height='52' fill='%232f7f86'/><rect x='50' y='156' width='8' height='46' fill='%232a6c74'/></g><g fill='%2306161a'><rect y='62' width='64' height='6'/><rect y='132' width='64' height='6'/><rect y='202' width='64' height='8'/></g></svg>") no-repeat left top / 64px 210px, url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='210' viewBox='0 0 64 210'><rect width='64' height='210' fill='%230b2a32' fill-opacity='.55'/><g stroke='%230a1e24' stroke-width='2'><rect x='4' y='8' width='8' height='54' fill='%232f7f86'/><rect x='13' y='14' width='6' height='48' fill='%233c9aa0'/><rect x='20' y='6' width='10' height='56' fill='%2325636b'/><rect x='31' y='18' width='7' height='44' fill='%234aa8a2'/><rect x='39' y='10' width='9' height='52' fill='%232c7078'/><rect x='49' y='16' width='8' height='46' fill='%2337898e'/><rect x='4' y='78' width='9' height='54' fill='%233c9aa0'/><rect x='14' y='84' width='7' height='48' fill='%232a6c74'/><rect x='22' y='76' width='10' height='56' fill='%234aa8a2'/><rect x='33' y='88' width='8' height='44' fill='%232f7f86'/><rect x='42' y='80' width='7' height='52' fill='%233c9aa0'/><rect x='50' y='86' width='8' height='46' fill='%2325636b'/><rect x='4' y='148' width='7' height='54' fill='%232c7078'/><rect x='12' y='154' width='9' height='48' fill='%234aa8a2'/><rect x='22' y='146' width='8' height='56' fill='%2337898e'/><rect x='31' y='158' width='10' height='44' fill='%233c9aa0'/><rect x='42' y='150' width='7' height='52' fill='%232f7f86'/><rect x='50' y='156' width='8' height='46' fill='%232a6c74'/></g><g fill='%2306161a'><rect y='62' width='64' height='6'/><rect y='132' width='64' height='6'/><rect y='202' width='64' height='8'/></g></svg>") no-repeat right top / 64px 210px; opacity: 0.55;
+  -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent); mask-image: linear-gradient(180deg, #000 55%, transparent); }
+.chl.c1::after { left: 0; right: 0; top: calc(var(--hz) - 34px); bottom: 0;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='28' viewBox='0 0 120 28'><path d='M0 14c10-9 20-9 30 0s20 9 30 0 20-9 30 0 20 9 30 0' fill='none' stroke='%238fe3e0' stroke-opacity='.5' stroke-width='1.6'/><path d='M0 22c10-9 20-9 30 0s20 9 30 0 20-9 30 0 20 9 30 0' fill='none' stroke='%238fe3e0' stroke-opacity='.22' stroke-width='1.2'/></svg>") repeat-x left top / 120px 28px, linear-gradient(180deg, rgba(40, 150, 160, 0.20), rgba(10, 60, 70, 0.34) 70%);
+  animation: tide 7s linear infinite; }
+@keyframes tide { to { background-position: 120px 0, 0 0; } }
+/* 第3章：竜の眠る祭壇 */
+.chl.c2 { background:
+  radial-gradient(60% 38% at 70% 18%, rgba(255, 96, 64, 0.20), transparent 70%),
+  linear-gradient(180deg, rgba(66, 14, 30, 0.62), rgba(48, 16, 36, 0.40) 56%, rgba(26, 8, 22, 0.60)); }
+.chl.c2::before { left: 0; right: 0; top: 0; height: calc(var(--hz) + 20px); background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='30' viewBox='0 0 44 30'><g fill='none' stroke='%23ff8a66' stroke-opacity='.30' stroke-width='1.3'><path d='M0 15a11 11 0 0 0 22 0a11 11 0 0 0 22 0'/><path d='M-11 0a11 11 0 0 0 22 0a11 11 0 0 0 22 0a11 11 0 0 0 22 0'/><path d='M-11 30a11 11 0 0 0 22 0a11 11 0 0 0 22 0a11 11 0 0 0 22 0'/></g></svg>") repeat left top / 44px 30px; opacity: 0.8;
+  -webkit-mask-image: linear-gradient(180deg, #000 6%, transparent 88%); mask-image: linear-gradient(180deg, #000 6%, transparent 88%); }
+.chl.c2::after { left: 0; right: 0; top: calc(var(--hz) - 76px); height: 110px; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='390' height='110' viewBox='0 0 390 110' preserveAspectRatio='none'><defs><radialGradient id='f' cx='50%' cy='100%' r='60%'><stop offset='0' stop-color='%23ff7a3a' stop-opacity='.7'/><stop offset='1' stop-color='%23ff4a2a' stop-opacity='0'/></radialGradient></defs><ellipse cx='195' cy='42' rx='120' ry='46' fill='url(%23f)'/><path d='M0 110V86H70V74H120V60H160V46H230V60H270V74H320V86H390V110Z' fill='%2312060e' fill-opacity='.82'/><path d='M0 86H70V74H120V60H160V46H230V60H270V74H320V86H390M160 46V60M230 46V60' fill='none' stroke='%23ff8a66' stroke-opacity='.28' stroke-width='1.4'/><path d='M195 46c9-14 10-24 0-34-10 10-9 20 0 34z' fill='%23ffb066'/><path d='M195 46c4-7 5-13 0-19-5 6-4 12 0 19z' fill='%23ffe3a6'/></svg>") no-repeat center bottom / 100% 110px; animation: candle 2.6s ease-in-out infinite alternate; }
+/* 太陽（薔薇窓の光輪）も章で変える */
+:root[data-skin="goth"] body[data-ch="0"]:not(.boss-stage) .sun { border-color: rgba(255, 214, 150, .5); box-shadow: 0 0 0 6px rgba(255, 190, 110, .08), 0 0 0 7px rgba(255, 214, 150, .26), 0 0 60px 14px rgba(255, 170, 80, .22);
+  background: radial-gradient(circle, rgba(255, 226, 170, .6) 0 18%, transparent 19%), repeating-conic-gradient(from 0deg, rgba(255, 214, 150, .34) 0 4deg, transparent 4deg 30deg), radial-gradient(circle, rgba(255, 180, 90, .2) 0 60%, transparent 61%); }
+:root[data-skin="goth"] body[data-ch="1"]:not(.boss-stage) .sun { border: 0; border-radius: 0; background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><g fill='none' stroke='%23bff3ef' stroke-width='2.4' stroke-linecap='round'><path d='M50 50c0-5 6-6 8-2s-1 11-8 12c-9 1-15-6-14-14 1-11 11-18 22-17 15 1 24 14 22 29-2 17-19 28-36 25'/><path d='M72 78c9-6 14-15 14-24' stroke-opacity='.55'/></g><circle cx='50' cy='50' r='46' fill='none' stroke='%238fe3e0' stroke-opacity='.35' stroke-width='1.4'/><circle cx='50' cy='50' r='40' fill='%238fe3e0' fill-opacity='.10'/></svg>") center / contain no-repeat; box-shadow: none; filter: drop-shadow(0 0 16px rgba(120, 230, 226, .35)); }
+:root[data-skin="goth"] body[data-ch="1"]:not(.boss-stage) .sun::before { display: none; }
+:root[data-skin="goth"] body[data-ch="2"]:not(.boss-stage) .sun { border-color: rgba(255, 122, 90, .55); box-shadow: 0 0 0 6px rgba(255, 90, 60, .10), 0 0 0 7px rgba(255, 122, 90, .26), 0 0 60px 14px rgba(255, 70, 40, .26);
+  background: radial-gradient(circle, rgba(255, 180, 130, .75) 0 16%, transparent 17%), radial-gradient(circle, rgba(255, 90, 60, .32) 0 62%, transparent 63%); }
+:root[data-skin="goth"] body[data-ch="2"]:not(.boss-stage) .sun::before { opacity: 0.4; }
+/* 漂う粒：章ごとに、金の埃・水の泡・燃えさし */
+body:not(.boss-stage)[data-ch] .miasma { opacity: 0.85; }
+body:not(.boss-stage) .miasma b { display: none; }
+body[data-ch="0"]:not(.boss-stage) .miasma i { background: radial-gradient(circle at 35% 35%, rgba(255, 236, 190, .85), rgba(255, 180, 90, .45) 45%, rgba(255, 150, 60, 0) 72%); }
+body[data-ch="1"]:not(.boss-stage) .miasma i { background: radial-gradient(circle at 35% 35%, rgba(220, 255, 252, .85), rgba(110, 224, 222, .42) 45%, rgba(60, 170, 180, 0) 72%); }
+body[data-ch="2"]:not(.boss-stage) .miasma i { background: radial-gradient(circle at 35% 35%, rgba(255, 226, 170, .95), rgba(255, 100, 50, .6) 45%, rgba(150, 30, 30, 0) 72%); }
+/* 地図・報酬・勝利のパネルも章の色に（背景と世界観をそろえる）。panel の地は変えず、上からうっすら色を重ねる */
+body:not(.boss-stage)[data-ch="0"] #runv, body:not(.boss-stage)[data-ch="0"] #result { background: rgba(24, 15, 8, 0.70); }
+body:not(.boss-stage)[data-ch="1"] #runv, body:not(.boss-stage)[data-ch="1"] #result { background: rgba(3, 24, 30, 0.76); }
+body:not(.boss-stage)[data-ch="2"] #runv, body:not(.boss-stage)[data-ch="2"] #result { background: rgba(26, 6, 16, 0.76); }
+body:not(.boss-stage)[data-ch="0"] :is(#runv, #result) .r-card { --rule-a: rgba(236, 190, 112, 0.40); background-image: linear-gradient(180deg, rgba(236, 170, 80, 0.13), transparent 42%); }
+body:not(.boss-stage)[data-ch="1"] :is(#runv, #result) .r-card { --rule-a: rgba(120, 224, 222, 0.40); background-image: linear-gradient(180deg, rgba(70, 180, 186, 0.15), transparent 42%); }
+body:not(.boss-stage)[data-ch="2"] :is(#runv, #result) .r-card { --rule-a: rgba(255, 130, 100, 0.40); background-image: linear-gradient(180deg, rgba(220, 70, 60, 0.15), transparent 42%); }
+body:not(.boss-stage)[data-ch="0"] #runv.is-map .r-card { background-image: linear-gradient(180deg, rgba(236, 170, 80, 0.13), transparent 42%), radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%); }
+body:not(.boss-stage)[data-ch="1"] #runv.is-map .r-card { background-image: linear-gradient(180deg, rgba(70, 180, 186, 0.15), transparent 42%), radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%); }
+body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: linear-gradient(180deg, rgba(220, 70, 60, 0.15), transparent 42%), radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper-2) 120%); }
 </style>
 </head>
-<body class="is-cover">
+<body class="is-cover" data-ch="0">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
   <symbol id="crest" viewBox="0 0 100 120"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></symbol>
 </defs></svg>
 
 <div class="scene" aria-hidden="true">
   <div class="sky"></div>
+  <div class="chl c0"></div><div class="chl c1"></div><div class="chl c2"></div>
   <div class="stars"></div>
   <div class="sun"></div>
   <span class="cloud" style="left:-10px;top:96px;width:104px"></span>
@@ -2207,6 +2332,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       回す
     </button>
     <button class="btn primary" id="btnStart" type="button" hidden>戦闘開始</button>
+    <button class="btn skip" id="btnSkip" type="button" aria-label="この演出を飛ばして先へ進む" hidden>演出を飛ばす ▶▶</button>
     <button class="btn primary" id="btnRotate" type="button" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="rot-lbl">回す</span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span>
@@ -2219,6 +2345,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 </main>
 
 <div class="fx" id="fx" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
 <div class="sheet-bg" id="foeBg" hidden></div>
 <div class="sheet" id="foeSheet" role="dialog" aria-label="敵の詳細" hidden></div>
@@ -2246,7 +2373,13 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       <svg class="crest" viewBox="0 0 100 120" aria-hidden="true"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></svg>
       <svg class="core" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.46</p>
+    <div class="demo" id="demo" aria-hidden="true">
+      <div class="d-row d-0"><span class="d-lbl">攻撃</span></div>
+      <div class="d-row d-1"><span class="d-lbl">補助</span></div>
+      <div class="d-row d-2"><span class="d-lbl">回復</span></div>
+      <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
+    </div>
+    <p class="c-ver" id="cVer">ver 5.1.54</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2359,6 +2492,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
         <div class="rv-track" id="rvTrack" hidden></div>
         <p class="rv-next" id="rvNext" hidden></p>
         <div class="rv-roster" id="rvRoster"></div>
+        <p class="rv-heal-note" id="rvHealNote" hidden></p>
       </div>
       <div class="rv-right">
         <div class="rv-cards" id="rvCards"></div>
@@ -2373,6 +2507,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     <small class="disp" id="rSmall">第一章　完</small>
     <h2 class="disp" id="rTitle">勝利</h2>
     <p id="rSub"></p>
+    <p class="r-heal" id="rHeal" hidden></p>
     <div class="r-stats" id="rStats"></div>
     <button class="btn primary big" id="next" type="button">次の戦闘へ</button>
     <button class="btn" id="resultAlt" type="button" hidden>もう一度練習する</button>
@@ -2392,13 +2527,14 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   /* 戦闘2倍速：待ち時間と演出（Web Animations・CSS）をまとめて速くする。戦闘の進行中だけ効く */
   let SPD = 1;
   try { if (localStorage.getItem('rb-fast') === '1') SPD = 2; } catch (e) { /* 保存できない環境 */ }
-  const wait = (ms) => sleep((RM ? Math.min(ms, 80) : ms) / SPD);
+  let SKIP = false;   // 「演出を飛ばす」：このターンの残りの待ち時間と演出をほぼ省く（次の判断の場面で戻る）。v5.1.51
+  const wait = (ms) => sleep((SKIP ? Math.min(ms, 24) : RM ? Math.min(ms, 80) : ms) / SPD);
   (function () {
     const orig = Element.prototype.animate;
     if (!orig) return;
     Element.prototype.animate = function () {
       const a = orig.apply(this, arguments);
-      try { if (SPD !== 1 && (phase === 'resolve' || phase === 'choose')) a.playbackRate = SPD; } catch (e) { /* 対象外 */ }
+      try { const rate = SKIP ? 8 : SPD; if (rate !== 1 && (phase === 'resolve' || phase === 'choose')) a.playbackRate = rate; } catch (e) { /* 対象外 */ }
       return a;
     };
   })();
@@ -2570,7 +2706,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.46';
+  const APP_VERSION = '5.1.54';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -2861,6 +2997,10 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       INST.bell(t + 0.4, MOTIF[rotIdx % 3] + 12, 0.16, bus.sfx);
       rotIdx = (rotIdx + 1) % 3;
     },
+    // 大技の着弾：低く重い一撃＋短い衝撃音（通常の被弾より長く、低い）
+    smash() { if (!can()) return; duck(0.5, 0.5); const t = now(); INST.thud(t, 1, bus.sfx, 220); INST.thud(t + 0.03, 0.8, bus.sfx, 70); INST.snare(t, 0.22, bus.sfx); INST.pizz(t + 0.03, 40, 0.5, bus.sfx, 0.12); INST.swish(t, 0.2, 0.1, bus.sfx, 3000, 300); },
+    // とどめ：重い一打のあと、鐘が明るく抜ける（終わりの合図）
+    finish() { if (!can()) return; duck(0.45, 1.0); const t = now(); INST.thud(t, 1, bus.sfx, 200); INST.snare(t, 0.2, bus.sfx); [0, 0.08, 0.16].forEach((s, i) => INST.bell(t + 0.05 + s, [84, 88, 91][i], 0.14, bus.sfx, 0.8)); },
     down() { if (!can()) return; const t = now(); [69, 65, 62].forEach((m, i) => INST.pizz(t + i * 0.12, m, 0.4, bus.sfx, 0.3)); INST.thud(t, 0.5, bus.sfx, 120); },
     win() {
       if (!can()) return; duck(0.35, 2.2); const t = now() + 0.05, b = 60 / 120;
@@ -3749,11 +3889,10 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       return '<button type="button" class="fc' + (dead ? ' dead' : '') + (!dead && F === tgt ? ' sel' : '') + (half && !dead ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp > 0 && F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '"' + (dead ? ' disabled' : '') + ' aria-pressed="' + (!dead && F === tgt) + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (dead ? '（倒れた）' : (F === tgt ? '（攻撃対象）' : '（タップで攻撃対象にする）')) + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (!dead && F === tgt ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
-        '<span class="fc-row"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span>' +
-        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span></span>' +
-        '<span class="fc-st">' + FOE_ST(F) + '</span>' +
+        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
         (dead ? '<span class="fc-gone">倒れた</span>' : '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
         (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '')) +
+        '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
     }).join('');
   }
@@ -3937,7 +4076,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       list += '<span class="ep' + (k === 0 ? ' now' : '') + '">' +
         '<span class="ep-ic disp">' + a.glyph + '</span>' +
         '<span class="ep-n"><b class="disp">' + badge + a.name + '</b><span>' + ruleShort(a) + '</span></span>' +
-        '<span class="ep-d"><b class="disp">' + (a.rule === 'charge' ? '—' : a.dmg) + (a.hits > 1 ? '<small style="display:inline;font-size:12px;color:var(--danger)">×' + a.hits + '</small>' : '') + '</b><small>ダメージ</small></span></span>';
+        '<span class="ep-d"><b class="disp">' + (a.dmg ? a.dmg : '—') + (a.hits > 1 ? '<small style="display:inline;font-size:12px;color:var(--danger)">×' + a.hits + '</small>' : '') + '</b><small>ダメージ</small></span></span>';
     }
     return '<button type="button" class="ucard" id="cardClose" aria-label="閉じる">' +
       '<span class="uc-head"><span class="uc-disc c-enemy">' + EART[e.art != null ? e.art : Math.min(battleIdx, EART.length - 1)] + '</span>' +
@@ -4092,7 +4231,13 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const h = document.querySelector('#book .hint'); if (h) { h.classList.remove('rb-flash'); void h.offsetWidth; h.classList.add('rb-flash'); }
   }
 
+  // 章ごとの背景（v5.1.50）：いま・次に行く地点の章に合わせて、背景の重ね絵を切り替える（重ね絵どうしは時間をかけて入れ替わる）
+  function sceneCh() {
+    const v = String(run && EXPM() ? expCh(Math.min(run.node + 1, EXP.nodes)) : 0);
+    if (document.body.dataset.ch !== v) document.body.dataset.ch = v;
+  }
   function render() {
+    sceneCh();
     renderGauge();
     renderBoard();
     renderTicket();
@@ -4107,7 +4252,8 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     $('btnStay').hidden = phase !== 'choose';
     $('btnPreview').hidden = phase !== 'choose';
     $('btnPreview').setAttribute('aria-pressed', String(previewOn));
-    $('dock').style.visibility = (phase === 'resolve' || phase === 'over') ? 'hidden' : 'visible';
+    $('btnSkip').hidden = phase !== 'resolve' || !!tut;
+    $('dock').style.visibility = (phase === 'over' || (phase === 'resolve' && $('btnSkip').hidden)) ? 'hidden' : 'visible';
     tutRefresh();
     $('homeBtn').disabled = phase === 'resolve' && !(tut && tut.noteDone);
   }
@@ -4135,6 +4281,41 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-a) + 'px)' }, { transform: 'translateX(' + a + 'px)' }, { transform: 'translateX(' + (-a * 0.6) + 'px)' }, { transform: 'translateX(0)' }], { duration: 340, easing: 'ease-out' });
   }
   function flashBright(el) { anim(el, [{ filter: 'brightness(1.9) saturate(.6)' }, { filter: 'none' }], { duration: 260 }); }
+  /* ---- 大技・とどめの演出（v5.1.51）：通常 < 大技 < とどめ の順に、重さを付ける ----
+     ヒットストップ（着弾の瞬間に動きを止める）・画面の揺れ・白いフラッシュ・のけぞり・音と振動。
+     「動きを減らす」設定では、揺れ・フラッシュ・ヒットストップは出さない（anim が何もしない）。フラッシュは1回に1度だけ（点滅を連打しない） */
+  async function hitStop(ms) {
+    if (RM || SKIP || !document.getAnimations) return;
+    const run = document.getAnimations().filter((a) => a.playState === 'running');
+    run.forEach((a) => { try { a.pause(); } catch (e) { /* 対象外 */ } });
+    await sleep(ms / SPD);
+    run.forEach((a) => { try { if (a.playState === 'paused') a.play(); } catch (e) { /* 対象外 */ } });
+  }
+  function screenShake(amp, ms) {
+    const a = amp || 8;
+    anim($('app'), [{ transform: 'translate(0, 0)' }, { transform: 'translate(' + (-a) + 'px, ' + (a * 0.5) + 'px)' }, { transform: 'translate(' + a + 'px, ' + (-a * 0.4) + 'px)' }, { transform: 'translate(' + (-a * 0.6) + 'px, ' + (a * 0.2) + 'px)' }, { transform: 'translate(0, 0)' }], { duration: ms || 320, easing: 'ease-out' });
+  }
+  function whiteFlash(op, ms) {
+    if (RM) return;
+    const i = document.createElement('i'); i.className = 'flash'; $('fx').appendChild(i);
+    anim(i, [{ opacity: op }, { opacity: 0 }], { duration: ms || 240, easing: 'ease-out', fill: 'forwards' });
+    setTimeout(() => i.remove(), (ms || 240) / SPD + 200);
+  }
+  function knockback(el, dist) {
+    anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (dist || 12) + 'px) scale(.9)', offset: 0.22 }, { transform: 'translateY(' + (-(dist || 12) / 4) + 'px) scale(1.03)', offset: 0.6 }, { transform: 'translateY(0) scale(1)' }], { duration: 420, easing: 'ease-out' });
+  }
+  // とどめ：最後の一撃だけの特別な演出（約0.5秒）。敵の絵が白く光って砕けるように広がって消える
+  async function finisherFX(ea) {
+    SFX.finish(); vib([30, 40, 90]);
+    whiteFlash(0.5, 300); screenShake(10, 360);
+    const art = ea && (ea.firstElementChild || ea);
+    anim(art, [{ filter: 'brightness(1)', transform: 'scale(1)', opacity: 1 }, { filter: 'brightness(2.6)', transform: 'scale(1.06)', opacity: 1, offset: 0.3 }, { filter: 'brightness(3.2)', transform: 'scale(1.28)', opacity: 0 }], { duration: 520, easing: 'ease-out', fill: 'forwards' });
+    const c = center(ea);
+    sparks(c.x, c.y, '#ffe9a8', 26); sparks(c.x, c.y, '#fff7de', 12);
+    popAt(ea, 'とどめ！', 'sub fin', -52, 0);
+    await hitStop(90);
+    await wait(430);
+  }
   function lunge(el, dist) {
     anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (-(dist || 24)) + 'px) scale(1.12)', offset: 0.38 }, { transform: 'translateY(0) scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,.7,.3,1)' });
   }
@@ -4529,7 +4710,9 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     popAt(ea, u.name + '　' + power + (tired ? '（疲労½）' : '') + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
     const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
     if (!enemy.party) renderEnemy(false);
-    await wait(460);
+    const fin = T.hp <= 0 && foeList().every((f) => f === T || f.hp <= 0);   // これが最後の一撃（とどめ）
+    await wait(fin ? 200 : 460);
+    if (fin) { say(u.name + 'がとどめを刺した。'); await finisherFX(foeEl(T)); finish('win'); return; }
     if (enemy.party) renderEnemy(false);   // 3体のパネルは、ゆれの演出が終わってから数字を更新する（作り直すと演出が消えるため）
     if (T.hp <= 0) {
       if (!enemy.party) { say(u.name + 'がとどめを刺した。'); finish('win'); return; }
@@ -4542,7 +4725,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     }
   }
 
-  async function hitColumn(col, dmg, pierce) {
+  async function hitColumn(col, dmg, pierce, big) {
     const row = frontRow();
     if (row < 0 || !grid[row][col]) return;
     const v = grid[row][col], before = pct(v);
@@ -4568,10 +4751,16 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     say(v.name + 'に' + d + 'ダメージ' + note);
     renderBoard(); renderBook();
     const el = tokEl(row, col);
-    animRing(el, before, pct(v)); shake(el, 7); flashBright(el.querySelector('.disc'));
-    popAt(el, '-' + d, 'dmg'); SFX.hurt(); vib(24);
-    const cc = center(el); sparks(cc.x, cc.y, '#ff8a72', 8);
-    await wait(480);
+    animRing(el, before, pct(v)); shake(el, big ? 12 : 7); flashBright(el.querySelector('.disc'));
+    popAt(el, '-' + d, big ? 'dmg big' : 'dmg');
+    const cc = center(el);
+    if (big) {   // 大技：ヒットストップ・画面の揺れ・白いフラッシュ・のけぞり・重い音と長い振動
+      SFX.smash(); vib([40, 30, 60]);
+      whiteFlash(0.32, 240); screenShake(9, 340); knockback(el, 16);
+      sparks(cc.x, cc.y, '#ff8a72', 18); sparks(cc.x, cc.y, '#ffd9a0', 8);
+      await hitStop(100);
+    } else { SFX.hurt(); vib(24); sparks(cc.x, cc.y, '#ff8a72', 8); }
+    await wait(big ? 400 : 480);
     if (v.hp === 0) {
       say(v.name + 'が倒れた…');
       SFX.down();
@@ -4653,19 +4842,19 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
         const fr = frontRow();
         if (fr < 0) return;
         const L = units().filter((x) => x.r === fr);
-        await hitColumn(L[Math.floor(Math.random() * L.length)].c, act.dmg, act.pierce);
+        await hitColumn(L[Math.floor(Math.random() * L.length)].c, act.dmg, act.pierce, wasCharged || act.big);
       }
       return;
     }
     const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
     for (const col of cols) {
       if (phase === 'over') return;
-      await hitColumn(col, act.dmg, act.pierce);
+      await hitColumn(col, act.dmg, act.pierce, wasCharged || act.big);
     }
   }
 
   async function runTurn() {
-    previewOn = false; hitSeq = 0;
+    previewOn = false; hitSeq = 0; SKIP = false;
     phase = 'resolve';
     Music.set('resolve');
     sel = null; inspect = null;
@@ -4689,7 +4878,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     units().forEach(({ u }) => { u.entered = false; });
     entryNow = {};
     order = []; orderIdx = -1;
-    phase = 'choose';
+    phase = 'choose'; SKIP = false;
     Music.set('choose');
     battleSave('choose');
     render();
@@ -4867,6 +5056,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       $('rTitle').textContent = tut ? '完了' : (last && !EXPM() ? '大団円' : '勝利');
       $('rTitle').className = 'disp';
       $('rSub').textContent = tut ? '基本はこれで完了。本番の遠征に挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
+      { const hl = $('rHeal'), more = !tut && run && EXPM() && run.node + 1 < NODES; hl.hidden = !more; if (more) hl.textContent = 'このあと、生き残った仲間は最大HPの' + Math.round(EXP.afterHeal * 100) + '％（切り上げ）ぶん回復する（最大HPまで）。'; }
       const gotStars = tut ? 3 : showStats(true);
       if (tut) $('rStats').innerHTML = '';
       if (!tut && !run && gotStars < 3) { $('resultAlt').textContent = 'もう一度挑んで★を集める'; $('resultAlt').hidden = false; }
@@ -4878,7 +5068,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
       }
       confetti();
     } else {
-      Music.charge(false); Music.set('off'); SFX.lose();
+      Music.charge(false); Music.set('off'); SFX.lose(); $('rHeal').hidden = true;
       $('rSmall').textContent = chapLabel();
       $('rTitle').textContent = '全滅';
       $('rTitle').className = 'disp lose';
@@ -5076,6 +5266,12 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const r = b.getBoundingClientRect();
     if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) rotDenied();
   });
+  // 演出を飛ばす：このターンの残りの待ち時間と動きを一気に進める（敵のタップは詳細表示のまま、競合しない）
+  $('btnSkip').addEventListener('click', () => {
+    if (phase !== 'resolve' || SKIP) return;
+    SKIP = true; $('btnSkip').hidden = true; $('dock').style.visibility = 'hidden';
+    try { document.getAnimations().forEach((a) => { try { a.playbackRate = 8; } catch (e) { /* 対象外 */ } }); } catch (e) { /* 非対応 */ }
+  });
   $('btnRotate').addEventListener('click', () => { if (!tutBtnOk('btnRotate')) { tutNudge(); return; } choose(true); tutAdvance(); });
   $('btnStay').addEventListener('click', () => { if (!tutBtnOk('btnStay')) { tutNudge(); return; } choose(false); tutAdvance(); });
   $('btnPreview').addEventListener('click', () => {
@@ -5136,6 +5332,23 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 
   // 表紙
   $('o1').innerHTML = ART.warrior; $('o2').innerHTML = ART.witch; $('o3').innerHTML = ART.cleric;
+  $('dt1').innerHTML = ART.warrior; $('dt2').innerHTML = ART.witch; $('dt3').innerHTML = ART.cleric;
+  /* 表紙の実演：攻撃・補助・回復の3列で、仲間が1つずつ前へ進み、先頭は後ろへ回る。ほんとうの戦闘の「回す」と同じ動き。
+     ボタンの邪魔をしない（押せる・見た目だけ）。表紙が見えていないとき・タブが裏のときは止まる。動きを減らす設定では止めたまま */
+  (function demo() {
+    const toks = [$('dt1'), $('dt2'), $('dt3')], cv = $('cover');
+    let k = 0;
+    const place = () => toks.forEach((t, i) => { const p = (i + k) % 3; t.style.setProperty('--p', p); t.classList.toggle('wrap', p === 2 && k > 0); });
+    place();
+    if (RM) return;
+    setInterval(() => {
+      if (cv.hidden || cv.classList.contains('out') || document.hidden) return;
+      k += 1; place();
+      const front = toks[(3 - (k % 3)) % 3];
+      toks.forEach((t) => t.classList.toggle('lead', t === front));
+      const row = document.querySelector('.d-0'); row.classList.remove('hit'); void row.offsetWidth; row.classList.add('hit');
+    }, 2300);
+  })();
   (function stars() {
     const box = document.querySelector('.stars');
     for (let i = 0; i < 30; i++) {
@@ -5371,6 +5584,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     const r = document.documentElement;
     r.setAttribute('data-skin', SKIN === 'hw' ? 'hw' : 'goth'); r.setAttribute('data-theme', 'dark');
     $('o1').innerHTML = ART.warrior; $('o2').innerHTML = ART.witch; $('o3').innerHTML = ART.cleric;
+    $('dt1').innerHTML = ART.warrior; $('dt2').innerHTML = ART.witch; $('dt3').innerHTML = ART.cleric;
     const box = $('skinSel');
     box.hidden = !hwSeason();
     box.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.skin === SKIN)));
@@ -5419,10 +5633,18 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   });
   $('enAgain').addEventListener('click', () => { SFX.tap(); startFlow(); });
   $('enTitle').addEventListener('click', () => { SFX.tap(); $('ending').hidden = true; goTitle(); });
+  let toastT = 0, toastH = 0;
+  function toast(msg, ms) {
+    const t = $('toast'); clearTimeout(toastT); clearTimeout(toastH);
+    t.textContent = msg; t.hidden = false; void t.offsetWidth; t.classList.add('on');
+    toastT = setTimeout(() => { t.classList.remove('on'); toastH = setTimeout(() => { t.hidden = true; }, RM ? 0 : 300); }, ms || 3200);
+  }
   function goTitle() {
+    // 戦闘の途中まで保存してあるなら、タイトルに着いたときにそれを知らせる（v5.1.48）
+    const sv0 = !tut && run && EXPM() ? expSaved() : null, bat0 = sv0 && sv0.battle ? sv0.battle : null;
     if (phase === 'resolve' && !(tut && tut.noteDone)) return;
     if (tut) hideCoach();
-    tut = null; run = null; $('runv').hidden = true;
+    tut = null; run = null; $('runv').hidden = true; sceneCh();
     document.body.classList.remove('boss-stage'); Music.boss(false); Music.era(1);
     phase = 'title';
     inspect = null; sel = null;
@@ -5435,6 +5657,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     Music.charge(false); Music.set('title');
     $('tutTag').hidden = tutDone();
     try { $('begin').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ }
+    if (bat0) toast(bat0.at === 'over' ? '戦闘のあとまで保存しました' : '戦闘の途中まで保存しました（ターン' + bat0.turn + '）');
   }
   $('homeBtn').addEventListener('click', () => { SFX.tap(); goTitle(); });
   /* ============ 騎士団の30年（ローグライクの1ラン） ============
@@ -5757,7 +5980,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     run.nextChoices = null;
   }
   const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span>'; };
-  const portrait = (m, extra) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + '</span>';
+  const portrait = (m, extra, tag) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + (tag || '') + '</span>';
   const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };
   /* 遠征地図の描画：いまの章を1つの島として描き、地点ごとの領地（ボロノイ分割）に分ける。
@@ -5866,9 +6089,14 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   function rvShow(o) {
     // 区切り（·）ごとに折り返さないまとまりにする（「地点 10 /」で割れないように）
     $('rvSmall').innerHTML = (o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)))).split('　·　').map((x) => '<span class="nw">' + x.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>').join('　·　');
+    sceneCh();
     $('rvTitle').textContent = o.title;
     $('rvSub').textContent = o.sub || '';
-    $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '')).join('');
+    $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '', o.heal && o.heal.gain[m.uid] > 0 ? '<i class="rv-heal" aria-label="HP+' + o.heal.gain[m.uid] + '回復">+' + o.heal.gain[m.uid] + '</i>' : '')).join('');
+    // 戦闘のあとの回復の説明（v5.1.49）。満タンで増えなかった仲間には札を付けない
+    { const hn = $('rvHealNote'), h = o.heal; hn.hidden = !h;
+      if (h) { const any = Object.keys(h.gain).some((k) => h.gain[k] > 0);
+        hn.textContent = any ? '戦闘のあと、生き残った仲間は最大HPの' + h.pct + '％（切り上げ）ぶん回復した（最大HPまで）。' : '戦闘のあと、仲間はみなHPが満タンだったので、回復はなかった。'; } }
     routeSel = o.map && o.cards.length === 1 ? 0 : null;
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
@@ -6368,6 +6596,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     stats = B.stats ? { dealt: B.stats.dealt, who: Object.keys(B.stats.who).reduce((o, k) => { const u = U(B.stats.who[k]); if (u) o[k] = u; return o; }, {}), taken: B.stats.taken, fallen: B.stats.fallen } : null;
     logLines = (B.log || []).concat(['（中断したところから再開した）']);
     bsave = B;
+    toast(B.at === 'over' ? '戦闘のあとから再開しました' : '中断したところから再開しました（ターン' + B.turn + '）');
     if (B.at === 'start') { phase = 'prep'; renderEnemy(true); render(); startBattle(); return; }
     phase = 'choose'; renderEnemy(true);
     if (B.at === 'over') { finish(B.result); return; }
@@ -6451,6 +6680,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     SFX.heal();
     expAdvance(['灯のそばで休んだ。全員のHPが全快した。章の主の気配が強まった（HP+' + Math.round(EXP.restPen.hp * run.chRests * 100) + '%）。']);
   }
+  let lastHeal = null;
   function expAfterBattle(win) {
     if (snapshot) runSaveForm(snapshot.filter((x) => x.u.hp > 0));
     const dead = run.members.filter((m) => m.hp <= 0);
@@ -6458,7 +6688,9 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (dead.length) setTimeout(() => SFX.fallen(), 250);
     run.members = run.members.filter((m) => m.hp > 0);
     roster = run.members;
+    const hp0 = {}; run.members.forEach((m) => { hp0[m.uid] = m.hp; });
     if (win) run.members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * EXP.afterHeal)); });
+    lastHeal = win ? { pct: Math.round(EXP.afterHeal * 100), gain: run.members.reduce((o, m) => { o[m.uid] = m.hp - hp0[m.uid]; return o; }, {}) } : null;   // 表示用。HPの計算は上の1行のまま
     return dead.map((m) => m.name + '（' + m.jname + '）は帰らなかった。「' + m.lastWord + '」');
   }
   function expUpDesc(m) {
@@ -6497,7 +6729,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     expRewardShow(pre, cards);
   }
   function expRewardShow(pre, cards) {
-    rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。', events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
+    rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
   }
   // 誰と入れ替えるか。「やめる」で報酬の選び直し
   function expSwapPick(pre, cards, nm) {
@@ -6626,7 +6858,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
     if (!sv) { beginExp(); return; }
     SFX.tap();
     ncFrom = document.activeElement;
-    $('ncBody').innerHTML = 'いまの遠征（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '）の記録は<b>消えて、元に戻せません</b>。';
+    $('ncBody').innerHTML = 'いまの遠征（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : '') + '）の記録は<b>消えて、元に戻せません</b>。';
     $('ncGo').disabled = true; clearTimeout(ncTimer); ncTimer = setTimeout(() => { $('ncGo').disabled = false; }, 450);
     $('newConf').hidden = false; $('ncNo').focus();
   }
@@ -6636,7 +6868,10 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
   $('newConf').addEventListener('click', (ev) => { if (ev.target === $('newConf')) closeNc(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('newConf').hidden) closeNc(); });
   $('begin').addEventListener('click', askNewRun);
-  $('resume').addEventListener('click', resumeExp);
+  // セーブがあるときはスプラッシュを省く（v5.1.48）。スプラッシュは「最初のタップで音を使えるようにする」ためのもの。
+  //   「続きから」「本番モード」などのタップが同じ役目をするので、ここで音の準備（actx・warm）も済ませる
+  if (expSaved()) { gated = false; $('cover').classList.remove('gate'); $('cover').classList.add('revealed'); }
+  $('resume').addEventListener('click', () => { actx(); Music.warm(); resumeExp(); });
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
   $('tutTag').hidden = tutDone();
