@@ -2379,7 +2379,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.54</p>
+    <p class="c-ver" id="cVer">ver 5.1.55</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2706,7 +2706,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.54';
+  const APP_VERSION = '5.1.55';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3538,11 +3538,33 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T);
     return { val: t, buf: sup > 0, tired, half: foeShare(T) < 1 };
   }
+  /* 先制撃破（表示専用・v5.1.55）：行動順どおりに味方が先に攻撃して、攻撃対象の敵のHPが0になるなら、その敵は行動できない。
+     その敵の被ダメ予測と「倒」は出さない。味方の与ダメは既存の予測（expDmg）と同じ計算。実際の戦闘の行動順・結果には一切触れない。
+     ※ 攻撃対象（いま選ばれている敵）だけを調べる。別の敵は、対象が倒れた後の切り替わりがあるので、従来どおり予測を出す。
+     ※ 祈り手の回復（対象が攻撃対象）が、倒しきる前の順番にあれば、その分だけHPを足して数える */
+  function preKilled(src, fresh, entering) {
+    const dead = new Set();
+    if (frontRow(src) < 0) return dead;
+    const T = targetFoe(); if (!T || T.hp <= 0) return dead;
+    let hp = T.hp;
+    for (const a of actorList(src, entering)) {
+      if (a.kind === 'p') {
+        const d = expDmg(a.u, a.r, a.c, src, fresh, entering, T);
+        if (d) hp -= d.val;
+      } else if (a.kind === 'e') {
+        const F = a.foe || enemy;
+        if (F === T) { if (hp <= 0) dead.add(T); break; }
+        if (enemy.party) { const ac = actOf(F); if (ac && ac.rule === 'mend' && mendTarget() === T) hp = Math.min(T.max, hp + ac.heal); }
+      }
+    }
+    return dead;
+  }
   function incoming(src, fresh, entering) {
     const out = {}, used = {}, fr = frontRow(src), per = [];
     Object.defineProperty(out, 'per', { value: per });   // 技ごと・列ごとの内訳（予告の数字に使う。数えるときは列挙されない）
     if (fr < 0) return out;
-    const acts = enemy.party ? enemy.party.filter(foeAlive).sort((a, b) => b.spd - a.spd).map((F) => ({ F, act: actOf(F) })) : [{ F: enemy, act: curAct() }];
+    const pre = preKilled(src, fresh, entering);
+    const acts = (enemy.party ? enemy.party.filter(foeAlive).sort((a, b) => b.spd - a.spd).map((F) => ({ F, act: actOf(F) })) : [{ F: enemy, act: curAct() }]).filter((x) => !pre.has(x.F));
     acts.forEach(({ F, act }) => {
     if (!act || !act.dmg || act.rule === 'charge' || act.rule === 'random' || act.rule === 'bind') return;
     const info = targetInfo(act, src, F);
