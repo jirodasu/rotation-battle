@@ -1,5 +1,5 @@
 /* ローグライク・ローテーションバトル — オフラインでも遊べるようにするためのサービスワーカー */
-const VERSION = 'rb-5.1.52';
+const VERSION = 'rb-5.1.53';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png', './fonts/ShipporiMincho-700.woff', './fonts/ShipporiMincho-800.woff', './fonts/ZenKaku-500.woff', './fonts/ZenKaku-700.woff', './fonts/ZenKaku-900.woff'];
 
 self.addEventListener('install', (e) => {

@@ -1,5 +1,12 @@
 // v5.1.48〜 品質改善（更新1・2…）。
 // 合格の基準（測る前に決めたもの）：
+//  更新7. 三位一体のカード：5つの画面（390×844・375×667・320×568・1024×700横・390×844で文字の大きさ「大」）で、
+//         ①どのカードも中身が切れない（最後の行がカードの内側。技名・HP・状態札が横にはみ出さない）
+//         ②中身がカードの高さの90%以上を占める（下に大きな空白が残らない）
+//         ③主な情報は副次より大きい：HPの数字・次の行動の文字・与ダメージの数字が、速／防の文字より大きい
+//         ④背の高い横画面（1024×700）では敵の絵が60px以上、390×844でも絵が見える（18px以上）
+//         ⑤対象選択（金枠＋◎が1体だけ）・大技のため（charged）・倒れた敵のグレーアウト（dead、◎なし）が従来どおり
+//         ⑥表示する内容（技名・数字）は従来と同じ（行の順を入れ替えただけ。カードの文字列に、HP・速・防・技名・与ダメが全て含まれる）
 //  更新6. 表紙に「攻撃／補助／回復」の3列の実演がある。動きを減らさない設定では、約2.3秒ごとに3人の列が1つずつ進み（先頭は後ろへ）、3回で元に戻る。
 //         動きを減らす設定では止まったまま。実演中でも「本番モード」「設定」等のボタンがすぐ押せる（実演が前面でクリックを奪わない）。
 //         見た目（通常／ハロウィン）を切り替えると、実演の3人の絵も入れ替わる。表紙を閉じると止まる。3列・各ボタンが画面幅からはみ出さない
@@ -204,6 +211,41 @@ async function toChoose(p) {
     const after = await p.evaluate(() => ({ d: document.getElementById('dt1').innerHTML, o: document.getElementById('o1').innerHTML, sk: document.documentElement.getAttribute('data-skin') }));
     ok(after.sk === 'hw' && after.d !== before && after.d === after.o && after.d.length > 50, '実演の絵は、表紙の飾りと同じ見た目（スキン ' + after.sk + '）に揃う');
     ok(before === (await (async () => { await p.evaluate(() => { localStorage.setItem('rb-skin', 'normal'); }); await p.reload(); await p.waitForTimeout(400); return p.evaluate(() => document.getElementById('dt1').innerHTML); })()), '通常に戻すと元の絵に戻る');
+    await ctx.close();
+  }
+
+  /* ---- 更新7：三位一体のカード ---- */
+  for (const [w, h, lg, name] of [[390, 844, 0, '390×844'], [375, 667, 0, '375×667'], [320, 568, 0, '320×568'], [1024, 700, 0, '1024×700横'], [390, 844, 1, '390×844 文字大']]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: w < 700, hasTouch: w < 700, reducedMotion: 'reduce' });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
+    await p.addInitScript(([t, lg]) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); if (lg) localStorage.setItem('rb-set', JSON.stringify({ text: 1 })); } catch (e) { /* */ } }, [TIPS_ALL, lg]);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(200); await p.click('#begin'); await p.waitForTimeout(400);
+    await p.evaluate(() => { const R = window.__rb; R.run.node = 4; R.run.enemy = R.expEnemy(5, null, 'trinity'); document.getElementById('runv').hidden = true; R.toPrepForTest(); }); await p.waitForTimeout(500);
+    const m = await p.evaluate(() => [...document.querySelectorAll('.fc')].map((f) => {
+      const r = f.getBoundingClientRect(); let last = 0, wide = 0;
+      [...f.querySelectorAll(':scope > *')].forEach((c) => { const cr = c.getBoundingClientRect(); if (cr.height > 0) last = Math.max(last, cr.bottom); });
+      f.querySelectorAll('.fc-nm, .fc-act, .fc-dmg, .fc-sub, .fc-hp u').forEach((e) => { if (e.scrollWidth > e.clientWidth + 1) wide++; });
+      const fs = (sel) => { const e = f.querySelector(sel); return e ? parseFloat(getComputedStyle(e).fontSize) : 0; };
+      const art = f.querySelector('.fc-art').getBoundingClientRect().height;
+      return { h: r.height, clip: last - (r.bottom - 2), fill: (last - r.top) / r.height, wide, hp: fs('.fc-hp u'), act: fs('.fc-act'), dmg: fs('.fc-dmg b'), sub: fs('.fc-sub .fc-def'), art, txt: f.textContent };
+    }));
+    ok(m.length === 3 && m.every((x) => x.clip <= 1), name + '：3枚とも中身が切れない（はみ出し ' + m.map((x) => Math.round(x.clip)).join('/') + 'px）');
+    ok(m.every((x) => x.wide === 0), name + '：技名・HP・状態札が横にはみ出さない');
+    ok(m.every((x) => x.fill >= 0.9), name + '：中身がカード高の90%以上（' + m.map((x) => Math.round(x.fill * 100)).join('/') + '%）');
+    ok(m.every((x) => x.hp > x.sub && x.dmg > x.sub && x.act >= x.sub), name + '：主な情報（HP ' + m[0].hp + '・行動 ' + m[0].act + '・与ダメ ' + m[0].dmg + '）は副次（速・防 ' + m[0].sub + '）より大きい');
+    if (w === 1024) ok(m.every((x) => x.art >= 60), name + '：敵の絵が60px以上（' + m.map((x) => Math.round(x.art)).join('/') + '）');
+    if (w === 390 && !lg) ok(m.some((x) => x.art >= 18), name + '：敵の絵が見える（' + m.map((x) => Math.round(x.art)).join('/') + '）');
+    ok(m.every((x) => /\d+\/\d+/.test(x.txt) && /速\d/.test(x.txt) && /防\d/.test(x.txt) && /与/.test(x.txt)), name + '：HP・速・防・与ダメが表示される');
+    if (w === 390 && !lg) {
+      const st = await p.evaluate(() => { const R = window.__rb; const j = R.foeById('judge'); j.charged = true; R.render(); const sel = document.querySelectorAll('.fc.sel'); const chg = document.querySelectorAll('.fc.charged').length;
+        const aim = [...document.querySelectorAll('.fc')].map((f) => !!f.querySelector('.fc-aim')); const ch = getComputedStyle(document.querySelector('.fc.charged')).borderColor;
+        R.foeById('priest').hp = 0; R.render(); const dead = document.querySelector('.fc.dead'); return { sel: sel.length, chg, aim, ch, dead: !!dead, deadAim: dead ? !!dead.querySelector('.fc-aim') : null, op: dead ? +getComputedStyle(dead).opacity : 1, flt: dead ? getComputedStyle(dead).filter : '' }; });
+      ok(st.sel === 1 && st.aim.filter(Boolean).length === 1, name + '：対象選択（金枠1体＋◎1つ）');
+      ok(st.chg === 1 && st.ch !== 'rgb(0, 0, 0)', name + '：大技のため（charged）の枠が残る');
+      ok(st.dead && !st.deadAim && st.op < 0.6 && /grayscale/.test(st.flt), name + '：倒れた敵はグレーアウト・◎なし');
+    }
+    ok(!p.__errs.length, name + '：ページのエラーなし ' + p.__errs.join('/'));
     await ctx.close();
   }
 

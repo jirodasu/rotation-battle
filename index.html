@@ -2090,7 +2090,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .pc-art svg { width: 100%; height: auto; display: block; }
 .pc-id b { display: block; font-size: 16px; }
 .pc-id small { display: block; font-size: 12px; color: var(--ink-soft); }
-@media (max-height: 760px) {
+@media (max-height: 760px) and (orientation: portrait), (max-height: 560px) {
   .fc-art { display: none; }
 }
 @media (min-height: 800px) { .fc-art { height: 62px; } }
@@ -2169,7 +2169,35 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 @media (max-height: 700px) { .app.fit .ehp { top: 38px; } }
 /* 三位一体のパネル：文字の行は縮めず、先に小さな絵が縮む（状態の札が行動の行に重ならない）。v5.1.46 */
 .fc > * { flex-shrink: 0; }
-.fc > .fc-art { flex: 0 1 36px; min-height: 18px; height: auto; }
+.fc > .fc-art { flex: 0 1 clamp(36px, 70cqw, 120px); min-height: 18px; height: auto; position: relative; overflow: hidden; }
+.fc > .fc-art svg { position: absolute; left: 0; top: 0; width: 100%; height: 100%; margin: 0; }
+/* ===== v5.1.53 更新7：複数敵のカード ＝ 主な情報（HP・次の行動・与ダメージ）を大きく、副次（速・防・状態）を補助に。高さは中身に合わせ、余った高さは絵に回す ===== */
+.stage.trio .foes { align-items: flex-start; }
+.fc { max-height: 100%; }
+.fc-hp { flex: none; height: 18px; line-height: 18px; border-radius: 9px; } .fc-hp i { border-radius: 9px; }
+.fc-hp u { font-size: 13px; line-height: 18px; } .fc-hp u small { font-size: 11px; }
+.fc-act { min-height: 20px; font-size: 12px; } .fc-act b { font-size: 13px; }
+.fc-dmg b { font-size: 17px; } .fc-dmg { font-size: 12px; }
+.fc-sub { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 2px 6px; }
+.fc-sub .fc-def { font-size: 11px; font-weight: 700; color: var(--ink-soft); } .fc-sub .fc-def small { font-size: 10.5px; }
+.fc-sub .fc-st { display: contents; }
+/* 「文字の大きさ：大」：主な情報をさらに大きく（背の高い画面だけ。低い画面は切れないことを優先） */
+@media (min-height: 761px) {
+  html[data-text="lg"] .fc-nm { font-size: 14px; } html[data-text="lg"] .fc-hp u { font-size: 14px; }
+  html[data-text="lg"] .fc-act { font-size: 13px; min-height: 22px; } html[data-text="lg"] .fc-act b { font-size: 14px; }
+  html[data-text="lg"] .fc-dmg b { font-size: 19px; } html[data-text="lg"] .fc-sub .fc-def { font-size: 12px; }
+}
+/* 背の低い画面（スマホ縦など）は、これまでの大きさに戻して、行を詰める（切れないことを優先） */
+@media (max-height: 760px) and (orientation: portrait), (max-height: 560px) {
+  .fc-hp { height: 15px; line-height: 15px; } .fc-hp u { font-size: 11px; line-height: 15px; } .fc-hp u small { font-size: 10.5px; }
+  .fc-act { min-height: 17px; font-size: 11px; } .fc-act b { font-size: 12px; }
+  .fc-dmg b { font-size: 14px; } .fc-dmg { font-size: 11px; }
+  .fc-sub { gap: 1px 5px; } .fc-sub .fc-def, .fc-sub .fc-def small { font-size: 10.5px; line-height: 1.1; }
+}
+@media (max-height: 640px) {
+  .fc { padding: 2px 3px; } .fc-chip { height: 13px; font-size: 10.5px; } .fc-sub .fc-def, .fc-sub .fc-def small { font-size: 10.5px; } .fc-sub { gap: 0 4px; }
+  .fc-act { min-height: 15px; } .fc-hp { height: 14px; line-height: 14px; } .fc-hp u { line-height: 14px; } .fc-nm { line-height: 1.05; }
+}
 /* 勝利・報酬・地図のパネルを出している間は、背面の戦闘表示（旧HP・撃破済みの敵・次の行動）を読めなくする。v5.1.47
    スキンの絵（.scene）は残すので、ぼかした背景はそのまま。あそびかた・設定は戦闘を見ながら開くものなので対象外 */
 body:has(#result:not([hidden]), #runv:not([hidden])) .app { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.25s, visibility 0s 0.25s; }
@@ -2349,7 +2377,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.52</p>
+    <p class="c-ver" id="cVer">ver 5.1.53</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2676,7 +2704,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.52';
+  const APP_VERSION = '5.1.53';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3859,11 +3887,10 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       return '<button type="button" class="fc' + (dead ? ' dead' : '') + (!dead && F === tgt ? ' sel' : '') + (half && !dead ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp > 0 && F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '"' + (dead ? ' disabled' : '') + ' aria-pressed="' + (!dead && F === tgt) + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (dead ? '（倒れた）' : (F === tgt ? '（攻撃対象）' : '（タップで攻撃対象にする）')) + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (!dead && F === tgt ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
-        '<span class="fc-row"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span>' +
-        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span></span>' +
-        '<span class="fc-st">' + FOE_ST(F) + '</span>' +
+        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
         (dead ? '<span class="fc-gone">倒れた</span>' : '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
         (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '')) +
+        '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
     }).join('');
   }
