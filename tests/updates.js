@@ -1,5 +1,8 @@
 // v5.1.48〜 品質改善（更新1・2…）。
 // 合格の基準（測る前に決めたもの）：
+//  更新3. 勝利パネルに「このあと…最大HPの30％（切り上げ）ぶん回復する」の一文。報酬パネルの名簿に、実際に増えた分の「+N」札
+//         （N＝回復後のHP−回復前のHP）と一文。満タンで増えなかった仲間には札を付けない。全員満タンなら「回復はなかった」の一文で札なし。
+//         回復の計算は変えない（回復後のHP＝min(最大HP, 回復前+切り上げ(最大HP×0.3))）。
 //  更新1. 戦闘の判断画面で「タイトルへ戻る」→ タイトルに着いたとき「戦闘の途中まで保存しました（ターンn）」が出て、数秒で消える。
 //         nは保存のターンと一致。戦闘の途中でない保存（地図など）・チュートリアルからは出ない。
 //         「続きから」で再開すると「中断したところから再開しました（ターンn）」が出る
@@ -83,6 +86,27 @@ async function toChoose(p) {
     await p.evaluate(() => window.__rb.goTitle()); await p.waitForTimeout(400);
     ok(!(await toastOn(p)), 'チュートリアルから戻っても保存通知は出ない');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join(' / '));
+    await ctx.close();
+  }
+
+  /* ---- 更新3：戦闘のあとの回復の説明 ---- */
+  for (const mode of ['mixed', 'allfull']) {
+    const { ctx, p } = await page(b);
+    await p.click('#cover'); await p.waitForTimeout(250);
+    await toChoose(p);
+    await p.evaluate(() => { window.__rb.enemy.hp = 1; window.__rb.run.members.forEach((m) => { m.atk = 99; }); });
+    await p.click('#btnStay'); for (let i = 0; i < 80; i++) { if (await vis(p, 'result')) break; await p.waitForTimeout(150); }
+    const note = await p.evaluate(() => ({ t: document.getElementById('rHeal').textContent, hidden: document.getElementById('rHeal').hidden }));
+    ok(!note.hidden && /最大HPの30％（切り上げ）ぶん回復する/.test(note.t), mode + '：勝利パネルに回復の一文：「' + note.t + '」');
+    const hp0 = await p.evaluate((mode) => { const ms = window.__rb.run.members; ms.forEach((m, i) => { m.hp = mode === 'allfull' ? m.max : (i === 0 ? m.max : i === 1 ? 1 : Math.max(1, m.max - 5 - i)); }); return ms.map((m) => ({ uid: m.uid, name: m.name, hp: m.hp, max: m.max })); }, mode);
+    await p.click('#next'); await p.waitForTimeout(700);
+    const r = await p.evaluate(() => ({ note: document.getElementById('rvHealNote').hidden ? '' : document.getElementById('rvHealNote').textContent, chips: [...document.querySelectorAll('#rvRoster .rv-m')].map((e) => ({ name: e.querySelector('b').textContent, chip: e.querySelector('.rv-heal') ? e.querySelector('.rv-heal').textContent : '' })), now: window.__rb.run.members.map((m) => ({ name: m.name, hp: m.hp })) }));
+    const want = hp0.map((m) => ({ name: m.name, gain: Math.min(m.max, m.hp + Math.ceil(m.max * 0.3)) - m.hp, hp: Math.min(m.max, m.hp + Math.ceil(m.max * 0.3)) }));
+    ok(want.every((w) => r.now.find((x) => x.name === w.name).hp === w.hp), mode + '：回復の計算は変わらない（回復後のHP＝min(最大HP, 回復前+切り上げ(最大HP×0.3))） ' + JSON.stringify(want.map((w) => w.hp)));
+    ok(want.every((w) => (r.chips.find((c) => c.name === w.name).chip) === (w.gain > 0 ? '+' + w.gain : '')), mode + '：「+N」札は実際に増えた分だけ（満タンの仲間には付かない） ' + JSON.stringify(r.chips.map((c) => c.chip)));
+    if (mode === 'allfull') ok(/回復はなかった/.test(r.note) && r.chips.every((c) => !c.chip), '全員満タンなら「回復はなかった」の一文で札なし：「' + r.note + '」');
+    else ok(/最大HPの30％（切り上げ）ぶん回復した/.test(r.note) && r.chips.some((c) => c.chip), '報酬パネルに回復の一文と札：「' + r.note + '」');
+    ok(!p.__errs.length, mode + '：ページのエラーなし ' + p.__errs.join(' / '));
     await ctx.close();
   }
 
