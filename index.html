@@ -891,7 +891,10 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   .board { gap: 5px 6px; padding-bottom: 6px; }
   .ticket { padding-top: 6px; padding-bottom: 6px; }
   .uc-role, .uc-legend { display: none; }
-  .book:has(p.hint) p:not(.hint) { display: none; }
+  .book:has(p.hint) .logbox p { display: none; }
+  .book:has(p.hint) .logbox { position: absolute; right: 6px; bottom: 6px; padding: 0; z-index: 2; }
+  .book:has(p.hint) .logbox .lb-more { position: static; display: block; padding: 8px 10px; min-height: 36px; border: 1px solid var(--paper-line); border-radius: 10px; background: var(--paper); }
+  .book:has(p.hint) p.hint { padding-right: 72px; }
   .order { margin-bottom: 4px; min-height: 26px; }
   .od { width: 22px; height: 22px; }
   .ep { padding-top: 4px; padding-bottom: 4px; }
@@ -2085,6 +2088,18 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 /* ===== v5.1.55 UI監査 ===== */
 /* 文字の階層は3段階にそろえる：①主（予測ダメージ・今ターンの技名）②本文 ③補助（速・防・説明）。数字は太く、補助は細く・薄く */
 :root { --fs-1: 17px; --fs-2: 13px; --fs-3: 10.5px; --fw-1: 800; --fw-2: 700; --fw-3: 600; }
+.tok .seals .seal { width: auto; min-width: 19px; padding: 0 5px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 1px; white-space: nowrap; }
+.tok .seals .seal b { font-size: 10px; font-weight: 800; font-family: var(--sans, inherit); }
+.logbox { position: relative; display: block; cursor: pointer; padding: 2px 52px 2px 0; border-radius: 8px; }
+.logbox:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.lb-more { position: absolute; right: 0; bottom: 3px; font-style: normal; font-size: var(--fs-3); font-weight: var(--fw-2); color: var(--ink-soft); }
+.book p.hint { margin-top: 4px; padding: 4px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.07); border: 1px solid var(--paper-line); }
+.ls-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.ls-head b { font-size: 17px; }
+.ls-x { width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid var(--paper-line); background: var(--paper); color: var(--ink); font: inherit; font-size: 22px; cursor: pointer; }
+.ls-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.ls-list p { margin: 0; padding: 5px 0; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--paper-line); color: var(--ink); }
+.ls-list p:first-child { border-top: 0; }
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
 .inc-w { font-style: normal; font-size: 9.5px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
 .t-dmg b { font-weight: var(--fw-1); }
@@ -2370,6 +2385,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 
 <div class="sheet-bg" id="foeBg" hidden></div>
 <div class="sheet" id="foeSheet" role="dialog" aria-label="敵の詳細" hidden></div>
+<div class="sheet-bg" id="logBg" hidden></div>
+<div class="sheet" id="logSheet" role="dialog" aria-label="これまでの出来事" hidden><div class="ls-head"><b class="disp">これまでの出来事</b><button class="ls-x" id="logX" type="button" aria-label="閉じる">×</button></div><div class="ls-list" id="logList"></div></div>
 
 <div class="spot" id="spot" hidden aria-hidden="true"></div>
 <div class="coach pos-top" id="coach" hidden role="dialog" aria-live="polite" aria-label="チュートリアル">
@@ -3642,8 +3659,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const p = pct(u);
     let seals = '';
     if (r === 1) {
-      if (u.atkSup > 0) seals += '<i class="seal a' + (u.atkReady || fresh ? '' : ' off') + '">攻</i>';
-      if (u.defSup > 0) seals += '<i class="seal d' + (u.defReady || fresh ? '' : ' off') + '">防</i>';
+      if (u.atkSup > 0) seals += '<i class="seal a' + (u.atkReady || fresh ? '' : ' off') + '">攻<b>+' + u.atkSup + '</b></i>';
+      if (u.defSup > 0) seals += '<i class="seal d' + (u.defReady || fresh ? '' : ' off') + '">防<b>-' + u.defSup + '</b></i>';
     }
     const R = RX(), tired = R.stamina && u.staMax > 0 && u.sta <= 0;
     let pips = '';
@@ -4177,7 +4194,18 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const out = su && n > 1 ? '<button type="button" class="bn-out" data-bn="out">留守番へ</button>' : '';
     return '<div class="bench"><span class="bn-l">出撃 ' + n + '/' + RUN.sortie + '<b>留守番</b></span><span class="bn-list">' + (items || (out ? '' : '<span class="bn-none">なし（戦闘のあと全快する控え）</span>')) + out + (items && !su && !benchSel ? '<span class="bn-none">顔をタップで入れ替え</span>' : '') + '</span></div>';
   }
+  /* ログの全履歴（スクロールできる）。常時表示は直近の1〜2行のまま */
+  function openLog(on) {
+    if (on) { $('logList').innerHTML = logLines.length ? logLines.map((l) => '<p></p>').join('') : '<p>まだ出来事はありません。</p>'; [...$('logList').querySelectorAll('p')].forEach((p, i) => { if (logLines[i] != null) p.textContent = logLines[i]; }); }
+    $('logSheet').hidden = !on; $('logBg').hidden = !on;
+    if (on) { const l = $('logList'); l.scrollTop = l.scrollHeight; try { $('logX').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ } }
+  }
+  $('logBg').addEventListener('click', () => openLog(false));
+  $('logX').addEventListener('click', () => openLog(false));
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('logSheet').hidden) openLog(false); });
+  $('book').addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.closest && ev.target.closest('.logbox')) { ev.preventDefault(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } } });
   $('book').addEventListener('click', (ev) => {
+    if (ev.target.closest('.logbox')) { ev.stopPropagation(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } return; }
     const t = ev.target.closest('[data-bn]'); if (!t || !run || tut || phase !== 'prep') return;
     ev.stopPropagation();
     if (t.dataset.bn === 'out') {
@@ -4217,7 +4245,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     }
     if (phase === 'prep') hint = '仲間→入れ替え先の順にタップ' + (grid[0].some(Boolean) ? '' : '（攻撃列が空だと被害2倍）');
     else if (phase === 'choose') {
-      hint = enemy.bound ? '縛られている。このターンは維持のみ' : !gaugeOk() ? '気力' + Math.max(0, gauge) + '／' + EXP.rot.cost + '。このターンは維持のみ' : '回す？ 維持する？ 赤い数字は受けるダメージ';
+      hint = (enemy.bound || !gaugeOk()) ? '赤い数字は受けるダメージ' : '回す？ 維持する？ 赤い数字は受けるダメージ';   // 回せない理由は、無効になった「回す」ボタンの文言1か所だけ（v5.1.55）
       if (previewOn) {
         const pg = previewGrid();
         const hole = !pg[0].some(Boolean);
@@ -4226,7 +4254,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     }
     if (hint) lines = logLines.slice(-1);
     let h = lines.map((l, i) => '<p class="l' + (i + (3 - lines.length - (hint ? 1 : 0))) + '"></p>').join('');
-    b.innerHTML = orderHTML() + h + (hint ? '<p class="hint"></p>' : '');
+    // ログ（直近の出来事。タップで全履歴）と、いまの案内（回す？維持する？）は別の枠にする（v5.1.55）
+    b.innerHTML = orderHTML() + (h ? '<div class="logbox" role="button" tabindex="0" aria-label="これまでの出来事を全部見る">' + h + '<i class="lb-more" aria-hidden="true">履歴 ▸</i></div>' : '') + (hint ? '<p class="hint"></p>' : '');
     const ps = b.querySelectorAll('p');
     lines.forEach((l, i) => { ps[i].textContent = l; });
     if (hint) ps[ps.length - 1].textContent = hint;
@@ -4255,7 +4284,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const bound = !!(enemy && enemy.bound) && phase === 'choose', low = on && !gaugeOk();
     const why = bound ? 'bind' : low ? 'low' : '';
     if (why) b.dataset.block = why; else delete b.dataset.block;
-    $('btnStay').classList.toggle('only', phase === 'choose' && !!why);   // 押せるのが維持だけのときは、維持を金色にする
+    $('btnStay').classList.remove('only');   // 状態でボタンの格を入れ替えない：回す＝常に金の主要、維持＝常に暗い副次（v5.1.55）
     if (!on && !bound) { m.innerHTML = ''; b.setAttribute('aria-label', '隊列を回す'); return; }
     const cap = EXP.rot.cap, cost = EXP.rot.cost, g = Math.max(0, Math.min(cap, gauge));
     let h = '';
@@ -4272,9 +4301,6 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     try { SFX.nope(); } catch (e) { /* 音なし */ }
     vib(25);
     b.classList.remove('deny'); void b.offsetWidth; b.classList.add('deny');
-    const tgt = enemy && enemy.bound ? $('ename') : $('chipTurn');
-    if (tgt) { tgt.classList.remove('rb-flash'); void tgt.offsetWidth; tgt.classList.add('rb-flash'); }
-    const h = document.querySelector('#book .hint'); if (h) { h.classList.remove('rb-flash'); void h.offsetWidth; h.classList.add('rb-flash'); }
   }
 
   // 章ごとの背景（v5.1.50）：いま・次に行く地点の章に合わせて、背景の重ね絵を切り替える（重ね絵どうしは時間をかけて入れ替わる）
@@ -5045,8 +5071,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   $('btnPrepRot').addEventListener('click', () => { if (tipKey) hideTip(); prepRotate(); });
   function choose(rot) {
     if (phase !== 'choose') return;
-    if (rot && enemy.bound) { say('縛られていて、このターンは回せない。'); render(); return; }
-    if (rot && !gaugeOk()) { say('気力が足りない（回すには' + EXP.rot.cost + '）。'); render(); return; }
+    if (rot && (enemy.bound || !gaugeOk())) { render(); return; }
     actx();
     battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
