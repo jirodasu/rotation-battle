@@ -20,13 +20,13 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.evaluate(() => window.__rb.setGauge(3)); const a = await look();
     await p.evaluate(() => window.__rb.setGauge(1)); const lo = await look();
     ok(!a.dis && !a.block && !a.stayGold && /気力2を使う/.test(a.meter) && /●●●/.test(a.chip), '気力3：回せる・ボタンに目盛り ' + JSON.stringify(a));
-    ok(lo.dis && lo.block === 'low' && lo.stayGold && lo.bg !== a.bg && /次のターン回せる/.test(lo.meter) && /回せない/.test(lo.label) && /●○○/.test(lo.chip), '気力1：回すが灰色になり理由、維持が金色 ' + JSON.stringify(lo));
+    ok(lo.dis && lo.block === 'low' && !lo.stayGold && lo.bg !== a.bg && /次のターン回せる/.test(lo.meter) && /回せない/.test(lo.label) && /●○○/.test(lo.chip), '気力1：回すが灰色になり理由、維持は金色にしない(C9) ' + JSON.stringify(lo));
     const r = await p.evaluate(() => { const x = document.getElementById('btnRotate').getBoundingClientRect(); return [x.left + x.width / 2, x.top + x.height / 2]; });
     if (mob) await p.touchscreen.tap(r[0], r[1]); else await p.mouse.click(r[0], r[1]);
     const deny = await p.evaluate(() => ({ shake: document.getElementById('btnRotate').classList.contains('deny'), flash: document.getElementById('chipTurn').classList.contains('rb-flash'), turn: window.__rb.turn }));
-    ok(deny.shake && deny.flash, '押せない回すを押すと、揺れて気力の札が光る（ターンは進まない）' + JSON.stringify(deny));
+    ok(deny.shake && deny.turn === 2, '押せない回すを押すと、揺れるだけ（C8: 説明は回すボタン1か所）（ターンは進まない）' + JSON.stringify(deny));
     await p.evaluate(() => { window.__rb.enemy.bound = true; window.__rb.setGauge(3); }); const bd = await look();
-    ok(bd.dis && bd.block === 'bind' && bd.stayGold && /縛られている/.test(bd.meter), '縛り：回すに「縛られている」' + JSON.stringify(bd));
+    ok(bd.dis && bd.block === 'bind' && !bd.stayGold && /縛られている/.test(bd.meter), '縛り：回すに「縛られている」' + JSON.stringify(bd));
     const hit = await p.evaluate(() => [...document.querySelectorAll('.icon-btn')].filter((e) => e.offsetParent).map((e) => { const s = getComputedStyle(e, '::after'); return Math.min(parseFloat(s.height), parseFloat(s.width)); }));
     ok(hit.length && hit.every((v) => v >= 38), '上の丸ボタンの押せる範囲が広い ' + JSON.stringify(hit));
     ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));
