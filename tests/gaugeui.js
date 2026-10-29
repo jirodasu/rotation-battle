@@ -16,17 +16,17 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.evaluate(() => { const R = window.__rb; R.run.enemy = R.expEnemy(1, null, 0); document.getElementById('runv').hidden = true; R.toPrepForTest(); });
     await p.waitForTimeout(300); await p.click('#btnStart');
     for (let k = 0; k < 80; k++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(120); }
-    const look = () => p.evaluate(() => { const b = document.getElementById('btnRotate'), s = getComputedStyle(b); return { dis: b.disabled, block: b.dataset.block || '', bg: s.backgroundImage.slice(0, 40), stayGold: document.getElementById('btnStay').classList.contains('only'), meter: document.getElementById('rotMeter').textContent, chip: document.getElementById('chipTurn').textContent, label: b.getAttribute('aria-label') }; });
+    const look = () => p.evaluate(() => { const b = document.getElementById('btnRotate'), s = getComputedStyle(b); return { dis: b.disabled, block: b.dataset.block || '', bg: s.backgroundImage.slice(0, 40), stayGold: document.getElementById('btnStay').classList.contains('only'), why: b.dataset.why || '', pips: document.querySelectorAll('#rotMeter .pips i').length, meter: document.getElementById('rotMeter').textContent, chip: document.getElementById('chipTurn').textContent, label: b.getAttribute('aria-label') }; });
     await p.evaluate(() => window.__rb.setGauge(3)); const a = await look();
     await p.evaluate(() => window.__rb.setGauge(1)); const lo = await look();
-    ok(!a.dis && !a.block && !a.stayGold && /気力2を使う/.test(a.meter) && /●●●/.test(a.chip), '気力3：回せる・ボタンに目盛り ' + JSON.stringify(a));
-    ok(lo.dis && lo.block === 'low' && !lo.stayGold && lo.bg !== a.bg && /次のターン回せる/.test(lo.meter) && /回せない/.test(lo.label) && /●○○/.test(lo.chip), '気力1：回すが灰色になり理由、維持は金色にしない(C9) ' + JSON.stringify(lo));
+    ok(!a.dis && !a.block && !a.stayGold && a.meter === '' && a.pips === 3 && /●●●/.test(a.chip), '気力3：回せる・ボタンは●だけ（文字なし・v5.1.58） ' + JSON.stringify(a));
+    ok(lo.dis && lo.block === 'low' && !lo.stayGold && lo.bg !== a.bg && lo.meter === '' && /次のターンに回せる/.test(lo.why) && /回せない/.test(lo.label) && /●○○/.test(lo.chip), '気力1：回すは金のまま斜線、ボタンに文字は出さず理由は押したとき（v5.1.58）、維持は金色にしない(C9) ' + JSON.stringify(lo));
     const r = await p.evaluate(() => { const x = document.getElementById('btnRotate').getBoundingClientRect(); return [x.left + x.width / 2, x.top + x.height / 2]; });
     if (mob) await p.touchscreen.tap(r[0], r[1]); else await p.mouse.click(r[0], r[1]);
-    const deny = await p.evaluate(() => ({ shake: document.getElementById('btnRotate').classList.contains('deny'), flash: document.getElementById('chipTurn').classList.contains('rb-flash'), turn: window.__rb.turn }));
-    ok(deny.shake && deny.turn === 2, '押せない回すを押すと、揺れるだけ（C8: 説明は回すボタン1か所）（ターンは進まない）' + JSON.stringify(deny));
+    await p.waitForTimeout(250); const deny = await p.evaluate(() => ({ tip: (document.getElementById('rotTip') || {}).textContent || '', tipOn: !!document.querySelector('#rotTip.on'), shake: document.getElementById('btnRotate').classList.contains('deny'), flash: document.getElementById('chipTurn').classList.contains('rb-flash'), turn: window.__rb.turn }));
+    ok(deny.shake && deny.turn === 2 && deny.tipOn && /次のターンに回せる/.test(deny.tip), '押せない回すを押すと、揺れて吹き出しで理由（ターンは進まない）' + JSON.stringify(deny));
     await p.evaluate(() => { window.__rb.enemy.bound = true; window.__rb.setGauge(3); }); const bd = await look();
-    ok(bd.dis && bd.block === 'bind' && !bd.stayGold && /縛られている/.test(bd.meter), '縛り：回すに「縛られている」' + JSON.stringify(bd));
+    ok(bd.dis && bd.block === 'bind' && !bd.stayGold && /縛られている/.test(bd.why), '縛り：回すに「縛られている」' + JSON.stringify(bd));
     const hit = await p.evaluate(() => [...document.querySelectorAll('.icon-btn')].filter((e) => e.offsetParent).map((e) => { const s = getComputedStyle(e, '::after'); return Math.min(parseFloat(s.height), parseFloat(s.width)); }));
     ok(hit.length && hit.every((v) => v >= 38), '上の丸ボタンの押せる範囲が広い ' + JSON.stringify(hit));
     ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));

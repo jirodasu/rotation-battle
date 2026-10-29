@@ -2349,6 +2349,27 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 @media (max-height: 760px) {
   #book.locked:has(p.hint) .logbox { overflow: visible; -webkit-mask-image: none; mask-image: none; flex: none; }
 }
+
+/* ---------- 文字を減らす（v5.1.58） ---------- */
+/* 記録の枠：行動順の列と「履歴」ボタンだけ。いま動いている人のアイコンが光る */
+#book .order { display: flex; align-items: center; gap: 8px; }
+#book.slim { min-height: 0; padding-top: 6px; padding-bottom: 6px; }
+#book.slim .order { margin-bottom: 0; }
+#book .order .od-list { flex: 1 1 auto; min-width: 0; }
+.lb-btn { flex: none; margin-left: auto; min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--paper-line); background: transparent; color: var(--ink-soft); font: inherit; font-size: var(--fs-3, 11px); font-weight: 700; cursor: pointer; }
+.lb-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.busy .lb-btn { opacity: .45; }
+/* 吹き出し：押したものの上に重ねる。レイアウトは動かさない */
+.rb-bubble { position: fixed; z-index: 90; max-width: min(78vw, 300px); padding: 8px 12px; border-radius: 10px; background: #1b2132; color: #f3e6c4; font-size: 14px; font-weight: 700; line-height: 1.45; box-shadow: 0 0 0 1px rgba(230, 184, 76, .55), 0 8px 18px rgba(0, 0, 0, .45); pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .18s, transform .18s; }
+.rb-bubble.on { opacity: 1; transform: none; }
+.rb-bubble::after { content: ""; position: absolute; left: var(--ax, 50%); top: 100%; width: 10px; height: 10px; margin-left: -5px; margin-top: -5px; background: inherit; transform: rotate(45deg); box-shadow: 1px 1px 0 rgba(230, 184, 76, .55); }
+.rb-bubble.below::after { top: 0; box-shadow: -1px -1px 0 rgba(230, 184, 76, .55); }
+/* 赤い数字を覚えるまでの点滅（3回） */
+.tok .inc.teach { animation: incTeach .55s ease-in-out 3; }
+@keyframes incTeach { 50% { transform: scale(1.25); box-shadow: 0 0 0 4px rgba(255, 120, 90, .55); } }
+@media (prefers-reduced-motion: reduce) { .tok .inc.teach { animation: none; } .rb-bubble { transition: none; } }
+/* 回すボタン：●だけ（文字はなし） */
+#btnRotate .rot-meter small { display: none; }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2465,7 +2486,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.57</p>
+    <p class="c-ver" id="cVer">ver 5.1.58</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2791,7 +2812,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.57';
+  const APP_VERSION = '5.1.58';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4266,9 +4287,9 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   $('logBg').addEventListener('click', () => openLog(false));
   $('logX').addEventListener('click', () => openLog(false));
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('logSheet').hidden) openLog(false); });
-  $('book').addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.closest && ev.target.closest('.logbox')) { ev.preventDefault(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } } });
+  $('book').addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.closest && ev.target.closest('.logbox, .lb-btn')) { ev.preventDefault(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } } });
   $('book').addEventListener('click', (ev) => {
-    if (ev.target.closest('.logbox')) { ev.stopPropagation(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } return; }
+    if (ev.target.closest('.logbox, .lb-btn')) { ev.stopPropagation(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } return; }
     const t = ev.target.closest('[data-bn]'); if (!t || !run || tut || phase !== 'prep') return;
     ev.stopPropagation();
     if (t.dataset.bn === 'out') {
@@ -4306,6 +4327,18 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">編成タイム</b><small class="' + (empty ? 'warn' : '') + '">' + (empty ? '攻撃列が空だと被害2倍。仲間を前へ' : 'ドラッグ、またはタップ→タップで仲間を入れ替え') + '</small></span></div>') + bh;
       return;
     }
+    // 戦闘中（練習以外）は、文章を常に並べない。行動順（いま動く人が光る）と「履歴」だけにし、出来事は盤の上の数字で返す（v5.1.58）
+    if (!tut && phase !== 'prep') {
+      b.innerHTML = slimBookHTML(); b.classList.add('slim');
+      if (phase === 'choose' && previewOn) {
+        const pg = previewGrid();
+        bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnPreview'), 0, 'pvTip');
+      } else hideBubble('pvTip');
+      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
+      lockBook();
+      teachInc();
+      return;
+    }
     if (phase === 'prep') hint = '仲間→入れ替え先の順にタップ' + (grid[0].some(Boolean) ? '' : '（攻撃列が空だと被害2倍）');
     else if (phase === 'choose') {
       hint = (enemy.bound || !gaugeOk()) ? '赤い数字は受けるダメージ' : '回す？ 維持する？ 赤い数字は受けるダメージ';   // 回せない理由は、無効になった「回す」ボタンの文言1か所だけ（v5.1.57）
@@ -4328,17 +4361,19 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
      戦闘中（編成タイム以外）は「行動順＋文3行（ログ2行＋案内1行）」の高さに固定し、入りきらない古いログは上へ押し出す（全文は履歴で読める）。
      高さは画面の大きさ・文字の大きさが変わったときだけ測り直す */
   let bookKey = '', bookH = 0;
+  const slimBookHTML = () => orderHTML().replace(/<\/div>$/, '<button type="button" class="lb-btn" aria-label="これまでの出来事を全部見る">履歴 ▸</button></div>');
   function lockBook() {
     const b = $('book');
+    if (tut || phase === 'prep') b.classList.remove('slim');
     const on = phase !== 'prep' && b.offsetParent !== null && !b.querySelector('.bench, .prepban');
     const was = b.classList.contains('locked');
     b.classList.toggle('locked', on);
     if (!on) { b.style.removeProperty('height'); if (was) requestAnimationFrame(() => { fitBoard(); setBleed(); }); return; }
-    const key = innerWidth + 'x' + innerHeight + ':' + document.documentElement.className + ':' + $('app').className.replace(/\b(busy|fit)\b/g, '');
+    const key = (tut ? 't' : 's') + innerWidth + 'x' + innerHeight + ':' + document.documentElement.className + ':' + $('app').className.replace(/\b(busy|fit)\b/g, '');
     if (key !== bookKey || !bookH) {
       const keep = b.innerHTML;
       b.style.removeProperty('height'); b.classList.remove('locked');
-      b.innerHTML = orderHTML() + '<div class="logbox"><p class="l1">あ</p><p class="l2">あ</p><i class="lb-more">履歴 ▸</i></div><p class="hint">回す？ 維持する？ 赤い数字は受けるダメージ</p>';   // 案内はいちばん長い定型文で測る（折り返しも含めて収まる高さ）
+      b.innerHTML = tut ? orderHTML() + '<div class="logbox"><p class="l1">あ</p><p class="l2">あ</p><i class="lb-more">履歴 ▸</i></div><p class="hint">回す？ 維持する？ 赤い数字は受けるダメージ</p>' : slimBookHTML();   // 案内はいちばん長い定型文で測る（折り返しも含めて収まる高さ）
       bookH = Math.ceil(b.getBoundingClientRect().height); bookKey = key;
       b.innerHTML = keep; b.classList.add('locked');
     }
@@ -4377,7 +4412,9 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     if (on) { for (let i = 0; i < cap; i++) h += '<i class="' + (i < g ? 'on' : '') + (i < cost ? ' need' : '') + '"></i>'; }
     const wait = cost - g;
     const sub = bound ? '縛られている' : low ? (wait <= 1 ? '次のターン回せる' : 'あと' + wait + 'ターン') : '気力' + cost + 'を使う';
-    m.innerHTML = (on ? '<span class="pips">' + h + '</span>' : '') + '<small>' + sub + '</small>';
+    // ボタンには●だけを出す。回せない理由は、押したときの吹き出しで返す（v5.1.58：常に文字を並べない）
+    b.dataset.why = bound ? '縛られている。このターンは維持だけ' : low ? (wait <= 1 ? '次のターンに回せる' : 'あと' + wait + 'ターンで回せる') : '';
+    m.innerHTML = on ? '<span class="pips">' + h + '</span>' : '';
     b.setAttribute('aria-label', bound ? '回せない：縛られている。このターンは維持のみ' : low ? '回せない：気力' + g + '／' + cost + '。' + sub : '隊列を回す（気力' + cost + 'を使う。今' + g + '）');
   }
   // 押せない「回す」を押したとき：ボタンを揺らし、理由（気力の札／縛り）を光らせる
@@ -4387,6 +4424,43 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     try { SFX.nope(); } catch (e) { /* 音なし */ }
     vib(25);
     b.classList.remove('deny'); void b.offsetWidth; b.classList.add('deny');
+    if (b.dataset.why) bubble(b.dataset.why, b, 1600, 'rotTip');
+  }
+  /* 吹き出し（v5.1.58）：押した・触ったものの上に、短い一言を重ねて出す。レイアウトは動かさない（上に重ねるだけ）。
+     ms=0 なら出しっぱなし（同じ id で hideBubble するまで） */
+  const bubbleT = {};
+  function bubble(text, el, ms, id) {
+    if (!el || !text) return;
+    let d = document.getElementById(id);
+    if (!d) { d = document.createElement('div'); d.id = id; d.className = 'rb-bubble'; d.setAttribute('role', 'status'); document.body.appendChild(d); }
+    d.textContent = text; d.classList.remove('on'); d.style.visibility = 'hidden'; d.hidden = false;
+    const r = el.getBoundingClientRect(), w = d.offsetWidth, h = d.offsetHeight;
+    const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    const below = r.top - h - 12 < 4;
+    d.style.left = x + 'px'; d.style.top = (below ? r.bottom + 10 : r.top - h - 10) + 'px';
+    d.style.setProperty('--ax', Math.max(12, Math.min(w - 12, r.left + r.width / 2 - x)) + 'px');
+    d.classList.toggle('below', below);
+    d.style.visibility = ''; void d.offsetWidth; d.classList.add('on');
+    clearTimeout(bubbleT[id]);
+    if (ms) bubbleT[id] = setTimeout(() => hideBubble(id), ms);
+  }
+  function hideBubble(id) { const d = document.getElementById(id); if (!d) return; clearTimeout(bubbleT[id]); d.classList.remove('on'); bubbleT[id] = setTimeout(() => { d.hidden = true; }, 220); }
+  /* 赤い数字の説明（v5.1.58）：常に案内文を出さず、最初の3ターンだけ、盤の赤い数字を点滅させて一言を添える。覚えたら出さない */
+  let teachKey = '';
+  function teachInc() {
+    if (tut || phase !== 'choose') return;
+    let n = 0; try { n = +(localStorage.getItem('rb-teach-inc') || 0); } catch (e) { /* 保存できない */ }
+    if (n >= 3) return;
+    const key = (run ? run.node : battleIdx) + ':' + turn;
+    if (key === teachKey) return;
+    requestAnimationFrame(() => {
+      const incs = [...document.querySelectorAll('#board .tok .inc')];
+      if (!incs.length || teachKey === key) return;
+      teachKey = key;
+      try { localStorage.setItem('rb-teach-inc', String(n + 1)); } catch (e) { /* 保存できない */ }
+      incs.forEach((x) => { x.classList.remove('teach'); void x.offsetWidth; x.classList.add('teach'); });
+      bubble('赤い数字は、このターンに受けるダメージ', incs[0], 2800, 'incTip');
+    });
   }
 
   // 章ごとの背景（v5.1.50）：いま・次に行く地点の章に合わせて、背景の重ね絵を切り替える（重ね絵どうしは時間をかけて入れ替わる）
@@ -5290,7 +5364,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
     { t: '1ターン終了', x: 'ここで、隊列を「回す」か「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
-    { t: '気力', x: '上のターン表示と「回す」ボタンの●が気力。回すには気力2が要り、気力は毎ターン1たまる（最大3）。足りないときは「回す」が灰色になる。いつ回すかを考えよう。', pos: 'bottom', spot: () => $('chipTurn'), next: true },
+    { t: '気力', x: '上のターン表示と「回す」ボタンの●が気力。回すには気力2が要り、気力は毎ターン1たまる（最大3）。足りないときに「回す」を押すと、あと何ターンかを教えてくれる。いつ回すかを考えよう。', pos: 'bottom', spot: () => $('chipTurn'), next: true },
     { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
     { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。「突」が付いた仲間は、攻撃列に入ったターンだけ突入技を出す。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
