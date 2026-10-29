@@ -83,11 +83,11 @@ async function open(b, w, h, kind, node) {
     const rows = [];
     for (let tn = 1; tn <= 9; tn++) {
       await p.evaluate((n) => { window.__rb.setTurn(n); }, tn);
-      const r = await p.evaluate(() => { const R = window.__rb, w = R.foeWarn(), t = document.getElementById('ticket'); return { seen: !!(w && w.seen), tshow: getComputedStyle(t).display !== 'none', head: t.querySelector('.t-main b') ? t.querySelector('.t-main b').textContent : '', sub: t.querySelector('.t-main span') ? t.querySelector('.t-main span').textContent : '', more: !document.getElementById('foeMore').hidden, nx: !!t.querySelector('.t-nx'), rng: !!t.querySelector('.rng') }; });
+      const r = await p.evaluate(() => { const R = window.__rb, w = R.foeWarn(), t = document.getElementById('ticket'); return { seen: !!(w && w.seen), tshow: getComputedStyle(t).display !== 'none', head: t.getAttribute('aria-label') || '', sub: (t.getAttribute('aria-label') || '').split('。').slice(1).join('。'), more: !document.getElementById('foeMore').hidden, nx: !!t.querySelector('.t-nx'), rng: !!t.querySelector('.rng') }; });
       rows.push(r);
     }
     ok(rows.every((r) => r.tshow === r.seen), 'C1 下の予告の札は、大技の予告があるときだけ出る（' + rows.map((r) => r.seen ? '○' : '−').join('') + '）');
-    ok(rows.filter((r) => r.seen).every((r) => /断罪者/.test(r.head) && r.sub.length > 3), 'C1 予告を出すときは、敵名（断罪者）と理由が書いてある（' + (rows.find((r) => r.seen) || {}).head + ' / ' + (rows.find((r) => r.seen) || {}).sub + '）');
+    ok(rows.filter((r) => r.seen).every((r) => /断罪者/.test(r.head) && r.sub.length > 3), 'C1 予告を出すときは、敵名（断罪者）と理由がある（v5.1.59〜 読み上げと押したときの吹き出し）（' + (rows.find((r) => r.seen) || {}).head + ' / ' + (rows.find((r) => r.seen) || {}).sub + '）');
     ok(rows.filter((r) => !r.seen).every((r) => r.more) && rows.some((r) => r.seen), 'C1 札がないターンは「敵の詳細」への入り口が出る');
     ok(rows.every((r) => !r.nx && !r.rng), 'C7 常時表示に「その次」の行も、範囲表記（rng）もない');
     // C2 倒れた敵
@@ -122,7 +122,9 @@ async function open(b, w, h, kind, node) {
     ok(c6.sh[0] && !c6.sh[1] && !c6.sh[2] && c6.df === 0 && !/×½/.test(c6.txt), 'C6 ×½の札は像の「肩代わり」だけ。防御アップ・次の防の札は出ない');
     // C7：敵の詳細に「その次」
     await p.evaluate(() => { window.__rb.setTurn(2); });
-    await p.click(await p.evaluate(() => (document.getElementById('foeMore').hidden ? '#ticket' : '#foeMore'))); await p.waitForTimeout(200);
+    { const sel = await p.evaluate(() => (document.getElementById('foeMore').hidden ? '#ticket' : '#foeMore'));
+      await p.click(sel); await p.waitForTimeout(200);
+      if (sel === '#ticket') { await p.click(sel); await p.waitForTimeout(200); } }   // v5.1.59：札は1回目が吹き出し、2回目で詳細
     const det = await p.evaluate(() => document.getElementById('foeSheet').textContent);
     ok(/その次/.test(det), 'C7 敵の詳細に「その次」の行動がある');
     await p.keyboard.press('Escape'); await p.waitForTimeout(150);
@@ -282,6 +284,40 @@ async function open(b, w, h, kind, node) {
     }
     const shown = seen.filter((s) => s.tip).length;
     ok(seen.length >= 4 && shown === 3 && seen.slice(0, 3).every((s) => s.tip && s.teach > 0) && seen.slice(3).every((s) => !s.tip), '赤い数字の説明は最初の3ターンだけ ' + JSON.stringify(seen));
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  /* ---- v5.1.59 敵の札はアイコンと数字だけ（説明は押したときの吹き出し）・大技のカウントダウン・赤い縁 ---- */
+  {
+    const { ctx, p } = await open(b, 390, 844, 0, 2);
+    await p.evaluate(() => { const R = window.__rb; R.enemy.pattern[1] = { name: 'ちからをためる', glyph: '溜', rule: 'charge' }; R.enemy.pattern[2] = Object.assign({}, R.enemy.pattern[0], { name: 'のしかかり' }); R.enemy.charged = false; R.setTurn(2); });
+    await p.waitForTimeout(200);
+    const c1 = await p.evaluate(() => { const t = document.getElementById('ticket'), e = document.getElementById('dangerEdge'); return { cd: t.dataset.cd, dig: (t.querySelector('.t-cd b') || {}).textContent, sub: !!t.querySelector('.t-main span'), edge: !!e && e.classList.contains('on'), aria: t.getAttribute('aria-label') }; });
+    ok(c1.cd === '1' && c1.dig === '1' && !c1.sub && !c1.edge && /次に/.test(c1.aria), 'ためのターン：札の印は大きな「1」（大技まで）、説明の行はなく、赤い縁はまだ出ない ' + JSON.stringify(c1));
+    const tk = await p.$eval('#ticket', (e) => { const q = e.getBoundingClientRect(); return [q.x + q.width / 2, q.y + q.height / 2]; });
+    await p.mouse.click(tk[0], tk[1]); await p.waitForTimeout(250);
+    const t1 = await p.evaluate(() => { const d = document.getElementById('tkTip'); return { on: !!d && !d.hidden && d.classList.contains('on'), t: d ? d.textContent : '', sheet: !document.getElementById('foeSheet').hidden }; });
+    ok(t1.on && /次に/.test(t1.t) && !t1.sheet, '札を押すと、狙いの説明が吹き出しで出る（詳細はまだ開かない） ' + t1.t);
+    await p.mouse.click(tk[0], tk[1]); await p.waitForTimeout(250);
+    ok(await p.evaluate(() => !document.getElementById('foeSheet').hidden), '吹き出しが出ている間にもう一度押すと、敵の詳細が開く（入口は残る）');
+    await p.keyboard.press('Escape'); await p.waitForTimeout(200);
+    await p.evaluate(() => { const R = window.__rb; R.enemy.charged = true; R.setTurn(3); }); await p.waitForTimeout(200);
+    const c2 = await p.evaluate(() => { const e = document.getElementById('dangerEdge'), cs = getComputedStyle(e); return { on: e.classList.contains('on'), anim: cs.animationName, op: +cs.opacity, pe: cs.pointerEvents, cd: document.getElementById('ticket').dataset.cd }; });
+    ok(c2.on && c2.cd === '' && c2.pe === 'none' && c2.anim === 'none' && c2.op > 0.3, '大技のターン：画面の縁が赤く灯る（押せる所はふさがない・動きを減らす設定では点滅しない） ' + JSON.stringify(c2));
+    await p.evaluate(() => { const R = window.__rb; R.setPhase('resolve'); R.render(); }); await p.waitForTimeout(100);
+    ok(await p.evaluate(() => !document.getElementById('dangerEdge').classList.contains('on')), '解決に入ったら赤い縁は消える');
+    await p.evaluate(() => { const R = window.__rb; R.setPhase('prep'); R.enemy.charged = false; R.setTurn(1); }); await p.waitForTimeout(100);
+    const c3 = await p.evaluate(() => { const t = document.getElementById('ticket'); return { sub: !!t.querySelector('.t-main span'), lbl: (t.querySelector('.t-dmg small') || {}).textContent || '', spd: document.getElementById('espd').textContent, aria: document.getElementById('espd').getAttribute('aria-label') }; });
+    ok(!c3.sub && !/ダメージ/.test(c3.lbl) && !/素早さ/.test(c3.spd) && /速/.test(c3.spd) && /素早さ \d+/.test(c3.aria), 'ふだんの札は「印・技の名前・数字」だけ。敵の素早さ・防御は「速・防」の短い印と数字 ' + JSON.stringify(c3));
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  {
+    const { ctx, p } = await open(b, 390, 844, 'trinity', 4);
+    const a = await p.evaluate(() => [...document.querySelectorAll('#party .fc:not(.dead)')].map((c) => { const x = c.querySelector('.fc-act'); return { span: !!x.querySelector('span'), n: x.dataset.n, txt: x.textContent, chip: [...c.querySelectorAll('.fc-chip b')].map((b) => b.textContent).filter((t) => /[^\d+−\-]/.test(t)).length }; }));
+    ok(a.length === 3 && a.every((x) => !x.span && x.n && !x.txt.includes(x.n) && x.chip === 0), '三位一体のパネル：技の行は印と数字だけ（技の名前・札の文字は出さない） ' + JSON.stringify(a));
+    await p.click('#party .fc[data-f="priest"]'); await p.waitForTimeout(250);
+    const t = await p.evaluate(() => { const d = document.getElementById('foeTip'); return { on: !!d && !d.hidden && d.classList.contains('on'), t: d ? d.textContent : '', tg: window.__rb.tgtId }; });
+    const want = await p.evaluate(() => { const R = window.__rb; return R.actOf(R.foeById('priest')).name; });
+    ok(t.on && t.tg === 'priest' && t.t.includes('祈り手') && t.t.includes(want), 'パネルを押すと狙いが移り、その敵の技の名前と数字が吹き出しで出る ' + t.t);
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
   await b.close();
