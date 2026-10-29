@@ -172,6 +172,9 @@ async function open(b, w, h, kind, node) {
     const bt = mp.tags.filter((x) => /戦闘/.test(x[0])), rest = mp.tags.filter((x) => /休息/.test(x[0]));
     ok(bt.length > 0 && bt.every((x) => x[1].length === 0), 'C5 戦闘カードにピルがない（' + JSON.stringify(bt.map((x) => x[1])) + '）');
     ok(rest.every((x) => x[1].every((s) => !/いまの.*HP/.test(s))), 'C10 全快のとき休息カードに「いまのHP」のピルがない（' + JSON.stringify(rest.map((x) => x[1])) + '）');
+    // v5.1.57：休息カードは、ピルを出さず、本文の一文にまとめる（傷ついているときも）
+    const rc = await p.evaluate(() => { const R = window.__rb; const sv = R.run.choices.slice(); R.run.members.forEach((m) => { m.hp = Math.max(1, Math.floor(m.max * 0.89)); }); R.run.choices = [{ type: 'rest', step: R.run.node + 1 }]; R.expShowMap(); const c = document.querySelector('#rvCards .rv-card'); const o = { tags: c.querySelectorAll('.rv-tags em').length, txt: c.textContent }; R.run.members.forEach((m) => { m.hp = m.max; }); R.expShowMap(); const c2 = document.querySelector('#rvCards .rv-card'); o.full = c2.textContent; R.run.choices = sv; R.expShowMap(); return o; });
+    ok(rc.tags === 0 && /いまの平均HP 8\d%/.test(rc.txt) && /戦闘も報酬もなく/.test(rc.txt) && !/いまの平均HP/.test(rc.full), '休息カード：ピル0個。傷ついているときは本文に「いまの平均HP」、全快のときは出さない（' + rc.txt.replace(/\s+/g, '') + '）');
     await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
     // 味方の詳細：間接のない味方
     await p.click('#board .slot[data-r="0"][data-c="0"]'); await p.waitForTimeout(250);
@@ -189,6 +192,9 @@ async function open(b, w, h, kind, node) {
     await p.evaluate(() => { window.__rb.setGauge(0); });
     const bt2 = await p.evaluate(() => ({ r: document.getElementById('btnRotate').className, s: document.getElementById('btnStay').className, dis: document.getElementById('btnRotate').disabled }));
     ok(/primary/.test(bt1.r) && !/primary|only/.test(bt1.s) && /primary/.test(bt2.r) && !/primary|only/.test(bt2.s) && bt2.dis, 'C9 気力があってもなくても、回す＝主要（金）・維持＝副次。足りないときは「回す」が無効表示（' + bt2.r + ' / ' + bt2.s + '）');
+    const gl = await p.evaluate(() => { const b = document.getElementById('btnRotate'), s = getComputedStyle(b), chip = document.getElementById('chipTurn'), gz = chip.querySelector('.gz'); return { bg: s.backgroundImage, dis: b.disabled, why: b.querySelector('.rot-meter small') ? b.querySelector('.rot-meter small').textContent : '', chipTxt: chip.textContent, aria: chip.getAttribute('aria-label'), gzColor: getComputedStyle(gz.querySelector('b')).color, chipColor: s && getComputedStyle(chip).color }; });
+    ok(gl.dis && /repeating-linear-gradient/.test(gl.bg) && /rgb\(236, 211, 140\)/.test(gl.bg) && /あと|次/.test(gl.why), '気力不足の回す：金のまま（金の地＋斜線）、理由文言つき（' + gl.why + '）');
+    ok(!/回すには/.test(gl.chipTxt + gl.aria) && gl.gzColor === gl.chipColor, 'ヘッダーには気力不足の説明も色の変化もない（' + gl.chipTxt + ' / ' + gl.aria + '）');
     // 報酬：突入技の強化に名前が繰り返されない
     await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; }); });
     await p.click('#btnStay'); for (let i = 0; i < 80; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden)) break; await p.waitForTimeout(150); }
