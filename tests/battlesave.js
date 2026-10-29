@@ -40,7 +40,7 @@ const snap = () => { const R = window.__rb, e = R.enemy;
     enemy: e.party ? e.party.map((f) => f.id + f.hp + (f.charged ? 'c' : '') + 'd' + (f.defUp || 0) + 'n' + (f.defNext || 0)).join(',') : e.name + e.hp + (e.charged ? 'c' : '') + (e.bound ? 'b' : ''),
     members: R.run.members.map((m) => m.name + m.hp).join(',') }; };
 async function reloadResume(p) {
-  await p.reload(); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(250);
+  await p.reload(); await p.waitForTimeout(300); if (await p.evaluate(() => !document.getElementById('cover').classList.contains('revealed'))) await p.click('#cover'); await p.waitForTimeout(250);
   const sub = await p.evaluate(() => (document.getElementById('resume').hidden ? null : document.getElementById('resumeSub').textContent));
   if (sub != null) { await p.click('#resume'); await p.waitForTimeout(400); }
   return sub;

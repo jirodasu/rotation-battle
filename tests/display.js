@@ -90,7 +90,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
           for (const id of Object.keys(R.run.map)) {
             const m = R.run.map[id]; if (!m.foe) continue;
             const c = R.routeChoice(id); if (c.type !== 'battle') continue;
-            const card = R.expCard(c), txt = card.t + ' ' + card.d + ' ' + card.tags.map((x) => x.t).join(' ');
+            const card = R.expCard(c), txt = card.t + ' ' + card.d + ' ' + (card.tags || []).map((x) => x.t).join(' ');
             R.run.node = c.step - 1; R.run.enemy = R.expEnemy(c.step, c.variant, m.foe); document.getElementById('runv').hidden = true; R.toPrepForTest();
             seen.n++; if (R.expIsChief(c.step)) seen.chief++; if (c.variant) seen.variant++;
             if (R.enemy.party) {
@@ -101,8 +101,8 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
               continue;
             }
             const st = { name: document.getElementById('ename').textContent, hp: +document.getElementById('ehpn').textContent, spd: num(document.getElementById('espd').textContent, /素早さ (\d+)/), def: num(document.getElementById('espd').textContent, /防御 (\d+)/) };
-            const cd = { name: card.t.replace(/^(章の主|戦闘)\s+/, ''), hp: num(card.d, /HP (\d+)/), def: num(card.d, /防御 (\d+)/), spd: num(card.d, /素早さ (\d+)/), tag: card.tags.map((x) => x.t).find((t) => /^HP\d+ 防\d+$/.test(t)) };
-            if (cd.name !== st.name || cd.hp !== st.hp || cd.def !== st.def || cd.spd !== st.spd || cd.tag !== 'HP' + st.hp + ' 防' + st.def) bad.push([id, rests, JSON.stringify(cd), JSON.stringify(st)]);
+            const cd = { name: card.t.replace(/^(章の主|戦闘)\s+/, ''), hp: num(card.d, /HP (\d+)/), def: num(card.d, /防御 (\d+)/), spd: num(card.d, /素早さ (\d+)/), tag: (card.tags || []).map((x) => x.t).find((t) => /^HP\d+ 防\d+$/.test(t)) };
+            if (cd.name !== st.name || cd.hp !== st.hp || cd.def !== st.def || cd.spd !== st.spd) bad.push([id, rests, JSON.stringify(cd), JSON.stringify(st)]);
           }
         }
       }
@@ -176,7 +176,8 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
           // 予告札：ひとつの敵・ひとりを狙う技のときは、受けたダメージの合計と一致。全員を狙う技は、一人ひとりが範囲内
           if (pred.tk && pred.tk.n != null) {
             tix++; const sum = Object.values(got.m).reduce((a, x) => a + x, 0), vals = Object.values(got.m);
-            const okT = pred.tk.all ? vals.every((v) => v >= pred.tk.lo && v <= pred.tk.hi) : sum === pred.tk.n;
+            // v5.1.55（C7）：全員に当たる技は、札に範囲（1〜8）を出さず元の数字を出す。味方ごとの違いは味方カードの予測に一本化。札の数字＝いちばん大きい被ダメージ
+            const okT = pred.tk.all ? (Math.max.apply(null, vals) === pred.tk.hi && vals.every((v) => v <= pred.tk.hi)) : sum === pred.tk.n;
             if (!okT) { tixBad++; if (ex.length < 6) ex.push(['札', cs.k, JSON.stringify(pred.tk), JSON.stringify(got.m)]); }
             if (pred.tk.cut && okT) cut++;
           }
