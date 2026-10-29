@@ -214,6 +214,25 @@ async function open(b, w, h, kind, node) {
     ok(nc.open && /primary/.test(nc.go) && !/primary/.test(nc.no) && nc.focus === 'ncNo', 'C9 新規確認：「記録を消して始める」が金（進む）、「やめる」が副次。最初のフォーカスは「やめる」のまま（' + nc.go + ' / ' + nc.no + ' / ' + nc.focus + '）');
     await p.close(); await ctx.close();
   }
+  /* ---- v5.1.56 石のレーン：隊列の枠は横いっぱい、石の飾り（ひび・四隅・ランタン）つき。マス・操作は変わらない ---- */
+  for (const [w, h] of [[390, 844], [320, 568], [844, 390]]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: h }, reducedMotion: 'reduce' });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(600);
+    await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
+    const L = await p.evaluate(() => {
+      const bd = document.getElementById('board'), br = bd.getBoundingClientRect();
+      const st = [...bd.querySelectorAll('.strip')].map((s) => { const r = s.getBoundingClientRect(); return { l: r.left, r: r.right, lamps: [...s.querySelectorAll('.lamp')].filter((x) => getComputedStyle(x).display !== 'none').length, cn: s.querySelectorAll('.cn').length, ck: s.querySelectorAll('.ck path').length }; });
+      const sl = [...bd.querySelectorAll('.slot')].map((s) => { const r = s.getBoundingClientRect(); return r.left >= st[0].l && r.right <= st[0].r; });
+      return { st, sl, bl: br.left, sw: document.documentElement.scrollWidth, iw: innerWidth };
+    });
+    ok(L.st.length === 3 && L.st.every((s) => s.cn === 4 && s.ck > 5 && s.lamps === 2) && L.sl.every(Boolean) && L.sw <= L.iw, '石のレーン ' + w + '×' + h + '：3本・四隅4つ・ひび・ランタン2つ。マスはレーンの内側で、横にはみ出さない ' + JSON.stringify(L.st[0]));
+    const ex = await p.evaluate(() => { const pr = document.getElementById('stage').getBoundingClientRect(), s = document.querySelector('#board .strip').getBoundingClientRect(); return [Math.round(pr.left), Math.round(pr.right), Math.round(s.left), Math.round(s.right)]; });
+    ok(Math.abs(ex[2] - ex[0]) <= 8 && Math.abs(ex[3] - ex[1]) <= 8 || w > 600, 'レーンは上の敵パネルとほぼ同じ幅（敵パネル ' + ex[0] + '〜' + ex[1] + '、レーン ' + ex[2] + '〜' + ex[3] + '）');
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
   await b.close();
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();
