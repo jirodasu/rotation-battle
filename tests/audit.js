@@ -172,6 +172,9 @@ async function open(b, w, h, kind, node) {
     const bt = mp.tags.filter((x) => /戦闘/.test(x[0])), rest = mp.tags.filter((x) => /休息/.test(x[0]));
     ok(bt.length > 0 && bt.every((x) => x[1].length === 0), 'C5 戦闘カードにピルがない（' + JSON.stringify(bt.map((x) => x[1])) + '）');
     ok(rest.every((x) => x[1].every((s) => !/いまの.*HP/.test(s))), 'C10 全快のとき休息カードに「いまのHP」のピルがない（' + JSON.stringify(rest.map((x) => x[1])) + '）');
+    // v5.1.57：休息カードは、ピルを出さず、本文の一文にまとめる（傷ついているときも）
+    const rc = await p.evaluate(() => { const R = window.__rb; const sv = R.run.choices.slice(); R.run.members.forEach((m) => { m.hp = Math.max(1, Math.floor(m.max * 0.89)); }); R.run.choices = [{ type: 'rest', step: R.run.node + 1 }]; R.expShowMap(); const c = document.querySelector('#rvCards .rv-card'); const o = { tags: c.querySelectorAll('.rv-tags em').length, txt: c.textContent }; R.run.members.forEach((m) => { m.hp = m.max; }); R.expShowMap(); const c2 = document.querySelector('#rvCards .rv-card'); o.full = c2.textContent; R.run.choices = sv; R.expShowMap(); return o; });
+    ok(rc.tags === 0 && /いまの平均HP 8\d%/.test(rc.txt) && /戦闘も報酬もなく/.test(rc.txt) && !/いまの平均HP/.test(rc.full), '休息カード：ピル0個。傷ついているときは本文に「いまの平均HP」、全快のときは出さない（' + rc.txt.replace(/\s+/g, '') + '）');
     await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
     // 味方の詳細：間接のない味方
     await p.click('#board .slot[data-r="0"][data-c="0"]'); await p.waitForTimeout(250);
@@ -189,6 +192,9 @@ async function open(b, w, h, kind, node) {
     await p.evaluate(() => { window.__rb.setGauge(0); });
     const bt2 = await p.evaluate(() => ({ r: document.getElementById('btnRotate').className, s: document.getElementById('btnStay').className, dis: document.getElementById('btnRotate').disabled }));
     ok(/primary/.test(bt1.r) && !/primary|only/.test(bt1.s) && /primary/.test(bt2.r) && !/primary|only/.test(bt2.s) && bt2.dis, 'C9 気力があってもなくても、回す＝主要（金）・維持＝副次。足りないときは「回す」が無効表示（' + bt2.r + ' / ' + bt2.s + '）');
+    const gl = await p.evaluate(() => { const b = document.getElementById('btnRotate'), s = getComputedStyle(b), chip = document.getElementById('chipTurn'), gz = chip.querySelector('.gz'); return { bg: s.backgroundImage, dis: b.disabled, why: b.querySelector('.rot-meter small') ? b.querySelector('.rot-meter small').textContent : '', chipTxt: chip.textContent, aria: chip.getAttribute('aria-label'), gzColor: getComputedStyle(gz.querySelector('b')).color, chipColor: s && getComputedStyle(chip).color }; });
+    ok(gl.dis && /repeating-linear-gradient/.test(gl.bg) && /rgb\(236, 211, 140\)/.test(gl.bg) && /あと|次/.test(gl.why), '気力不足の回す：金のまま（金の地＋斜線）、理由文言つき（' + gl.why + '）');
+    ok(!/回すには/.test(gl.chipTxt + gl.aria) && gl.gzColor === gl.chipColor, 'ヘッダーには気力不足の説明も色の変化もない（' + gl.chipTxt + ' / ' + gl.aria + '）');
     // 報酬：突入技の強化に名前が繰り返されない
     await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; }); });
     await p.click('#btnStay'); for (let i = 0; i < 80; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden)) break; await p.waitForTimeout(150); }
@@ -231,6 +237,23 @@ async function open(b, w, h, kind, node) {
     ok(L.st.length === 3 && L.st.every((s) => s.cn === 4 && s.ck > 5 && s.lamps === 2) && L.sl.every(Boolean) && L.sw <= L.iw, '石のレーン ' + w + '×' + h + '：3本・四隅4つ・ひび・ランタン2つ。マスはレーンの内側で、横にはみ出さない ' + JSON.stringify(L.st[0]));
     const ex = await p.evaluate(() => { const pr = document.getElementById('stage').getBoundingClientRect(), s = document.querySelector('#board .strip').getBoundingClientRect(); return [Math.round(pr.left), Math.round(pr.right), Math.round(s.left), Math.round(s.right)]; });
     ok(Math.abs(ex[2] - ex[0]) <= 8 && Math.abs(ex[3] - ex[1]) <= 8 || w > 600, 'レーンは上の敵パネルとほぼ同じ幅（敵パネル ' + ex[0] + '〜' + ex[1] + '、レーン ' + ex[2] + '〜' + ex[3] + '）');
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  /* ---- v5.1.57 画面のゆれ：戦闘中（編成タイム以外）は、ログの行数や案内の有無で敵パネル・盤の大きさと位置が変わらない ---- */
+  for (const foe of ['trinity', 1]) {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(600);
+    await p.evaluate((foe) => { const R = window.__rb, c = R.run.choices.find((x) => x.type === 'battle'); R.run.map[c.rid] = { foe, variant: null }; }, foe);
+    const i = await p.evaluate(() => window.__rb.run.choices.findIndex((x) => x.type === 'battle'));
+    await p.click('#rvCards .rv-card[data-i="' + i + '"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
+    await p.evaluate(() => { window.__lay = new Set(); setInterval(() => { if (!document.getElementById('btnStart').hidden || !document.getElementById('result').hidden) return; const s = document.querySelector('#board .slot').getBoundingClientRect(), st = document.getElementById('stage').getBoundingClientRect(); window.__lay.add([Math.round(s.width), Math.round(st.height), Math.round(document.getElementById('book').getBoundingClientRect().height)].join(',')); }, 40); });
+    await p.click('#btnStart');
+    for (let t = 0; t < 4; t++) { for (let k = 0; k < 300; k++) { if (await p.evaluate(() => !document.getElementById('result').hidden || (!document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden'))) break; await p.waitForTimeout(50); } await p.waitForTimeout(300); if (await p.evaluate(() => !document.getElementById('result').hidden)) break; await p.evaluate((t) => { const b = document.getElementById(t % 2 || document.getElementById('btnRotate').disabled ? 'btnStay' : 'btnRotate'); b.click(); }, t); await p.waitForTimeout(300); }
+    const lay = await p.evaluate(() => [...window.__lay]);
+    // 最初の1回（編成タイム→戦闘の切り替わり）だけは盤の大きさを合わせ直すので、2種類まで
+    ok(lay.length <= 2, 'ゆれ（' + foe + '）：戦闘中の［マスの幅, 敵パネルの高さ, 記録の高さ］が変わらない ' + JSON.stringify(lay));
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
   await b.close();
