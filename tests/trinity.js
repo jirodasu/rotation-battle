@@ -65,7 +65,7 @@ async function auto(p, order) {
     let s = await card('statue'), pr = await card('priest'), j = await card('judge');
     ok(s.sel && !pr.sel && !j.sel, '何も選ばないと、上から生きている1体（鎮守の像）が狙いになる');
     // v5.1.55（C6）：×½の札は祈り手・断罪者に繰り返さず、像の「肩代わり」1か所に集約。半減の注記（「半減後」）は、攻撃対象に選んだ敵のカードにだけ出す
-    ok(/肩代わり/.test(s.t) && s.half && !pr.half && !j.half, '像に「肩代わり」の札、祈り手と断罪者には×½の札を出さない');
+    ok(s.half && !pr.half && !j.half, '像に「肩代わり」の札、祈り手と断罪者には×½の札を出さない');
     const dS = await calc('statue'), dP = await calc('priest'), dPfull = await calc('priest', true), dJ = await calc('judge'), dJfull = await calc('judge', true);
     ok(+(s.dealt || '').replace(/[^\d]/g, '') === dS && +(pr.dealt || '').replace(/[^\d]/g, '') === dP && +(j.dealt || '').replace(/[^\d]/g, '') === dJ, 'パネルの「与」が計算と一致（像' + dS + '／祈り手' + dP + '／断罪者' + dJ + '）' + JSON.stringify([s.dealt, pr.dealt, j.dealt]));
     await p.click('#party .fc[data-f="priest"]'); await p.waitForTimeout(100);
@@ -96,11 +96,11 @@ async function auto(p, order) {
   // 3) 大技の予告（祈り手が生きている間は2ターン前から、倒したあとは1ターン前から）
   {
     const { ctx, p } = await open(b, 390, 844);
-    const at = async (t, priest) => { await p.evaluate(([t, pr]) => { const R = window.__rb; R.foeById('priest').hp = pr ? 18 : 0; R.setTurn(t); }, [t, priest]); return p.evaluate(() => ({ w: window.__rb.foeWarn(), t: document.getElementById('ticket').textContent })); };
-    let r = await at(1, true); ok(r.w.ahead === 2 && r.w.seen && /2ターン後に大技/.test(r.t), '祈り手あり・1ターン目：「2ターン後に大技」が見える ' + r.t.slice(0, 30));
-    r = await at(2, true); ok(r.w.ahead === 1 && r.w.seen && /大技をためる/.test(r.t) && /12/.test(r.t), '祈り手あり・2ターン目：「大技をためる・次のターンに12」');
-    r = await at(3, true); ok(r.w.ahead === 0 && r.w.seen && /大技！/.test(r.t), '祈り手あり・3ターン目：「大技！」');
-    r = await at(4, true); ok(r.w.ahead === 2 && /2ターン後に大技/.test(r.t), '祈り手あり・4ターン目（次の周期）：また「2ターン後に大技」');
+    const at = async (t, priest) => { await p.evaluate(([t, pr]) => { const R = window.__rb; R.foeById('priest').hp = pr ? 18 : 0; R.setTurn(t); }, [t, priest]); return p.evaluate(() => { const t = document.getElementById('ticket'); return { w: window.__rb.foeWarn(), t: t.getAttribute('aria-label') + ' ' + t.textContent, cd: t.dataset.cd }; }); };   // v5.1.59：札の説明文は吹き出しと読み上げへ。札そのものは数字だけ
+    let r = await at(1, true); ok(r.w.ahead === 2 && r.w.seen && /2ターン後に大技/.test(r.t) && r.cd === '2', '祈り手あり・1ターン目：「2ターン後に大技」が見え、札の印は大きな「2」（カウントダウン） ' + r.t.slice(0, 30));
+    r = await at(2, true); ok(r.w.ahead === 1 && r.w.seen && /大技をためる/.test(r.t) && /12/.test(r.t) && r.cd === '1', '祈り手あり・2ターン目：「大技をためる・次のターンに12」、印は「1」');
+    r = await at(3, true); ok(r.w.ahead === 0 && r.w.seen && /大技！/.test(r.t) && r.cd === '' && await p.evaluate(() => document.getElementById('dangerEdge').classList.contains('on')), '祈り手あり・3ターン目：「大技！」、画面の縁が赤く光る');
+    r = await at(4, true); ok(r.w.ahead === 2 && /2ターン後に大技/.test(r.t) && !(await p.evaluate(() => document.getElementById('dangerEdge').classList.contains('on'))), '祈り手あり・4ターン目（次の周期）：また「2ターン後に大技」、赤い縁は消える');
     r = await at(1, false); ok(!r.w.seen && !/ターン後に大技/.test(r.t) && /見えない/.test(r.t), '祈り手が倒れた・1ターン目：大技の予告は出ない（1ターン遅れる） ' + r.t.slice(0, 40));
     r = await at(2, false); ok(r.w.seen && /大技をためる/.test(r.t), '祈り手が倒れた・2ターン目（ため）：ここで初めて見える');
     r = await at(3, false); ok(r.w.seen && /大技！/.test(r.t), '祈り手が倒れた・3ターン目：「大技！」');
@@ -124,7 +124,12 @@ async function auto(p, order) {
     const t3 = await p.evaluate(() => { const R = window.__rb; return R.TRI.foes.map((f) => R.foeById(f.id).id + ':' + R.foeById(f.id).defUp).join(' '); });
     ok(/statue:0/.test(t3) === false || /judge:3|statue:3/.test(t3), '2ターン目の「防御補助」（+3）は、3ターン目に像か断罪者で働く ' + t3);
     // 敵の詳細
-    await p.click(await p.evaluate(() => (document.getElementById('foeMore').hidden ? '#ticket' : '#foeMore'))); await p.waitForTimeout(200);
+    { const sel = await p.evaluate(() => (document.getElementById('foeMore').hidden ? '#ticket' : '#foeMore'));
+      await p.click(sel); await p.waitForTimeout(200);
+      if (sel === '#ticket') {   // v5.1.59：1回目は吹き出し（狙いの説明）、吹き出しが出ている間にもう一度で詳細
+        ok(await p.evaluate(() => { const d = document.getElementById('tkTip'); return !!d && !d.hidden && /もう一度で詳細/.test(d.textContent) && document.getElementById('foeSheet').hidden; }), '予告の札を1回押すと、狙いの説明が吹き出しで出る（詳細はまだ開かない）');
+        await p.click(sel); await p.waitForTimeout(200);
+      } }
     const sh = await p.evaluate(() => ({ open: !document.getElementById('foeSheet').hidden, t: document.getElementById('foeSheet').textContent }));
     ok(sh.open && /鎮守の像/.test(sh.t) && /祈り手/.test(sh.t) && /断罪者/.test(sh.t) && /半分/.test(sh.t), '予告の札をタップで敵の詳細（3体の行動表と肩代わりの説明）が開く');
     await p.keyboard.press('Escape'); await p.waitForTimeout(150);

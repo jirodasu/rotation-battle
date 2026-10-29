@@ -100,7 +100,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
                 if (!t.includes(f.name) || !t.includes(f.hp + '/' + f.max) || !t.includes('速' + f.spd) || !t.includes('防' + f.def)) bad.push(['panel', f.name, t]); });
               continue;
             }
-            const st = { name: document.getElementById('ename').textContent, hp: +document.getElementById('ehpn').textContent, spd: num(document.getElementById('espd').textContent, /素早さ (\d+)/), def: num(document.getElementById('espd').textContent, /防御 (\d+)/) };
+            const st = { name: document.getElementById('ename').textContent, hp: +document.getElementById('ehpn').textContent, spd: num(document.getElementById('espd').getAttribute('aria-label'), /素早さ (\d+)/), def: num(document.getElementById('espd').getAttribute('aria-label'), /防御 (\d+)/) };
             const cd = { name: card.t.replace(/^(章の主|戦闘)\s+/, ''), hp: num(card.d, /HP (\d+)/), def: num(card.d, /防御 (\d+)/), spd: num(card.d, /素早さ (\d+)/), tag: (card.tags || []).map((x) => x.t).find((t) => /^HP\d+ 防\d+$/.test(t)) };
             if (cd.name !== st.name || cd.hp !== st.hp || cd.def !== st.def || cd.spd !== st.spd) bad.push([id, rests, JSON.stringify(cd), JSON.stringify(st)]);
           }
@@ -119,9 +119,9 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
     await p.click('#begin'); await p.waitForTimeout(500);
     await p.evaluate(() => { const R = window.__rb; R.run.node = 4; R.run.enemy = R.expEnemy(5, null, 'trinity'); document.getElementById('runv').hidden = true; R.toPrepForTest(); }); await p.waitForTimeout(300);
     const r = await p.evaluate(() => { const R = window.__rb, out = []; for (let t = 1; t <= 3; t++) { R.setTurn(t);
-      R.enemy.party.forEach((f) => { const a = f.pattern[(t - 1) % f.pattern.length], el = document.querySelector('.fc[data-f="' + f.id + '"]'), shown = el.querySelector('.fc-act span').textContent, spd = el.querySelector('.fc-spd').textContent; out.push({ t, f: f.id, shown, want: a.name, spd, wantSpd: '速' + f.spd }); }); }
+      R.enemy.party.forEach((f) => { const a = f.pattern[(t - 1) % f.pattern.length], el = document.querySelector('.fc[data-f="' + f.id + '"]'), shown = el.querySelector('.fc-act').dataset.n, spd = el.querySelector('.fc-spd').textContent; out.push({ t, f: f.id, shown, want: a.name, spd, wantSpd: '速' + f.spd }); }); }
       R.setTurn(1); return out; });
-    ok(r.every((x) => x.shown === x.want), 'パネルの技名が行動パターンの名前と同じ（' + [...new Set(r.map((x) => x.shown))].join('・') + '）');
+    ok(r.every((x) => x.shown === x.want), 'パネルの技名（v5.1.59〜 押したときの吹き出し用）が行動パターンの名前と同じ（' + [...new Set(r.map((x) => x.shown))].join('・') + '）');
     ok(r.every((x) => x.spd === x.wantSpd), 'パネルに素早さ（' + r.slice(0, 3).map((x) => x.spd).join('・') + '）');
     // 1ターン動かして、ログに出た技名がパネルの名前と同じ
     const names1 = r.filter((x) => x.t === 1).map((x) => x.want);
@@ -198,7 +198,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
             const dmgActs = acts.filter((a) => a.dmg && a.rule !== 'charge' && a.rule !== 'bind');
             // 予告札の数字（攻撃する技が1つだけのターンに限って照合する）
             let tk = null; const el = document.querySelector('#ticket .t-dmg');
-            if (dmgActs.length === 1 && dmgActs[0].rule !== 'random' && el && el.querySelector('small').textContent !== '大技') {
+            if (dmgActs.length === 1 && dmgActs[0].rule !== 'random' && el && el.querySelector('small').textContent !== '大技' && !document.getElementById('ticket').dataset.warn) {
               const a = dmgActs[0], cutOn = el.classList.contains('cut'), mm = el.querySelector('b').textContent.replace(/×\d+$/, '').match(/^(\d+)(?:〜(\d+))?$/);
               if (mm) { const lo = +mm[1], hi = mm[2] ? +mm[2] : lo; tk = { all: a.rule === 'all', lo, hi, n: a.rule === 'all' ? lo : cutOn ? lo : lo * (a.hits || 1), cut: cutOn }; } }
             return { m, tk, random: acts.some((a) => a.rule === 'random'), ctx: (rot ? 'rot' : R.phase) + ' ' + acts.map((a) => a.rule).join('+'), snap: R.log.slice() }; }, rot);

@@ -2370,6 +2370,26 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 @media (prefers-reduced-motion: reduce) { .tok .inc.teach { animation: none; } .rb-bubble { transition: none; } }
 /* 回すボタン：●だけ（文字はなし） */
 #btnRotate .rot-meter small { display: none; }
+
+/* ===== 敵の札はアイコンと数字だけ・大技のカウントダウンと赤い縁（v5.1.59） ===== */
+.ticket { cursor: pointer; }
+.t-ico.t-cd { position: relative; flex-direction: column; display: flex; align-items: center; justify-content: center; gap: 0;
+  background: radial-gradient(circle at 38% 32%, var(--gold-hi), var(--gold) 65%, var(--gold-lo)); color: var(--accent-ink);
+  box-shadow: inset 0 0 0 2px rgba(255, 245, 210, .45), 0 0 0 1px var(--gold-lo), 0 0 0 4px rgba(190, 52, 34, .35); }
+.t-ico.t-cd b { font-size: 26px; line-height: .9; font-weight: 900; font-variant-numeric: lining-nums; }
+.t-ico.t-cd small { font-size: 7.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-top: 1px; white-space: nowrap; }
+.ticket.p .t-ico.t-cd b { font-size: 20px; } .ticket.p .t-ico.t-cd small { display: none; }
+.t-dmg.nx b { color: var(--danger-strong); opacity: .78; }
+.t-dmg small:empty { display: none; }
+.t-main b .pierce { vertical-align: 2px; }
+#espd span { margin-right: 10px; } #espd small { font-size: 10px; opacity: .8; margin-right: 2px; }
+.fc-act.slim { gap: 5px; } .fc-act.slim .fc-g { font-size: 12px; } .fc-act.slim b { font-size: 14px; } .fc-act.slim b.nil { opacity: .5; }
+#dangerEdge { position: fixed; inset: 0; z-index: 35; pointer-events: none; opacity: 0; transition: opacity .45s;
+  box-shadow: inset 0 0 0 2px rgba(214, 72, 46, .75), inset 0 0 42px 8px rgba(176, 34, 20, .5); }
+#dangerEdge.on { opacity: 1; animation: edgePulse 1.4s ease-in-out infinite; }
+@keyframes edgePulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { #dangerEdge.on { animation: none; opacity: .7; } }
+body.is-cover #dangerEdge { opacity: 0; animation: none; }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2486,7 +2506,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.58</p>
+    <p class="c-ver" id="cVer">ver 5.1.59</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2812,7 +2832,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.58';
+  const APP_VERSION = '5.1.59';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3861,7 +3881,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     $('chap').innerHTML = chapLabel().split('　').map((x) => '<span class="nw">' + x + '</span>').join('　');
     if (enemy.party) { $('ename').textContent = enemy.name; return; }
     $('ename').textContent = enemy.name;
-    $('espd').textContent = '素早さ ' + enemy.spd + '　防御 ' + enemy.def;
+    $('espd').innerHTML = tut ? '素早さ ' + enemy.spd + '　防御 ' + enemy.def : '<span title="素早さ"><small>速</small>' + enemy.spd + '</span><span title="防御"><small>防</small>' + enemy.def + '</span>';
+    $('espd').setAttribute('aria-label', '素早さ ' + enemy.spd + '　防御 ' + enemy.def);
     const pctNow = Math.round(enemy.hp / enemy.max * 100) + '%';
     if (enter) {
       const lag = $('ebarLag'), fill = $('ebar');
@@ -4000,8 +4021,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     // 状態：肩代わり・防御・ため。アイコンと数値で
     const c = [];
     if (F.hp > 0) {
-      if (F.id === 'statue') c.push('<i class="fc-chip sh" title="肩代わり：ほかの2体が受けるダメージを半分にする">' + ICON.shield + '<b>肩代わり</b></i>');
-      if (F.charged) c.push('<i class="fc-chip ch" title="ためている：このターンは大技">溜<b>大技</b></i>');
+      if (F.id === 'statue') c.push('<i class="fc-chip sh" title="肩代わり：ほかの2体が受けるダメージを半分にする">' + ICON.shield + (tut ? '<b>肩代わり</b>' : '') + '</i>');
+      if (F.charged) c.push('<i class="fc-chip ch" title="ためている：このターンは大技">溜' + (tut ? '<b>大技</b>' : '') + '</i>');
       if (phase === 'choose' || phase === 'prep') {
         const a = actOf(F);
         const P = foeById('priest');
@@ -4019,6 +4040,13 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     units(src).forEach(({ u, r, c }) => { const d = expDmg(u, r, c, src, gh || phase === 'prep', gh, F); if (d) t += d.val; });
     return t;
   }
+  // 敵のパネルを押したときの一言：いまの技と数字、狙う列（パネルからは技の名前を外したので、押した反応で返す。v5.1.59）
+  function foeSay(F, a) {
+    const tg = targetInfo(a, showGhost() ? previewGrid() : grid, F);
+    const to = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? COLN[tg.cols[0]] + 'の列' : a.rule === 'random' ? '一番前の列のだれか' : '';
+    const n = a.dmg ? a.dmg + (a.hits > 1 ? '×' + a.hits : '') : a.rule === 'mend' ? '+' + a.heal : '';
+    return '狙う：' + F.name + '　' + a.name + (n ? ' ' + n : '') + (to ? ' → ' + to : '');
+  }
   function partyHTML() {
     const tgt = targetFoe(), live = phase === 'prep' || phase === 'choose';
     return enemy.party.map((F) => {
@@ -4034,7 +4062,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
         '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
-        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i><span>' + brief + '</span>' + dmgTxt + '</span>' +
+        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i>' + (tut ? '<span>' + brief + '</span>' : '') + (dmgTxt || (tut ? '' : '<b class="nil">—</b>')) + '</span>' +
         (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half && sel ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '') +
         '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
@@ -4052,6 +4080,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const F = foeById(id);
     if (!F || F.hp <= 0) { SFX.nope(); return; }
     if (tgtId !== id || targetFoe() !== F) { tgtId = id; SFX.pick(0); }
+    if (!tut) { const a = actOf(F), el = foeEl(F); setTimeout(() => bubble(foeSay(F, a), foeEl(F) || el, 1700, 'foeTip'), 0); }
     if (phase === 'choose') battleSave('choose');   // 選び直した攻撃対象も、途中保存に残す
     inspect = null; render();
   }
@@ -4088,9 +4117,14 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const nowF = warn && warn.seen ? (warn.ahead === 0 ? J : null) : Ja ? J : L, h = nowF && dmg != null ? actHit(nowF, actOf(nowF)) : null, raw = h ? dmg * (actOf(nowF).hits || 1) : dmg,
       dbl = !!h && frontRow(src) > 0, cut = !!h && !dbl && h.lo < raw;
     if (dbl) dmg = h.txt;   // 攻撃列が空：2倍
-    t.innerHTML = '<span class="t-ico disp">' + ico + '</span>' +
-      '<span class="t-main"><b class="disp">' + head + '</b><span>' + sub + '</span></span>' +
-      '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + '"><b class="disp">' + (dmg == null ? '—' : cut ? h.txt : dmg) + '</b><small>' + (cut ? '軽減後（元' + raw + '）' : dbl ? '2倍ダメージ' : warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
+    // 本番では、札は「印（大技まであと何ターンなら、その数字）・名前・数字」だけ。説明は札を押したときの吹き出し（v5.1.59）
+    const slim = !tut, cdn = slim && warn && warn.seen && warn.ahead > 0 ? warn.ahead : 0;
+    t.dataset.why = head + (sub ? '　' + sub : ''); t.dataset.cd = cdn ? String(cdn) : ''; t.dataset.warn = warn && warn.seen ? '1' : '';
+    t.innerHTML = (cdn ? '<span class="t-ico disp t-cd" aria-hidden="true"><b>' + cdn + '</b><small>大技まで</small></span>' : '<span class="t-ico disp">' + ico + '</span>') +
+      '<span class="t-main"><b class="disp">' + (slim && warn && warn.seen ? warn.name : head) + '</b>' + (slim ? '' : '<span>' + sub + '</span>') + '</span>' +
+      '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + (cdn ? ' nx' : '') + '"><b class="disp">' + (dmg == null ? '—' : cut ? h.txt : dmg) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
+    t.setAttribute('aria-label', '敵の予告：' + head + '。' + sub);
+    dangerEdge(!!(warn && warn.seen && warn.ahead === 0) && (phase === 'prep' || phase === 'choose'));
     tipsCheck(curAct());
     const showBeam = phase === 'prep' || phase === 'choose', bfr = frontRow(src);
     document.querySelectorAll('.beam').forEach((b) => {
@@ -4111,11 +4145,23 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const chg = act.rule === 'charge' || act.rule === 'bind', bnd = act.rule === 'bind';
     t.classList.toggle('charge', chg);
     t.classList.toggle('big', !!enemy.charged && !chg);
-    t.innerHTML = '<span class="t-ico disp">' + act.glyph + '</span>' +
-      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b><span>' + info.desc + '</span>' + '</span>' +
+    // 文字を減らす（v5.1.59）：本番では、予告の札は「印・技の名前・数字」だけ。狙いの説明は札を押したときの吹き出しで。
+    //   ためのターンは、印の代わりに「大技まであと何ターン」の大きな数字を出す（カウントダウン）
+    const slim = !tut, nx = act.rule === 'charge' ? nextActOf(enemy) : null;
+    t.dataset.why = act.name + '　' + info.desc;
+    t.dataset.cd = ''; t.dataset.warn = '';
+    if (slim && chg && !bnd && nx && nx.dmg) {
+      t.dataset.cd = '1';
+      t.innerHTML = '<span class="t-ico disp t-cd" aria-hidden="true"><b>1</b><small>大技まで</small></span>' +
+        '<span class="t-main"><b class="disp">' + act.name + '</b></span>' +
+        '<span class="t-dmg nx"><b class="disp">' + nx.dmg * (nx.hits || 1) + '</b><small>次に大技</small></span>';
+    } else t.innerHTML = '<span class="t-ico disp">' + act.glyph + '</span>' +
+      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
         : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
-          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? '軽減後（元' + raw + '）' : dbl ? '2倍ダメージ' : 'ダメージ') + '</small></span>'; })());
+          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
+    t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc);
+    dangerEdge(!!enemy.charged && !chg && (phase === 'prep' || phase === 'choose'));
     tipsCheck(act);
     const showBeam = phase === 'prep' || phase === 'choose';
     // 赤い枠は、実際にダメージを受ける仲間（一番前の列のそのマス）だけに出す
@@ -4334,7 +4380,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
         const pg = previewGrid();
         bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnPreview'), 0, 'pvTip');
       } else hideBubble('pvTip');
-      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
+      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); hideBubble('foeTip'); hideBubble('tkTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
       lockBook();
       teachInc();
       return;
@@ -4428,6 +4474,14 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   }
   /* 吹き出し（v5.1.58）：押した・触ったものの上に、短い一言を重ねて出す。レイアウトは動かさない（上に重ねるだけ）。
      ms=0 なら出しっぱなし（同じ id で hideBubble するまで） */
+  /* 大技が来るターンは、画面の縁を赤く脈打たせる（v5.1.59）。押せる所はふさがない。動きを減らす設定では、点滅せず薄く灯すだけ */
+  let edgeOn = false;
+  function dangerEdge(on) {
+    let d = $('dangerEdge');
+    if (!d) { d = document.createElement('div'); d.id = 'dangerEdge'; d.setAttribute('aria-hidden', 'true'); document.body.appendChild(d); }
+    if (on && !edgeOn) vib(40);   // 大技のターンに入った瞬間だけ、短く震わせる
+    edgeOn = !!on; d.classList.toggle('on', edgeOn);
+  }
   const bubbleT = {};
   function bubble(text, el, ms, id) {
     if (!el || !text) return;
@@ -4807,7 +4861,15 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     inspect = inspect === FOE ? null : FOE;
     render();
   }
-  $('stage').addEventListener('click', toggleFoe);
+  $('stage').addEventListener('click', (ev) => {
+    // 予告の札を押したら、狙いの説明を吹き出しで（本番のみ。札以外は、これまでどおり敵の詳細）。v5.1.59
+    const tk = ev.target.closest && ev.target.closest('#ticket');
+    //   吹き出しが出ている間にもう一度押すと、これまでどおり敵の詳細を開く（詳しい行動表への入口は残す）
+    const tb = $('tkTip'), tipUp = tb && !tb.hidden && tb.classList.contains('on');
+    if (tk && !tut && tk.dataset.why && (phase === 'prep' || phase === 'choose') && !inspect && !tipUp) { ev.stopPropagation(); SFX.tap(); bubble(tk.dataset.why + '（もう一度で詳細）', tk, 2600, 'tkTip'); return; }
+    if (tipUp) hideBubble('tkTip');
+    toggleFoe();
+  });
   $('party').addEventListener('click', (ev) => {
     const fc = ev.target.closest('.fc'); if (!fc) return;
     ev.stopPropagation();
@@ -5272,6 +5334,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     return got;
   }
   function finish(result) {
+    dangerEdge(false);
     phase = 'over';
     lastResult = result;
     battleSave('over', { result });
@@ -5871,6 +5934,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     toastT = setTimeout(() => { t.classList.remove('on'); toastH = setTimeout(() => { t.hidden = true; }, RM ? 0 : 300); }, ms || 3200);
   }
   function goTitle() {
+    dangerEdge(false); ['foeTip', 'tkTip', 'rotTip', 'incTip', 'pvTip'].forEach(hideBubble);
     // 戦闘の途中まで保存してあるなら、タイトルに着いたときにそれを知らせる（v5.1.48）
     const sv0 = !tut && run && EXPM() ? expSaved() : null, bat0 = sv0 && sv0.battle ? sv0.battle : null;
     if (phase === 'resolve' && !(tut && tut.noteDone)) return;
