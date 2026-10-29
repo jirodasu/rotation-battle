@@ -135,17 +135,22 @@ async function open(b, w, h, kind, node) {
     ok(seals.length > 0 && seals.every((t) => /^(攻\+\d+|防-\d+)$/.test(t)), 'C7 補助行の攻・防の札に数値が付く ' + JSON.stringify(seals));
     await p.click('#btnStart'); for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
     await p.evaluate(() => { const R = window.__rb; for (let i = 0; i < 6; i++) R.say('テスト行' + i); R.render(); });
-    const lg = await p.evaluate(() => { const lb = document.querySelector('#book .logbox'), h = document.querySelector('#book .hint'); return { lines: lb ? lb.querySelectorAll('p').length : -1, sep: !!h && !lb.contains(h), hint: h ? h.textContent : '' }; });
-    ok(lg.lines >= 1 && lg.lines <= 2 && lg.sep, 'C8 ログは直近2行まで、案内（' + lg.hint + '）は別の枠');
-    await p.click('#book .logbox'); await p.waitForTimeout(150);
+    // v5.1.58：戦闘中の記録の枠は、行動順と「履歴」ボタンだけ（ログの文章・案内文は常に出さない）
+    const lg = await p.evaluate(() => { const bk = document.getElementById('book'); return { ps: bk.querySelectorAll('p').length, order: !!bk.querySelector('.order .od'), btn: !!bk.querySelector('.lb-btn'), txt: bk.innerText.replace(/\s+/g, ' ') }; });
+    ok(lg.ps === 0 && lg.order && lg.btn && !/テスト行|回す？/.test(lg.txt), '記録の枠は行動順と履歴ボタンだけ（' + lg.txt + '）');
+    await p.click('#book .lb-btn'); await p.waitForTimeout(150);
     const op = await p.evaluate(() => { const l = document.getElementById('logList'); return { open: !document.getElementById('logSheet').hidden, n: l.querySelectorAll('p').length, total: window.__rb.log.length, scroll: l.scrollHeight >= l.clientHeight, last: l.lastElementChild.textContent }; });
-    ok(op.open && op.n === op.total && /テスト行5/.test(op.last), 'C8 ログをタップで全履歴が開く（' + op.n + '/' + op.total + '行、最後 ' + op.last + '）');
+    ok(op.open && op.n === op.total && /テスト行5/.test(op.last), 'C8 履歴を押すと全履歴が開く（' + op.n + '/' + op.total + '行、最後 ' + op.last + '）');
     await p.keyboard.press('Escape'); await p.waitForTimeout(120);
     ok(await p.evaluate(() => document.getElementById('logSheet').hidden), 'C8 Escapeで閉じる');
-    // 気力不足の説明
+    // 気力不足の説明：ボタンは●だけ。理由は押したときの吹き出し1か所
     await p.evaluate(() => { window.__rb.setGauge(0); });
-    const g = await p.evaluate(() => ({ hint: document.querySelector('#book .hint').textContent, btn: document.getElementById('btnRotate').textContent, dis: document.getElementById('btnRotate').disabled, n0: window.__rb.log.length }));
-    ok(g.dis && /あと|次のターン/.test(g.btn) && !/気力/.test(g.hint), 'C8 気力不足の理由は「回す」ボタンの文言（' + g.btn.replace(/\s+/g, '') + '）だけ。案内文には出ない（' + g.hint + '）');
+    const g = await p.evaluate(() => ({ book: document.getElementById('book').innerText, btn: document.getElementById('btnRotate').innerText.replace(/\s+/g, ''), dis: document.getElementById('btnRotate').disabled, n0: window.__rb.log.length }));
+    ok(g.dis && g.btn === '回す' && !/気力|あと/.test(g.book), '気力不足でも、ボタンと枠に説明の文字は出ない（ボタン：' + g.btn + '）');
+    const rr = await p.evaluate(() => { const x = document.getElementById('btnRotate').getBoundingClientRect(); return [x.left + x.width / 2, x.top + x.height / 2]; });
+    await p.mouse.click(rr[0], rr[1]); await p.waitForTimeout(300);
+    const tip = await p.evaluate(() => { const d = document.getElementById('rotTip'); return d && d.classList.contains('on') ? d.textContent : ''; });
+    ok(/あと\dターンで回せる|次のターンに回せる/.test(tip), '押せない「回す」を押すと、吹き出しで理由（' + tip + '）');
     await p.evaluate(() => document.getElementById('btnRotate').click()); await p.waitForTimeout(100);
     ok(await p.evaluate((n) => window.__rb.log.length === n, g.n0), 'C8 押せない「回す」を押しても、ログに気力不足の文は増えない');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
@@ -192,8 +197,8 @@ async function open(b, w, h, kind, node) {
     await p.evaluate(() => { window.__rb.setGauge(0); });
     const bt2 = await p.evaluate(() => ({ r: document.getElementById('btnRotate').className, s: document.getElementById('btnStay').className, dis: document.getElementById('btnRotate').disabled }));
     ok(/primary/.test(bt1.r) && !/primary|only/.test(bt1.s) && /primary/.test(bt2.r) && !/primary|only/.test(bt2.s) && bt2.dis, 'C9 気力があってもなくても、回す＝主要（金）・維持＝副次。足りないときは「回す」が無効表示（' + bt2.r + ' / ' + bt2.s + '）');
-    const gl = await p.evaluate(() => { const b = document.getElementById('btnRotate'), s = getComputedStyle(b), chip = document.getElementById('chipTurn'), gz = chip.querySelector('.gz'); return { bg: s.backgroundImage, dis: b.disabled, why: b.querySelector('.rot-meter small') ? b.querySelector('.rot-meter small').textContent : '', chipTxt: chip.textContent, aria: chip.getAttribute('aria-label'), gzColor: getComputedStyle(gz.querySelector('b')).color, chipColor: s && getComputedStyle(chip).color }; });
-    ok(gl.dis && /repeating-linear-gradient/.test(gl.bg) && /rgb\(236, 211, 140\)/.test(gl.bg) && /あと|次/.test(gl.why), '気力不足の回す：金のまま（金の地＋斜線）、理由文言つき（' + gl.why + '）');
+    const gl = await p.evaluate(() => { const b = document.getElementById('btnRotate'), s = getComputedStyle(b), chip = document.getElementById('chipTurn'), gz = chip.querySelector('.gz'); return { bg: s.backgroundImage, dis: b.disabled, why: b.dataset.why || '', chipTxt: chip.textContent, aria: chip.getAttribute('aria-label'), gzColor: getComputedStyle(gz.querySelector('b')).color, chipColor: s && getComputedStyle(chip).color }; });
+    ok(gl.dis && /repeating-linear-gradient/.test(gl.bg) && /rgb\(236, 211, 140\)/.test(gl.bg) && /あと|次/.test(gl.why), '気力不足の回す：金のまま（金の地＋斜線）、理由は押したときの吹き出しに用意（' + gl.why + '）');
     ok(!/回すには/.test(gl.chipTxt + gl.aria) && gl.gzColor === gl.chipColor, 'ヘッダーには気力不足の説明も色の変化もない（' + gl.chipTxt + ' / ' + gl.aria + '）');
     // 報酬：突入技の強化に名前が繰り返されない
     await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; }); });
@@ -254,6 +259,29 @@ async function open(b, w, h, kind, node) {
     const lay = await p.evaluate(() => [...window.__lay]);
     // 最初の1回（編成タイム→戦闘の切り替わり）だけは盤の大きさを合わせ直すので、2種類まで
     ok(lay.length <= 2, 'ゆれ（' + foe + '）：戦闘中の［マスの幅, 敵パネルの高さ, 記録の高さ］が変わらない ' + JSON.stringify(lay));
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  /* ---- v5.1.58 赤い数字の説明は最初の3ターンだけ（点滅＋吹き出し）。4ターン目からは出ない ---- */
+  {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(600);
+    await p.evaluate(() => { const R = window.__rb, c = R.run.choices.find((x) => x.type === 'battle'); R.run.map[c.rid] = { foe: 'trinity', variant: null }; });
+    const i = await p.evaluate(() => window.__rb.run.choices.findIndex((x) => x.type === 'battle'));
+    await p.click('#rvCards .rv-card[data-i="' + i + '"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
+    await p.evaluate(() => { const R = window.__rb; R.run.members.forEach((m) => { m.max = 999; m.hp = 999; }); });
+    await p.click('#btnStart');
+    const seen = [];
+    for (let t = 0; t < 5; t++) {
+      for (let k = 0; k < 300; k++) { if (await p.evaluate(() => !document.getElementById('result').hidden || (!document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden'))) break; await p.waitForTimeout(50); }
+      if (await p.evaluate(() => !document.getElementById('result').hidden)) break;
+      await p.waitForTimeout(250);
+      seen.push(await p.evaluate(() => ({ tip: !!document.querySelector('#incTip.on'), teach: document.querySelectorAll('#board .inc.teach').length, inc: document.querySelectorAll('#board .inc').length })));
+      await p.evaluate(() => document.getElementById('btnStay').click()); await p.waitForTimeout(300);
+    }
+    const shown = seen.filter((s) => s.tip).length;
+    ok(seen.length >= 4 && shown === 3 && seen.slice(0, 3).every((s) => s.tip && s.teach > 0) && seen.slice(3).every((s) => !s.tip), '赤い数字の説明は最初の3ターンだけ ' + JSON.stringify(seen));
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
   await b.close();
