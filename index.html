@@ -2339,6 +2339,16 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 .board .rail em { color: #f4ead6; font-size: 14px; font-weight: 800; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(255, 255, 255, 0.12); }
 .board .rail svg { filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.5)); }
 .board .rail.r0 svg { color: #ffb4a0; } .board .rail.r1 svg { color: #d8c8ff; } .board .rail.r2 svg { color: #b4f0c4; }
+
+/* 記録の枠を固定の高さに（v5.1.57）：ログが長いときは古い行を上へ押し出し、上端を薄くぼかす */
+#book.locked { display: flex; flex-direction: column; overflow: hidden; flex: none; }
+#book.locked .order { flex: none; }
+#book.locked .logbox { flex: 1 1 auto; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 12px); mask-image: linear-gradient(180deg, transparent 0, #000 12px); }
+#book.locked .logbox p { flex: none; }
+#book.locked .hint { flex: none; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+@media (max-height: 760px) {
+  #book.locked:has(p.hint) .logbox { overflow: visible; -webkit-mask-image: none; mask-image: none; flex: none; }
+}
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -4312,6 +4322,29 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
     const ps = b.querySelectorAll('p');
     lines.forEach((l, i) => { ps[i].textContent = l; });
     if (hint) ps[ps.length - 1].textContent = hint;
+    lockBook();
+  }
+  /* 記録の枠の高さを固定する（v5.1.57）。ログの行数や案内の有無で枠の高さが変わると、上の敵パネルと盤が毎回上下に動いて疲れる。
+     戦闘中（編成タイム以外）は「行動順＋文3行（ログ2行＋案内1行）」の高さに固定し、入りきらない古いログは上へ押し出す（全文は履歴で読める）。
+     高さは画面の大きさ・文字の大きさが変わったときだけ測り直す */
+  let bookKey = '', bookH = 0;
+  function lockBook() {
+    const b = $('book');
+    const on = phase !== 'prep' && b.offsetParent !== null && !b.querySelector('.bench, .prepban');
+    const was = b.classList.contains('locked');
+    b.classList.toggle('locked', on);
+    if (!on) { b.style.removeProperty('height'); if (was) requestAnimationFrame(() => { fitBoard(); setBleed(); }); return; }
+    const key = innerWidth + 'x' + innerHeight + ':' + document.documentElement.className + ':' + $('app').className.replace(/\b(busy|fit)\b/g, '');
+    if (key !== bookKey || !bookH) {
+      const keep = b.innerHTML;
+      b.style.removeProperty('height'); b.classList.remove('locked');
+      b.innerHTML = orderHTML() + '<div class="logbox"><p class="l1">あ</p><p class="l2">あ</p><i class="lb-more">履歴 ▸</i></div><p class="hint">回す？ 維持する？ 赤い数字は受けるダメージ</p>';   // 案内はいちばん長い定型文で測る（折り返しも含めて収まる高さ）
+      bookH = Math.ceil(b.getBoundingClientRect().height); bookKey = key;
+      b.innerHTML = keep; b.classList.add('locked');
+    }
+    const hs = bookH + 'px', chg = b.style.height !== hs;
+    b.style.height = hs;
+    if (!was || chg) requestAnimationFrame(() => { fitBoard(); setBleed(); });   // 編成タイム→戦闘の切り替わりで1回だけ盤の大きさを合わせ直す
   }
 
   // 気力：上の札（●○）と「回す」ボタンの中の目盛りの両方に出す。足りない・縛られているときは、ボタンが金色をやめて理由を出す
