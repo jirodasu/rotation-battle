@@ -62,14 +62,14 @@ const title = (p) => p.evaluate(() => document.getElementById('rvTitle').textCon
     await p.click('#begin'); await sleep(p, 600);
     await p.evaluate(() => window.__rb.expEnd(true, [])); await sleep(p, 500);
     const ev = await p.evaluate(() => document.getElementById('rvEvents').innerText);
-    ok(/実績「中盤まで」/.test(ev) && /実績「初めての突破」/.test(ev) && /実績「誰も欠けず」/.test(ev) && /深さ2/.test(ev) && /速攻の隊/.test(ev) && /堅守の隊/.test(ev), '6 新しく満たした実績と、開いた深さ・隊が結果に出る ' + ev.replace(/\s+/g, ' '));
+    ok(/「中盤まで」/.test(ev) && /「初めての突破」/.test(ev) && /「誰も欠けず」/.test(ev) && /深さ2/.test(ev) && /速攻の隊/.test(ev) && /堅守の隊/.test(ev), '6 新しく満たした実績と、開いた深さ・隊が結果に出る ' + ev.replace(/\s+/g, ' '));
     const m = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp')));
     ok(m.ach.first && m.ach.mid && m.ach.nofall && m.won['std:1'] === 1 && m.clears === 1 && m.hist[0].sq === 'std' && m.hist[0].depth === 1, '6 記録が rb-exp に残る ' + JSON.stringify(m.ach));
     ok(await p.evaluate(() => localStorage.getItem('rb-meta')) === '{"runs":9}', '6 旧モードの記録（rb-meta）は触らない');
     ok(/深さ2まで|突破 1回/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)), '5 表紙の突破回数が更新される');
     const cs = await cards(p);
-    ok(cs.length === 2 && /もう一度/.test(cs[0].t) && /選ぶ/.test(cs[1].t), '6 結果の札：もう一度／隊と深さを選ぶ（開いた後だけ） ' + cs.map((c) => c.t).join('/'));
-    await p.click('#rvCards .rv-card:nth-child(2)'); await sleep(p, 400);
+    ok(cs.length === 1 && /もう一度/.test(cs[0].t) && await p.evaluate(() => !!document.querySelector('.rv-aux')), '6 結果：もう一度の札と、隊と深さを選ぶ副ボタン');
+    await p.click('.rv-aux'); await sleep(p, 400);
     ok(await title(p) === 'どの隊で下る？', '6 「隊と深さを選ぶ」で出発の準備へ');
     // 7 勲章：3枚で双魔
     const c = await cards(p);
@@ -80,7 +80,7 @@ const title = (p) => p.evaluate(() => document.getElementById('rvTitle').textCon
     // 同じ実績は2度出ない
     await p.click('#rvCards .rv-card:nth-child(1)'); await sleep(p, 300); await p.click('#rvCards .rv-card:nth-child(1)'); await sleep(p, 600);
     await p.evaluate(() => window.__rb.expEnd(true, [])); await sleep(p, 500);
-    ok(!/実績「/.test(await p.evaluate(() => document.getElementById('rvEvents').innerText)), '6 同じ実績は2度出ない');
+    ok(!/実績 「|勲章\+/.test(await p.evaluate(() => document.getElementById('rvEvents').innerText)), '6 同じ実績は2度出ない');
     ok(/深さ2まで/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)) === false, '5 深さ2の踏破はまだ無いので、表紙は深さ1のまま');
     ok(!p.__errs.length, 'エラーなし ' + p.__errs.join('/')); await ctx.close(); }
   // 7 勲章が足りないと押せない／5 深さ2踏破で表紙に出る
@@ -95,7 +95,7 @@ const title = (p) => p.evaluate(() => document.getElementById('rvTitle').textCon
     await p.evaluate(() => { const R = window.__rb; R.run.enemy = R.expEnemy(R.TRI.steps[0], null, 'trinity'); R.expAfterBattle(true); });
     ok(await p.evaluate(() => window.__rb.run.triWon === true), '8 三位一体に勝つと記録される');
     await p.evaluate(() => window.__rb.expEnd(false, [])); await sleep(p, 500);
-    ok(/実績「三位一体を討つ」/.test(await p.evaluate(() => document.getElementById('rvEvents').innerText)), '8 負けた遠征でも、実績「三位一体を討つ」が取れる');
+    ok(/「三位一体を討つ」/.test(await p.evaluate(() => document.getElementById('rvEvents').innerText)), '8 負けた遠征でも、実績「三位一体を討つ」が取れる');
     await p.evaluate(() => { const R = window.__rb; delete R.run.sq; delete R.run.depth; });
     const t = await p.evaluate(() => { try { return window.__rb.expEnemy(1, null, 0).name; } catch (e) { return 'ERR ' + e.message; } });
     ok(!/ERR/.test(t), '9 隊・深さの無い古い run でも敵が作れる ' + t);

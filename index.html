@@ -7287,9 +7287,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (clear) x.won[sq + ':' + depth] = (x.won[sq + ':' + depth] || 0) + 1;
     const S = { clear: !!clear, fal, reach: clear ? EXP.nodes : run.node + 1, tri: !!run.triWon, sq, depth }, got = [];
     XACH.forEach((a) => { if (!x.ach[a.id] && a.ok(S, x)) { x.ach[a.id] = 1; got.push(a); } });
-    const after = xState(x), un = got.map((a) => '<b>実績「' + a.t + '」</b>　勲章+1');
-    if (!before.d2 && after.d2) un.push('<b>深さ2</b>が開いた');
-    after.sq.filter((id) => before.sq.indexOf(id) < 0).forEach((id) => un.push('隊「<b>' + XSQ.find((q) => q.id === id).name + '</b>」が開いた'));
+    const after = xState(x), un = [];
+    if (got.length) un.push('実績 ' + got.map((a) => '<b>「' + a.t + '」</b>').join('') + '　勲章+' + got.length);   // 1行にまとめる（結果の画面が長くならないように）
+    const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
+    if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
     xSave(mm, x);
     actTick();
     mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now(), sq, depth });
@@ -7301,8 +7302,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))),
-      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') }].concat(choice ? [{ ico: ICON.rot, t: '隊と深さを選ぶ', d: un.length ? '新しく開いたものを選べる。' : '隊や深さを変えて下る。' }] : []), skip: 'タイトルへ',
-      on: (i) => { $('runv').hidden = true; if (i === 1) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
+      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,
+      on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
   }
   function beginExp(sqId, depth) {
     sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 2 ? 2 : 1;
