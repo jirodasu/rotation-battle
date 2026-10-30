@@ -92,7 +92,7 @@ async function fight(p, seq) {
     // 途中保存：別の保存で、30年モードの保存と記録は変わらない
     const sv = await p.evaluate(() => ({ exp: !!localStorage.getItem('rb-exp-save'), main: localStorage.getItem('rb-run-save'), meta: localStorage.getItem('rb-meta') }));
     ok(sv.exp && sv.main === RUNSAVE && JSON.parse(sv.meta).runs === 3, '遠征の途中保存は別の項目で、以前の騎士団の30年の保存・記録は消えない');
-    await p.reload(); await sleep(p, 500); await p.click('#cover'); await sleep(p, 300);
+    await p.reload(); await sleep(p, 500); if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) await p.click('#cover'); await sleep(p, 300);   // 保存があると表紙は最初から開いている。真ん中を押すとボタンに当たる（v5.1.61で表紙を詰めたため）
     const sub = await p.evaluate(() => (document.getElementById('resume').hidden ? '' : document.getElementById('resumeSub').textContent));
     ok(/遠征/.test(sub), '表紙に遠征の「続きから」が出る（' + sub + '）');
     await p.click('#resume'); await sleep(p, 600);

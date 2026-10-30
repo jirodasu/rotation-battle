@@ -5745,7 +5745,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (H() > avail) { cv.classList.add('tight'); sc = 0.8; size(sc); while (H() > avail && sc > 0.36) { sc -= 0.04; size(sc); } }
   }
   addEventListener('resize', () => requestAnimationFrame(fitCover));
-  try { new MutationObserver(() => requestAnimationFrame(fitCover)).observe($('cover'), { attributes: true, attributeFilter: ['class', 'hidden'] }); new ResizeObserver(() => requestAnimationFrame(fitCover)).observe(document.querySelector('.c-btns')); } catch (e) { /* 古い端末 */ }
+  try { let fitKey = ''; new MutationObserver(() => { const cv = $('cover'), k = cv.className.replace(/\s*\btight\b/g, '') + '|' + cv.hidden; if (k === fitKey) return; fitKey = k; requestAnimationFrame(fitCover); }).observe($('cover'), { attributes: true, attributeFilter: ['class', 'hidden'] }); new ResizeObserver(() => requestAnimationFrame(fitCover)).observe(document.querySelector('.c-btns')); } catch (e) { /* 古い端末 */ }
   requestAnimationFrame(fitCover);
   (function stars() {
     const box = document.querySelector('.stars');
