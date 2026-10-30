@@ -2563,7 +2563,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.62</p>
+    <p class="c-ver" id="cVer">ver 5.2.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2889,7 +2889,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.62';
+  const APP_VERSION = '5.2.0';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5409,7 +5409,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('cover').classList.toggle('has-save', !!sv);
     if (sv) $('resumeSub').textContent = '遠征・地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : sv.battle ? '　戦闘のあと' : '');
     $('begin').classList.toggle('primary', !sv);
-    $('beginSub').textContent = (sv ? '新しく環廊を下る' : '4人で環廊を下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' : '');
+    $('beginSub').textContent = (sv ? '新しく環廊を下る' : '4人で環廊を下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' + (xDmax(xm) >= 2 ? '・深さ' + xDmax(xm) + 'まで' : '') : '');
   }
   function showStats(win) {
     const par = enemy.par || 99, turns = turn;
@@ -6990,6 +6990,89 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const expIsChief = (step) => EXP.chiefs.includes(step);
   const EXP_KEY = 'rb-exp-save', EXP_META = 'rb-exp';
   function expMeta() { try { const o = JSON.parse(localStorage.getItem(EXP_META) || 'null'); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; } }
+
+  /* ===== 遠征の隊・深さ・実績（v5.2.0）=====
+     旧モードの実績と解禁の仕組みを、遠征の記録（rb-exp）につないだもの。旧モードの記録（rb-meta）は読まない。
+     ・深さ：1がいつもの環廊。2は戦闘の敵がかならず「亜種」になる（三位一体と最後の戦いは除く）
+     ・隊：標準／速攻／堅守／双魔。4人の編成だけが違い、職業の数値には触れない
+     ・実績5つ（1つにつき勲章1枚）。「初めての突破」で深さ2と堅守、「中盤まで」で速攻、「隊の誉れ」か勲章3枚で双魔
+     ・これまでの踏破・到達は、実績「初めての突破」「中盤まで」に数える（古い保存でも引き継ぐ） */
+  const XSQ = [
+    { id: 'std', name: '標準の隊', tag: '標準', desc: '戦士・サムライ・魔女・神官。基本の4人。', party: EXP.party },
+    { id: 'fast', name: '速攻の隊', tag: '速攻', desc: 'サムライ2人とアーチャー・魔女。速く重いが、脆い。', party: [['samurai', 0, 0], ['samurai', 0, 1], ['archer', 1, 0], ['witch', 1, 1]], hint: '実績「中盤まで」' },
+    { id: 'guard', name: '堅守の隊', tag: '堅守', desc: '騎士2人と魔女・僧侶。堅いが、攻めは遅い。', party: [['knight', 0, 0], ['knight', 0, 1], ['witch', 1, 0], ['monk', 2, 1]], hint: '実績「初めての突破」' },
+    { id: 'twin', name: '双魔の隊', tag: '双魔', desc: '魔女が2人。火力は高いが、前が薄い。', party: [['warrior', 0, 0], ['samurai', 0, 1], ['witch', 1, 0], ['witch', 1, 1]], hint: '実績「隊の誉れ」', price: 3 }
+  ];
+  const XDEPTH = [
+    { d: 1, name: '深さ1', desc: 'いつもの環廊。亜種は出ることも、出ないこともある。' },
+    { d: 2, name: '深さ2', desc: '戦闘の敵が、かならず「亜種」になる（三位一体と最後の戦いは除く）。同じ敵でも戦い方を変える必要がある。', hint: '実績「初めての突破」' }
+  ];
+  const XACH = [
+    { id: 'mid', t: '中盤まで', d: '地点7に着く（負けてもよい）', un: 'fast', ok: (S) => S.reach >= 7 },
+    { id: 'first', t: '初めての突破', d: '環廊を踏破する', un: 'guard', ok: (S) => S.clear },
+    { id: 'nofall', t: '誰も欠けず', d: '倒れた仲間0人で踏破する', ok: (S) => S.clear && S.fal === 0 },
+    { id: 'tri', t: '三位一体を討つ', d: '三位一体の戦闘に勝つ（負けてもよい）', ok: (S) => S.tri },
+    { id: 'honor', t: '隊の誉れ', d: '3つの隊で踏破する', un: 'twin', ok: (S, x) => Object.keys(x.won).filter((k) => x.won[k] > 0).map((k) => k.split(':')[0]).filter((v, i, a) => a.indexOf(v) === i).length >= 3 }
+  ];
+  const xObj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  function xmeta(mm) {
+    const m = mm || expMeta(), x = { ach: Object.assign({}, xObj(m.ach)), won: Object.assign({}, xObj(m.won)), bought: Object.assign({}, xObj(m.bought)), spent: +m.spent || 0, pick: xObj(m.pick) };
+    if (+m.clears > 0) x.ach.first = 1;      // これまでの踏破は「初めての突破」に数える
+    if (+m.best >= 6) x.ach.mid = 1;         // 地点7（6地点を終えた）まで来たことがある
+    return x;
+  }
+  const xDepthOpen = (d, x) => d === 1 || (d === 2 && !!x.ach.first);
+  const xSqOpen = (id, x) => id === 'std' || !!x.bought[id] || XACH.some((a) => a.un === id && x.ach[a.id]);
+  const xMedals = (x) => Math.max(0, XACH.filter((a) => x.ach[a.id]).length - x.spent);
+  const xState = (x) => ({ d2: xDepthOpen(2, x), sq: XSQ.filter((q) => xSqOpen(q.id, x)).map((q) => q.id) });
+  const xHasChoice = (x) => xDepthOpen(2, x) || XSQ.some((q) => q.id !== 'std' && xSqOpen(q.id, x));
+  const xDmax = (m) => { const x = xmeta(m); return Math.max(+m.clears > 0 ? 1 : 0, ...Object.keys(x.won).filter((k) => x.won[k] > 0).map((k) => +k.split(':')[1] || 0)); };
+  const xVariantRate = () => (run && run.depth >= 2 ? 1 : EXP.variantRate);
+  const xTag = () => { const sq = XSQ.find((q) => run && q.id === run.sq), a = [run && run.depth > 1 ? '深さ' + run.depth : '', sq && sq.id !== 'std' ? sq.tag : ''].filter(Boolean); return a.length ? '（' + a.join('・') + '）' : ''; };
+  function xSave(mm, x) { Object.assign(mm, { ach: x.ach, won: x.won, bought: x.bought, spent: x.spent, pick: x.pick }); }
+  const xLead = (q) => JOBS.find((j) => j.id === q.party[0][0]);
+  // 出発の準備：隊を選び、深さが開いていれば深さを選ぶ。何も開いていなければ、今までどおりそのまま始める
+  function startExpFlow() { if (xHasChoice(xmeta())) showDepart(); else beginExp('std', 1); }
+  function showDepart(note) {
+    const mm = expMeta(), x = xmeta(mm), have = xMedals(x);
+    const cards = XSQ.map((q) => {
+      const open = xSqOpen(q.id, x), can = !open && q.price && have >= q.price, lead = xLead(q), won = Object.keys(x.won).some((k) => k.split(':')[0] === q.id && x.won[k] > 0);
+      return { ico: '<span class="uc-disc c-' + lead.cls + '">' + ageArt(lead.id, 'prime') + '</span>', t: q.name,
+        d: open ? q.desc : '解禁：' + q.hint + (q.price ? '、または勲章' + q.price + '枚' : '') + '。',
+        tags: open ? [{ t: q.tag, k: 'bt' }].concat(won ? [{ t: '踏破済み', k: 'calm' }] : []).concat(x.pick.sq === q.id ? [{ t: '前回', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }].concat(can ? [{ t: 'タップで勲章' + q.price + '枚を使って解禁', k: 'calm' }] : []),
+        disabled: !open && !can };
+    });
+    rvShow({ small: '出発の準備　·　勲章 ' + have + '枚', squad: true, title: 'どの隊で下る？', sub: note || (xDepthOpen(2, x) ? '隊を選ぶと、次に深さを選ぶ。' : '実績を満たすと、新しい隊や深さが開く。'), noRoster: true, calm: true, cards, skip: 'タイトルへ', aux: '実績と記録',
+      on: (i) => {
+        if (i === -2) { showXRecords(); return; }
+        if (i < 0) { $('runv').hidden = true; goTitle(); return; }
+        const q = XSQ[i], x1 = xmeta(expMeta());
+        if (!xSqOpen(q.id, x1)) {
+          if (q.price && xMedals(x1) >= q.price) { const m1 = expMeta(), x2 = xmeta(m1); x2.bought[q.id] = 1; x2.spent += q.price; xSave(m1, x2); try { localStorage.setItem(EXP_META, JSON.stringify(m1)); } catch (e) { /* 保存できない環境 */ } SFX.event(); showDepart(q.name + 'を勲章で開いた。'); }
+          else showDepart();
+          return;
+        }
+        if (xDepthOpen(2, x1)) showDepth(q.id); else { $('runv').hidden = true; beginExp(q.id, 1); }
+      } });
+  }
+  function showDepth(sqId) {
+    const x = xmeta(), q = XSQ.find((v) => v.id === sqId) || XSQ[0];
+    const cards = XDEPTH.map((dp) => {
+      const open = xDepthOpen(dp.d, x), won = x.won[sqId + ':' + dp.d] > 0;
+      return { ico: '<span class="disp" style="font-size:34px;line-height:1;color:var(--gold,#c9a24a)">' + dp.d + '</span>', t: dp.name, d: open ? dp.desc : '解禁：' + dp.hint + '。',
+        tags: open ? (won ? [{ t: q.tag + 'で踏破済み', k: 'calm' }] : []).concat(x.pick.depth === dp.d ? [{ t: '前回', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }], disabled: !open };
+    });
+    rvShow({ small: '出発の準備　·　' + q.name, squad: true, title: 'どの深さへ？', sub: '深いほど、敵が手強くなる。', noRoster: true, calm: true, cards, skip: '隊を選び直す',
+      on: (i) => { if (i < 0) { showDepart(); return; } $('runv').hidden = true; beginExp(sqId, XDEPTH[i].d); } });
+  }
+  function showXRecords() {
+    const mm = expMeta(), x = xmeta(mm), n = XACH.filter((a) => x.ach[a.id]).length;
+    const ach = XACH.map((a) => '<li class="' + (x.ach[a.id] ? 'on' : '') + '"><i></i><b>' + a.t + '</b><span>' + a.d + '</span></li>').join('');
+    const won = XSQ.map((q) => { const ds = XDEPTH.filter((dp) => x.won[q.id + ':' + dp.d] > 0).map((dp) => dp.name + ' ×' + x.won[q.id + ':' + dp.d]); return '<li><b>' + q.tag + '</b><span>' + (xSqOpen(q.id, x) ? (ds.join('　') || 'まだ踏破していない') : '未解禁') + '</span></li>'; }).join('');
+    rvShow({ small: '実績 ' + n + ' / ' + XACH.length + '　·　勲章 ' + xMedals(x) + '枚', squad: true, title: '実績と記録', noRoster: true, calm: true, openLog: true, cards: [], skip: 'もどる',
+      body: '<div class="rec"><section><h3>実績</h3><ul class="rec-ach">' + ach + '</ul></section><section><h3>隊ごとの踏破</h3><ol class="rec-hist">' + won + '</ol></section></div>',
+      on: () => showDepart() });
+  }
   function expSaved() {
     try { const o = JSON.parse(localStorage.getItem(EXP_KEY) || 'null'); return o && o.run && o.run.mode === 'exp' && Array.isArray(o.run.members) && o.run.members.length ? o : null; } catch (e) { return null; }
   }
@@ -7037,7 +7120,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     Object.keys(ROUTE.nodes).forEach((id) => {
       const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
       if (isFightKind(n.kind)) {
-        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < EXP.variantRate ? pick(VK) : null };
+        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? pick(VK) : null };
         if (!chief && !last && TRI.steps.includes(n.step)) { m[id].foe = 'trinity'; m[id].variant = null; }   // 三位一体：乱数の並びは変えずに、置き換えるだけ
       }
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
@@ -7063,7 +7146,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     });
   }
   const expFoeOf = (c) => (run.map && run.map[c.rid] && run.map[c.rid].foe) || 0;
-  const expSmall = () => { const st = Math.min(run.node + 1, EXP.nodes); return '環廊　·　第' + (expCh(st) + 1) + '章 ' + chName(expCh(st)) + '　·　地点 ' + st + ' / ' + EXP.nodes; };
+  const expSmall = () => { const st = Math.min(run.node + 1, EXP.nodes); return '環廊' + xTag() + '　·　第' + (expCh(st) + 1) + '章 ' + chName(expCh(st)) + '　·　地点 ' + st + ' / ' + EXP.nodes; };
   const relicLine = () => (run.relics.length ? '回転レリック：' + run.relics.map((id) => relD(id).name).join('・') : '回転レリックはまだない');
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
@@ -7109,6 +7192,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let lastHeal = null;
   function expAfterBattle(win) {
     if (snapshot) runSaveForm(snapshot.filter((x) => x.u.hp > 0));
+    if (win && ((enemy && enemy.party) || (run.enemy && run.enemy.party))) run.triWon = true;   // 実績「三位一体を討つ」
     const dead = run.members.filter((m) => m.hp <= 0);
     dead.forEach((m) => { m.lastWord = lastWordOf(m); run.gone.push(Object.assign(m, { fate: 'fallen' })); run.events.push('地点' + (run.node + 1) + '　' + m.name + '（' + m.jname + '）が倒れた「' + m.lastWord + '」'); });
     if (dead.length) setTimeout(() => SFX.fallen(), 250);
@@ -7197,24 +7281,36 @@ body.fast #stampOk.on { animation-duration: .5s; }
     phase = 'over';
     expClearSave();
     const mm = expMeta(), fal = run.gone.filter((m) => m.fate === 'fallen').length;
+    const x = xmeta(mm), before = xState(x), sq = run.sq || 'std', depth = run.depth || 1;   // 今回の分を入れる前の状態（新しく開いたものを知るため）
     mm.runs = (+mm.runs || 0) + 1; if (clear) mm.clears = (+mm.clears || 0) + 1;
     mm.best = Math.max(+mm.best || 0, clear ? EXP.nodes : run.node);
+    if (clear) x.won[sq + ':' + depth] = (x.won[sq + ':' + depth] || 0) + 1;
+    const S = { clear: !!clear, fal, reach: clear ? EXP.nodes : run.node + 1, tri: !!run.triWon, sq, depth }, got = [];
+    XACH.forEach((a) => { if (!x.ach[a.id] && a.ok(S, x)) { x.ach[a.id] = 1; got.push(a); } });
+    const after = xState(x), un = got.map((a) => '<b>実績「' + a.t + '」</b>　勲章+1');
+    if (!before.d2 && after.d2) un.push('<b>深さ2</b>が開いた');
+    after.sq.filter((id) => before.sq.indexOf(id) < 0).forEach((id) => un.push('隊「<b>' + XSQ.find((q) => q.id === id).name + '</b>」が開いた'));
+    xSave(mm, x);
     actTick();
-    mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now() });
+    mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now(), sq, depth });
     mm.last = null;
     try { localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 保存できない環境 */ }
     coverProgress();
     if (clear) confetti();
+    const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
-      events: (ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた')))), cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' }], skip: 'タイトルへ',
-      on: (i) => { $('runv').hidden = true; if (i >= 0) beginExp(); else goTitle(); } });
+      events: un.concat((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))),
+      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') }].concat(choice ? [{ ico: ICON.rot, t: '隊と深さを選ぶ', d: un.length ? '新しく開いたものを選べる。' : '隊や深さを変えて下る。' }] : []), skip: 'タイトルへ',
+      on: (i) => { $('runv').hidden = true; if (i === 1) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
   }
-  function beginExp() {
+  function beginExp(sqId, depth) {
+    sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 2 ? 2 : 1;
     enterRun();
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
-    run = { mode: 'exp', node: 0, year: 1, act: 0, rests: 0, chRests: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], relics: [], squad: 'exp', gen: 0, fame: 0, spent: 0, region: [] };
-    EXP.party.forEach(([id, r, c]) => { const m = newMember(id, EXP.age); m.r = r; m.c = c; run.members.push(m); });
+    run = { mode: 'exp', node: 0, year: 1, act: 0, rests: 0, chRests: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], relics: [], squad: 'exp', sq: sqId, depth, gen: 0, fame: 0, spent: 0, region: [] };
+    { const mm = expMeta(), x = xmeta(mm); x.pick = { sq: sqId, depth }; xSave(mm, x); try { localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 保存できない環境 */ } }
+    XSQ.find((q) => q.id === sqId).party.forEach(([id, r, c]) => { const m = newMember(id, EXP.age); m.r = r; m.c = c; run.members.push(m); });
     roster = run.members;
     setCols(EXP.cols);
     grid = runGrid();
@@ -7282,7 +7378,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let ncFrom = null, ncTimer = 0;
   function askNewRun() {
     const sv = expSaved();
-    if (!sv) { beginExp(); return; }
+    if (!sv) { startExpFlow(); return; }
     SFX.tap();
     ncFrom = document.activeElement;
     $('ncBody').innerHTML = 'いまの遠征（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : '') + '）の記録は<b>消えて、元に戻せません</b>。';
@@ -7291,7 +7387,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   const closeNc = () => { clearTimeout(ncTimer); $('newConf').hidden = true; try { if (ncFrom && ncFrom.focus) ncFrom.focus(); } catch (e) { /* 戻せない */ } };
   $('ncNo').addEventListener('click', () => { SFX.tap(); closeNc(); });
-  $('ncGo').addEventListener('click', () => { if ($('ncGo').disabled) return; clearTimeout(ncTimer); $('newConf').hidden = true; expClearSave(); beginExp(); });
+  $('ncGo').addEventListener('click', () => { if ($('ncGo').disabled) return; clearTimeout(ncTimer); $('newConf').hidden = true; expClearSave(); startExpFlow(); });
   $('newConf').addEventListener('click', (ev) => { if (ev.target === $('newConf')) closeNc(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('newConf').hidden) closeNc(); });
   $('begin').addEventListener('click', askNewRun);
