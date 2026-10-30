@@ -173,7 +173,7 @@ async function toChoose(p) {
     await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(500);
     const bad = [];
     for (const [node, kind] of [[0, 0], [3, 0], [6, 0], [2, 'trinity']]) {
-      await p.evaluate(([node, kind]) => { const R = window.__rb; R.run.node = node; R.run.enemy = R.expEnemy(node + 1, null, kind); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, [node, kind]); await p.waitForTimeout(200);
+      await p.evaluate(([node, kind]) => { const R = window.__rb; R.run.node = node; R.run.enemy = R.expEnemy(node + 1, null, kind); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, [node, kind]); await p.waitForTimeout(800);   // 列札の色の切り替え（遷移）が終わってから測る
       const a = await p.evaluate('(' + AU + ')()'); a.lowContrast.forEach((x) => bad.push(node + ':' + x));
     }
     ok(bad.length === 0, '3章の戦闘画面にコントラスト4.5未満の文字なし ' + JSON.stringify(bad));
