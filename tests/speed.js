@@ -29,6 +29,7 @@ async function battle(b, fast) {
   await p.goto(indexURL); await p.waitForTimeout(400);
   await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);
   await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
+  if (await p.evaluate(() => !document.getElementById('tip').hidden)) await p.click('#tipOk');   // 案内は上の帯の上に出る（v5.2.2）。閉じてから押す
   await p.click('#spdBtn');
   const on = await p.evaluate(() => ({ a: document.getElementById('spdBtn').getAttribute('aria-pressed'), s: localStorage.getItem('rb-fast') }));
   await p.click('#spdBtn');

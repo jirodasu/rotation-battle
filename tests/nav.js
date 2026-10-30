@@ -14,6 +14,7 @@ const { launch, indexURL } = require('./_env');
   await p.click('#btnStart'); await p.waitForTimeout(300);
   const disabledDuring = await p.evaluate(() => document.getElementById('homeBtn').disabled);
   await p.waitForSelector('#btnRotate:not([hidden])', { timeout: 30000 }); await p.waitForTimeout(400);
+  if (await p.evaluate(() => !document.getElementById('tip').hidden)) await p.click('#tipOk');   // 案内は上の帯の上に出る（v5.2.2）。閉じてから押す
   await p.click('#homeBtn'); await p.waitForTimeout(600);
   const t2 = await p.evaluate(() => !document.getElementById('cover').hidden);
   await p.click('#cover'); await p.waitForTimeout(300); await p.click('#beginTut'); await p.waitForTimeout(1200);
