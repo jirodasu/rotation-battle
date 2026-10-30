@@ -2438,13 +2438,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
 .cover.has-save .orbit { transform: none; margin: 8px 0; }
 
 /* ===== 三位一体：与える・受けるをはっきり（v5.1.62） ===== */
-.fc-hp .fc-loss { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,.75) 0 3px, rgba(255,255,255,.35) 3px 6px); border-radius: 0 8px 8px 0; animation: lossPulse 1.2s ease-in-out infinite; }
+.fc-hp .fc-loss { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(20,12,8,.55) 0 3px, rgba(20,12,8,.25) 3px 6px); border-radius: 0 8px 8px 0; animation: lossPulse 1.2s ease-in-out infinite; }
 @keyframes lossPulse { 50% { opacity: .55; } }
 @media (prefers-reduced-motion: reduce) { .fc-hp .fc-loss { animation: none; } }
 .fc-act.slim { gap: 4px; background: rgba(229, 96, 77, 0.2); }
 .fc-act.slim small { font-size: 10.5px; font-weight: 700; opacity: .85; }
 .fc-act.slim .fc-to { font-style: normal; font-size: 11px; font-weight: 800; opacity: .9; }
 .fc-dmg > span:first-child { font-size: 10.5px; opacity: .85; }
+
+@media (max-width: 360px) { .fc-act.slim .fc-g { display: none; } .fc-act.slim { gap: 3px; padding: 0 2px; } .fc-act.slim small { font-size: 10px; } }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
