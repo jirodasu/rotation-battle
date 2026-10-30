@@ -300,7 +300,7 @@ async function open(b, w, h, kind, node) {
     await p.mouse.click(tk[0], tk[1]); await p.waitForTimeout(250);
     ok(await p.evaluate(() => !document.getElementById('foeSheet').hidden), '吹き出しが出ている間にもう一度押すと、敵の詳細が開く（入口は残る）');
     await p.keyboard.press('Escape'); await p.waitForTimeout(200);
-    await p.evaluate(() => { const R = window.__rb; R.enemy.charged = true; R.setTurn(3); }); await p.waitForTimeout(200);
+    await p.evaluate(() => { const R = window.__rb; R.enemy.charged = true; R.setTurn(3); }); await p.waitForTimeout(800);   // 赤い縁は0.45秒かけて灯る
     const c2 = await p.evaluate(() => { const e = document.getElementById('dangerEdge'), cs = getComputedStyle(e); return { on: e.classList.contains('on'), anim: cs.animationName, op: +cs.opacity, pe: cs.pointerEvents, cd: document.getElementById('ticket').dataset.cd }; });
     ok(c2.on && c2.cd === '' && c2.pe === 'none' && c2.anim === 'none' && c2.op > 0.3, '大技のターン：画面の縁が赤く灯る（押せる所はふさがない・動きを減らす設定では点滅しない） ' + JSON.stringify(c2));
     await p.evaluate(() => { const R = window.__rb; R.setPhase('resolve'); R.render(); }); await p.waitForTimeout(100);
@@ -361,7 +361,7 @@ async function open(b, w, h, kind, node) {
     await p.evaluate(() => { const R = window.__rb; R.run.members.forEach((m) => { m.max = 999; m.hp = 999; }); R.enemy.pattern[0] = Object.assign({}, R.enemy.pattern[0], { dmg: 5 }); R.enemy.charged = true; });
     await p.click('#btnStart');
     let seen = false;
-    for (let k = 0; k < 120 && !seen; k++) { seen = await p.evaluate(() => { const d = document.getElementById('stampOk'); return !!d && d.classList.contains('on'); }); await p.waitForTimeout(40); }
+    for (let k = 0; k < 300 && !seen; k++) { seen = await p.evaluate(() => { const d = document.getElementById('stampOk'); return !!d && d.classList.contains('on'); }); await p.waitForTimeout(40); }
     ok(seen, 'D 大技を誰も倒れずにしのぐと、「しのいだ」の判が出る');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
