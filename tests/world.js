@@ -10,7 +10,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
     await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
     await p.goto(testPage()); await p.waitForTimeout(400);
-    const cover = await p.evaluate(() => ({ copy: document.querySelector('.c-copy').textContent, sub: document.getElementById('beginSub').textContent }));
+    const cover = await p.evaluate(() => ({ copy: document.querySelector('.c-copy').textContent, sub: document.getElementById('begin').textContent }));
     if (w === 390) ok(/環廊/.test(cover.copy) && /環廊/.test(cover.sub), '表紙に「環廊」' + JSON.stringify(cover));
     await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(600);
     const map = await p.evaluate(() => {
