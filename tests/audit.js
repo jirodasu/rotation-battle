@@ -300,7 +300,7 @@ async function open(b, w, h, kind, node) {
     await p.mouse.click(tk[0], tk[1]); await p.waitForTimeout(250);
     ok(await p.evaluate(() => !document.getElementById('foeSheet').hidden), '吹き出しが出ている間にもう一度押すと、敵の詳細が開く（入口は残る）');
     await p.keyboard.press('Escape'); await p.waitForTimeout(200);
-    await p.evaluate(() => { const R = window.__rb; R.enemy.charged = true; R.setTurn(3); }); await p.waitForTimeout(200);
+    await p.evaluate(() => { const R = window.__rb; R.enemy.charged = true; R.setTurn(3); }); await p.waitForTimeout(800);   // 赤い縁は0.45秒かけて灯る
     const c2 = await p.evaluate(() => { const e = document.getElementById('dangerEdge'), cs = getComputedStyle(e); return { on: e.classList.contains('on'), anim: cs.animationName, op: +cs.opacity, pe: cs.pointerEvents, cd: document.getElementById('ticket').dataset.cd }; });
     ok(c2.on && c2.cd === '' && c2.pe === 'none' && c2.anim === 'none' && c2.op > 0.3, '大技のターン：画面の縁が赤く灯る（押せる所はふさがない・動きを減らす設定では点滅しない） ' + JSON.stringify(c2));
     await p.evaluate(() => { const R = window.__rb; R.setPhase('resolve'); R.render(); }); await p.waitForTimeout(100);
@@ -318,6 +318,51 @@ async function open(b, w, h, kind, node) {
     const t = await p.evaluate(() => { const d = document.getElementById('foeTip'); return { on: !!d && !d.hidden && d.classList.contains('on'), t: d ? d.textContent : '', tg: window.__rb.tgtId }; });
     const want = await p.evaluate(() => { const R = window.__rb; return R.actOf(R.foeById('priest')).name; });
     ok(t.on && t.tg === 'priest' && t.t.includes('祈り手') && t.t.includes(want), 'パネルを押すと狙いが移り、その敵の技の名前と数字が吹き出しで出る ' + t.t);
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
+  /* ---- v5.1.60 A〜F：反応で返す（道カードは数字の1行／回復は棒の伸び／報酬は数字札／しのいだ判／長押し先読み／編成の説明は覚えたら消える） ---- */
+  {
+    const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, hasTouch: true, isMobile: true });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-teach-inc', '3'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(800);
+    // A 道カード：数字の1行がいつも見え、本文は選んだ札だけ
+    const a0 = await p.evaluate(() => [...document.querySelectorAll('#rvCards .rv-card')].map((c) => { const k = c.querySelector('.rv-k'), d = c.querySelector('.rv-d'); return { k: k ? k.textContent : '', kv: !!k && k.getBoundingClientRect().height > 0, dv: d.getBoundingClientRect().height > 1 }; }));
+    ok(a0.length >= 2 && a0.every((x) => x.kv && /\d|全快/.test(x.k)) && a0.every((x) => !x.dv), 'A 道カード：数字の1行が見え、本文はまだ開いていない ' + JSON.stringify(a0));
+    await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(500);
+    ok(await p.evaluate(() => { const c = document.querySelector('#rvCards .rv-card.sel .rv-d'); return !!c && c.getBoundingClientRect().height > 8 && /HP|防御|素早さ/.test(c.textContent); }), 'A 選んだ札だけ本文が開く');
+    // 戦闘へ
+    await p.click('#rvGo'); await p.waitForTimeout(1500);
+    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'); return !!document.querySelector('.prepban') && (!t || t.textContent === ''); });
+    ok(f0, 'F 編成の説明は、実演を見たあと（覚えたあと）は出ない：「編成タイム」だけ');
+    // E 長押し：押している間だけ先読み、離すと決定（外でなく札の上）
+    await p.evaluate(() => { window.__rb.run.members.forEach((m) => { m.max = Math.max(m.max, 60); m.hp = 20; }); });
+    await p.click('#btnStart');
+    for (let k = 0; k < 300; k++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
+    await p.waitForTimeout(400);
+    const r = await p.$eval('#btnRotate', (e) => { const q = e.getBoundingClientRect(); return [q.x + q.width / 2, q.y + q.height / 2]; });
+    const cdp = await ctx.newCDPSession(p);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: r[0], y: r[1] }] }); await p.waitForTimeout(600);
+    const during = await p.evaluate(() => ({ on: window.__rb.previewOn, turn: window.__rb.turn }));
+    // ボタンの外へずらして離す＝取り消し
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: r[0], y: r[1] - 260 }] }); await p.waitForTimeout(100);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await p.waitForTimeout(400);
+    const out = await p.evaluate(() => ({ on: window.__rb.previewOn, turn: window.__rb.turn, phase: window.__rb.phase }));
+    ok(during.on && !out.on && out.turn === during.turn && out.phase === 'choose', 'E 長押しの間だけ先読み。外へずらして離すと取り消し（回さない・先読みも消える） ' + JSON.stringify({ during, out }));
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: r[0], y: r[1] }] }); await p.waitForTimeout(600);
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] }); await p.waitForTimeout(600);
+    ok(await p.evaluate((t) => window.__rb.phase !== 'choose' || window.__rb.turn > t, during.turn), 'E 札の上で離すと、そのまま「回す」が決まる');
+    // D しのいだ：大技を誰も倒れずに受けたら、判が出る。倒れたら出ない
+    for (let k = 0; k < 300; k++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
+    await ctx.close();
+  }
+  {
+    const { ctx, p } = await open(b, 390, 844, 0, 2);
+    await p.evaluate(() => { const R = window.__rb; R.run.members.forEach((m) => { m.max = 999; m.hp = 999; }); R.enemy.pattern[0] = Object.assign({}, R.enemy.pattern[0], { dmg: 5 }); R.enemy.charged = true; });
+    await p.click('#btnStart');
+    let seen = false;
+    for (let k = 0; k < 300 && !seen; k++) { seen = await p.evaluate(() => { const d = document.getElementById('stampOk'); return !!d && d.classList.contains('on'); }); await p.waitForTimeout(40); }
+    ok(seen, 'D 大技を誰も倒れずにしのぐと、「しのいだ」の判が出る');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
   await b.close();
