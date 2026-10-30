@@ -2426,6 +2426,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
 /* ===== E 長押しで先読み（v5.1.60） ===== */
 #btnRotate { touch-action: manipulation; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+
+/* ===== 表紙：3段の実演を外し、1画面に収める（v5.1.61） ===== */
+.cover .demo { display: none !important; }
+.cover { padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); overscroll-behavior: none; }
+.cover.tight .c-copy, .cover.tight .c-kicker { display: none; }
+.cover.tight .c-inner { gap: 8px; }
+.cover.tight .c-rule { margin-bottom: 4px; }
+.cover.tight .c-btns { gap: 10px; }
+.cover.tight .btn.big { min-height: 52px; } .cover.tight .btn.stack small { font-size: 11px; } .cover.tight .c-ver { bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); }
+.cover.has-save .orbit { transform: none; margin: 8px 0; }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2542,7 +2552,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.60</p>
+    <p class="c-ver" id="cVer">ver 5.1.61</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2868,7 +2878,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.60';
+  const APP_VERSION = '5.1.61';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5719,6 +5729,24 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const row = document.querySelector('.d-0'); row.classList.remove('hit'); void row.offsetWidth; row.classList.add('hit');
     }, 2300);
   })();
+  /* 表紙は1画面に収める（v5.1.61）。スクロールさせない。足りないときは、紋章の輪を小さくし、それでも足りなければ説明文と見出しの上の字を外す。
+     測るのは実際の高さ（端末の上下の余白・文字の大きさ・「続きから」の有無で変わるため） */
+  function fitCover() {
+    const cv = $('cover'); if (!cv || cv.hidden) return;
+    const o = cv.querySelector('.orbit'), inn = cv.querySelector('.c-inner');
+    cv.classList.remove('tight');
+    o.style.transform = ''; o.style.margin = '';
+    if (innerWidth > innerHeight && innerWidth >= 640) return;   // 横画面は2列の配置のまま
+    const cs = getComputedStyle(cv), avail = cv.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - (cv.classList.contains('tight') ? 14 : 26);   // 下の版数の字の分
+    const H = () => inn.getBoundingClientRect().height;
+    const size = (sc) => { o.style.transform = 'scale(' + sc + ')'; o.style.margin = (-(236 * (1 - sc)) / 2 + 4) + 'px 0'; };
+    let sc = 1; size(sc);
+    while (H() > avail && sc > 0.56) { sc -= 0.04; size(sc); }
+    if (H() > avail) { cv.classList.add('tight'); sc = 0.8; size(sc); while (H() > avail && sc > 0.36) { sc -= 0.04; size(sc); } }
+  }
+  addEventListener('resize', () => requestAnimationFrame(fitCover));
+  try { new MutationObserver(() => requestAnimationFrame(fitCover)).observe($('cover'), { attributes: true, attributeFilter: ['class', 'hidden'] }); new ResizeObserver(() => requestAnimationFrame(fitCover)).observe(document.querySelector('.c-btns')); } catch (e) { /* 古い端末 */ }
+  requestAnimationFrame(fitCover);
   (function stars() {
     const box = document.querySelector('.stars');
     for (let i = 0; i < 30; i++) {
