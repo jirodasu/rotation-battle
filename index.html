@@ -2436,6 +2436,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
 .cover.tight .c-btns { gap: 10px; }
 .cover.tight .btn.big { min-height: 52px; } .cover.tight .btn.stack small { font-size: 11px; } .cover.tight .c-ver { bottom: calc(env(safe-area-inset-bottom, 0px) + 4px); }
 .cover.has-save .orbit { transform: none; margin: 8px 0; }
+
+/* ===== 三位一体：与える・受けるをはっきり（v5.1.62） ===== */
+.fc-hp .fc-loss { position: absolute; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, rgba(255,255,255,.75) 0 3px, rgba(255,255,255,.35) 3px 6px); border-radius: 0 8px 8px 0; animation: lossPulse 1.2s ease-in-out infinite; }
+@keyframes lossPulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .fc-hp .fc-loss { animation: none; } }
+.fc-act.slim { gap: 4px; background: rgba(229, 96, 77, 0.2); }
+.fc-act.slim small { font-size: 10.5px; font-weight: 700; opacity: .85; }
+.fc-act.slim .fc-to { font-style: normal; font-size: 11px; font-weight: 800; opacity: .9; }
+.fc-dmg > span:first-child { font-size: 10.5px; opacity: .85; }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2552,7 +2561,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.1.61</p>
+    <p class="c-ver" id="cVer">ver 5.1.62</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2878,7 +2887,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.1.61';
+  const APP_VERSION = '5.1.62';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4100,6 +4109,18 @@ body.fast #stampOk.on { animation-duration: .5s; }
       let dmgTxt = '';
       if (a.dmg) dmgTxt = '<b>' + a.dmg + (a.hits > 1 ? '×' + a.hits : '') + '</b>';
       else if (a.rule === 'mend') dmgTxt = '<b>+' + a.heal + '</b>';
+      // 敵→こちら（v5.1.62）：技の元の数字ではなく、こちらの防御・盾を引いた「実際に受ける数字」と、狙う列を出す。
+      //   先に倒せて攻撃してこないなら「受けない」。回復・防御・ためは、何をするかを一語で
+      let foeTxt = '';
+      if (!tut && !dead) {
+        const live2 = phase === 'prep' || phase === 'choose', h = live2 && a.dmg ? actHit(F, a) : null;
+        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : tg0.cols && tg0.cols.length ? COLN[tg0.cols[0]] : a.rule === 'random' ? '?' : '';
+        if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : '<small>受ける</small><b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>' + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
+        else if (a.rule === 'mend') foeTxt = '<small>回復</small><b>+' + a.heal + '</b>';
+        else if (a.rule === 'guard' || a.rule === 'aid') foeTxt = '<small>防御</small><b>+' + a.def + '</b>';
+        else if (a.rule === 'charge') foeTxt = '<small>ためる</small>';
+        else foeTxt = '<small>' + a.name + '</small>';
+      }
       const brief = a.name;   // パネルの技名は、ログ・行動パターンと同じ名前（v5.1.41）
       const dl = live && !dead ? foeDealt(F) : 0, kill = dl >= F.hp && dl > 0;
       if (dead) return '<button type="button" class="fc dead" data-f="' + F.id + '" disabled aria-label="' + F.name + '（倒れた）"><b class="fc-nm disp">' + F.name + '</b><span class="fc-gone">倒れた</span></button>';   // 倒れた敵は、名前と「倒れた」だけに折りたたむ（v5.1.57）
@@ -4107,9 +4128,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
       return '<button type="button" class="fc' + (sel ? ' sel' : '') + (half ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '" aria-pressed="' + sel + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (sel ? '（攻撃対象）' : '（タップで攻撃対象にする）') + (tgt2 ? '　今ターン：' + a.name + '→' + tgt2 : '') + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
-        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i><u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
-        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i>' + (tut ? '<span>' + brief + '</span>' : '') + (dmgTxt || (tut ? '' : '<b class="nil">—</b>')) + '</span>' +
-        (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>与</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half && sel ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '') +
+        '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i>' + (dl > 0 ? '<s class="fc-loss" style="left:' + Math.max(0, Math.round((F.hp - Math.min(dl, F.hp)) / F.max * 100)) + '%;width:' + Math.round(Math.min(dl, F.hp) / F.max * 100) + '%"></s>' : '') + '<u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
+        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i>' + (tut ? '<span>' + brief + '</span>' + dmgTxt : foeTxt) + '</span>' +
+        (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>' + (tut ? '与' : '与える') + '</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half && sel ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '') +
         '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
     }).join('');
@@ -4403,6 +4424,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (su) {
       b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(su);
       b.querySelector('.hint').textContent = su.name + (run && !tut ? 'の入れ替え先をタップ' : 'を選択中。入れ替え先をタップ');
+      lockBook();
       return;
     }
     if (phase === 'prep' && benchSel) {
@@ -4417,6 +4439,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const empty = !grid[0].some(Boolean);
       const bh = run && benchList().length ? benchHTML(null) : '';
       b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">編成タイム</b><small class="' + (empty ? 'warn' : '') + '">' + (empty ? '攻撃列が空だと被害2倍。仲間を前へ' : demoSeen() ? '' : 'ドラッグ、またはタップ→タップで仲間を入れ替え') + '</small></span></div>') + bh;
+      lockBook();   // 戦闘中に固めた枠の高さを、編成タイムでは外す（外さないと編成タイムの札が下で切れる。v5.1.62）
       return;
     }
     // 戦闘中（練習以外）は、文章を常に並べない。行動順（いま動く人が光る）と「履歴」だけにし、出来事は盤の上の数字で返す（v5.1.58）
