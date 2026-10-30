@@ -69,7 +69,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
     const routed = await p.evaluate(() => { try { window.__rb.finishForTest('win'); return true; } catch (e) { return String(e); } });
     await p.waitForTimeout(400);
     const lbl = await p.evaluate(() => document.getElementById('next').textContent);
-    if (/本番モード/.test(lbl)) {
+    if (/本番モード|環廊へ/.test(lbl)) {
       await p.click('#next'); await p.waitForTimeout(200);
       ok(await vis(p, 'newConf') && (await p.evaluate(() => localStorage.getItem('rb-exp-save'))) === save0, 'チュートリアル勝利後の「本番モードへ」も、保存があれば確認が出る');
     } else ok(false, 'チュートリアルの勝利画面に進めなかった（' + lbl + ' ' + routed + ' ' + hasNext + '）');

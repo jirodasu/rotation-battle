@@ -44,7 +44,7 @@ async function fight(p, seq) {
   await p.goto(testPage()); await sleep(p, 500);
   await p.click('#cover'); await sleep(p, 300);
   const vis = await p.evaluate(() => { const e = document.getElementById('begin'), r = e.getBoundingClientRect(); return getComputedStyle(e).display !== 'none' && r.width > 0 && r.bottom <= innerHeight + 2; });
-  ok(vis && /環廊/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)), '表紙の「本番モード」が環廊を下る遠征になっている');
+  ok(vis && /環廊/.test(await p.evaluate(() => document.getElementById('begin').textContent)), '表紙の「環廊へ」が環廊を下る遠征になっている');
   await p.click('#begin'); await sleep(p, 600);
   const s0 = await p.evaluate(() => ({ mode: window.__rb.run.mode, n: window.__rb.run.members.length, cols: window.__rb.cols, slots: document.querySelectorAll('#board .slot').length, title: document.getElementById('rvTitle').textContent, cards: document.querySelectorAll('#rvCards .rv-card').length, ages: [...document.querySelectorAll('#rvRoster small')].map((e) => e.textContent).join(',') }));
   ok(s0.mode === 'exp' && s0.n === 4 && s0.cols === 2 && s0.slots === 6, '遠征は4人・3列×2マスの盤で始まる ' + JSON.stringify([s0.n, s0.cols, s0.slots]));
