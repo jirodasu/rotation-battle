@@ -365,6 +365,19 @@ async function open(b, w, h, kind, node) {
     ok(seen, 'D 大技を誰も倒れずにしのぐと、「しのいだ」の判が出る');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
+  /* ---- v5.1.61 表紙：3段の実演はなく、続きからを含む全ボタンが1画面に収まる（スクロールなし） ---- */
+  for (const [w, h] of [[393, 759], [375, 667], [320, 568], [430, 932]]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } }, TIPS_ALL);
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(500);
+    await p.click('#begin'); await p.waitForTimeout(700); await p.evaluate(() => window.__rb.goTitle()); await p.waitForTimeout(900);
+    const m = await p.evaluate(() => { const cv = document.getElementById('cover'), vis = (e) => e && !e.hidden && getComputedStyle(e).display !== 'none';
+      const need = ['resume', 'begin', 'setBtn', 'beginTut'].map((id) => document.getElementById(id)).concat([document.querySelector('.c-title')]);
+      return { demo: vis(document.getElementById('demo')), resume: vis(document.getElementById('resume')), scroll: cv.scrollHeight - cv.clientHeight, out: need.filter((e) => { if (!vis(e)) return false; const r = e.getBoundingClientRect(); return r.top < 0 || r.bottom > innerHeight; }).map((e) => e.id || e.className) }; });
+    ok(!m.demo && m.resume && m.scroll <= 1 && !m.out.length, '表紙 ' + w + 'x' + h + '：3段の実演なし・「続きから」から「チュートリアル」まで1画面に収まる（スクロールなし） ' + JSON.stringify(m));
+    ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
+  }
   await b.close();
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();

@@ -173,7 +173,7 @@ async function toChoose(p) {
     await p.click('#cover'); await p.waitForTimeout(250); await p.click('#begin'); await p.waitForTimeout(500);
     const bad = [];
     for (const [node, kind] of [[0, 0], [3, 0], [6, 0], [2, 'trinity']]) {
-      await p.evaluate(([node, kind]) => { const R = window.__rb; R.run.node = node; R.run.enemy = R.expEnemy(node + 1, null, kind); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, [node, kind]); await p.waitForTimeout(200);
+      await p.evaluate(([node, kind]) => { const R = window.__rb; R.run.node = node; R.run.enemy = R.expEnemy(node + 1, null, kind); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, [node, kind]); await p.waitForTimeout(800);   // 列札の色の切り替え（遷移）が終わってから測る
       const a = await p.evaluate('(' + AU + ')()'); a.lowContrast.forEach((x) => bad.push(node + ':' + x));
     }
     ok(bad.length === 0, '3章の戦闘画面にコントラスト4.5未満の文字なし ' + JSON.stringify(bad));
@@ -185,12 +185,8 @@ async function toChoose(p) {
     const { ctx, p } = await page(b, { rm: false });
     await p.click('#cover'); await p.waitForTimeout(300);
     const pos = () => p.evaluate(() => ['dt1', 'dt2', 'dt3'].map((i) => getComputedStyle(document.getElementById(i)).getPropertyValue('--p').trim()).join(''));
-    const rows = await p.evaluate(() => [...document.querySelectorAll('#demo .d-row .d-lbl')].map((e) => e.textContent).join('/'));
-    ok(rows === '攻撃/補助/回復', '実演に3列（' + rows + '）');
-    const a = await pos(); await p.waitForTimeout(2500); const c = await pos(); await p.waitForTimeout(2400); const d = await pos(); await p.waitForTimeout(2400); const e = await pos();
-    ok(a === '012' && c === '120' && d === '201' && e === '012', '列が1つずつ進み、3回で元に戻る（' + [a, c, d, e].join('→') + '）');
-    const hit = await p.evaluate(() => { const r = document.getElementById('demo').getBoundingClientRect(); const cv = document.querySelector('.c-inner').getBoundingClientRect(); return r.left >= cv.left - 1 && r.right <= cv.right + 1 && r.right <= innerWidth; });
-    ok(hit, '実演は画面幅からはみ出さない');
+    // v5.1.61：表紙の3段の実演は、ユーザーの指示で外した（1画面に収めるため）。表示されないことを確かめる
+    ok(await p.evaluate(() => getComputedStyle(document.getElementById('demo')).display === 'none'), '表紙に3段の実演は出ない（v5.1.61）');
     // ボタンが押せる：実演の上でもなく、押せば進む
     await p.click('#begin'); await p.waitForTimeout(500);
     ok(await p.evaluate(() => !document.getElementById('runv').hidden), '実演中でも「本番モード」がすぐ押せる');
