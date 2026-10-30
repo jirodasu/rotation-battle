@@ -162,6 +162,8 @@ async function fight(p, seq) {
   await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
   if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await sleep(p, 200); }
   await p.click('#begin'); await sleep(p, 500);
+  // 踏破の記録があると出発の準備（隊→深さ）が先に出る（v5.2.0）。標準の隊・深さ1を選ぶ
+  for (let k = 0; k < 2 && await p.evaluate(() => /どの(隊|深さ)/.test(document.getElementById('rvTitle').textContent) && !document.getElementById('runv').hidden); k++) { await p.click('#rvCards .rv-card[data-i="0"]'); await sleep(p, 500); }
   await p.evaluate(() => { const run = window.__rb.run; run.members.pop(); run.members[0].hp = 5; run.chRests = 2; });
   const w3 = await goTo(3);
   const rw3 = await p.evaluate(() => document.getElementById('rvTitle').textContent);

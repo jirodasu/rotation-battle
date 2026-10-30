@@ -42,7 +42,7 @@ async function open(b, w, h, opt = {}) {
     // クレジットと問い合わせ
     const cr = await p.evaluate(() => { const a = document.querySelector('.set-contact a'); return { t: document.querySelector('.set-about').textContent, href: a && a.href, rel: a && a.rel, tg: a && a.target, ver: document.getElementById('setVer').textContent }; });
     ok(/企画・制作/.test(cr.t) && /Claude/.test(cr.t) && /Shippori Mincho B1/.test(cr.t) && /Zen Kaku Gothic New/.test(cr.t) && /不具合・ご意見/.test(cr.t) && /サーバーには送られません/.test(cr.t), 'クレジット・書体・保存の説明');
-    ok(cr.href === 'https://github.com/jirodasu/rotation-battle/issues' && /noopener/.test(cr.rel) && cr.tg === '_blank' && /ver 5\.1\.\d+/.test(cr.ver), '問い合わせは GitHub Issues（別タブ・noopener）・バージョン表示 ' + cr.ver);
+    ok(cr.href === 'https://github.com/jirodasu/rotation-battle/issues' && /noopener/.test(cr.rel) && cr.tg === '_blank' && /ver 5\.\d+\.\d+/.test(cr.ver), '問い合わせは GitHub Issues（別タブ・noopener）・バージョン表示 ' + cr.ver);
     // Escape で閉じ、フォーカスが戻る
     await p.keyboard.press('Escape'); await p.waitForTimeout(150);
     ok(await p.evaluate(() => document.getElementById('settings').hidden && document.activeElement.id === 'setBtn'), 'Escape で閉じ、フォーカスが設定ボタンに戻る');
