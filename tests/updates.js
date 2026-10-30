@@ -125,12 +125,11 @@ async function toChoose(p) {
   }
 
   /* ---- 更新4：章ごとの背景 ---- */
-  for (const sk of [{ name: '通常', date: '2026-11-10T10:00:00', hw: false }, { name: 'ハロウィン', date: '2026-10-20T10:00:00', hw: true }]) {
+  for (const sk of [{ name: '通常', date: '2026-11-10T10:00:00', hw: false }, { name: '10月', date: '2026-10-20T10:00:00', hw: false }]) {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' }); const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
     await p.clock.setFixedTime(new Date(sk.date));
     await p.addInitScript((t) => { try { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); sessionStorage.setItem('seeded', '1'); } } catch (e) { /* 保存できない */ } }, TIPS_ALL);
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(200);
-    if (sk.hw) await p.click('#skinSel button[data-skin="hw"]');
     ok(await p.evaluate(() => document.body.dataset.ch === '0'), sk.name + '：タイトルは第1章の色');
     await p.click('#begin'); await p.waitForTimeout(400);
     const layers = () => p.evaluate(() => ['c0', 'c1', 'c2'].map((c) => +getComputedStyle(document.querySelector('.chl.' + c)).opacity));
@@ -205,8 +204,8 @@ async function toChoose(p) {
     const before = await p.evaluate(() => document.getElementById('dt1').innerHTML);
     await p.clock.setFixedTime(new Date('2026-10-20T10:00:00')); await p.evaluate(() => { localStorage.setItem('rb-skin', 'hw'); }); await p.reload(); await p.waitForTimeout(400);
     const after = await p.evaluate(() => ({ d: document.getElementById('dt1').innerHTML, o: document.getElementById('o1').innerHTML, sk: document.documentElement.getAttribute('data-skin') }));
-    ok(after.sk === 'hw' && after.d !== before && after.d === after.o && after.d.length > 50, '実演の絵は、表紙の飾りと同じ見た目（スキン ' + after.sk + '）に揃う');
-    ok(before === (await (async () => { await p.evaluate(() => { localStorage.setItem('rb-skin', 'normal'); }); await p.reload(); await p.waitForTimeout(400); return p.evaluate(() => document.getElementById('dt1').innerHTML); })()), '通常に戻すと元の絵に戻る');
+    ok(after.sk === 'goth' && after.d === before && after.d === after.o && after.d.length > 50, '実演の絵は表紙の飾りと同じ。古い保存（ハロウィン）があってもゴシック調のまま（スキン ' + after.sk + '）');
+    ok(await p.evaluate(() => localStorage.getItem('rb-skin')) === null, '古い見た目の保存（rb-skin）は消える');
     await ctx.close();
   }
 
