@@ -941,6 +941,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .runv #rvSmall { letter-spacing: 0.12em; padding-left: 0.12em; }
 .runv .r-card.memo #rvEvents { order: 1; }
 .runv .r-card.memo #rvCards { order: 2; }
+.rv-m { position: relative; }
+.rv-up { position: absolute; top: -4px; right: 0; padding: 1px 5px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font: 800 10px/1.3 var(--serif); font-style: normal; box-shadow: 0 1px 0 var(--accent-deep); pointer-events: none; }
 .rv-m .hpb { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--paper-line); overflow: hidden; }
 .rv-m .hpb i { display: block; height: 100%; border-radius: 2px; background: var(--age-young); }
 .rv-m .hpb i.low { background: var(--danger); }
@@ -2569,7 +2571,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.0</p>
+    <p class="c-ver" id="cVer">ver 5.3.1</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2894,7 +2896,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.0';
+  const APP_VERSION = '5.3.1';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5444,7 +5446,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('cover').classList.toggle('has-save', !!sv);
     if (sv) $('resumeSub').textContent = '遠征・地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : sv.battle ? '　戦闘のあと' : '');
     $('begin').classList.toggle('primary', !sv);
-    $('beginSub').textContent = (sv ? '新しく下る' : '4人で下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' + (xDmax(xm) >= 2 ? '・深さ' + xDmax(xm) + 'まで' : '') : '');
+    const nx = xNext(xmeta(xm));
+    $('beginSub').textContent = (sv ? '新しく下る' : '4人で下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' + (xDmax(xm) >= 2 ? '・深さ' + xDmax(xm) + 'まで' : '') : nx ? '　' + nx.s : '');   // まだ踏破していない人には、次に開くもの（v5.3.1）
   }
   function showStats(win) {
     const par = enemy.par || 99, turns = turn;
@@ -6403,7 +6406,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     run.nextChoices = null;
   }
   const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span>'; };
-  const portrait = (m, extra, tag) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + (tag || '') + '</span>';
+  const portrait = (m, extra, tag) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + (EXPM() && !m.fate && upsOf(m) ? '<i class="rv-up" aria-label="技の強化' + upsOf(m) + '回">技' + upsOf(m) + '</i>' : '') + (tag || '') + '</span>';
   const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };
   /* 遠征地図の描画：いまの章を1つの島として描き、地点ごとの領地（ボロノイ分割）に分ける。
@@ -7147,6 +7150,24 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const expFoeOf = (c) => (run.map && run.map[c.rid] && run.map[c.rid].foe) || 0;
   const expSmall = () => { const st = Math.min(run.node + 1, EXP.nodes); return '環廊' + xTag() + '　·　第' + (expCh(st) + 1) + '章 ' + chName(expCh(st)) + '　·　地点 ' + st + ' / ' + EXP.nodes; };
   const relicLine = () => (run.relics.length ? '回転レリック：' + run.relics.map((id) => relD(id).name).join('・') : '回転レリックはまだない');
+  /* 隊の育ち（v5.3.1）：「強くなり方がわからない」への答え。報酬で増えたものを、地図と名簿で数えて見せる。数値・計算は変えない
+     技の強化＝突入技の強化の回数（入れ替えで来た仲間の「強化済み」も数える）、最大HP＝手当ての回数×EXP.healMax */
+  const upsOf = (m) => Object.keys(m.up || {}).reduce((a, k) => a + Math.round((m.up[k] || 0) / (EXP.up[k] || 1)), 0);
+  function growLine() {
+    const ups = run.members.reduce((a, m) => a + upsOf(m), 0), tend = +run.tend || 0, parts = [];
+    if (run.relics.length) parts.push('レリック' + run.relics.map((id) => '「' + relD(id).name + '」').join(''));
+    if (ups) parts.push('技の強化 ' + ups + '回');
+    if (tend) parts.push('最大\u2060HP\u2060+' + tend * EXP.healMax);   // 「最大／HP」で折り返さない
+    return parts.length ? '隊の育ち：' + parts.join('・') : '勝つたびに報酬を選んで、隊を育てる（レリック・技の強化・手当て・仲間）。';
+  }
+  // 次に開くもの（v5.3.1）：隊や深さは実績で開く。まだ開いていない最初の1つと、その条件
+  function xNext(x) {
+    x = x || xmeta();
+    if (!xSqOpen('fast', x)) return { s: '地点7まで行くと新しい隊', l: '地点7まで進むと「速攻の隊」が開く' };
+    if (!x.ach.first) return { s: '踏破すると新しい隊と深さ2', l: '環廊を踏破すると「堅守の隊」と「深さ2」が開く' };
+    if (!xSqOpen('twin', x)) return { s: '3隊で踏破すると双魔の隊', l: '3つの隊で踏破すると（または勲章3枚で）「双魔の隊」が開く' };
+    return null;
+  }
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
     if (e.party) return { ico: '<span class="ev-var" style="--vf:none">' + PARTY_ART.statue + '</span>', t: '戦闘　' + e.name,
@@ -7163,7 +7184,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
-    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + relicLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' : relicLine(), events, cards,   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
+    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
   function expEnter(c) {
@@ -7215,8 +7236,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id));
     if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: ({ shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
     const m = pick(run.members);
-    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }], act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
-    cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax }], act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }, { k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }], act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
+    cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax + ((+run.tend || 0) ? '（合計+' + ((+run.tend || 0) + 1) * EXP.healMax + '）' : '') }], act: () => { run.tend = (+run.tend || 0) + 1; run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
       const have = new Set(run.members.map((x) => x.job)), pool = JOBS.filter((j) => !have.has(j.id)), nm = newMember(pick(pool.length ? pool : JOBS).id, EXP.age);
@@ -7239,7 +7260,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     expRewardShow(pre, cards);
   }
   function expRewardShow(pre, cards) {
-    rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
+    rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。選んだものは、この遠征のあいだ隊に残る。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
   }
   // 誰と入れ替えるか。「やめる」で報酬の選び直し
   function expSwapPick(pre, cards, nm) {
@@ -7298,10 +7319,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     coverProgress();
     if (clear) confetti();
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
-    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
+    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '隊は育たなかった'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
-      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,
+      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) ? '　次に開く：' + xNext(x).l + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
   }
   function beginExp(sqId, depth) {
