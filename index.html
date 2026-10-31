@@ -269,6 +269,24 @@ body.fast .ebar i { transition-duration: 0.18s; }
   transition: opacity 0.25s;
 }
 .ticket.busy { opacity: 0.55; }
+/* v5.3.6：敵の行動の印（牙・縛など）は出さない。印が無いときは、札を「名前｜数字」の2段にする（大技までのカウントダウンは残す） */
+.ticket.noico { grid-template-columns: minmax(0, 1fr) auto !important; padding-left: 16px !important; }
+/* v5.3.6：上の「地点・ターン」と、敵の名前の上の章は、戦闘画面に出さない（iを押した詳細に出す）。i は敵の名前の横へ */
+#chipTurn { display: none !important; }
+.plate small { display: none !important; }
+#ename::after { content: "i"; display: inline-grid; place-items: center; width: 18px; height: 18px; margin-left: 8px; vertical-align: 4px; border-radius: 50%;
+  font: italic 700 12px/1 Georgia, serif; letter-spacing: 0; color: var(--rubric); box-shadow: inset 0 0 0 1px var(--rubric); }
+.stage.inspecting #ename::after { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+#ename { white-space: nowrap; }
+#ename.long { font-size: 0.82em; }
+@media (max-width: 360px) { #ename.long { font-size: 0.74em; } }
+body.boss-stage #ename::after { color: #e4a8ff; box-shadow: inset 0 0 0 1px #e4a8ff; }
+/* 履歴は上の帯のボタンへ（v5.3.6） */
+#logBtn .disp { font-size: 12.5px; line-height: 1; letter-spacing: 0; }
+/* 記録の枠（行動順）は、はじめの数戦だけ。空のときは枠ごと消して、盤を広くする（v5.3.6） */
+#book:empty { display: none !important; }
+.od.foe .od-art { display: block; width: 100%; height: 100%; }
+.od.foe .od-art svg { width: 100%; height: 100%; }
 .t-ico { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--danger); color: var(--on-danger); font-size: 22px; line-height: 1; }
 .t-main b { display: block; font-size: 18px; line-height: 1.2; }
 .t-main span { display: block; font-size: 12px; color: var(--ink-soft); line-height: 1.35; }
@@ -535,7 +553,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .ep-h { display: flex; align-items: baseline; justify-content: space-between; margin: 10px 0 6px; font-size: 12px; font-weight: 700; color: var(--ink); }
 .ep-h small { font-size: 10.5px; font-weight: 500; color: var(--ink-soft); }
 .ep-list { display: grid; gap: 6px; }
-.ep { position: relative; display: grid; grid-template-columns: 34px 1fr auto; align-items: center; gap: 10px; padding: 6px 12px 6px 6px; border-radius: 14px; background: var(--paper-2); box-shadow: 0 2px 0 var(--paper-line); }
+.ep { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 6px 12px 6px 14px; border-radius: 14px; background: var(--paper-2); box-shadow: 0 2px 0 var(--paper-line); }
 .ep.now { background: var(--accent-a); box-shadow: inset 0 0 0 2px var(--accent), 0 2px 0 var(--paper-line); }
 .ep-ic { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--danger); color: var(--on-danger); font-size: 17px; line-height: 1; }
 .ep:not(.now) .ep-ic { opacity: 0.75; }
@@ -1872,8 +1890,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   background: repeating-linear-gradient(135deg, rgba(74, 38, 8, 0.2) 0 7px, transparent 7px 14px), var(--b); }
 #btnRotate:disabled .rot-meter small { color: #7a1f10; opacity: 1; font-weight: 800; text-shadow: none; }
 #btnRotate:disabled .rot-meter .pips i { color: #7a1f10; }
-#btnRotate[data-block="bind"] svg { display: none; }
-#btnRotate[data-block="bind"]::before { content: "縛"; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--rubric); color: #fff3e0; font-family: var(--serif); font-size: 12px; font-weight: 700; }
+/* v5.3.6：縛られたときの「縛」の印は出さない（理由は押したときの吹き出しで） */
+#btnRotate[data-block="bind"]::before { display: none !important; content: "縛"; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--rubric); color: #fff3e0; font-family: var(--serif); font-size: 12px; font-weight: 700; }
 #btnRotate.deny { animation: deny .38s cubic-bezier(.36, .07, .19, .97) both; }
 @keyframes deny { 15%, 85% { translate: -2px 0; } 30%, 70% { translate: 4px 0; } 45%, 55% { translate: -5px 0; } }
 .rb-flash { animation: rbflash .9s ease-out both; }
@@ -2503,6 +2521,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <button class="icon-btn" id="homeBtn" type="button" aria-label="タイトルへ戻る"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h4.5v-5.5h3V20H18V9.5" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div class="top-r">
       <span class="chip" id="chipTurn">第1戦　ターン1</span>
+      <button class="icon-btn" id="logBtn" type="button" aria-label="これまでの出来事を全部見る"><span class="disp">履歴</span></button>
       <button class="icon-btn spd" id="spdBtn" type="button" aria-pressed="false" aria-label="戦闘を2倍速にする"><span class="disp">×2</span></button>
       <button class="icon-btn" id="helpBtn" type="button" aria-label="あそびかた"><span class="disp" style="font-size:17px;line-height:1">？</span></button>
       <button class="icon-btn" id="snd" type="button" aria-pressed="true" aria-label="効果音">
@@ -2589,7 +2608,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.5</p>
+    <p class="c-ver" id="cVer">ver 5.3.6</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2915,7 +2934,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.5';
+  const APP_VERSION = '5.3.6';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3688,6 +3707,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let stats = null, order = [], orderIdx = -1;
   let camp = { turns: 0, fallen: 0, stars: [], rec: [] };
   let tut = null;
+  // 地点・ターン（v5.3.6）：戦闘画面の上の札から、敵の詳細（iを押す）へ移した。★の「Nターン以内」の目安も添える
+  const turnTags = () => (run && !tut ? '<span class="uc-tag">地点 ' + Math.min(run.node + 1, (EXPM() ? EXP.nodes : RUN.nodes)) + ' / ' + (EXPM() ? EXP.nodes : RUN.nodes) + '</span>' : '') +
+    '<span class="uc-tag">ターン ' + turn + (enemy && enemy.par && !tut ? '（★は' + enemy.par + 'ターン以内）' : '') + '</span>';
   const chapLabel = () => (tut ? 'チュートリアル' : (run ? (run.mode === 'exp' ? '第' + (expCh(run.node + 1) + 1) + '章 ' + chName(expCh(run.node + 1)) + (enemy && enemy.chief ? (enemy.boss ? '　最後の主' : '　章の主') : '') : '騎士団 ' + run.year + '年目') : CHAP[battleIdx]));
 
   function makeRoster() { return JOBS.map((j) => Object.assign({}, j, { uid: 't-' + j.id, job: j.id, jname: j.name, max: j.hp, atkReady: true, defReady: true, sta: j.sta || 0, staMax: j.sta || 0, entered: false })); }
@@ -3832,12 +3854,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     a.sort((x, y) => y.spd - x.spd || (x.kind === 'p' ? -1 : 1));
     return a;
   }
+  // 敵の小さな絵（行動順に使う。v5.3.6）。三位一体は1体ずつの絵
+  const foeMini = (F) => (enemy && enemy.party && F ? (PARTY_ART[F.art] || '') : EART[enemy && enemy.art != null ? enemy.art : Math.min(battleIdx || 0, EART.length - 1)] || '');
   function orderHTML() {
     const live = phase === 'resolve' && order.length;
     const list = live ? order : actorList(showGhost() ? previewGrid() : grid, showGhost());
     const items = list.map((a, i) => {
       const st = live ? (i < orderIdx ? ' done' : (i === orderIdx ? ' now' : '')) : '';
-      return a.kind === 'e' ? '<i class="od foe' + st + '" title="' + (a.foe || enemy).name + '">' + '<b class="disp">' + actOf(a.foe || enemy).glyph + '</b></i>'
+      return a.kind === 'e' ? '<i class="od foe' + st + '" title="' + (a.foe || enemy).name + '">' + '<span class="od-art">' + foeMini(a.foe) + '</span></i>'   // 敵は行動の印ではなく小さな絵（v5.3.6）
         : '<i class="od c-' + a.u.cls + st + '" title="' + a.u.name + '">' + face(a.u) + '</i>';
     }).join('');
     return '<div class="order"><span class="od-l">行動順</span><span class="od-list">' + items + '</span></div>';
@@ -3962,6 +3986,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     renderParty();
     // 章の名前と「章の主」は、それぞれ途中で折り返さない（狭い画面で「最後の／主」と割れないように）
     $('chap').innerHTML = chapLabel().split('　').map((x) => '<span class="nw">' + x + '</span>').join('　');
+    $('ename').classList.toggle('long', enemy.name.length >= 8);   // 長い名前は少し小さく、i と1行に収める（v5.3.6）
     if (enemy.party) { $('ename').textContent = enemy.name; return; }
     $('ename').textContent = enemy.name;
     $('espd').innerHTML = tut ? '素早さ ' + enemy.spd + '　防御 ' + enemy.def : '<span title="素早さ"><small>速</small>' + enemy.spd + '</span><span title="防御"><small>防</small>' + enemy.def + '</span>';
@@ -4216,7 +4241,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 本番では、札は「印（大技まであと何ターンなら、その数字）・名前・数字」だけ。説明は札を押したときの吹き出し（v5.1.59）
     const slim = !tut, cdn = slim && warn && warn.seen && warn.ahead > 0 ? warn.ahead : 0;
     t.dataset.why = head + (sub ? '　' + sub : ''); t.dataset.cd = cdn ? String(cdn) : ''; t.dataset.warn = warn && warn.seen ? '1' : '';
-    t.innerHTML = (cdn ? '<span class="t-ico disp t-cd" aria-hidden="true"><b>' + cdn + '</b><small>大技まで</small></span>' : '<span class="t-ico disp">' + ico + '</span>') +
+    t.classList.toggle('noico', !cdn);   // 印は出さない。大技までのカウントダウンだけ残す（v5.3.6）
+    t.innerHTML = (cdn ? '<span class="t-ico disp t-cd" aria-hidden="true"><b>' + cdn + '</b><small>大技まで</small></span>' : '') +
       '<span class="t-main"><b class="disp">' + (slim && warn && warn.seen ? warn.name : head) + '</b>' + (slim ? '' : '<span>' + sub + '</span>') + '</span>' +
       '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + (cdn ? ' nx' : '') + '"><b class="disp">' + (dmg == null ? '—' : cut ? h.txt : dmg) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
     t.setAttribute('aria-label', '敵の予告：' + head + '。' + sub);
@@ -4246,12 +4272,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const slim = !tut, nx = act.rule === 'charge' ? nextActOf(enemy) : null;
     t.dataset.why = act.name + '　' + info.desc;
     t.dataset.cd = ''; t.dataset.warn = '';
+    t.classList.toggle('noico', !(slim && chg && !bnd && nx && nx.dmg));
     if (slim && chg && !bnd && nx && nx.dmg) {
       t.dataset.cd = '1';
       t.innerHTML = '<span class="t-ico disp t-cd" aria-hidden="true"><b>1</b><small>大技まで</small></span>' +
         '<span class="t-main"><b class="disp">' + act.name + '</b></span>' +
         '<span class="t-dmg nx"><b class="disp">' + nx.dmg * (nx.hits || 1) + '</b><small>次に大技</small></span>';
-    } else t.innerHTML = '<span class="t-ico disp">' + act.glyph + '</span>' +
+    } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
         : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
@@ -4340,7 +4367,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         const i = (cur + k) % n, a = F.pattern[i];
         const lbl = k === 0 ? (phase === 'resolve' ? 'いま' : '次') : (k === 1 ? 'その次' : k + '手先');
         const val = a.dmg ? a.dmg : a.rule === 'mend' ? '+' + a.heal : a.rule === 'charge' ? '—' : '防+' + a.def;
-        list += '<span class="ep' + (k === 0 ? ' now' : '') + '"><span class="ep-ic disp">' + a.glyph + '</span><span class="ep-n"><b class="disp"><i class="ep-badge"' + (k === 0 ? '' : ' style="background:var(--paper);color:var(--ink-soft);box-shadow:0 1.5px 0 var(--paper-line)"') + '>' + lbl + '</i>' + a.name + '</b><span>' + ruleShort2(a) + '</span></span><span class="ep-d"><b class="disp">' + val + '</b><small>' + (a.dmg ? 'ダメージ' : '') + '</small></span></span>';
+        list += '<span class="ep' + (k === 0 ? ' now' : '') + '"><span class="ep-n"><b class="disp"><i class="ep-badge"' + (k === 0 ? '' : ' style="background:var(--paper);color:var(--ink-soft);box-shadow:0 1.5px 0 var(--paper-line)"') + '>' + lbl + '</i>' + a.name + '</b><span>' + ruleShort2(a) + '</span></span><span class="ep-d"><b class="disp">' + val + '</b><small>' + (a.dmg ? 'ダメージ' : '') + '</small></span></span>';
       }
       return '<span class="pc-foe' + (dead ? ' dead' : '') + '"><span class="pc-h"><span class="pc-art">' + PARTY_ART[F.art] + '</span><span class="pc-id"><b class="disp">' + F.name + '</b><small>HP ' + F.hp + ' / ' + F.max + '　防御 ' + foeDef(F) + '　素早さ ' + F.spd + (dead ? '　倒れた' : '') + '</small></span></span>' + (dead ? '' : '<span class="ep-list">' + list + '</span>') + '</span>';
     }).join('');
@@ -4360,13 +4387,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const lbl = k === 0 ? (phase === 'resolve' ? 'いま' : '次') : (k === 1 ? 'その次' : k + '手先');
       const badge = '<i class="ep-badge"' + (k === 0 ? '' : ' style="background:var(--paper);color:var(--ink-soft);box-shadow:0 1.5px 0 var(--paper-line)"') + '>' + lbl + '</i>';
       list += '<span class="ep' + (k === 0 ? ' now' : '') + '">' +
-        '<span class="ep-ic disp">' + a.glyph + '</span>' +
         '<span class="ep-n"><b class="disp">' + badge + a.name + '</b><span>' + ruleShort(a) + '</span></span>' +
         '<span class="ep-d"><b class="disp">' + (a.dmg ? a.dmg : '—') + (a.hits > 1 ? '<small style="display:inline;font-size:12px;color:var(--danger)">×' + a.hits + '</small>' : '') + '</b><small>ダメージ</small></span></span>';
     }
     return '<button type="button" class="ucard" id="cardClose" aria-label="閉じる">' +
       '<span class="uc-head"><span class="uc-disc c-enemy">' + EART[e.art != null ? e.art : Math.min(battleIdx, EART.length - 1)] + '</span>' +
-      '<span class="uc-id"><b class="uc-name disp">' + e.name + '</b><span class="uc-tags"><span class="uc-tag foe">敵</span><span class="uc-tag">' + chapLabel() + '</span></span></span>' +
+      '<span class="uc-id"><b class="uc-name disp">' + e.name + '</b><span class="uc-tags"><span class="uc-tag foe">敵</span><span class="uc-tag">' + chapLabel() + '</span>' + turnTags() + '</span></span>' +
       '<span class="uc-x">' + ICON.x + '</span></span>' +
       '<span class="uc-hp">' + ICON.heart + '<span class="uc-hpbar' + (p <= 35 ? ' low' : '') + '"><i style="width:' + p + '%;background:var(--danger)"></i></span><b class="disp">' + e.hp + '<small> / ' + e.max + '</small></b></span>' +
       '<span class="uc-role">' + (faster.length ? '素早さ' + e.spd + 'より速い ' + faster.slice(0, 3).join('・') + (faster.length > 3 ? ' ほか' : '') + ' が先に動く' : '仲間の誰よりも先に動く') + '</span>' +
@@ -4426,6 +4452,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('logBg').addEventListener('click', () => openLog(false));
   $('logX').addEventListener('click', () => openLog(false));
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('logSheet').hidden) openLog(false); });
+  $('logBtn').addEventListener('click', () => { if (phase === 'resolve') return; SFX.tap(); openLog(true); });   // 履歴は上の帯から（v5.3.6）
   $('book').addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.closest && ev.target.closest('.logbox, .lb-btn')) { ev.preventDefault(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } } });
   $('book').addEventListener('click', (ev) => {
     if (ev.target.closest('.logbox, .lb-btn')) { ev.stopPropagation(); if (phase !== 'resolve') { SFX.tap(); openLog(true); } return; }
@@ -4447,7 +4474,18 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('foeSheet').hidden = !foe; $('foeBg').hidden = !foe;
     if (foe) $('foeSheet').innerHTML = enemyCardHTML();
     showPeek(pu);
+    // 枠を出さない戦闘（はじめの数戦より後）：入れ替えの手がかりと警告は、盤の上の吹き出しで（盤の大きさを動かさない。v5.3.6）
+    const slimPrep = !tut && !bookOn;
+    if (!(su && slimPrep)) hideBubble('selTip');
+    if (!(phase === 'prep' && slimPrep)) hideBubble('prepWarn');
     if (su) {
+      if (slimPrep) {
+        const bh0 = run && benchList().length ? benchHTML(su) : '';
+        b.innerHTML = bh0; bookFit();
+        hideBubble('prepWarn');
+        bubble(su.name + 'の入れ替え先をタップ', $('dock'), 0, 'selTip');   // 仲間の詳細（上に出る）を隠さないよう、下のボタンの上に
+        return;
+      }
       b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(su);
       b.querySelector('.hint').textContent = su.name + (run && !tut ? 'の入れ替え先をタップ' : 'を選択中。入れ替え先をタップ');
       lockBook();
@@ -4468,6 +4506,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const inc = incoming(grid, true, false), ks = Object.keys(inc), top = ks.map((k) => { const [r, c] = k.split(',').map(Number); return { u: grid[r][c], d: inc[k].d, ko: inc[k].ko }; }).sort((x, y) => (y.ko - x.ko) || (y.d - x.d))[0];
       const kos = ks.filter((k) => inc[k].ko).length, mb = outcomeOf(grid, true, false).maybe;   // 当たる相手が毎回変わる攻撃（群れなど）は「運しだい」
       const say = empty ? '攻撃列が空だと被害2倍。仲間を前へ' : kos ? top.u.name + 'が倒れる（-' + top.d + '）' : top ? top.u.name + '（HP' + top.u.hp + '）が' + top.d + 'を受ける' + (mb ? '。ほかは運しだい' : '') : mb ? '攻撃列の誰に当たるかは運しだい' : 'このターンは攻撃が来ない';
+      if (slimPrep) {
+        // 警告（倒れる・攻撃列が空）があるときだけ、「戦闘開始」の上に吹き出しで
+        b.innerHTML = bh; bookFit();
+        if (empty || kos) bubble(say, $('btnStart'), 0, 'prepWarn'); else hideBubble('prepWarn');
+        return;
+      }
       b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b><small class="' + (empty || kos ? 'warn' : '') + '">' + say + '</small></span></div>') + bh;
       lockBook();   // 戦闘中に固めた枠の高さを、編成タイムでは外す（外さないと編成タイムの札が下で切れる。v5.1.62）
       return;
@@ -4475,6 +4519,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 戦闘中（練習以外）は、文章を常に並べない。行動順（いま動く人が光る）と「履歴」だけにし、出来事は盤の上の数字で返す（v5.1.58）
     if (!tut && phase !== 'prep') {
       b.innerHTML = slimBookHTML(); b.classList.add('slim');
+      if (!b.innerHTML) bookFit();
       if (phase === 'choose' && previewOn) {
         const pg = previewGrid();
         bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnPreview'), 0, 'pvTip');
@@ -4506,7 +4551,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
      戦闘中（編成タイム以外）は「行動順＋文3行（ログ2行＋案内1行）」の高さに固定し、入りきらない古いログは上へ押し出す（全文は履歴で読める）。
      高さは画面の大きさ・文字の大きさが変わったときだけ測り直す */
   let bookKey = '', bookH = 0;
-  const slimBookHTML = () => orderHTML().replace(/<\/div>$/, '<button type="button" class="lb-btn" aria-label="これまでの出来事を全部見る">履歴 ▸</button></div>');
+  // 枠が空になった・戻ったときに、盤の大きさを合わせ直す（v5.3.6）
+  let bookWasEmpty = null;
+  function bookFit() { const e = !$('book').innerHTML; $('book').style.removeProperty('height'); $('book').classList.remove('locked'); if (e !== bookWasEmpty) { bookWasEmpty = e; requestAnimationFrame(() => { fitBoard(); setBleed(); }); } }
+  // 戦闘中の記録の枠：はじめの数戦（bookOn）だけ行動順を出す。履歴は上の帯のボタンへ移した（v5.3.6）
+  const slimBookHTML = () => (bookOn ? orderHTML() : '');
   function lockBook() {
     const b = $('book');
     if (tut || phase === 'prep') b.classList.remove('slim');
@@ -4672,6 +4721,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     renderTicket();
     renderParty();
     renderBook();
+    { const e = !$('book').innerHTML; if (e !== bookWasEmpty) { bookWasEmpty = e; requestAnimationFrame(() => { fitBoard(); setBleed(); }); } }   // 枠が消えた・戻ったら盤を合わせ直す（v5.3.6）
     $('btnStart').hidden = phase !== 'prep';
     $('btnPrepRot').hidden = phase !== 'prep' || !!tut;
     $('btnStart').textContent = (phase === 'prep' && !tut) ? 'この並びで戦闘開始' : '戦闘開始';
@@ -4888,7 +4938,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!$('board').children.length || COLS !== 4) setCols(4);
     toPrep(false);
   }
+  /* 記録の枠（行動順）を出すのは、はじめの数戦だけ（v5.3.6）。戦闘を始めた回数を端末に数える。
+     1つの戦闘の中では切り替えない（陣立て→戦闘で盤の大きさが変わらないように）。チュートリアルは今まで通り */
+  const ORDER_N = 3;
+  const orderN = () => { try { return +localStorage.getItem('rb-order-n') || 0; } catch (e) { return 0; } };
+  const bookOnNow = () => !!tut || orderN() < ORDER_N;
+  let bookOn = true;
   function toPrep(restore) {
+    bookOn = bookOnNow();
     if (restore && snapshot) {
       grid = emptyGrid();
       snapshot.forEach(({ u, r, c }) => { grid[r][c] = u; });
@@ -5030,6 +5087,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   function startBattle() {
     if (phase !== 'prep') return;
+    if (!tut) { try { localStorage.setItem('rb-order-n', String(orderN() + 1)); } catch (e) { /* 保存できない環境 */ } }
     actx(); SFX.go();
     snapshot = units().map((x) => ({ u: x.u, r: x.r, c: x.c }));
     stats = { dealt: {}, who: {}, taken: 0, fallen: 0 };
@@ -7142,6 +7200,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     bsave = B;
     toast(B.at === 'over' ? '戦闘のあとから再開しました' : '中断したところから再開しました（ターン' + B.turn + '）');
     if (B.at === 'start') { phase = 'prep'; renderEnemy(true); render(); startBattle(); return; }
+    bookOn = bookOnNow();
     phase = 'choose'; renderEnemy(true);
     if (B.at === 'over') { finish(B.result); return; }
     Music.set('choose'); render();
