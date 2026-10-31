@@ -151,6 +151,12 @@
 :root[data-theme="light"] { color-scheme: light; }
 
 html { scroll-padding-top: env(safe-area-inset-top, 0px); overflow-x: hidden; }
+/* iPhoneのホーム画面アプリ（v5.3.4）：画面の高さ（100dvh）がステータスバーの分だけ短く計算され、下に黒い帯が出ることがある。
+   ホーム画面アプリのときだけ、端末の画面の高さを JS で測って --app-h に入れ、それを使う（ブラウザで開いたときは今まで通り） */
+html.sa-fix, html.sa-fix body { min-height: var(--app-h); }
+html.sa-fix .app { min-height: var(--app-h); }
+@media (max-height: 820px) { html.sa-fix .app { height: var(--app-h); } }
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) { html.sa-fix .app { height: var(--app-h); } }
 body { max-width: 100vw; }
 *, *::before, *::after { box-sizing: inherit; }
 body {
@@ -1004,6 +1010,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .prepban b { display: block; font-size: 16px; line-height: 1.2; color: var(--ink); }
 .prepban small { display: block; font-size: 12px; line-height: 1.4; font-weight: 700; color: var(--accent-text); }
 .prepban small.warn { color: var(--danger-strong); }
+.prepban .pb-how { margin-left: 10px; font: 700 11.5px/1 var(--sans, sans-serif); font-style: normal; color: var(--ink-soft); letter-spacing: 0; white-space: nowrap; }
+@media (max-width: 360px) { .prepban .pb-how { margin-left: 6px; font-size: 10.5px; } }
 .board.prep .slot { touch-action: none; }
 .board.prep .slot:not(.sel) .tok[data-id] { animation: bob 2.6s ease-in-out infinite; animation-delay: calc(var(--bi, 0) * -0.37s); }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
@@ -1390,6 +1398,8 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .prepban b { font-family: var(--serif); font-weight: 800; letter-spacing: 0.04em; }
 .prepban small { color: var(--accent-text); }
 .prepban .pb-ico { background: radial-gradient(circle at 38% 32%, var(--gold-hi), var(--gold) 70%); box-shadow: inset 0 0 0 1px var(--gold-lo), 0 2px 3px rgba(46, 28, 10, 0.3); }
+/* 押せない印は金の丸にしない（v5.3.4）：金の丸＝押せるもの、に揃える。線だけの控えめな印に */
+.prepban .pb-ico, :root .prepban .pb-ico { background: transparent !important; color: var(--accent-text); box-shadow: inset 0 0 0 1.5px var(--rule-a) !important; }
 .bn { box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 2.5px var(--rule-a); }
 .bn.on { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--gold); }
 .bn-out { border-radius: 4px; border: 1.5px dashed var(--gold); color: var(--accent-text); font-family: var(--serif); }
@@ -2527,7 +2537,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   <div class="dock" id="dock">
     <button class="btn" id="btnPrepRot" type="button" aria-label="隊列を縦に回す（列の左右はそのまま）" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      回す
+      並びを回す
     </button>
     <button class="btn primary" id="btnStart" type="button" hidden>戦闘開始</button>
     <button class="btn skip" id="btnSkip" type="button" aria-label="この演出を飛ばして先へ進む" hidden>演出を飛ばす ▶▶</button>
@@ -2579,7 +2589,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.3</p>
+    <p class="c-ver" id="cVer">ver 5.3.4</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2905,7 +2915,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.3';
+  const APP_VERSION = '5.3.4';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4454,7 +4464,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (phase === 'prep' && !tut) {
       const empty = !grid[0].some(Boolean);
       const bh = run && benchList().length ? benchHTML(null) : '';
-      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て</b><small class="' + (empty ? 'warn' : '') + '">' + (empty ? '攻撃列が空だと被害2倍。仲間を前へ' : demoSeen() ? '' : 'ドラッグ、またはタップ→タップで仲間を入れ替え') + '</small></span></div>') + bh;
+      // 陣立ての一言（v5.3.4）：いつも出す。攻撃が当たる仲間と受けるダメージ（倒れるなら警告）＋入れ替え方。押せない印なので金の丸にはしない
+      const inc = incoming(grid, true, false), ks = Object.keys(inc), top = ks.map((k) => { const [r, c] = k.split(',').map(Number); return { u: grid[r][c], d: inc[k].d, ko: inc[k].ko }; }).sort((x, y) => (y.ko - x.ko) || (y.d - x.d))[0];
+      const kos = ks.filter((k) => inc[k].ko).length, mb = outcomeOf(grid, true, false).maybe;   // 当たる相手が毎回変わる攻撃（群れなど）は「運しだい」
+      const say = empty ? '攻撃列が空だと被害2倍。仲間を前へ' : kos ? top.u.name + 'が倒れる（-' + top.d + '）' : top ? top.u.name + '（HP' + top.u.hp + '）が' + top.d + 'を受ける' + (mb ? '。ほかは運しだい' : '') : mb ? '攻撃列の誰に当たるかは運しだい' : 'このターンは攻撃が来ない';
+      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b><small class="' + (empty || kos ? 'warn' : '') + '">' + say + '</small></span></div>') + bh;
       lockBook();   // 戦闘中に固めた枠の高さを、編成タイムでは外す（外さないと編成タイムの札が下で切れる。v5.1.62）
       return;
     }
@@ -7512,6 +7526,22 @@ body.fast #stampOk.on { animation-duration: .5s; }
     document.getElementById('installBtn').hidden = true;
   });
   window.addEventListener('appinstalled', () => { document.getElementById('installBtn').hidden = true; });
+})();
+</script>
+<script>
+/* ホーム画面アプリの画面の高さ（v5.3.4）：上の html.sa-fix を参照 */
+(() => {
+  const sa = (window.matchMedia && (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches)) || navigator.standalone === true;
+  if (!sa) return;
+  const set = () => {
+    const port = innerHeight >= innerWidth, a = screen.height || 0, b = screen.width || 0;
+    const sh = port ? Math.max(a, b) : Math.min(a, b);   // iPhone の screen は向きで入れ替わらない
+    // 直すのは「iPhoneの大きさの画面」で、足りない分がステータスバーくらい（64px以下）のときだけ。iPadの画面分割などで画面の一部しか使わないときは触らない
+    const gap = sh - innerHeight, ok = Math.min(a, b) < 500 && gap > 0 && gap <= 64;
+    document.documentElement.classList.toggle('sa-fix', ok);
+    if (ok) document.documentElement.style.setProperty('--app-h', sh + 'px');
+  };
+  set(); addEventListener('resize', set); addEventListener('orientationchange', () => setTimeout(set, 300));
 })();
 </script>
 </body>
