@@ -7343,7 +7343,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
-      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }],   // 解禁の行が出るときは重ねない。短い言い方で（画面からはみ出さないように・v5.3.1） skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,
+      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
   }
   function beginExp(sqId, depth) {
