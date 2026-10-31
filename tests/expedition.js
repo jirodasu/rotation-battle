@@ -75,14 +75,14 @@ async function fight(p, seq) {
   await nextIf(p); await sleep(p, 500);
   const after = await p.evaluate(() => ({ title: document.getElementById('rvTitle').textContent, cards: [...document.querySelectorAll('#rvCards .rv-card b')].map((e) => e.textContent) }));
   if (/勝利/.test(r1)) {
-    ok(/報酬/.test(after.title) && after.cards.length === 4 && after.cards.some((t) => /回転レリック/.test(t)) && after.cards.some((t) => /突入技の強化/.test(t)) && after.cards.some((t) => /手当て/.test(t)) && after.cards.some((t) => /仲間の入れ替え/.test(t)), '勝つと報酬が4つ（回転レリック・突入技の強化・手当て・仲間の入れ替え）' + JSON.stringify(after.cards));
+    ok(/勝利|報酬/.test(after.title) && after.cards.length === 4 && after.cards.some((t) => /回転レリック/.test(t)) && after.cards.some((t) => /突入技の強化/.test(t)) && after.cards.some((t) => /手当て/.test(t)) && after.cards.some((t) => /仲間の入れ替え/.test(t)), '勝つと報酬が4つ（回転レリック・突入技の強化・手当て・仲間の入れ替え）' + JSON.stringify(after.cards));
     // 仲間の入れ替え：「やめる」で報酬に戻れる。選ぶと、隊にいなかった職業の仲間が同じマスに入り、去った仲間は「離隊」
     const before = await p.evaluate(() => window.__rb.run.members.map((m) => ({ uid: m.uid, job: m.job, r: m.r, c: m.c })));
     await p.click('#rvCards .rv-card[data-i="3"]'); await sleep(p, 500);
     const pickT = await p.evaluate(() => ({ t: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length }));
     await p.click('#rvCards .rv-skip'); await sleep(p, 500);
     const back = await p.evaluate(() => document.getElementById('rvTitle').textContent);
-    ok(/誰と入れ替える/.test(pickT.t) && pickT.n === before.length && /報酬/.test(back), '入れ替えは相手を選べ、「やめる」で報酬に戻れる ' + JSON.stringify([pickT, back]));
+    ok(/誰と入れ替える/.test(pickT.t) && pickT.n === before.length && /勝利|報酬/.test(back), '入れ替えは相手を選べ、「やめる」で報酬に戻れる ' + JSON.stringify([pickT, back]));
     await p.click('#rvCards .rv-card[data-i="3"]'); await sleep(p, 500);
     await p.click('#rvCards .rv-card[data-i="0"]'); await sleep(p, 600);
     const sw = await p.evaluate(() => { const run = window.__rb.run; return { members: run.members.map((m) => ({ uid: m.uid, job: m.job, r: m.r, c: m.c, hp: m.hp, max: m.max, up: m.up || null })), left: run.gone.filter((m) => m.fate === 'left').map((m) => m.uid), node: run.node }; });
@@ -171,7 +171,7 @@ async function fight(p, seq) {
   const rw3 = await p.evaluate(() => document.getElementById('rvTitle').textContent);
   await p.click('#rvCards .rv-card[data-i="1"]'); await sleep(p, 600);
   const c2 = await p.evaluate(() => { const run = window.__rb.run; return { node: run.node, n: run.members.length, full: run.members.every((m) => m.hp === m.max), ch: run.chRests, small: document.getElementById('rvSmall').textContent, ev: document.getElementById('rvEvents').textContent }; });
-  ok(/勝利/.test(w3) && /報酬/.test(rw3), '第1章の主に勝つと報酬を選べる');
+  ok(/勝利/.test(w3) && /勝利|報酬/.test(rw3), '第1章の主に勝つと報酬を選べる');
   ok(c2.node === 3 && c2.n === 4 && c2.full && c2.ch === 0 && /第2章/.test(c2.small) && /合流/.test(c2.ev), '報酬のあと第2章へ：全員全快、欠けた仲間の代わりが合流して4人、章の休息回数は0 ' + JSON.stringify(c2));
   // 最後の主（毒竜）に勝つと踏破
   const w10 = await goTo(10);

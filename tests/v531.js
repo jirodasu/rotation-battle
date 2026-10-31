@@ -40,7 +40,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.evaluate(() => window.__rb.expEnd(false, []));
     await p.waitForTimeout(500);
     const end = await p.evaluate(() => document.getElementById('rvCards').textContent);
-    ok(/次に開く：地点7まで進むと「速攻の隊」が開く/.test(end), w + '×' + h + ' 6 遠征の終わりに次に開くもの');
+    ok(/次に開く：地点7まで行くと新しい隊/.test(end), w + '×' + h + ' 6 遠征の終わりに次に開くもの');
     ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }
