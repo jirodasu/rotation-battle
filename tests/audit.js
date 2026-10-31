@@ -334,8 +334,9 @@ async function open(b, w, h, kind, node) {
     ok(await p.evaluate(() => { const c = document.querySelector('#rvCards .rv-card.sel .rv-d'); return !!c && c.getBoundingClientRect().height > 8 && /HP|防御|素早さ/.test(c.textContent); }), 'A 選んだ札だけ本文が開く');
     // 戦闘へ
     await p.click('#rvGo'); await p.waitForTimeout(1500);
-    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'); return !!document.querySelector('.prepban') && (!t || t.textContent === ''); });
-    ok(f0, 'F 編成の説明は、実演を見たあと（覚えたあと）は出ない：「編成タイム」だけ');
+    // v5.3.4 で仕様を変えた：実演を見たあとも、短い入れ替え方（1行）と「誰が何を受けるか」をいつも出す。長い実演の説明（ドラッグ…）は出さない
+    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'), h = document.querySelector('.prepban .pb-how'); return { ok: !!document.querySelector('.prepban') && !!h && h.textContent === 'タップ→タップで入れ替え' && !!t && t.textContent.length > 0 && !/ドラッグ/.test(document.querySelector('.prepban').textContent), t: t && t.textContent }; });
+    ok(f0.ok, 'F 陣立ての一言：実演を見たあとは短い入れ替え方と、受けるダメージの一言だけ（' + f0.t + '）');
     // E 長押し：押している間だけ先読み、離すと決定（外でなく札の上）
     await p.evaluate(() => { window.__rb.run.members.forEach((m) => { m.max = Math.max(m.max, 60); m.hp = 20; }); });
     await p.click('#btnStart');
