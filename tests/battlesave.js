@@ -52,7 +52,7 @@ async function play(foe, seq, cut, step) {
   let t = 0, subs = [];
   for (let i = 0; i < 400; i++) {
     const s = await waitStable(p);
-    if (s.res) break;
+    if (s.res || s.rv) break;   // v5.3.3：途中の勝利は報酬の画面へ
     if (s.prep) { await p.click('#btnStart'); if (cut) { await p.waitForTimeout(60); subs.push(await reloadResume(p)); } continue; }
     if (s.choose) { const rot = seq[t++ % seq.length] && !s.dis; await p.click(rot ? '#btnRotate' : '#btnStay'); if (cut) { await p.waitForTimeout(80); subs.push(await reloadResume(p)); } continue; }
   }
@@ -100,12 +100,12 @@ async function play(foe, seq, cut, step) {
       await enter(p, 0, 0);
       await p.evaluate(() => { const R = window.__rb; R.run.members.forEach((m) => { m.atk = 99; }); R.enemy.hp = 5; R.render(); });
       await p.click('#btnStart');
-      let s; for (let i = 0; i < 100; i++) { s = await waitStable(p); if (s.res) break; if (s.choose) await p.click('#btnStay'); }
+      let s; for (let i = 0; i < 100; i++) { s = await waitStable(p); if (s.res || s.rv) break; if (s.choose) await p.click('#btnStay'); }
       const fame0 = await p.evaluate(() => window.__rb.run.fame);
       let sub = null;
-      if (cut) { sub = await reloadResume(p); await p.waitForTimeout(600); }
-      const res = await p.evaluate(() => ({ shown: !document.getElementById('result').hidden, title: document.getElementById('rTitle').textContent, fame: window.__rb.run.fame }));
-      await p.click('#next'); await p.waitForTimeout(500);
+      if (cut) { sub = await reloadResume(p); for (let i = 0; i < 40; i++) { if (await p.evaluate(() => !document.getElementById('runv').hidden)) break; await p.waitForTimeout(100); } await p.waitForTimeout(400); }
+      // v5.3.3：遠征の途中の勝利は、勝利パネルを出さずに報酬の画面（題「勝利」）へ
+      const res = await p.evaluate(() => ({ shown: !document.getElementById('runv').hidden && document.getElementById('result').hidden, title: document.getElementById('rvTitle').textContent, fame: window.__rb.run.fame }));
       const cards = await p.evaluate(() => [...document.querySelectorAll('#rvCards .rv-card b')].map((e) => e.textContent).join(' / '));
       await p.click('#rvCards .rv-card[data-i="2"]').catch(() => {}); await p.click('#rvGo').catch(() => {}); await p.waitForTimeout(600);
       const after = await p.evaluate(() => ({ node: window.__rb.run.node, path: (window.__rb.run.path || []).length, fame: window.__rb.run.fame, battle: !!JSON.parse(localStorage.getItem('rb-exp-save')).battle, title: document.getElementById('rvTitle').textContent }));
@@ -113,7 +113,7 @@ async function play(foe, seq, cut, step) {
       return { sub, res, cards, after, fame0, errs };
     };
     const A = await run(false), B = await run(true);
-    ok(/戦闘のあと/.test(B.sub || '') && B.res.shown && B.res.title === '勝利', '勝った直後に閉じて再開すると、勝利画面に戻る（' + B.sub + '）');
+    ok(/戦闘のあと/.test(B.sub || '') && B.res.shown && B.res.title === '勝利', '勝った直後に閉じて再開すると、勝利（報酬）の画面に戻る（' + B.sub + '）');
     ok(A.cards === B.cards && A.cards.length > 0, '報酬の候補は閉じなかった場合と同じ（' + B.cards + '）');
     ok(A.after.fame === B.after.fame && A.after.node === B.after.node && A.after.path === B.after.path && B.after.path === B.after.node, '名声・地点・通った道が二重にならない ' + JSON.stringify({ A: A.after, B: B.after }));
     ok(!B.after.battle, '地図に戻ると、保存から戦闘が消える');

@@ -204,10 +204,11 @@ async function open(b, w, h, kind, node) {
     ok(!/回すには/.test(gl.chipTxt + gl.aria) && gl.gzColor === gl.chipColor, 'ヘッダーには気力不足の説明も色の変化もない（' + gl.chipTxt + ' / ' + gl.aria + '）');
     // 報酬：突入技の強化に名前が繰り返されない
     await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; }); });
-    await p.click('#btnStay'); for (let i = 0; i < 80; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden)) break; await p.waitForTimeout(150); }
-    const wp = await p.evaluate(() => document.querySelector('#result .r-best') ? document.querySelector('#result .r-best').textContent : '');
-    ok(!/戦果★/.test(wp) && /受けたダメージ/.test(wp), 'C10 勝利パネルに「戦果★」の文字がない（' + wp + '）');
-    await p.click('#next'); await p.waitForTimeout(600);
+    await p.click('#btnStay'); for (let i = 0; i < 80; i++) { if (await p.evaluate(() => !document.getElementById('runv').hidden)) break; await p.waitForTimeout(150); }
+    // v5.3.3：遠征の途中の勝利は、勝利パネルを出さずに報酬の画面（題「勝利」と★）へ
+    const wp = await p.evaluate(() => ({ t: document.getElementById('rvTitle').textContent, s: document.getElementById('rvSub').textContent, st: document.querySelectorAll('#rvStars i').length }));
+    ok(wp.t === '勝利' && wp.st === 3 && !/戦果★/.test(wp.s), 'C10 勝利は報酬の画面の上に★で出し、「戦果★」の文字はない（' + wp.s + '）');
+    await p.waitForTimeout(600);
     let rw = null;
     for (let k = 0; k < 8 && !rw; k++) { rw = await p.evaluate(() => { const c = [...document.querySelectorAll('#rvCards .rv-card')].find((x) => /突入技の強化/.test(x.textContent)); return c ? { t: c.querySelector('b').textContent, d: c.querySelector('.rv-txt > span').textContent, names: window.__rb.run.members.map((m) => m.name) } : null; }); if (!rw) { await p.evaluate(() => { const R = window.__rb; R.expReward([]); }); await p.waitForTimeout(300); } }
     ok(rw && rw.names.some((n) => rw.t.includes(n)) && !rw.names.some((n) => rw.d.includes(n)), 'C10 突入技の強化カード：名前は題だけで、本文に繰り返さない（' + (rw ? rw.t + ' / ' + rw.d : 'カードなし') + '）');

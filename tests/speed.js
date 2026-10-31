@@ -12,7 +12,7 @@ async function battle(b, fast) {
   await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
   const st = await p.evaluate(() => ({ pressed: document.getElementById('spdBtn').getAttribute('aria-pressed'), cls: document.body.classList.contains('fast') }));
   const t0 = Date.now(); await p.click('#btnStart');
-  await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden])', { timeout: 60000 });
+  await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden]), #runv:not([hidden])', { timeout: 60000 });
   const ms = Date.now() - t0; await ctx.close();
   return { ms, st, errs };
 }

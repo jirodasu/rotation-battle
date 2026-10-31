@@ -1,6 +1,7 @@
 // 画面サイズごとのレイアウト検査。各画面を開いてスクリーンショットを撮り、合格基準を数値で判定する。
 //   node tests/layout.js            → 結果を表示、tests/out/layout/ に画像
 // 合格基準：主要ボタンが画面内・攻撃予告が画面内・盤面の名札が重ならない・横スクロールが出ない・主要ボタンの高さ44px以上
+process.env.RB_KEEP_WIN = '1';   // 戦闘そのものを測る。勝敗は以前の勝利パネルで待つ（v5.3.3）
 const { launch, testPage, OUT } = require('./_env');
 const fs = require('fs'), path = require('path');
 const SIZES = [

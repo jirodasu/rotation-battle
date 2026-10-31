@@ -1,6 +1,7 @@
 // 遠征の戦闘が、自動対戦 tools/expsim.mjs と同じ結果になること（回転レリック4種・突入技の強化・縛り・気力を含む）。
 // 同じ4人・同じ敵・同じ「回す／維持」の順で、ゲーム本体と自動対戦を戦わせ、勝敗・ターン数・全員の残りHP・敵の残りHPを比べる。
 // 乱数を使う攻撃（ランダム）を含まない敵だけで比べる（乱数の並びはゲームと自動対戦で違うため）。
+process.env.RB_KEEP_WIN = '1';   // 戦闘そのものを測る。勝敗は以前の勝利パネルで待つ（v5.3.3）
 const { launch, testPage } = require('./_env');
 const path = require('path'), { pathToFileURL } = require('url');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };

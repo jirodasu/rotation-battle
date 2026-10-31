@@ -23,6 +23,7 @@
 //  更新2. 保存があるとき、再読み込みしてもスプラッシュ（画面をタップしてはじめる）を出さず、メニューがすぐ押せる。
 //         戦闘の再開までのタップ数は、今まで（スプラッシュ1回＋続きから1回＝2回）より増えない（1回）。
 //         押した時点で音の準備（AudioContext）ができる。保存がない初回起動は従来どおりスプラッシュ
+process.env.RB_KEEP_WIN = '1';   // 以前の勝利パネルで勝敗を待つ（v5.3.3。新しい流れは v533.js）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"bench":1}';

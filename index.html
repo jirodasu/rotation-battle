@@ -565,6 +565,9 @@ body.boss-stage .en-u b { color: var(--ink); }
 .r-stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
 .r-stars i { width: 44px; height: 44px; color: var(--paper-line); }
 .r-stars i svg { width: 100%; height: 100%; }
+.rv-stars { margin: -2px 0 2px; gap: 6px; } .rv-stars i { width: 30px; height: 30px; }
+.rv-stars[hidden] { display: none; }
+.runv #rvTitle { text-align: center; }   /* 「勝利」のような短い題が左に寄らないように（下線の幅で箱が広がるため） */
 .r-stars i.on { color: var(--accent); filter: drop-shadow(0 3px 0 var(--accent-deep)); animation: starin 0.5s cubic-bezier(.2, 1.4, .4, 1) both; }
 .r-stars i:nth-child(2) { transform: translateY(-8px); }
 .r-stars i.on:nth-child(2) { animation-name: starin2; }
@@ -811,6 +814,8 @@ body.boss-stage .en-u b { color: var(--ink); }
 .co-text { margin: 0 0 8px; font-size: 14px; line-height: 1.65; }
 .co-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }
 .co-hint { font-size: 13px; font-weight: 700; color: var(--accent-text); }
+/* 背の低い画面では解説を詰める（v5.3.2）：盤の仲間を隠す面積を減らす */
+@media (max-height: 620px) { .coach { padding: 8px 14px 8px; } .co-head { min-height: 20px; } .co-title { font-size: 16px; margin: 0 0 2px; } .co-text { font-size: 13px; line-height: 1.5; margin-bottom: 4px; } .co-foot { min-height: 40px; } .co-foot .btn { min-height: 40px; } }
 :root[data-theme="dark"] .co-hint { color: var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .co-hint { color: var(--accent); } }
 .co-foot .btn { flex: none; margin-left: auto; min-height: 46px; padding: 0 26px; font-size: 15px; }
@@ -941,6 +946,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .runv #rvSmall { letter-spacing: 0.12em; padding-left: 0.12em; }
 .runv .r-card.memo #rvEvents { order: 1; }
 .runv .r-card.memo #rvCards { order: 2; }
+.rv-m { position: relative; }
+.rv-up { position: absolute; top: -4px; right: 0; padding: 1px 5px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font: 800 10px/1.3 var(--serif); font-style: normal; box-shadow: 0 1px 0 var(--accent-deep); pointer-events: none; }
 .rv-m .hpb { display: block; width: 36px; height: 4px; border-radius: 2px; background: var(--paper-line); overflow: hidden; }
 .rv-m .hpb i { display: block; height: 100%; border-radius: 2px; background: var(--age-young); }
 .rv-m .hpb i.low { background: var(--danger); }
@@ -950,7 +957,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-log summary em { font-style: normal; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
 .rv-log[open] summary em { display: none; }
 .rv-log > div { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.tok .nm u::before { content: "HP"; font-size: 8px; margin-right: 1px; }
+.tok .nm u::before { content: "HP"; font-size: 9.5px; margin-right: 1px; }
 .tok.ph-old .disc svg, .rv-m.ph-old .uc-disc svg, .bn.ph-old svg { filter: saturate(0.72); }
 .rv-m.gone .uc-disc { filter: grayscale(0.85); opacity: 0.75; }
 .rv-m.gone.f-fallen small { color: var(--danger-strong); font-weight: 700; }
@@ -1650,6 +1657,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rv-track svg.route { display: block; width: 100%; height: auto; max-height: 260px; overflow: visible; user-select: none; -webkit-user-select: none; }
 .rt-ch { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 8px; font: 700 11px/1 var(--serif); letter-spacing: .12em; color: var(--ink-soft); }
 .rt-ch span { padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--rule); }
+.rt-ch span { white-space: nowrap; }   /* 章の名前を「祈りの／間」で割らない（v5.3.2） */
+@media (max-width: 360px) { .rt-ch { gap: 3px; letter-spacing: .02em; font-size: 10.5px; } .rt-ch span { padding: 3px 6px; } .rt-ch i { width: 6px; } }
 .rt-ch span.done { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--rubric); opacity: .75; }
 .rt-ch span.now { background: var(--ink); color: var(--vellum-hi); box-shadow: none; }
 .rt-ch i { width: 14px; height: 1px; background: var(--rule); }
@@ -1673,9 +1682,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-n.mk { cursor: pointer; }
 .rt-n.mk:not([data-pick]) { pointer-events: none; }
 .rt-n .seal { fill: var(--vellum-hi); stroke: var(--rule); stroke-width: 1.3; }
-.rt-n .g { font: 800 11px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
+.rt-n .g { font: 800 12px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
 .rt-n .lb { font: 800 10.4px var(--serif); text-anchor: middle; fill: var(--ink); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.4px; stroke-linejoin: round; }
-.rt-n .st { font: 700 8.8px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
+.rt-n .st { font: 700 11px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
 .rt-n.locked .seal { stroke-dasharray: 2 2; }
 .rt-n.locked .g, .rt-n.locked .lb { opacity: .7; }
 .rt-n.k-battle .seal, .rt-n.k-fort .seal { stroke: var(--rubric); }
@@ -1690,11 +1699,12 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-n.here .halo { fill: none; stroke: var(--gold-lo); stroke-width: 1.2; stroke-dasharray: 2 2; }
 .rt-n.avail .seal { fill: var(--gold-hi); stroke-width: 2.2; }
 .rt-n.avail.sel .seal { stroke-width: 3; }
-.rt-y { font: 700 9.4px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
+.rt-y { font: 700 11px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
 .rt-y.now { fill: var(--rubric); font-weight: 800; }
 .runv .rv-card.sel { outline: 2px solid var(--rubric); outline-offset: 1px; background: var(--vellum-hi); }
 .rv-go { width: 100%; margin-top: 4px; }
-.rv-go:disabled { opacity: .55; }
+.rv-go:disabled { opacity: 1; background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1.5px var(--rule-a); filter: none; text-shadow: none; font-weight: 700; }   /* 選ぶ前は押せる金のボタンに見せない（v5.3.3）。選ぶ場所は札と地図 */
+.rv-go:disabled::before, .rv-go:disabled::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .rt-n.avail:not(.sel) .land { animation: none; } }
 /* ---- 地点画面（地図）：どの向き・どの大きさでも、スクロールなしで全部が見えるように ----
    高さは dvh で測って、地図の高さを残りの余白に合わせて決める。足りないときは説明文から先に減らす。 */
@@ -2102,7 +2112,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ls-list p { margin: 0; padding: 5px 0; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--paper-line); color: var(--ink); }
 .ls-list p:first-child { border-top: 0; }
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
-.inc-w { font-style: normal; font-size: 9.5px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
+.inc-w { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
 .t-dmg b { font-weight: var(--fw-1); }
 .t-main > span { font-size: var(--fs-3); font-weight: var(--fw-3); color: var(--ink-soft); }
 .t-main > b { font-weight: var(--fw-1); }
@@ -2383,7 +2393,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   background: radial-gradient(circle at 38% 32%, var(--gold-hi), var(--gold) 65%, var(--gold-lo)); color: var(--accent-ink);
   box-shadow: inset 0 0 0 2px rgba(255, 245, 210, .45), 0 0 0 1px var(--gold-lo), 0 0 0 4px rgba(190, 52, 34, .35); }
 .t-ico.t-cd b { font-size: 26px; line-height: .9; font-weight: 900; font-variant-numeric: lining-nums; }
-.t-ico.t-cd small { font-size: 7.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-top: 1px; white-space: nowrap; }
+.t-ico.t-cd small { font-size: 9px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-top: 1px; white-space: nowrap; }
 .ticket.p .t-ico.t-cd b { font-size: 20px; } .ticket.p .t-ico.t-cd small { display: none; }
 .t-dmg.nx b { color: var(--danger-strong); opacity: .78; }
 .t-dmg small:empty { display: none; }
@@ -2569,7 +2579,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.0</p>
+    <p class="c-ver" id="cVer">ver 5.3.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2674,6 +2684,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   <div class="r-card rv-card">
     <small class="disp" id="rvSmall"></small>
     <h2 class="disp" id="rvTitle"></h2>
+    <div class="r-stars rv-stars" id="rvStars" hidden></div>
     <p id="rvSub"></p>
     <div class="rv-main">
       <div class="rv-left">
@@ -2894,7 +2905,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.0';
+  const APP_VERSION = '5.3.3';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5444,7 +5455,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('cover').classList.toggle('has-save', !!sv);
     if (sv) $('resumeSub').textContent = '遠征・地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : sv.battle ? '　戦闘のあと' : '');
     $('begin').classList.toggle('primary', !sv);
-    $('beginSub').textContent = (sv ? '新しく下る' : '4人で下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' + (xDmax(xm) >= 2 ? '・深さ' + xDmax(xm) + 'まで' : '') : '');
+    const nx = xNext(xmeta(xm));
+    $('beginSub').textContent = (sv ? '新しく下る' : '4人で下る') + (+xm.clears ? '　突破 ' + xm.clears + '回' + (xDmax(xm) >= 2 ? '・深さ' + xDmax(xm) + 'まで' : '') : nx ? '　' + nx.s : '');   // まだ踏破していない人には、次に開くもの（v5.3.1）
   }
   function showStats(win) {
     const par = enemy.par || 99, turns = turn;
@@ -5494,6 +5506,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
         $('resultAlt').hidden = false;
       }
       confetti();
+      // 勝利と報酬を1枚に（v5.3.3）：遠征の途中の勝利は、勝利パネルを出さずに報酬の画面へ。★と「いちばん活躍」は報酬の画面の上に出す
+      if (!tut && run && EXPM() && !last && !window.__rbKeepWinPanel) {   // __rbKeepWinPanel：テストの一部だけが使う（以前の勝利パネル）
+        let mv = null; Object.keys(stats.dealt).forEach((id) => { if (!mv || stats.dealt[id] > stats.dealt[mv]) mv = id; });
+        expWin = { stars: gotStars, sub: turn + 'ターンで撃破' + (mv && stats.who[mv] ? '・いちばん活躍 ' + stats.who[mv].name : '') + '。' };
+        setTimeout(() => { if (phase !== 'over' || lastResult !== 'win' || !$('result').hidden || !$('runv').hidden) return; const ev = expAfterBattle(true); expReward(ev); }, RM ? 0 : 650);
+        return;
+      }
     } else {
       Music.charge(false); Music.set('off'); SFX.lose(); $('rHeal').hidden = true;
       $('rSmall').textContent = chapLabel();
@@ -6403,7 +6422,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     run.nextChoices = null;
   }
   const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span>'; };
-  const portrait = (m, extra, tag) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + (tag || '') + '</span>';
+  const portrait = (m, extra, tag) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + (EXPM() && !m.fate && upsOf(m) ? '<i class="rv-up" aria-label="技の強化' + upsOf(m) + '回">技' + upsOf(m) + '</i>' : '') + (tag || '') + '</span>';
   const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };
   /* 遠征地図の描画：いまの章を1つの島として描き、地点ごとの領地（ボロノイ分割）に分ける。
@@ -6459,7 +6478,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : { g: '休', t: '休息', s: '' }; }
     const tier = n.step <= 3 ? 0 : n.step <= 6 ? 1 : 2;
     if (n.kind === 'boss') return { g: '災', t: '決戦', s: '★★★★' };
-    return { g: n.kind === 'fort' && EXPM() ? '主' : '戦', t: n.kind === 'fort' ? (EXPM() ? '章の主' : '砦の戦い') : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
+    // ★は「戦いの成績」だけに使う（v5.3.2）。遠征の地図では敵の強さを★で出さず、亜種かどうかだけを書く（強さは章で分かる）
+    if (EXPM()) return { g: n.kind === 'fort' ? '主' : '戦', t: n.kind === 'fort' ? '章の主' : '戦闘', s: c.variant ? '亜種' : '' };
+    return { g: '戦', t: n.kind === 'fort' ? '砦の戦い' : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
   }
   function trackHTML() {
     const here = routeCur(), done = new Set(['start'].concat(run.path || []));
@@ -6514,6 +6535,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvSmall').innerHTML = (o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)))).split('　·　').map((x) => '<span class="nw">' + x.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>').join('　·　');
     sceneCh();
     $('rvTitle').textContent = o.title;
+    { const sx = $('rvStars'); sx.hidden = o.stars == null; sx.innerHTML = o.stars == null ? '' : [0, 1, 2].map((i) => '<i class="' + (i < o.stars ? 'on' : '') + '" style="animation-delay:' + (0.2 + i * 0.15) + 's">' + STAR + '</i>').join(''); if (o.stars != null) sx.setAttribute('aria-label', '★' + o.stars + ' / 3'); }
     $('rvSub').textContent = o.sub || '';
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '', o.heal && o.heal.gain[m.uid] > 0 ? '<i class="rv-heal" aria-label="HP+' + o.heal.gain[m.uid] + '回復">+' + o.heal.gain[m.uid] + '</i>' : '')).join('');
     // B（v5.1.60）：回復は文章ではなく、HP棒が伸びて「+N」が浮かぶ反応で返す（棒の伸びは、増えた仲間だけ）
@@ -6543,7 +6565,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
     const go = $('rvGo'); if (!go) return;
     const c = routeSel != null ? run.choices[routeSel] : null;
-    go.disabled = !c; go.textContent = c ? '「' + choiceName(c) + '」へ進む' : '進む道を選んでください';
+    go.disabled = !c; go.textContent = c ? '「' + choiceName(c) + '」へ進む' : '地図か札で、進む道を選ぶ';
     $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
     $('rvTrack').innerHTML = trackHTML();
   }
@@ -7147,6 +7169,24 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const expFoeOf = (c) => (run.map && run.map[c.rid] && run.map[c.rid].foe) || 0;
   const expSmall = () => { const st = Math.min(run.node + 1, EXP.nodes); return '環廊' + xTag() + '　·　第' + (expCh(st) + 1) + '章 ' + chName(expCh(st)) + '　·　地点 ' + st + ' / ' + EXP.nodes; };
   const relicLine = () => (run.relics.length ? '回転レリック：' + run.relics.map((id) => relD(id).name).join('・') : '回転レリックはまだない');
+  /* 隊の育ち（v5.3.1）：「強くなり方がわからない」への答え。報酬で増えたものを、地図と名簿で数えて見せる。数値・計算は変えない
+     技の強化＝突入技の強化の回数（入れ替えで来た仲間の「強化済み」も数える）、最大HP＝手当ての回数×EXP.healMax */
+  const upsOf = (m) => Object.keys(m.up || {}).reduce((a, k) => a + Math.round((m.up[k] || 0) / (EXP.up[k] || 1)), 0);
+  function growLine() {
+    const ups = run.members.reduce((a, m) => a + upsOf(m), 0), tend = +run.tend || 0, parts = [];
+    if (run.relics.length) parts.push('レリック' + run.relics.map((id) => '「' + relD(id).name + '」').join(''));
+    if (ups) parts.push('技の強化 ' + ups + '回');
+    if (tend) parts.push('最大\u2060HP\u2060+' + tend * EXP.healMax);   // 「最大／HP」で折り返さない
+    return parts.length ? '隊の育ち：' + parts.join('・') : '勝つたびに報酬を選んで、隊を育てる（レリック・技の強化・手当て・仲間）。';
+  }
+  // 次に開くもの（v5.3.1）：隊や深さは実績で開く。まだ開いていない最初の1つと、その条件
+  function xNext(x) {
+    x = x || xmeta();
+    if (!xSqOpen('fast', x)) return { s: '地点7まで行くと新しい隊', l: '地点7まで進むと「速攻の隊」が開く' };
+    if (!x.ach.first) return { s: '踏破すると新しい隊と深さ2', l: '環廊を踏破すると「堅守の隊」と「深さ2」が開く' };
+    if (!xSqOpen('twin', x)) return { s: '3隊で踏破すると双魔の隊', l: '3つの隊で踏破すると（または勲章3枚で）「双魔の隊」が開く' };
+    return null;
+  }
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
     if (e.party) return { ico: '<span class="ev-var" style="--vf:none">' + PARTY_ART.statue + '</span>', t: '戦闘　' + e.name,
@@ -7163,7 +7203,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
-    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + relicLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' : relicLine(), events, cards,   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
+    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
   function expEnter(c) {
@@ -7215,8 +7255,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id));
     if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: ({ shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
     const m = pick(run.members);
-    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }], act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
-    cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax }], act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }, { k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }], act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
+    cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax + ((+run.tend || 0) ? '（合計+' + ((+run.tend || 0) + 1) * EXP.healMax + '）' : '') }], act: () => { run.tend = (+run.tend || 0) + 1; run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
       const have = new Set(run.members.map((x) => x.job)), pool = JOBS.filter((j) => !have.has(j.id)), nm = newMember(pick(pool.length ? pool : JOBS).id, EXP.age);
@@ -7238,8 +7278,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     expRewardShow(pre, cards);
   }
+  let expWin = null;   // 勝利の★と一言（v5.3.3）。報酬の画面の上に出す。地図へ進むと消す
   function expRewardShow(pre, cards) {
-    rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
+    rvShow({ small: expSmall(), title: expWin ? '勝利' : '報酬を1つ選ぶ', stars: expWin ? expWin.stars : null, sub: expWin ? expWin.sub + '報酬を1つ選ぶ（遠征のあいだ隊に残る）。' : enemy.name + 'を倒した。選んだものは、この遠征のあいだ隊に残る。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
   }
   // 誰と入れ替えるか。「やめる」で報酬の選び直し
   function expSwapPick(pre, cards, nm) {
@@ -7269,6 +7310,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     SFX.recruit();
   }
   function expAdvance(events) {
+    expWin = null;
     events = (events || []).slice();
     if (expIsChief(run.node + 1) && run.node + 1 < EXP.nodes) expChapterClear(events);
     if (run.pendId) { run.path = (run.path || []).concat(run.pendId); run.pendId = null; }
@@ -7298,10 +7340,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     coverProgress();
     if (clear) confetti();
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
-    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + relicLine(), roster: run.members.concat(run.gone), openLog: true,
+    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
-      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,
+      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
   }
   function beginExp(sqId, depth) {

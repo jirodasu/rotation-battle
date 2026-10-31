@@ -11,6 +11,7 @@
 //  6. 被ダメ予告：予告（盤の数字・予告札の数字）と、実際に受けたダメージが一致する。
 //     対象外：ランダム攻撃（予告に「？」で出す仕様）、そのターンに誰か（敵・味方）が倒れたターン、戦闘が終わったターン。
 //     予告札は、防御補助などで減るときは「軽減後」の数字を出し、その数字が実際のダメージと一致する（少なくとも1回は起きること）
+process.env.RB_KEEP_WIN = '1';   // 以前の勝利パネルで勝敗を待つ（v5.3.3。新しい流れは v533.js）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1}';

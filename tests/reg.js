@@ -12,7 +12,7 @@ const { launch, indexURL } = require('./_env');
     let opened = false;
     for (let i = 0; i < 80; i++) {
       await p.waitForTimeout(600);
-      if (await p.evaluate(() => !document.getElementById('result').hidden)) break;
+      if (await p.evaluate(() => !document.getElementById('result').hidden || !document.getElementById('runv').hidden)) break;   // v5.3.3 途中の勝利は報酬の画面へ
       const can = await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden');
       if (can) {
         if (!opened) { await p.click('#eart'); await p.waitForTimeout(300); await p.keyboard.press('Escape'); await p.waitForTimeout(200); opened = true; }

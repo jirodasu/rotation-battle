@@ -11,7 +11,7 @@ const SM = () => { const R = window.__rb, g = R.grid, e = R.enemy, act = e.patte
   return front.reduce((s, u) => s + u.hp / u.max, 0) / front.length < 0.5; };
 async function fightSmart(p) {
   for (let i = 0; i < 800; i++) {
-    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, ko: document.querySelectorAll('.inc.ko').length, tired: document.querySelectorAll('#board .slot[data-r="0"] .tok.tired').length, dis: document.getElementById('btnRotate').disabled }));
+    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden || !document.getElementById('runv').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, ko: document.querySelectorAll('.inc.ko').length, tired: document.querySelectorAll('#board .slot[data-r="0"] .tok.tired').length, dis: document.getElementById('btnRotate').disabled }));
     if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
     if (st.res) return;
     if (st.prep) { await p.click('#btnStart'); await p.waitForTimeout(50); continue; }
@@ -19,9 +19,11 @@ async function fightSmart(p) {
     await p.waitForTimeout(40);
   }
 }
+// v5.3.3：遠征の途中の勝利は勝利パネルを出さずに報酬の画面へ。パネルが出ているとき（負け・最後の戦い）だけ「次へ」を押す
+async function nextIf(p) { for (let i = 0; i < 40; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden)) { await p.click('#next'); return; } if (await p.evaluate(() => !document.getElementById('runv').hidden)) return; await sleep(p, 100); } }
 async function fight(p, seq) {
   for (let i = 0; i < 600; i++) {
-    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, turn: window.__rb.run ? 0 : 0 }));
+    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden || !document.getElementById('runv').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, turn: window.__rb.run ? 0 : 0 }));
     if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
     if (st.res) return;
     if (st.prep) { await p.click('#btnStart'); await sleep(p, 60); continue; }
@@ -70,17 +72,17 @@ async function fight(p, seq) {
   await p.evaluate(() => window.__rb.run.members.forEach((m) => { m.hp = 999; }));
   await fight(p, [false, true]);
   const r1 = await p.evaluate(() => document.getElementById('rTitle').textContent);
-  await p.click('#next'); await sleep(p, 500);
+  await nextIf(p); await sleep(p, 500);
   const after = await p.evaluate(() => ({ title: document.getElementById('rvTitle').textContent, cards: [...document.querySelectorAll('#rvCards .rv-card b')].map((e) => e.textContent) }));
   if (/勝利/.test(r1)) {
-    ok(/報酬/.test(after.title) && after.cards.length === 4 && after.cards.some((t) => /回転レリック/.test(t)) && after.cards.some((t) => /突入技の強化/.test(t)) && after.cards.some((t) => /手当て/.test(t)) && after.cards.some((t) => /仲間の入れ替え/.test(t)), '勝つと報酬が4つ（回転レリック・突入技の強化・手当て・仲間の入れ替え）' + JSON.stringify(after.cards));
+    ok(/勝利|報酬/.test(after.title) && after.cards.length === 4 && after.cards.some((t) => /回転レリック/.test(t)) && after.cards.some((t) => /突入技の強化/.test(t)) && after.cards.some((t) => /手当て/.test(t)) && after.cards.some((t) => /仲間の入れ替え/.test(t)), '勝つと報酬が4つ（回転レリック・突入技の強化・手当て・仲間の入れ替え）' + JSON.stringify(after.cards));
     // 仲間の入れ替え：「やめる」で報酬に戻れる。選ぶと、隊にいなかった職業の仲間が同じマスに入り、去った仲間は「離隊」
     const before = await p.evaluate(() => window.__rb.run.members.map((m) => ({ uid: m.uid, job: m.job, r: m.r, c: m.c })));
     await p.click('#rvCards .rv-card[data-i="3"]'); await sleep(p, 500);
     const pickT = await p.evaluate(() => ({ t: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length }));
     await p.click('#rvCards .rv-skip'); await sleep(p, 500);
     const back = await p.evaluate(() => document.getElementById('rvTitle').textContent);
-    ok(/誰と入れ替える/.test(pickT.t) && pickT.n === before.length && /報酬/.test(back), '入れ替えは相手を選べ、「やめる」で報酬に戻れる ' + JSON.stringify([pickT, back]));
+    ok(/誰と入れ替える/.test(pickT.t) && pickT.n === before.length && /勝利|報酬/.test(back), '入れ替えは相手を選べ、「やめる」で報酬に戻れる ' + JSON.stringify([pickT, back]));
     await p.click('#rvCards .rv-card[data-i="3"]'); await sleep(p, 500);
     await p.click('#rvCards .rv-card[data-i="0"]'); await sleep(p, 600);
     const sw = await p.evaluate(() => { const run = window.__rb.run; return { members: run.members.map((m) => ({ uid: m.uid, job: m.job, r: m.r, c: m.c, hp: m.hp, max: m.max, up: m.up || null })), left: run.gone.filter((m) => m.fate === 'left').map((m) => m.uid), node: run.node }; });
@@ -156,7 +158,7 @@ async function fight(p, seq) {
     await p.evaluate(() => { window.__rb.enemy.hp = 1; });
     await fight(p, [false]);
     const w = await p.evaluate(() => document.getElementById('rTitle').textContent);
-    await p.click('#next'); await sleep(p, 600);
+    await nextIf(p); await sleep(p, 600);
     return w;
   }
   await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);
@@ -169,7 +171,7 @@ async function fight(p, seq) {
   const rw3 = await p.evaluate(() => document.getElementById('rvTitle').textContent);
   await p.click('#rvCards .rv-card[data-i="1"]'); await sleep(p, 600);
   const c2 = await p.evaluate(() => { const run = window.__rb.run; return { node: run.node, n: run.members.length, full: run.members.every((m) => m.hp === m.max), ch: run.chRests, small: document.getElementById('rvSmall').textContent, ev: document.getElementById('rvEvents').textContent }; });
-  ok(/勝利/.test(w3) && /報酬/.test(rw3), '第1章の主に勝つと報酬を選べる');
+  ok(/勝利/.test(w3) && /勝利|報酬/.test(rw3), '第1章の主に勝つと報酬を選べる');
   ok(c2.node === 3 && c2.n === 4 && c2.full && c2.ch === 0 && /第2章/.test(c2.small) && /合流/.test(c2.ev), '報酬のあと第2章へ：全員全快、欠けた仲間の代わりが合流して4人、章の休息回数は0 ' + JSON.stringify(c2));
   // 最後の主（毒竜）に勝つと踏破
   const w10 = await goTo(10);
