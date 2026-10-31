@@ -41,6 +41,23 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }
+  // v5.2.3 チュートリアルの仲間紹介：「ようこそ」の次に4人を1人ずつ。盤の上の本人を光らせ、解説の枠がその光に重ならない
+  for (const [w, h] of [[393, 759], [320, 568]]) {
+    const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+    const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400); await p.click('#beginTut'); await p.waitForTimeout(1500);
+    const got = [];
+    for (let i = 0; i < 5; i++) {
+      got.push(await p.evaluate(() => { const R = (e) => e.getBoundingClientRect(), c = R(document.getElementById('coach')), s = document.getElementById('spot'), sp = s.hidden ? null : R(s);
+        const name = sp ? [...document.querySelectorAll('#board .tok')].filter((t) => { const r = R(t); return r.left >= sp.left - 2 && r.right <= sp.right + 2 && r.top >= sp.top - 2 && r.bottom <= sp.bottom + 2; }).map((t) => t.textContent).join('') : '';
+        return { t: document.getElementById('coTitle').textContent, name, ov: sp ? Math.max(0, Math.min(c.bottom, sp.bottom) - Math.max(c.top, sp.top)) : 0 }; }));
+      await p.click('#coNext'); await p.waitForTimeout(400);
+    }
+    const want = ['戦士', '魔女', '神官', 'サムライ'];
+    ok(got[0].t === 'ようこそ' && want.every((j, i) => got[i + 1].t === '仲間　' + j && got[i + 1].name.includes(j) && got[i + 1].ov === 0), w + '×' + h + ' チュートリアル：ようこその次に4人の紹介。本人が光り、解説が重ならない ' + JSON.stringify(got.map((g) => [g.t, g.ov])));
+    ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
+    await ctx.close();
+  }
   await b.close();
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();

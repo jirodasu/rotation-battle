@@ -2561,7 +2561,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.2.2</p>
+    <p class="c-ver" id="cVer">ver 5.2.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2886,7 +2886,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.2.2';
+  const APP_VERSION = '5.2.3';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5508,6 +5508,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const bd = () => $('board');
   const STEPS = [
     { t: 'ようこそ', x: 'ここは地の底の大聖堂「環廊」。灯を絶やさぬよう隊列を回し続けた者だけが、奥へ進める。実際に操作しながら、一つずつ覚えよう。', pos: 'bottom', next: true },
+    // 仲間の紹介（v5.2.3）：1人ずつ、盤の上の本人を光らせて。仕組みや数字は後の「列」の説明に任せ、人柄と役目だけを1〜2文で
+    { t: '仲間　戦士', x: 'HPがいちばん多い、隊の盾。前に立って、敵の攻撃を受け止める。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
+    { t: '仲間　魔女', x: '打たれ弱く、自分の攻撃も弱い。そのかわり、魔法で仲間を支えるのが得意。', pos: 'bottom', spot: () => slotEl(1, 0), next: true },
+    { t: '仲間　神官', x: '戦いは苦手。休みながら、そばにいる仲間の傷を癒やす。', pos: 'top', spot: () => slotEl(2, 0), next: true },
+    { t: '仲間　サムライ', x: '足が速く、一撃が重い。ただし打たれ弱い。いまは後ろで休んでいる。', pos: 'top', spot: () => slotEl(2, 1), next: true },
     { t: '隊列は3つの列', x: '真ん中の盤が味方の隊列。味方は「攻撃列」「補助列」「回復列」に並ぶ。', pos: 'top', spot: () => bd(), next: true },
     { t: '攻撃列', x: 'ここにいる仲間だけが、敵を攻撃する。素早い順に動く。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
     { t: '補助列', x: '同じ縦の列の攻撃列を支える。「攻」は与えるダメージ増、「防」は受けるダメージ減。', pos: 'bottom', spot: () => bd().querySelector('.strip.r1'), next: true },
