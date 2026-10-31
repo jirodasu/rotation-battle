@@ -606,6 +606,14 @@ body.boss-stage .en-u b { color: var(--ink); }
 #btnPrepRot { flex: none; padding: 0 16px; gap: 6px; }
 #btnPrepRot svg { width: 22px; height: 22px; }
 #btnStay { flex: 0.8; }
+/* 選んだときに受けるダメージ（v5.3.0）：盤の赤い数字と同じ色・同じ書き方で、ボタンの右肩に */
+.dock .btn { position: relative; }
+.dk-out { position: absolute; top: -8px; right: 8px; display: inline-flex; align-items: center; gap: 3px; height: 22px; min-width: 30px; padding: 0 8px; border-radius: 11px; justify-content: center;
+  background: var(--danger-strong); color: var(--on-danger); font: 900 14px/1 var(--serif); font-style: normal; font-variant-numeric: tabular-nums; pointer-events: none; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28); }
+.dk-out[hidden] { display: none; }
+.dk-out.ko { background: #7e1d14; color: #fff; }
+.dk-out s { text-decoration: none; display: inline-grid; place-items: center; height: 16px; min-width: 16px; padding: 0 3px; border-radius: 8px; background: #fff; color: #7e1d14; font-size: 11px; }
+.dk-out.safe { background: var(--paper); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--rule-a), 0 2px 0 rgba(0, 0, 0, 0.2); font-size: 12px; }
 .btn.icon[aria-pressed="true"] { --b: var(--ink); --bd: var(--ink-soft); color: var(--paper); transform: translateY(2px); }
 .slot.ghost .tok { opacity: 0.8; }
 .slot.ghost .disc { outline: 2.5px dashed var(--accent); outline-offset: 3px; }
@@ -2561,7 +2569,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.2.3</p>
+    <p class="c-ver" id="cVer">ver 5.3.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2886,7 +2894,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.2.3';
+  const APP_VERSION = '5.3.0';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4200,7 +4208,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       b.classList.toggle('on', showBeam && has && cols.has(c));
       b.classList.toggle('maybe', showBeam && has && maybe && !cols.has(c));
     });
-    document.querySelectorAll('.ctag').forEach((g) => { g.classList.toggle('hit', showBeam && cols.has(+g.dataset.c)); });
+    document.querySelectorAll('.ctag').forEach((g) => g.classList.remove('hit'));   // 赤は「当たる仲間」だけに出す。列の札（一・二）は光らせない（v5.3.0：「2列目まで来る」と読まれたため）
   }
   function renderTicket() {
     if (enemy.party) { const g = showGhost(); renderPartyTicket(g, g ? previewGrid() : grid); return; }
@@ -4239,10 +4247,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       b.classList.toggle('on', showBeam && has && !!info.cols && info.cols.includes(c));
       b.classList.toggle('maybe', showBeam && has && !info.cols);
     });
-    document.querySelectorAll('.ctag').forEach((g) => {
-      const c = +g.dataset.c;
-      g.classList.toggle('hit', showBeam && !!info.cols && info.cols.includes(c));
-    });
+    document.querySelectorAll('.ctag').forEach((g) => g.classList.remove('hit'));   // 赤は「当たる仲間」だけ（v5.3.0）
   }
 
   const ROLE = { tank: '前衛タンク', atk: 'アタッカー', sup: 'サポート', heal: 'ヒーラー' };
@@ -4532,6 +4537,37 @@ body.fast #stampOk.on { animation-duration: .5s; }
     m.innerHTML = on ? '<span class="pips">' + h + '</span>' : '';
     b.setAttribute('aria-label', bound ? '回せない：縛られている。このターンは維持のみ' : low ? '回せない：気力' + g + '／' + cost + '。' + sub : '隊列を回す（気力' + cost + 'を使う。今' + g + '）');
   }
+  /* 選ぶ前に結果を見せる（v5.3.0）：「回す」「維持」のボタンに、それぞれを選んだときにこのターン受けるダメージを出す。
+     盤の赤い数字（-17）と同じ計算・同じ見た目。敵の予告（上）と盤を見比べなくても、押す場所で決められる。数値・計算は変えない */
+  function outcomeOf(src, fresh, entering) {
+    const o = incoming(src, fresh, entering);
+    let d = 0, ko = 0;
+    Object.keys(o).forEach((k) => { d += o[k].d; if (o[k].ko) ko++; });
+    const foes = enemy.party ? enemy.party.filter(foeAlive) : [enemy];
+    const maybe = foes.some((F) => { const a = actOf(F); return a && a.dmg && a.rule !== 'charge' && a.rule !== 'bind' && (a.rule === 'random' || !targetInfo(a, src, F).cols); });
+    return { d, ko, maybe };
+  }
+  function outBadge(btn, r, lbl) {
+    let i = btn.querySelector('.dk-out');
+    if (!r) { if (i) i.hidden = true; btn.setAttribute('aria-label', lbl); return; }
+    if (!i) { i = document.createElement('i'); i.className = 'dk-out'; i.setAttribute('aria-hidden', 'true'); btn.appendChild(i); }
+    const safe = !r.d && !r.maybe;
+    i.hidden = false;
+    i.classList.toggle('safe', safe); i.classList.toggle('ko', r.ko > 0);
+    const h = safe ? '無傷' : (r.ko ? '<s>倒' + (r.ko > 1 ? r.ko : '') + '</s>' : '') + (r.d ? '-' + r.d : '') + (r.maybe ? '?' : '');
+    if (i.__h !== h) { i.innerHTML = h; i.__h = h; }
+    btn.dataset.out = safe ? '0' : String(r.d);
+    const say = safe ? 'ダメージなし' : (r.maybe ? '運しだい。' : '') + (r.d ? '受けるダメージ' + r.d : '') + (r.ko ? '、倒れる仲間' + r.ko + '人' : '');
+    btn.setAttribute('aria-label', lbl + '（' + say + '）');
+  }
+  function renderOutcome() {
+    const on = phase === 'choose' && !!enemy;
+    outBadge($('btnStay'), on ? outcomeOf(grid, false, false) : null, '維持');
+    const rb = $('btnRotate');
+    outBadge(rb, on && !rb.disabled ? outcomeOf(previewGrid(), true, true) : null, rb.getAttribute('aria-label') || '隊列を回す');
+    if (!on || rb.disabled) delete rb.dataset.out;
+    if (!on) delete $('btnStay').dataset.out;
+  }
   // 押せない「回す」を押したとき：ボタンを揺らし、理由（気力の札／縛り）を光らせる
   function rotDenied() {
     const b = $('btnRotate');
@@ -4618,6 +4654,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('btnRotate').disabled = phase === 'choose' && (!!(enemy && enemy.bound) || !gaugeOk());
     renderRotBtn();
     $('btnStay').hidden = phase !== 'choose';
+    renderOutcome();
     $('btnPreview').hidden = phase !== 'choose';
     $('btnPreview').setAttribute('aria-pressed', String(previewOn));
     $('btnSkip').hidden = phase !== 'resolve' || !!tut;
@@ -5506,35 +5543,26 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return g;
   }
   const bd = () => $('board');
+  // チュートリアル（v5.3.0 段階化）：最初は「並び・予告・動かす・回す/維持」だけ。説明は「やる直前」に1つずつ。
+  //   回復列・補助の届き方・スタミナ・突入技などは、戦闘中にその場面が来たとき（tutNote）に出す。敵の詳細・2手先は最後に一言だけ
   const STEPS = [
-    { t: 'ようこそ', x: 'ここは地の底の大聖堂「環廊」。灯を絶やさぬよう隊列を回し続けた者だけが、奥へ進める。実際に操作しながら、一つずつ覚えよう。', pos: 'bottom', next: true },
-    // 仲間の紹介（v5.2.3）：1人ずつ、盤の上の本人を光らせて。仕組みや数字は後の「列」の説明に任せ、人柄と役目だけを1〜2文で
-    { t: '仲間　戦士', x: 'HPがいちばん多い、隊の盾。前に立って、敵の攻撃を受け止める。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
-    { t: '仲間　魔女', x: '打たれ弱く、自分の攻撃も弱い。そのかわり、魔法で仲間を支えるのが得意。', pos: 'bottom', spot: () => slotEl(1, 0), next: true },
-    { t: '仲間　神官', x: '戦いは苦手。休みながら、そばにいる仲間の傷を癒やす。', pos: 'top', spot: () => slotEl(2, 0), next: true },
-    { t: '仲間　サムライ', x: '足が速く、一撃が重い。ただし打たれ弱い。いまは後ろで休んでいる。', pos: 'top', spot: () => slotEl(2, 1), next: true },
-    { t: '隊列は3つの列', x: '真ん中の盤が味方の隊列。味方は「攻撃列」「補助列」「回復列」に並ぶ。', pos: 'top', spot: () => bd(), next: true },
-    { t: '攻撃列', x: 'ここにいる仲間だけが、敵を攻撃する。素早い順に動く。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
-    { t: '補助列', x: '同じ縦の列の攻撃列を支える。「攻」は与えるダメージ増、「防」は受けるダメージ減。', pos: 'bottom', spot: () => bd().querySelector('.strip.r1'), next: true },
-    { t: '回復列', x: '休んで自分のHPを回復する列。神官は、この横の列のほかの仲間もまとめて回復する（本人は含まない）。1ターン目は回復しない。', pos: 'top', spot: () => bd().querySelector('.strip.r2'), next: true },
-    { t: '補助は縦、回復は横', x: '魔女の補助は、同じ縦の列（一）の戦士に届く。神官の回復は、回復列の横の仲間（サムライ）に届く。', pos: 'top', spot: () => [bd().querySelector('.ctag[data-c="0"]'), slotEl(1, 0)], next: true },
-    { t: '敵の予告', x: '敵は次の行動を予告する。赤く光る仲間が狙われる。敵が狙うのは一番前の列の仲間だけ。', pos: 'bottom', spot: () => [$('ticket'), bd().querySelector('.ctag.hit')], next: true },
-    { t: '敵の詳細', x: '敵の名前や絵（ⓘの所）をタップすると、敵の詳細が開く。行動の一覧や特徴を、戦闘中いつでも確かめられる。', pos: 'bottom', spot: () => [$('stage').querySelector('.plate'), $('eart')].filter(Boolean), next: true },
-    { t: '2手先の予兆', x: '敵をタップすると、詳細に「その次」の行動が出る。次のターンの行動なので、2手先を見て、回すかどうかを決めよう。', pos: 'bottom', spot: () => $('stage'), next: true },
-    { t: '与えるダメージ', x: '剣マークの数字は、次に与えるダメージの見込み。金色は攻撃補助が乗っている印。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
-    { t: 'スタミナ', x: 'キャラ右横の点はスタミナ。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。', pos: 'bottom', spot: () => slotEl(0, 0), next: true },
-    { t: '仲間を動かす ①', x: 'サムライは回復列にいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
-    { t: '仲間を動かす ②', x: '次に、攻撃列の空きマス（二の列）をタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
-    { t: '攻撃列に出た', x: 'サムライにも剣マークの数字が出た。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
+    { t: 'ようこそ', x: 'ここは地の底の大聖堂「環廊」。隊列を回して、敵の大技をしのぎながら奥へ進む。動かしながら覚えよう。', pos: 'bottom', next: true },
+    // 仲間の紹介（v5.2.3 → v5.3.0 で1枚に）：役目だけを短く。人ごとの細かい話は、仲間をタップした詳細で
+    { t: '4人の仲間', x: '戦士は隊の盾。魔女は仲間を支え、神官は傷を癒やす。サムライは一撃が重いが、打たれ弱い。', pos: 'bottom', spot: () => bd(), next: true },
+    { t: '攻撃列が最前線', x: '隊列は「攻撃列」「補助列」「回復列」の3段。敵と戦うのも、敵に狙われるのも、いちばん上の攻撃列だけ。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
+    { t: '敵の予告', x: '敵は次の行動を予告する。赤い枠の仲間が狙われ、赤い数字のダメージを受ける。', pos: 'bottom', spot: () => [$('ticket'), document.querySelector('.beam.on')].filter(Boolean), next: true },
+    { t: '仲間を動かす ①', x: 'サムライは回復列で休んでいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
+    { t: '仲間を動かす ②', x: '次に、攻撃列の空きマスをタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
+    { t: '攻撃列に出た', x: 'サムライに剣マークの数字が出た。次に与えるダメージの見込み。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
-    { t: '1ターン終了', x: 'ここで、隊列を「回す」か「維持」するかを選ぶ。', pos: 'top', spot: () => $('dock'), next: true },
-    { t: '気力', x: '上のターン表示と「回す」ボタンの●が気力。回すには気力2が要り、気力は毎ターン1たまる（最大3）。足りないときに「回す」を押すと、あと何ターンかを教えてくれる。いつ回すかを考えよう。', pos: 'bottom', spot: () => $('chipTurn'), next: true },
+    { t: '1ターン終了', x: 'ここからは毎ターン、隊列を「回す」か「維持」するかを選ぶ。ボタンの右肩の数字が、それを選んだときに受けるダメージ。', pos: 'top', spot: () => $('dock'), next: true },
+    { t: '気力', x: '回すには気力2が要る。気力は毎ターン1たまる（最大3）。「回す」ボタンの●が気力。', pos: 'top', spot: () => $('btnRotate'), next: true },
     { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
-    { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ動く。「攻」「防」も復活。「突」が付いた仲間は、攻撃列に入ったターンだけ突入技を出す。', pos: 'top', spot: () => bd(), next: true },
+    { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。前に出た仲間が、次の攻撃を受ける。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
-    { t: '維持のあと', x: '補助の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
-    { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。回すことは、仲間どうしで灯を受け渡すこと。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
-    { t: '基本はここまで', x: 'あとは自由に。気力を見ながら、回すか維持するかを選んで敵を倒そう。', pos: 'bottom', next: true, last: true }
+    { t: '維持のあと', x: '魔女の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
+    { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。疲れた仲間を下げ、元気な仲間を前へ出す。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
+    { t: '基本はここまで', x: 'あとは自由に。敵の名前をタップすると、行動の一覧と「その次」の行動が見える。新しい仕掛けは、出てきたときに案内する。', pos: 'bottom', next: true, last: true }
   ];
 
   function placeSpot() {
