@@ -811,6 +811,8 @@ body.boss-stage .en-u b { color: var(--ink); }
 .co-text { margin: 0 0 8px; font-size: 14px; line-height: 1.65; }
 .co-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }
 .co-hint { font-size: 13px; font-weight: 700; color: var(--accent-text); }
+/* 背の低い画面では解説を詰める（v5.3.2）：盤の仲間を隠す面積を減らす */
+@media (max-height: 620px) { .coach { padding: 8px 14px 8px; } .co-head { min-height: 20px; } .co-title { font-size: 16px; margin: 0 0 2px; } .co-text { font-size: 13px; line-height: 1.5; margin-bottom: 4px; } .co-foot { min-height: 40px; } .co-foot .btn { min-height: 40px; } }
 :root[data-theme="dark"] .co-hint { color: var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .co-hint { color: var(--accent); } }
 .co-foot .btn { flex: none; margin-left: auto; min-height: 46px; padding: 0 26px; font-size: 15px; }
@@ -952,7 +954,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .rv-log summary em { font-style: normal; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
 .rv-log[open] summary em { display: none; }
 .rv-log > div { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
-.tok .nm u::before { content: "HP"; font-size: 8px; margin-right: 1px; }
+.tok .nm u::before { content: "HP"; font-size: 9.5px; margin-right: 1px; }
 .tok.ph-old .disc svg, .rv-m.ph-old .uc-disc svg, .bn.ph-old svg { filter: saturate(0.72); }
 .rv-m.gone .uc-disc { filter: grayscale(0.85); opacity: 0.75; }
 .rv-m.gone.f-fallen small { color: var(--danger-strong); font-weight: 700; }
@@ -1652,6 +1654,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rv-track svg.route { display: block; width: 100%; height: auto; max-height: 260px; overflow: visible; user-select: none; -webkit-user-select: none; }
 .rt-ch { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 8px; font: 700 11px/1 var(--serif); letter-spacing: .12em; color: var(--ink-soft); }
 .rt-ch span { padding: 3px 8px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--rule); }
+.rt-ch span { white-space: nowrap; }   /* 章の名前を「祈りの／間」で割らない（v5.3.2） */
+@media (max-width: 360px) { .rt-ch { gap: 3px; letter-spacing: .02em; font-size: 10.5px; } .rt-ch span { padding: 3px 6px; } .rt-ch i { width: 6px; } }
 .rt-ch span.done { color: var(--ink-soft); text-decoration: line-through; text-decoration-color: var(--rubric); opacity: .75; }
 .rt-ch span.now { background: var(--ink); color: var(--vellum-hi); box-shadow: none; }
 .rt-ch i { width: 14px; height: 1px; background: var(--rule); }
@@ -1675,9 +1679,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-n.mk { cursor: pointer; }
 .rt-n.mk:not([data-pick]) { pointer-events: none; }
 .rt-n .seal { fill: var(--vellum-hi); stroke: var(--rule); stroke-width: 1.3; }
-.rt-n .g { font: 800 11px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
+.rt-n .g { font: 800 12px var(--serif); text-anchor: middle; dominant-baseline: central; fill: var(--ink-soft); }
 .rt-n .lb { font: 800 10.4px var(--serif); text-anchor: middle; fill: var(--ink); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.4px; stroke-linejoin: round; }
-.rt-n .st { font: 700 8.8px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
+.rt-n .st { font: 700 11px var(--sans); text-anchor: middle; fill: var(--rubric); paint-order: stroke; stroke: var(--vellum-hi); stroke-width: 2.2px; }
 .rt-n.locked .seal { stroke-dasharray: 2 2; }
 .rt-n.locked .g, .rt-n.locked .lb { opacity: .7; }
 .rt-n.k-battle .seal, .rt-n.k-fort .seal { stroke: var(--rubric); }
@@ -1692,7 +1696,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-n.here .halo { fill: none; stroke: var(--gold-lo); stroke-width: 1.2; stroke-dasharray: 2 2; }
 .rt-n.avail .seal { fill: var(--gold-hi); stroke-width: 2.2; }
 .rt-n.avail.sel .seal { stroke-width: 3; }
-.rt-y { font: 700 9.4px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
+.rt-y { font: 700 11px var(--serif); text-anchor: middle; fill: var(--ink-soft); }
 .rt-y.now { fill: var(--rubric); font-weight: 800; }
 .runv .rv-card.sel { outline: 2px solid var(--rubric); outline-offset: 1px; background: var(--vellum-hi); }
 .rv-go { width: 100%; margin-top: 4px; }
@@ -2104,7 +2108,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ls-list p { margin: 0; padding: 5px 0; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--paper-line); color: var(--ink); }
 .ls-list p:first-child { border-top: 0; }
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
-.inc-w { font-style: normal; font-size: 9.5px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
+.inc-w { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
 .t-dmg b { font-weight: var(--fw-1); }
 .t-main > span { font-size: var(--fs-3); font-weight: var(--fw-3); color: var(--ink-soft); }
 .t-main > b { font-weight: var(--fw-1); }
@@ -2385,7 +2389,7 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   background: radial-gradient(circle at 38% 32%, var(--gold-hi), var(--gold) 65%, var(--gold-lo)); color: var(--accent-ink);
   box-shadow: inset 0 0 0 2px rgba(255, 245, 210, .45), 0 0 0 1px var(--gold-lo), 0 0 0 4px rgba(190, 52, 34, .35); }
 .t-ico.t-cd b { font-size: 26px; line-height: .9; font-weight: 900; font-variant-numeric: lining-nums; }
-.t-ico.t-cd small { font-size: 7.5px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-top: 1px; white-space: nowrap; }
+.t-ico.t-cd small { font-size: 9px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-top: 1px; white-space: nowrap; }
 .ticket.p .t-ico.t-cd b { font-size: 20px; } .ticket.p .t-ico.t-cd small { display: none; }
 .t-dmg.nx b { color: var(--danger-strong); opacity: .78; }
 .t-dmg small:empty { display: none; }
@@ -2571,7 +2575,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.1</p>
+    <p class="c-ver" id="cVer">ver 5.3.2</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2896,7 +2900,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.1';
+  const APP_VERSION = '5.3.2';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -6462,7 +6466,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : { g: '休', t: '休息', s: '' }; }
     const tier = n.step <= 3 ? 0 : n.step <= 6 ? 1 : 2;
     if (n.kind === 'boss') return { g: '災', t: '決戦', s: '★★★★' };
-    return { g: n.kind === 'fort' && EXPM() ? '主' : '戦', t: n.kind === 'fort' ? (EXPM() ? '章の主' : '砦の戦い') : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
+    // ★は「戦いの成績」だけに使う（v5.3.2）。遠征の地図では敵の強さを★で出さず、亜種かどうかだけを書く（強さは章で分かる）
+    if (EXPM()) return { g: n.kind === 'fort' ? '主' : '戦', t: n.kind === 'fort' ? '章の主' : '戦闘', s: c.variant ? '亜種' : '' };
+    return { g: '戦', t: n.kind === 'fort' ? '砦の戦い' : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
   }
   function trackHTML() {
     const here = routeCur(), done = new Set(['start'].concat(run.path || []));
