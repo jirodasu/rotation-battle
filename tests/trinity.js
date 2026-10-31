@@ -7,6 +7,7 @@
 //  ・行動：像の防御構え・祈り手の回復/防御補助は、決めたとおりに働く（構え・補助は次のターンに効く）
 //  ・戦闘が最後まで進み、ページのエラーなし。中盤の隊（回転レリック1つ・突入技の強化）で、像→祈り手→断罪者の順は7〜10ターン、断罪者から倒すほうが遅い
 //  ・地図：TRI.steps の地点にだけ置かれる。亜種は付かない
+process.env.RB_KEEP_WIN = '1';   // 戦闘そのものを測る。勝敗は以前の勝利パネルで待つ（v5.3.3）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1}';

@@ -24,7 +24,7 @@ async function page(b, url, rm) {
 const turnMs = async (p, skipAt) => {
   const t0 = Date.now(); await p.click('#btnStart');
   if (skipAt != null) { await p.waitForTimeout(skipAt); await p.click('#btnSkip'); }
-  await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden])', { timeout: 60000 });
+  await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden]), #runv:not([hidden])', { timeout: 60000 });
   return Date.now() - t0;
 };
 (async () => {
@@ -40,7 +40,7 @@ const turnMs = async (p, skipAt) => {
     const info = await p.evaluate(() => { const k = document.getElementById('btnSkip'), r = k.getBoundingClientRect(), s = document.getElementById('stage').getBoundingClientRect(), d = getComputedStyle(document.getElementById('dock')).visibility; return { shown: !k.hidden, dock: d, overlap: !(r.bottom <= s.top || r.top >= s.bottom || r.right <= s.left || r.left >= s.right) }; });
     ok(info.shown && info.dock === 'visible', '自動進行中は「演出を飛ばす」が見える');
     ok(!info.overlap, '「演出を飛ばす」は敵の絵（stage）と重ならない＝敵タップの詳細表示と競合しない');
-    await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden])', { timeout: 60000 });
+    await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden]), #runv:not([hidden])', { timeout: 60000 });
     normal = Date.now() - t0;
     const post = await p.evaluate(() => !document.getElementById('btnSkip').hidden);
     ok(!post, '判断の画面に戻ると「演出を飛ばす」は消える');

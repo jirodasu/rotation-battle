@@ -11,7 +11,7 @@ const SM = () => { const R = window.__rb, g = R.grid, e = R.enemy, act = e.patte
   return front.reduce((s, u) => s + u.hp / u.max, 0) / front.length < 0.5; };
 async function fightSmart(p) {
   for (let i = 0; i < 800; i++) {
-    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, ko: document.querySelectorAll('.inc.ko').length, tired: document.querySelectorAll('#board .slot[data-r="0"] .tok.tired').length, dis: document.getElementById('btnRotate').disabled }));
+    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden || !document.getElementById('runv').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, ko: document.querySelectorAll('.inc.ko').length, tired: document.querySelectorAll('#board .slot[data-r="0"] .tok.tired').length, dis: document.getElementById('btnRotate').disabled }));
     if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
     if (st.res) return;
     if (st.prep) { await p.click('#btnStart'); await p.waitForTimeout(50); continue; }
@@ -19,9 +19,11 @@ async function fightSmart(p) {
     await p.waitForTimeout(40);
   }
 }
+// v5.3.3：遠征の途中の勝利は勝利パネルを出さずに報酬の画面へ。パネルが出ているとき（負け・最後の戦い）だけ「次へ」を押す
+async function nextIf(p) { for (let i = 0; i < 40; i++) { if (await p.evaluate(() => !document.getElementById('result').hidden)) { await p.click('#next'); return; } if (await p.evaluate(() => !document.getElementById('runv').hidden)) return; await sleep(p, 100); } }
 async function fight(p, seq) {
   for (let i = 0; i < 600; i++) {
-    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, turn: window.__rb.run ? 0 : 0 }));
+    const st = await p.evaluate(() => ({ res: !document.getElementById('result').hidden || !document.getElementById('runv').hidden, prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden', tip: !document.getElementById('tip').hidden, turn: window.__rb.run ? 0 : 0 }));
     if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
     if (st.res) return;
     if (st.prep) { await p.click('#btnStart'); await sleep(p, 60); continue; }
@@ -70,7 +72,7 @@ async function fight(p, seq) {
   await p.evaluate(() => window.__rb.run.members.forEach((m) => { m.hp = 999; }));
   await fight(p, [false, true]);
   const r1 = await p.evaluate(() => document.getElementById('rTitle').textContent);
-  await p.click('#next'); await sleep(p, 500);
+  await nextIf(p); await sleep(p, 500);
   const after = await p.evaluate(() => ({ title: document.getElementById('rvTitle').textContent, cards: [...document.querySelectorAll('#rvCards .rv-card b')].map((e) => e.textContent) }));
   if (/勝利/.test(r1)) {
     ok(/報酬/.test(after.title) && after.cards.length === 4 && after.cards.some((t) => /回転レリック/.test(t)) && after.cards.some((t) => /突入技の強化/.test(t)) && after.cards.some((t) => /手当て/.test(t)) && after.cards.some((t) => /仲間の入れ替え/.test(t)), '勝つと報酬が4つ（回転レリック・突入技の強化・手当て・仲間の入れ替え）' + JSON.stringify(after.cards));
@@ -156,7 +158,7 @@ async function fight(p, seq) {
     await p.evaluate(() => { window.__rb.enemy.hp = 1; });
     await fight(p, [false]);
     const w = await p.evaluate(() => document.getElementById('rTitle').textContent);
-    await p.click('#next'); await sleep(p, 600);
+    await nextIf(p); await sleep(p, 600);
     return w;
   }
   await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); window.__rb.goTitle(); }); await sleep(p, 200);

@@ -565,6 +565,9 @@ body.boss-stage .en-u b { color: var(--ink); }
 .r-stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
 .r-stars i { width: 44px; height: 44px; color: var(--paper-line); }
 .r-stars i svg { width: 100%; height: 100%; }
+.rv-stars { margin: -2px 0 2px; gap: 6px; } .rv-stars i { width: 30px; height: 30px; }
+.rv-stars[hidden] { display: none; }
+.runv #rvTitle { text-align: center; }   /* 「勝利」のような短い題が左に寄らないように（下線の幅で箱が広がるため） */
 .r-stars i.on { color: var(--accent); filter: drop-shadow(0 3px 0 var(--accent-deep)); animation: starin 0.5s cubic-bezier(.2, 1.4, .4, 1) both; }
 .r-stars i:nth-child(2) { transform: translateY(-8px); }
 .r-stars i.on:nth-child(2) { animation-name: starin2; }
@@ -1700,7 +1703,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rt-y.now { fill: var(--rubric); font-weight: 800; }
 .runv .rv-card.sel { outline: 2px solid var(--rubric); outline-offset: 1px; background: var(--vellum-hi); }
 .rv-go { width: 100%; margin-top: 4px; }
-.rv-go:disabled { opacity: .55; }
+.rv-go:disabled { opacity: 1; background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1.5px var(--rule-a); filter: none; text-shadow: none; font-weight: 700; }   /* 選ぶ前は押せる金のボタンに見せない（v5.3.3）。選ぶ場所は札と地図 */
+.rv-go:disabled::before, .rv-go:disabled::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .rt-n.avail:not(.sel) .land { animation: none; } }
 /* ---- 地点画面（地図）：どの向き・どの大きさでも、スクロールなしで全部が見えるように ----
    高さは dvh で測って、地図の高さを残りの余白に合わせて決める。足りないときは説明文から先に減らす。 */
@@ -2575,7 +2579,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.2</p>
+    <p class="c-ver" id="cVer">ver 5.3.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2680,6 +2684,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   <div class="r-card rv-card">
     <small class="disp" id="rvSmall"></small>
     <h2 class="disp" id="rvTitle"></h2>
+    <div class="r-stars rv-stars" id="rvStars" hidden></div>
     <p id="rvSub"></p>
     <div class="rv-main">
       <div class="rv-left">
@@ -2900,7 +2905,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.2';
+  const APP_VERSION = '5.3.3';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5501,6 +5506,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
         $('resultAlt').hidden = false;
       }
       confetti();
+      // 勝利と報酬を1枚に（v5.3.3）：遠征の途中の勝利は、勝利パネルを出さずに報酬の画面へ。★と「いちばん活躍」は報酬の画面の上に出す
+      if (!tut && run && EXPM() && !last && !window.__rbKeepWinPanel) {   // __rbKeepWinPanel：テストの一部だけが使う（以前の勝利パネル）
+        let mv = null; Object.keys(stats.dealt).forEach((id) => { if (!mv || stats.dealt[id] > stats.dealt[mv]) mv = id; });
+        expWin = { stars: gotStars, sub: turn + 'ターンで撃破' + (mv && stats.who[mv] ? '・いちばん活躍 ' + stats.who[mv].name : '') + '。' };
+        setTimeout(() => { if (phase !== 'over' || lastResult !== 'win' || !$('result').hidden || !$('runv').hidden) return; const ev = expAfterBattle(true); expReward(ev); }, RM ? 0 : 650);
+        return;
+      }
     } else {
       Music.charge(false); Music.set('off'); SFX.lose(); $('rHeal').hidden = true;
       $('rSmall').textContent = chapLabel();
@@ -6523,6 +6535,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvSmall').innerHTML = (o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)))).split('　·　').map((x) => '<span class="nw">' + x.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>').join('　·　');
     sceneCh();
     $('rvTitle').textContent = o.title;
+    { const sx = $('rvStars'); sx.hidden = o.stars == null; sx.innerHTML = o.stars == null ? '' : [0, 1, 2].map((i) => '<i class="' + (i < o.stars ? 'on' : '') + '" style="animation-delay:' + (0.2 + i * 0.15) + 's">' + STAR + '</i>').join(''); if (o.stars != null) sx.setAttribute('aria-label', '★' + o.stars + ' / 3'); }
     $('rvSub').textContent = o.sub || '';
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '', o.heal && o.heal.gain[m.uid] > 0 ? '<i class="rv-heal" aria-label="HP+' + o.heal.gain[m.uid] + '回復">+' + o.heal.gain[m.uid] + '</i>' : '')).join('');
     // B（v5.1.60）：回復は文章ではなく、HP棒が伸びて「+N」が浮かぶ反応で返す（棒の伸びは、増えた仲間だけ）
@@ -6552,7 +6565,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
     const go = $('rvGo'); if (!go) return;
     const c = routeSel != null ? run.choices[routeSel] : null;
-    go.disabled = !c; go.textContent = c ? '「' + choiceName(c) + '」へ進む' : '進む道を選んでください';
+    go.disabled = !c; go.textContent = c ? '「' + choiceName(c) + '」へ進む' : '地図か札で、進む道を選ぶ';
     $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
     $('rvTrack').innerHTML = trackHTML();
   }
@@ -7265,8 +7278,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     expRewardShow(pre, cards);
   }
+  let expWin = null;   // 勝利の★と一言（v5.3.3）。報酬の画面の上に出す。地図へ進むと消す
   function expRewardShow(pre, cards) {
-    rvShow({ small: expSmall(), title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。選んだものは、この遠征のあいだ隊に残る。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
+    rvShow({ small: expSmall(), title: expWin ? '勝利' : '報酬を1つ選ぶ', stars: expWin ? expWin.stars : null, sub: expWin ? expWin.sub + '報酬を1つ選ぶ（遠征のあいだ隊に残る）。' : enemy.name + 'を倒した。選んだものは、この遠征のあいだ隊に残る。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
   }
   // 誰と入れ替えるか。「やめる」で報酬の選び直し
   function expSwapPick(pre, cards, nm) {
@@ -7296,6 +7310,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     SFX.recruit();
   }
   function expAdvance(events) {
+    expWin = null;
     events = (events || []).slice();
     if (expIsChief(run.node + 1) && run.node + 1 < EXP.nodes) expChapterClear(events);
     if (run.pendId) { run.path = (run.path || []).concat(run.pendId); run.pendId = null; }

@@ -31,7 +31,7 @@ async function toChoose(p) {
 async function winNow(p) {
   await p.evaluate(() => { window.__rb.enemy.hp = 1; window.__rb.run.members.forEach((m) => { m.atk = 99; }); });
   await p.click('#btnStay');
-  for (let i = 0; i < 80; i++) { if (await vis(p, 'result')) return true; await p.waitForTimeout(150); }
+  for (let i = 0; i < 80; i++) { if (await vis(p, 'result') || await vis(p, 'runv')) return true; await p.waitForTimeout(150); }   // v5.3.3：途中の勝利は報酬の画面（題「勝利」）
   return false;
 }
 (async () => {
@@ -88,11 +88,11 @@ async function winNow(p) {
     ok(!(await appHidden(p)), sk.name + '：戦闘中は戦闘表示が見えている');
     const before = await p.evaluate(() => ({ name: document.getElementById('ename').textContent, hp: window.__rb.run.members.map((m) => m.name + ' ' + m.hp) }));
     const won = await winNow(p);
-    ok(won, sk.name + '：勝利パネルが出る');
+    ok(won, sk.name + '：勝利（報酬）のパネルが出る');
     await p.waitForTimeout(500);
     ok(await appHidden(p), sk.name + '：勝利パネルの間、背面の戦闘表示（HP・次の行動）は読めない');
     ok(await p.evaluate(() => getComputedStyle(document.querySelector('.scene')).visibility !== 'hidden' && +getComputedStyle(document.querySelector('.scene')).opacity > 0), sk.name + '：背景の絵は残る');
-    await p.click('#next'); await p.waitForTimeout(600);
+    if (await vis(p, 'result')) await p.click('#next'); await p.waitForTimeout(600);
     const rv = await p.evaluate(() => ({ open: !document.getElementById('runv').hidden, map: document.getElementById('runv').classList.contains('is-map') }));
     ok(rv.open && await appHidden(p), sk.name + '：報酬パネルの間も背面は読めない');
     // 報酬を選ぶ → 地図

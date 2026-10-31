@@ -1,6 +1,7 @@
 // でたらめな操作で本番（遠征）を何度も通しで遊び、ページエラー・止まり・状態の矛盾を探す。
 //   node tests/fuzz.js [ラン数=6] [seed=1]
 // 演出は「動きを減らす」設定で短縮して速く回す。画面サイズは横・縦・PCを順に使う。
+process.env.RB_KEEP_WIN = '1';   // 戦闘そのものを測る。勝敗は以前の勝利パネルで待つ（v5.3.3）
 const { launch, testPage, OUT } = require('./_env');
 const fs = require('fs'), path = require('path');
 const RUNS = +(process.argv[2] || 6);
