@@ -14,6 +14,7 @@ function testPage() {
   //   勝利→報酬の新しい流れは tests/v533.js・expedition.js・battlesave.js などが本来の動きで確かめる
   if (process.env.RB_KEEP_WIN) s = s.replace('<head>', '<head><script>window.__rbKeepWinPanel = true;</script>');
   const p = path.join(OUT, process.env.RB_KEEP_WIN ? 'tk.html' : 't.html'); fs.writeFileSync(p, s);
+  try { fs.copyFileSync(path.join(ROOT, 'tune.js'), path.join(OUT, 'tune.js')); } catch (e) { /* 調整モードの道具（v5.3.4）。無ければ読まない */ }
   return 'file://' + p;
 }
 const indexURL = 'file://' + path.join(ROOT, 'index.html');
