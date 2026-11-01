@@ -30,7 +30,11 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
         const ov = (e) => { const a = R(e); return a.width > 0 && Math.min(r.bottom, a.bottom) - Math.max(r.top, a.top) > 1 && Math.min(r.right, a.right) - Math.max(r.left, a.left) > 1; };
         return { k: t.dataset.k, board: ov(document.getElementById('board')), ticket: ov(document.getElementById('ticket')), out: r.top < -1 || r.bottom > innerHeight + 1, btn: document.getElementById('tipOk').textContent }; });
       if (s) { seen.push(s.k); if (s.board || s.ticket || s.out || s.k === 'stars' || s.btn !== 'わかった') bad.push(s); await p.click('#tipOk'); await p.waitForTimeout(150); }
-      else { if (await p.evaluate(() => window.__rb.phase === 'choose' && !document.getElementById('btnStay').disabled)) await p.click('#btnStay').catch(() => {}); await p.waitForTimeout(200); }
+      else {
+        // v5.3.7：案内は、ダメージの数字が消えてから出る。選ぶ場面になったら少し待ってから押す
+        if (await p.evaluate(() => window.__rb.phase === 'choose' && !document.getElementById('btnStay').disabled)) { await p.waitForTimeout(1700); if (await p.evaluate(() => document.getElementById('tip').hidden)) await p.click('#btnStay').catch(() => {}); }
+        await p.waitForTimeout(200);
+      }
       if (await p.evaluate(() => !document.getElementById('result').hidden)) break;
     }
     ok(seen.length >= 1 && !seen.includes('stars'), '1a 戦闘中に「★3を目指そう」は出ない（出た案内：' + seen.join('・') + '）');

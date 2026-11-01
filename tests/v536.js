@@ -34,8 +34,8 @@ const vis = (p, sel) => p.evaluate((s) => { const e = document.querySelector(s);
     // 5 吹き出し（枠が無いとき）
     if (n) {
       await p.click('.slot[data-r="0"][data-c="0"]'); await p.waitForTimeout(300);
-      const sel = await p.evaluate(() => { const d = document.getElementById('selTip'); return d && !d.hidden ? d.textContent : ''; });
-      ok(/入れ替え先をタップ/.test(sel), tag + ' 5 仲間を選ぶと吹き出し：' + sel);
+      const sel = await p.evaluate(() => { const d = document.querySelector('#peek .pk-hint'); return d ? d.textContent : ''; });
+      ok(/入れ替え先をタップ/.test(sel), tag + ' 5 仲間を選ぶと「入れ替え先をタップ」（v5.3.7 から仲間の詳細の中）：' + sel);
       { const r = await p.evaluate(() => { const q = document.querySelector('.slot[data-r="0"][data-c="0"]').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.bottom - 8 }; }); await p.mouse.click(r.x, r.y); await p.waitForTimeout(300); }   // 選び直して外す（上は仲間の詳細が重なるので、マスの下の方を押す）
       // 攻撃列を空にする（あとで元に戻す）
       await p.evaluate(() => { const R = window.__rb, g = R.grid; window.__keep = g.map((row) => row.slice()); for (let c = 0; c < g[0].length; c++) if (g[0][c]) { const u = g[0][c]; g[0][c] = null; outer: for (let r = 1; r < 3; r++) for (let k = 0; k < g[r].length; k++) if (!g[r][k]) { g[r][k] = u; break outer; } } R.render(); });

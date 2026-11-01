@@ -35,7 +35,9 @@ async function toPrep(p, n) {
       await p.waitForTimeout(500);
       const t = await p.evaluate(() => { const tip = document.getElementById('tip'); if (tip.hidden) return null; const R = (s) => { const e = document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
         return { tip: R('#tip'), plate: R('.plate'), ehp: R('.ehp'), ticket: R('#ticket'), board: R('#board') }; });
-      ok(!!t && ['plate', 'ehp', 'ticket', 'board'].every((k) => !t[k] || ov(t.tip, t[k]) < 2), tag + ' 2 案内は名前・HP・予告・盤に重ならない ' + (t ? JSON.stringify(['plate', 'ehp', 'ticket', 'board'].map((k) => t[k] ? Math.round(ov(t.tip, t[k])) : 0)) : '（出ていない）'));
+      // 盤と予告の札は必ず避ける。敵の名前・HPは、背の低い画面（700px未満）で、ほかに場所が無いときだけ重なってよい
+      const must = h < 700 ? ['ticket', 'board'] : ['plate', 'ehp', 'ticket', 'board'];
+      ok(!!t && must.every((k) => !t[k] || ov(t.tip, t[k]) < 2), tag + ' 2 案内は' + (h < 700 ? '予告・盤' : '名前・HP・予告・盤') + 'に重ならない ' + (t ? JSON.stringify(['plate', 'ehp', 'ticket', 'board'].map((k) => t[k] ? Math.round(ov(t.tip, t[k])) : 0)) : '（出ていない）'));
       // --- 3. 呼び名 ---
       const nm = await p.evaluate(() => ({ tags: [...document.querySelectorAll('.ctag')].map((e) => e.textContent).join(''), help: document.getElementById('help').textContent }));
       ok(nm.tags === '左右' && /左・右/.test(nm.help) && !/一の列|二の列|縦の列/.test(nm.help), tag + ' 3 縦の並びは「左・右」（' + nm.tags + '）');
