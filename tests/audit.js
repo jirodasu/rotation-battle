@@ -149,7 +149,8 @@ async function open(b, w, h, kind, node) {
     // 気力不足の説明：ボタンは●だけ。理由は押したときの吹き出し1か所
     await p.evaluate(() => { window.__rb.setGauge(0); });
     const g = await p.evaluate(() => ({ book: document.getElementById('book').innerText, btn: document.getElementById('btnRotate').innerText.replace(/\s+/g, ''), dis: document.getElementById('btnRotate').disabled, n0: window.__rb.log.length }));
-    ok(g.dis && g.btn === '回す' && !/気力|あと/.test(g.book), '気力不足でも、ボタンと枠に説明の文字は出ない（ボタン：' + g.btn + '）');
+    // v5.3.8 で仕様を変えた：回せないときは、回すの札に理由を1行だけ出す（見通しの札）。枠（記録）には出さない
+    ok(g.dis && /^回す/.test(g.btn) && /回せる|縛/.test(g.btn) && !/気力|あと/.test(g.book), '気力不足：回すの札に理由が1行、枠には出ない（ボタン：' + g.btn + '）');
     const rr = await p.evaluate(() => { const x = document.getElementById('btnRotate').getBoundingClientRect(); return [x.left + x.width / 2, x.top + x.height / 2]; });
     await p.mouse.click(rr[0], rr[1]); await p.waitForTimeout(300);
     const tip = await p.evaluate(() => { const d = document.getElementById('rotTip'); return d && d.classList.contains('on') ? d.textContent : ''; });
