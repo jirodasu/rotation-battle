@@ -644,6 +644,13 @@ body.boss-stage .en-u b { color: var(--ink); }
 #btnStart.oc .oc-h { text-align: center; }
 .oc-b { display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.35; font-weight: 700; }
 .oc-b:empty { display: none; }
+/* 札の中身は、行の数に関わらず決まった高さ（4行分。背の低い画面は2行・1行分）。回せないターン（理由1行）でも札の高さが変わらないように（v5.3.8） */
+.oc-b:not(:empty) { min-height: calc(4 * 1.35em + 3px); justify-content: flex-start; }
+@media (max-height: 700px) { .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); } }
+@media (max-height: 460px) { .oc-b:not(:empty) { min-height: 1.35em; } }
+/* 三位一体（敵3体）は敵のパネルに場所が要るので、札は「受ける・敵」の2行（v5.3.8。4行だとパネルが中身に合わせて縮み、毎ターン盤が揺れたため） */
+body:has(#stage.trio) .oc-r.x { display: none; }
+body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); }
 .oc-r { display: grid; grid-template-columns: 3.3em minmax(0, 1fr); gap: 4px; }
 /* 行は折り返さない（折り返すと札の高さが変わり、毎ターン盤の大きさが揺れるため。v5.3.8）。収まらない分は … で、数字の合計は「敵」の行に必ず出る */
 .oc-r b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -4718,7 +4725,17 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('ocStay').innerHTML = hs; $('ocRot').innerHTML = hr; $('ocStart').innerHTML = hp;
     if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot'))); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
-    requestAnimationFrame(() => { fitBoard(); setBleed(); });
+    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); });
+  }
+  // 下の段の高さを、見通しの札がいちばん高いときに合わせて固定する（v5.3.8）。演出中（「演出を飛ばす」だけ）や
+  // 回せないターンで低くなると、盤の大きさが毎ターン揺れるため。画面の大きさが変わったら測り直す
+  let dockKey = '', dockMax = 0;
+  function dockLock() {
+    const d = $('dock'), key = innerWidth + 'x' + innerHeight;
+    if (key !== dockKey) { dockKey = key; dockMax = 0; d.style.minHeight = ''; }
+    if (phase !== 'choose') return;   // 選ぶ場面の札の高さに合わせる（陣立ての札とは行数が違うことがある）
+    const h = Math.ceil(d.getBoundingClientRect().height);
+    if (h > dockMax) { dockMax = h; d.style.minHeight = h + 'px'; }
   }
   // 押せない「回す」を押したとき：ボタンを揺らし、理由（気力の札／縛り）を光らせる
   function rotDenied() {
@@ -5024,6 +5041,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let bookOn = true;
   function toPrep(restore) {
     bookOn = bookOnNow();
+    dockMax = 0; $('dock').style.minHeight = '';   // 下の段の高さは戦闘ごとに測り直す（v5.3.8）
     if (restore && snapshot) {
       grid = emptyGrid();
       snapshot.forEach(({ u, r, c }) => { grid[r][c] = u; });
