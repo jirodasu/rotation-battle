@@ -192,7 +192,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
         if (st.prep || st.choose) {
           await settle();
           const rot = st.choose && !st.dis && rnd() < 0.45;
-          if (rot) { await p.click('#btnPreview'); await p.waitForTimeout(30); }   // 回したときの予告を見る
+          // v5.3.8：目のボタンは無くした。予告の計算は previewGrid() から直接読む
           pred = await p.evaluate((rot) => { const R = window.__rb, src = rot ? R.previewGrid() : R.grid, inc = R.incoming(src, rot || R.phase === 'prep', rot), m = {};
             Object.keys(inc).forEach((k) => { const [r, c] = k.split(',').map(Number); m[src[r][c].name] = inc[k].d; });
             const foes = R.enemy.party ? R.enemy.party.filter((f) => f.hp > 0) : [R.enemy], acts = foes.map((F) => F.pattern[(R.turn - 1) % F.pattern.length]);

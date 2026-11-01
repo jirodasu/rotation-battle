@@ -62,7 +62,7 @@ async function measure(p, need) {
     await p.click('#btnStart'); await p.waitForTimeout(400);
     for (let k = 0; k < 40; k++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(300); }
     await closeTip();
-    await check('choose', [['#btnRotate', 'btn'], ['#btnStay', 'btn'], ['#btnPreview', 'btn'], ['#ticket'], ['#board']]);
+    await check('choose', [['#btnRotate', 'btn'], ['#btnStay', 'btn'], ['#ticket'], ['#board']]);
     // 戦闘を最後まで
     for (let k = 0; k < 120; k++) {
       if (await p.evaluate(() => !document.getElementById('result').hidden)) break;
