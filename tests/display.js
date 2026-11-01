@@ -194,7 +194,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
           const rot = st.choose && !st.dis && rnd() < 0.45;
           // v5.3.8：目のボタンは無くした。回すときは「回す」を長押しして先読みし（予告札も先読みの数字になる）、離して決める
           let hb = null;
-          if (rot) { hb = await p.evaluate(() => { const q = document.getElementById('btnRotate').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; }); await p.mouse.move(hb.x, hb.y); await p.mouse.down(); await p.waitForTimeout(420); }
+          if (rot) { hb = await p.evaluate(() => { const q = document.getElementById('btnRotate').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; }); await p.mouse.move(hb.x, hb.y); await p.mouse.down(); await p.waitForFunction(() => window.__rb.previewOn, null, { timeout: 3000 }).catch(() => {}); await p.waitForTimeout(80); }   // 長押しの先読みが出るまで待つ（重い時は420msでは足りず、先読み前の札を読んでいた）
           pred = await p.evaluate((rot) => { const R = window.__rb, src = rot ? R.previewGrid() : R.grid, inc = R.incoming(src, rot || R.phase === 'prep', rot), m = {};
             Object.keys(inc).forEach((k) => { const [r, c] = k.split(',').map(Number); m[src[r][c].name] = inc[k].d; });
             const foes = R.enemy.party ? R.enemy.party.filter((f) => f.hp > 0) : [R.enemy], acts = foes.map((F) => F.pattern[(R.turn - 1) % F.pattern.length]);

@@ -2661,7 +2661,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.9</p>
+    <p class="c-ver" id="cVer">ver 5.3.10</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2999,7 +2999,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.9';
+  const APP_VERSION = '5.3.10';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -7250,7 +7250,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function xSave(mm, x) { Object.assign(mm, { ach: x.ach, won: x.won, bought: x.bought, spent: x.spent, pick: x.pick }); }
   const xLead = (q) => JOBS.find((j) => j.id === q.party[0][0]);
   // 出発の準備：隊を選び、深さが開いていれば深さを選ぶ。何も開いていなければ、今までどおりそのまま始める
-  function startExpFlow() { if (xHasChoice(xmeta())) showDepart(); else beginExp('std', 1); }
+  // 結果の画面（チュートリアルの「完了」など）は、出発の準備（#runv）より手前にある。閉じてから出す（v5.3.10）
+  function startExpFlow() { $('result').hidden = true; if (xHasChoice(xmeta())) showDepart(); else beginExp('std', 1); }
   function showDepart(note) {
     const mm = expMeta(), x = xmeta(mm), have = xMedals(x);
     const cards = XSQ.map((q) => {
