@@ -47,15 +47,15 @@ const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { c
     // 3 攻撃補助は剣の数字の金色と一致
     const s3 = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')');
     ok(s3.length > 0 && s3.every((a) => a.on === a.buf), tag + ' 3 攻撃補助の実線＝剣の数字が金色 ' + JSON.stringify(s3));
-    await p.evaluate(() => { const R = window.__rb; R.grid[1].forEach((u) => { if (u) u.atkReady = true; }); R.render(); });
+    await p.evaluate(() => { const R = window.__rb; R.grid[1].forEach((u) => { if (u) u.atkReady = true; }); R.render(); }); await p.waitForTimeout(120);   // 矢印は次の描画の前に描く（v5.4.0）
     const s3b = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')');
     ok(s3b.every((a) => a.on === a.buf), tag + ' 3 補助を戻すと実線（剣の数字も金色） ' + JSON.stringify(s3b));
     // 4 防御補助
-    const s4 = await p.evaluate((fn) => { const R = window.__rb, A = eval(fn), g = R.grid; let col = -1, found = false;
+    const s4 = await p.evaluate(async (fn) => { const fr = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const R = window.__rb, A = eval(fn), g = R.grid; let col = -1, found = false;
       for (let t = 1; t <= 14 && !found; t++) { R.setTurn(t); const a = R.actOf(R.enemy); if (a.pierce) continue; const inc = R.incoming(g, false, false); for (let c = 0; c < g[1].length; c++) if (g[1][c] && g[1][c].defSup > 0 && inc['0,' + c]) { col = c; found = true; break; } }
       if (!found) return null;
-      g[1][col].defReady = true; R.render(); const on = A().find((a) => a.k === 'd' && a.c === col).on;
-      g[1][col].defReady = false; R.render(); const off = A().find((a) => a.k === 'd' && a.c === col).on;
+      g[1][col].defReady = true; R.render(); await fr(); const on = A().find((a) => a.k === 'd' && a.c === col).on;
+      g[1][col].defReady = false; R.render(); await fr(); const off = A().find((a) => a.k === 'd' && a.c === col).on;
       g[1][col].defReady = true; R.render(); return { col, on, off }; }, '(' + arrows.toString() + ')');
     if (s4) ok(s4.on === true && s4.off === false, tag + ' 4 狙われて使えるときは実線、使い切ると点線 ' + JSON.stringify(s4));
     else ok(true, tag + ' 4 （この敵では、防御補助の仲間の真上が狙われるターンが無かった）');
