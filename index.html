@@ -798,11 +798,22 @@ body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); }
 @media (max-height: 700px) { .steps li { font-size: 12px; line-height: 1.5; } .steps { gap: 9px; } .h-card h2 { font-size: 26px; } }
 .h-card { max-width: 420px; padding: 26px 22px 22px; }
 .h-card h2 { font-size: 30px; margin-bottom: 4px; }
+.h-tabs { display: flex; gap: 0; margin: 4px auto 12px; width: max-content; max-width: 100%; border-radius: 22px; background: var(--paper-2); box-shadow: inset 0 0 0 1px var(--rule-a); padding: 3px; position: relative; z-index: 1; }
+.h-tabs button { min-width: 78px; height: 36px; padding: 0 12px; border: 0; border-radius: 18px; background: transparent; color: var(--ink-soft); font: 700 14px/1 inherit; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: background-color .18s ease, color .18s ease; }
+.h-tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); }
+.steps[hidden] { display: none !important; }
+.steps .h-more { display: block; grid-column: 1 / -1; text-align: center; }
+.h-next { border: 0; background: none; color: var(--accent); font: 700 13px/1 inherit; font-family: inherit; padding: 10px 12px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .steps { list-style: none; margin: 4px 0 14px; padding: 0; display: grid; gap: 12px; text-align: left; }
 .steps li { display: grid; grid-template-columns: 38px 1fr; gap: 12px; align-items: start; font-size: 13px; line-height: 1.55; color: var(--ink-soft); }
 .steps b { display: block; font-size: 15px; color: var(--ink); line-height: 1.3; }
 .steps .ico { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--paper-2); box-shadow: 0 2px 0 var(--paper-line); font-weight: 700; font-size: 18px; }
 .steps .ico svg { width: 20px; height: 20px; }
+/* 背の低い画面：あそびかたを詰める（「はじめに」がスクロールせずに見えるように） */
+@media (max-height: 700px) { #help .steps li { font-size: 12px; line-height: 1.5; } #help .steps { gap: 9px; } }
+@media (max-height: 620px) { #help .h-tabs { margin: 2px auto 8px; } #help .h-tabs button { height: 32px; min-width: 70px; font-size: 13px; }
+  #help .h-card { padding-top: 14px; } #help .h-card h2 { font-size: 22px; margin-bottom: 0; } #help .steps li { grid-template-columns: 30px 1fr; gap: 10px; } #help .steps .ico { width: 30px; height: 30px; font-size: 14px; }
+  #help .steps .ico svg { width: 15px; height: 15px; } #help .steps b { font-size: 14px; } #help .h-next { padding: 4px 12px; } #help .h-foot { padding-top: 8px; padding-bottom: 14px; } }
 .ico.r0 { color: var(--atk); } .ico.r1 { color: var(--sup); } .ico.r2 { color: var(--heal); } .ico.rr { color: var(--accent-deep); } .ico.rd { color: var(--danger); }
 :root[data-theme="dark"] .ico.rr { color: var(--accent); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .ico.rr { color: var(--accent); } }
@@ -2650,7 +2661,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.8</p>
+    <p class="c-ver" id="cVer">ver 5.3.9</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2668,21 +2679,31 @@ body.fast #stampOk.on { animation-duration: .5s; }
   <div class="r-card h-card">
     <button class="h-x" id="helpX" type="button" aria-label="閉じる"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg></button>
     <h2 class="disp">あそびかた</h2>
-    <ul class="steps">
+    <div class="h-tabs" role="tablist" aria-label="説明の深さ"><button type="button" role="tab" id="hTab0" data-tier="0" aria-selected="true" aria-controls="hTier0">はじめに</button><button type="button" role="tab" id="hTab1" data-tier="1" aria-selected="false" aria-controls="hTier1">しくみ</button><button type="button" role="tab" id="hTab2" data-tier="2" aria-selected="false" aria-controls="hTier2">くわしく</button></div>
+    <ul class="steps" id="hTier0" role="tabpanel" aria-labelledby="hTab0">
+      <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>やること</b>4人の並びを回して、敵の大技をしのぎ、倒す。毎ターン「回す」か「維持」を選ぶ。</div></li>
+      <li><span class="ico rs disp" style="font-size:14px">札</span><div><b>下の札を見比べる</b>「回す」「維持」のボタンに、受けるダメージと与えるダメージが出る。見比べて押すだけ。</div></li>
+      <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
+      <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
+      <li class="h-more"><button type="button" class="h-next" data-tier="1">慣れたら「しくみ」へ →</button></li>
+    </ul>
+    <ul class="steps" id="hTier1" role="tabpanel" aria-labelledby="hTab1" hidden>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><div><b>攻撃列</b>敵を攻撃する。素早い順に動く。剣マークの数字は次に与えるダメージの見込み（金色は攻撃補助込み）。</div></li>
       <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>すぐ上の、同じ側（左・右）の攻撃列の仲間を支える（右の補助は、左には届かない）。攻撃補助と防御補助は1回で使い切り。</div></li>
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
-      <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
-      <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
+      <li><span class="ico rr disp" style="font-size:14px">気</span><div><b>気力</b>回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。<br><b>気力</b>　回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
+      <li class="h-more"><button type="button" class="h-next" data-tier="2">もっと「くわしく」 →</button></li>
+    </ul>
+    <ul class="steps" id="hTier2" role="tabpanel" aria-labelledby="hTab2" hidden>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。「回す」を長押しした先読みで「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃が出る。敵をタップすると「その次」の行動も見える。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。</div></li>
     </ul>
     <div class="h-foot"><button class="btn set-open" id="helpSet" type="button">設定</button><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
   </div>
@@ -2978,7 +2999,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.8';
+  const APP_VERSION = '5.3.9';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -5863,7 +5884,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     c.style.animation = 'none'; void c.offsetWidth; c.style.animation = '';
     setTimeout(() => { c.hidden = true; }, 1950);
   }
-  const openHelp = () => { $('help').hidden = false; $('helpClose').focus(); };
+  // あそびかたは3段：はじめに（まずはこれだけ）・しくみ・くわしく。開くたびに前に見ていた段を出す（初回は「はじめに」）
+  let helpTier = 0;
+  const setHelpTier = (t, focus) => { helpTier = t; for (let i = 0; i < 3; i++) { const on = i === t; $('hTab' + i).setAttribute('aria-selected', on ? 'true' : 'false'); $('hTab' + i).tabIndex = on ? 0 : -1; $('hTier' + i).hidden = !on; }
+    const card = document.querySelector('#help .h-card'); if (card) card.scrollTop = 0; if (focus) $('hTab' + t).focus(); };
+  document.querySelectorAll('#help .h-tabs button, #help .h-next').forEach((bt) => bt.addEventListener('click', () => setHelpTier(+bt.dataset.tier, bt.classList.contains('h-next'))));
+  document.querySelector('#help .h-tabs').addEventListener('keydown', (e) => { if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return; e.preventDefault(); setHelpTier((helpTier + (e.key === 'ArrowRight' ? 1 : 2)) % 3, true); });
+  const openHelp = () => { setHelpTier(helpTier); $('help').hidden = false; $('helpClose').focus(); };
   const closeHelp = () => { $('help').hidden = true; $('helpBtn').focus(); };
   $('helpBtn').addEventListener('click', openHelp);
   $('helpClose').addEventListener('click', closeHelp);
