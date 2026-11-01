@@ -715,6 +715,8 @@ body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); }
 }
 .pop.heal { color: #c9ffe0; --ol: #1f6b46; }
 .pop.dmg { color: #fff3d6; }
+.pop.dmg text { font-variant-numeric: tabular-nums lining-nums; }
+.burst { position: fixed; width: 1px; height: 1px; overflow: visible; pointer-events: none; z-index: 60; }
 .pop svg { display: block; width: 1px; height: 1px; overflow: visible; }
 .pop text { font-family: inherit; font-size: inherit; font-weight: 700; fill: currentColor; stroke: var(--ol); stroke-width: calc(var(--w) * 2.2); stroke-linejoin: round; paint-order: stroke fill; }
 .pop.big { font-size: 50px; --w: 4px; animation: popbig 1.3s cubic-bezier(.2, .8, .3, 1) forwards; }
@@ -2690,7 +2692,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.4.1</p>
+    <p class="c-ver" id="cVer">ver 5.4.2</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3028,7 +3030,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.4.1';
+  const APP_VERSION = '5.4.2';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4132,7 +4134,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let shownHp = null, hitSeq = 0;
   function tweenHp(from, to) {
     if (RM) { $('ehpn').textContent = to; return; }
-    const t0 = performance.now(), dur = 520;
+    const t0 = performance.now(), dur = 350;   // ダメージの数字のカウントアップ（0.35秒）と、HPの減りを同じ長さにする（v5.4.2）
     const f = (t) => {
       const k = Math.min(1, (t - t0) / dur);
       $('ehpn').textContent = Math.round(from + (to - from) * k);
@@ -4980,7 +4982,86 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('fx').appendChild(p);
     const hw = p.offsetWidth / 2, vw = document.documentElement.clientWidth;
     if (hw > 0) p.style.left = Math.min(Math.max(c.x + (dx || 0), hw + 8), vw - hw - 8) + 'px';
+    if (/\bdmg\b/.test(cls || '')) countPop(p, text);
     setTimeout(() => p.remove(), (/big|sub/.test(cls || '') ? 1400 : 1000) / SPD);
+  }
+  // ダメージの数字のカウントアップ（motion-prompt #007。v5.4.2）：0 → 実ダメージを 0.35秒、表示値 = 目標 ×（1 −（1 − p）^4）。
+  //   決まった瞬間に 1 + 0.07・e^(−7t)・cos(15t) の小さな弾みを1回。数字は等幅・右そろえ（桁が増えても横に揺れない）。最後に出る数字は今までと同じ
+  const easeOut4 = (p) => 1 - Math.pow(1 - p, 4);
+  function countPop(p, text) {
+    const m = /^(-)(\d+)$/.exec(text), t = p.querySelector('text'), sv = p.querySelector('svg');
+    if (!m || !t || RM || SKIP) return;
+    const pre = m[1], goal = +m[2];
+    let w = 0; try { w = t.getComputedTextLength(); } catch (e) { /* 測れない */ }
+    if (w > 0) { t.setAttribute('text-anchor', 'end'); t.setAttribute('x', (w / 2).toFixed(1)); }
+    const t0 = performance.now(), dur = 350 / SPD;
+    t.textContent = pre + '0';
+    const step = (now) => {
+      if (!p.isConnected) return;
+      const k = Math.min(1, (now - t0) / dur);
+      t.textContent = pre + Math.round(goal * easeOut4(k));
+      if (k < 1) { requestAnimationFrame(step); return; }
+      t.textContent = text;
+      const b0 = now; sv.style.transformOrigin = '0 0';
+      const bounce = (n2) => { if (!p.isConnected) return; const s2 = (n2 - b0) / 1000; if (s2 > 0.7) { sv.style.transform = ''; return; } sv.style.transform = 'scale(' + (1 + 0.07 * Math.exp(-7 * s2) * Math.cos(15 * s2)).toFixed(4) + ')'; requestAnimationFrame(bounce); };
+      requestAnimationFrame(bounce);
+    };
+    requestAnimationFrame(step);
+  }
+  // 画面のインパクトシェイク（motion-prompt #024。v5.4.2）：大技が味方に当たった瞬間と、味方が倒れた瞬間だけ。
+  //   dx = 15·e^(−5t)·sin(2π·5t)、dy = 11·e^(−5t)·cos(2π·6.5t)、1.1秒で止める。傾きは付けない。入力も進行も止めない（transform とは別の translate を使う）
+  let shakeRaf = 0;
+  function impactShake() {
+    const app = $('app'); if (!app || RM || SKIP) return;
+    cancelAnimationFrame(shakeRaf);
+    const t0 = performance.now();
+    const f = (now) => {
+      const t = (now - t0) / 1000;
+      if (t > 1.1) { app.style.translate = ''; shakeRaf = 0; return; }
+      const e = Math.exp(-5 * t);
+      app.style.translate = (15 * e * Math.sin(2 * Math.PI * 5 * t)).toFixed(2) + 'px ' + (11 * e * Math.cos(2 * Math.PI * 6.5 * t)).toFixed(2) + 'px';
+      shakeRaf = requestAnimationFrame(f);
+    };
+    shakeRaf = requestAnimationFrame(f);
+  }
+  // 敵を倒した瞬間のバースト（motion-prompt #003。v5.4.2）：輪・放射線8本・粒8個。色は白と青灰だけ（金と警告色は使わない）。味方側には使わない
+  // 勝利のあとの回復量「+N」：0 → N を 0.8秒でカウントアップ（同じ式）。HPバーが伸び始める 0.35秒後に合わせて始める（v5.4.2）
+  function countHeal(b, goal) {
+    if (!b || RM || !(goal > 0)) return;
+    const fin = '+' + goal; b.style.minWidth = (fin.length * 0.62 + 0.4).toFixed(2) + 'em'; b.style.textAlign = 'right'; b.style.fontVariantNumeric = 'tabular-nums';
+    b.textContent = '+0';
+    const t0 = performance.now() + 350;
+    const f = (now) => { if (!b.isConnected) return; const k = Math.max(0, Math.min(1, (now - t0) / 800)); b.textContent = '+' + Math.round(goal * easeOut4(k)); if (k < 1) requestAnimationFrame(f); else b.textContent = fin; };
+    requestAnimationFrame(f);
+  }
+  function burstAt(el) {
+    if (!el || RM || SKIP) return;
+    const c = center(el), NS = 'http://www.w3.org/2000/svg', sv = document.createElementNS(NS, 'svg');
+    sv.setAttribute('class', 'burst'); sv.setAttribute('aria-hidden', 'true');
+    sv.style.left = c.x + 'px'; sv.style.top = c.y + 'px';
+    const WHITE = '#ffffff', BLUE = '#9fb2c8';
+    const ring = document.createElementNS(NS, 'circle'); ring.setAttribute('fill', 'none'); ring.setAttribute('stroke', WHITE); sv.appendChild(ring);
+    const rays = [], dots = [];
+    for (let i = 0; i < 8; i++) {
+      const l = document.createElementNS(NS, 'line'); l.setAttribute('stroke', i % 2 ? BLUE : WHITE); l.setAttribute('stroke-width', '3'); l.setAttribute('stroke-linecap', 'round'); sv.appendChild(l); rays.push(l);
+      const d = document.createElementNS(NS, 'circle'); d.setAttribute('r', '3.2'); d.setAttribute('fill', i % 2 ? WHITE : BLUE); sv.appendChild(d); dots.push(d);
+    }
+    $('fx').appendChild(sv);
+    const t0 = performance.now(), q5 = (p) => 1 - Math.pow(1 - p, 5), cl = (v) => Math.max(0, Math.min(1, v));
+    const f = (now) => {
+      const t = (now - t0) / 1000;
+      if (t > 0.75) { sv.remove(); return; }
+      const pr = q5(cl(t / 0.6));
+      ring.setAttribute('r', (44 + 46 * pr).toFixed(1)); ring.setAttribute('stroke-width', (16 * (1 - pr)).toFixed(2));
+      const rp = q5(cl(t / 0.7)), len = 36 * (1 - cl((t - 0.22) / 0.48));
+      rays.forEach((l, i) => { const a = (i / 8) * Math.PI * 2 - Math.PI / 2, tip = 64 + 66 * rp, tail = Math.max(tip - len, 0);
+        l.setAttribute('x1', (Math.cos(a) * tail).toFixed(1)); l.setAttribute('y1', (Math.sin(a) * tail).toFixed(1)); l.setAttribute('x2', (Math.cos(a) * tip).toFixed(1)); l.setAttribute('y2', (Math.sin(a) * tip).toFixed(1)); l.style.opacity = len > 0.5 ? 1 : 0; });
+      const dp = q5(cl(t / 0.72)), op = 1 - cl((t - 0.3) / 0.42);
+      dots.forEach((d, i) => { const a = (i / 8) * Math.PI * 2 + Math.PI / 8, r = 58 + 92 * dp;
+        d.setAttribute('cx', (Math.cos(a) * r).toFixed(1)); d.setAttribute('cy', (Math.sin(a) * r * 0.62).toFixed(1)); d.style.opacity = op; });
+      requestAnimationFrame(f);
+    };
+    requestAnimationFrame(f);
   }
   function shake(el, amp) {
     const a = amp || 7;
@@ -5028,7 +5109,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function animRing(tok, from, to) {
     const v = tok && tok.querySelector('.ring .val');
     if (!v) return;
-    anim(v, [{ strokeDasharray: (from / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) }, { strokeDasharray: (to / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) }], { duration: 420, easing: 'ease-out' });
+    anim(v, [{ strokeDasharray: (from / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) }, { strokeDasharray: (to / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) }], { duration: 350, easing: 'cubic-bezier(.25, 1, .5, 1)' });   // 数字のカウントアップと同じ0.35秒（v5.4.2）
   }
   function sparks(x, y, color, n) {
     if (RM) return;
@@ -5435,10 +5516,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!enemy.party) renderEnemy(false);
     const fin = T.hp <= 0 && foeList().every((f) => f === T || f.hp <= 0);   // これが最後の一撃（とどめ）
     await wait(fin ? 200 : 460);
-    if (fin) { say(u.name + 'がとどめを刺した。'); await finisherFX(foeEl(T)); finish('win'); return; }
+    if (fin) { say(u.name + 'がとどめを刺した。'); burstAt(foeEl(T)); await finisherFX(foeEl(T)); finish('win'); return; }
     if (enemy.party) renderEnemy(false);   // 3体のパネルは、ゆれの演出が終わってから数字を更新する（作り直すと演出が消えるため）
     if (T.hp <= 0) {
       if (!enemy.party) { say(u.name + 'がとどめを刺した。'); finish('win'); return; }
+      burstAt(ea);
       say(u.name + 'が' + T.name + 'を倒した。' + (T.id === 'statue' ? '肩代わりが消えた。' : T.id === 'priest' ? '回復と大技の早期予告が止まる。' : ''));
       anim(ea, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0.35, transform: 'scale(.94)' }], { duration: 260, fill: 'forwards' });
       await wait(300);
@@ -5479,14 +5561,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cc = center(el);
     if (big) {   // 大技：ヒットストップ・画面の揺れ・白いフラッシュ・のけぞり・重い音と長い振動
       SFX.smash(); vib([40, 30, 60]);
-      whiteFlash(0.32, 240); screenShake(9, 340); knockback(el, 16);
+      whiteFlash(0.32, 240); impactShake(); knockback(el, 16);
       sparks(cc.x, cc.y, '#ff8a72', 18); sparks(cc.x, cc.y, '#ffd9a0', 8);
       await hitStop(100);
     } else { SFX.hurt(); vib(24); sparks(cc.x, cc.y, '#ff8a72', 8); }
     await wait(big ? 400 : 480);
     if (v.hp === 0) {
       say(v.name + 'が倒れた…');
-      SFX.down();
+      SFX.down(); impactShake();
       if (stats) stats.fallen += 1;
       anim(el, [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.2) rotate(-40deg)', opacity: 0 }], { duration: 300, fill: 'forwards' });
       await wait(320);
@@ -6844,7 +6926,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvSub').textContent = o.sub || '';
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '', o.heal && o.heal.gain[m.uid] > 0 ? '<i class="rv-heal" aria-label="HP+' + o.heal.gain[m.uid] + '回復">+' + o.heal.gain[m.uid] + '</i>' : '')).join('');
     // B（v5.1.60）：回復は文章ではなく、HP棒が伸びて「+N」が浮かぶ反応で返す（棒の伸びは、増えた仲間だけ）
-    if (o.heal && o.heal.from) { const ms = (o.roster || (run ? run.members : [])); [...$('rvRoster').querySelectorAll('.rv-m')].forEach((el, i) => { const m = ms[i], bar = el.querySelector('.hpb i'); if (!m || !bar || !(o.heal.gain[m.uid] > 0)) return; el.classList.add('healed'); bar.style.setProperty('--from', Math.max(0, Math.round(o.heal.from[m.uid] / m.max * 100)) + '%'); }); }
+    if (o.heal && o.heal.from) { const ms = (o.roster || (run ? run.members : [])); [...$('rvRoster').querySelectorAll('.rv-m')].forEach((el, i) => { const m = ms[i], bar = el.querySelector('.hpb i'); if (!m || !bar || !(o.heal.gain[m.uid] > 0)) return; el.classList.add('healed'); bar.style.setProperty('--from', Math.max(0, Math.round(o.heal.from[m.uid] / m.max * 100)) + '%'); countHeal(el.querySelector('.rv-heal'), o.heal.gain[m.uid]); }); }
     // 戦闘のあとの回復の説明（v5.1.49）。満タンで増えなかった仲間には札を付けない
     { const hn = $('rvHealNote'), h = o.heal; hn.hidden = !h;
       if (h) { const any = Object.keys(h.gain).some((k) => h.gain[k] > 0);
