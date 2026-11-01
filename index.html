@@ -352,6 +352,23 @@ body.boss-stage #ename::after { color: #e4a8ff; box-shadow: inset 0 0 0 1px #e4a
 .seal.a { background: var(--accent); color: var(--accent-ink); }
 .seal.d { background: var(--shield-strong); color: var(--on-shield); }
 .seal.off { background: var(--paper); color: var(--ink-soft); box-shadow: inset 0 0 0 1.5px var(--paper-line); opacity: 0.85; }
+/* 補助の矢印（v5.4.0）：金＝攻撃補助、青＝防御補助。実線＝このターンに効く、点線＝効かない */
+.sup-ar { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 3; overflow: visible; }
+.sup-ar .sa { --c: #d9ad55; --hi: #f2d792; --lo: #6f4c10; --ink: #2a1d05; }
+.sup-ar .sa.d { --c: #4f7fb8; --hi: #9cc0ea; --lo: #1a3556; --ink: #f6f1e4; }
+.sup-ar .sa.on { filter: drop-shadow(0 1.5px 1.2px rgba(11, 13, 22, 0.75)); }
+.sup-ar .sh { stroke: var(--lo); stroke-linecap: round; }
+.sup-ar .bd { stroke: var(--c); stroke-linecap: round; }
+.sup-ar .hd { fill: var(--c); stroke: var(--lo); stroke-width: 1.4; stroke-linejoin: round; }
+.sup-ar .lb { fill: var(--c); stroke: var(--lo); stroke-width: 1.4; }
+.sup-ar text { fill: var(--ink); text-anchor: middle; font-family: var(--serif, serif); font-weight: 800; }
+.sup-ar .off { opacity: 0.6; }
+.sup-ar .off .ds { stroke: var(--hi); stroke-linecap: round; }
+.sup-ar .off .lb { fill: #2a2f43; stroke: var(--hi); }
+.sup-ar .off text { fill: var(--hi); }
+.sup-ar .sa.on .hd, .sup-ar .sa.on .bd { animation: saIn 0.28s cubic-bezier(.2, .9, .3, 1) both; }
+@keyframes saIn { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sup-ar .sa.on .hd, .sup-ar .sa.on .bd { animation: none; } }
 .sock { position: absolute; inset: 10%; border-radius: 50%; border: 2px dashed var(--paper-line); background: rgba(255, 255, 255, 0.14); transition: border-color 0.2s, background 0.2s; }
 .slot.drop .sock { border-color: var(--accent); background: rgba(240, 169, 58, 0.2); }
 .slot.sel .tok { animation: lift 0.2s ease-out forwards; }
@@ -2661,7 +2678,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.10</p>
+    <p class="c-ver" id="cVer">ver 5.4.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2689,7 +2706,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     </ul>
     <ul class="steps" id="hTier1" role="tabpanel" aria-labelledby="hTab1" hidden>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><div><b>攻撃列</b>敵を攻撃する。素早い順に動く。剣マークの数字は次に与えるダメージの見込み（金色は攻撃補助込み）。</div></li>
-      <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>すぐ上の、同じ側（左・右）の攻撃列の仲間を支える（右の補助は、左には届かない）。攻撃補助と防御補助は1回で使い切り。</div></li>
+      <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>すぐ上の、同じ側（左・右）の攻撃列の仲間を支える（右の補助は、左には届かない）。金の矢印が攻撃補助、青の矢印が防御補助。点線はこのターンは効かない（1回で使い切り・狙われていない）。</div></li>
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr disp" style="font-size:14px">気</span><div><b>気力</b>回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
@@ -2999,7 +3016,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.10';
+  const APP_VERSION = '5.4.0';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3808,6 +3825,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
       h += '<button type="button" class="slot" data-r="' + r + '" data-c="' + c + '" style="grid-row:' + (r + 2) + ';grid-column:' + (c + 2) + '"></button>';
     }
+    h += '<svg class="sup-ar" id="supAr" aria-hidden="true"></svg>';   // 補助の矢印（v5.4.0）
     $('board').innerHTML = h;
   }
   // 隊列の石のレーン（v5.1.57）：石の地（凹凸の陰影）＋ひび＋金の四隅＋ランタン。飾りだけで、盤の当たり・操作には関わらない
@@ -3934,10 +3952,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function tokenHTML(u, r, fresh, dm, inc) {
     const p = pct(u);
     let seals = '';
-    if (r === 1) {
-      if (u.atkSup > 0) seals += '<i class="seal a' + (u.atkReady || fresh ? '' : ' off') + '">攻<b>+' + u.atkSup + '</b></i>';
-      if (u.defSup > 0) seals += '<i class="seal d' + (u.defReady || fresh ? '' : ' off') + '">防<b>-' + u.defSup + '</b></i>';
-    }
+    // 補助列の「攻+7」「防-7」の札は出さない。誰から誰へ効くかは、盤の矢印（renderSupArrows）で見せる（v5.4.0）
     const R = RX(), tired = R.stamina && u.staMax > 0 && u.sta <= 0;
     let pips = '';
     if (R.stamina && u.staMax > 0) { pips = '<span class="sta" aria-label="スタミナ' + u.sta + '/' + u.staMax + '">'; for (let i = 0; i < u.staMax; i++) pips += '<i class="' + (i < u.sta ? 'on' : '') + '"></i>'; pips += '</span>'; }
@@ -3964,12 +3979,60 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const isSel = phase === 'prep' && sel && sel.r === r && sel.c === c;
       el.classList.toggle('sel', !!isSel);
       el.classList.toggle('drop', phase === 'prep' && !!sel && !isSel);
-      el.setAttribute('aria-label', ROWLBL[r] + ' ' + colN(c) + '側' + (u ? ' ' + u.name + ' HP' + u.hp : ' 空き'));
+      el.setAttribute('aria-label', ROWLBL[r] + ' ' + colN(c) + '側' + (u ? ' ' + u.name + ' HP' + u.hp + (r === 1 ? (u.atkSup > 0 ? ' 攻撃補助+' + u.atkSup : '') + (u.defSup > 0 ? ' 防御補助-' + u.defSup : '') : '') : ' 空き'));
       const html = u ? tokenHTML(u, r, ghost, (phase === 'prep' || phase === 'choose') ? expDmg(u, r, c, src, ghost || phase === 'prep', ghost) : null, inc[r + ',' + c]) : '<span class="tok"><span class="sock"></span></span>';
       if (el.__h !== html) { el.innerHTML = html; el.__h = html; }
       el.style.setProperty('--bi', (r * 3 + c * 2) % 7);
     }
+    supArrowsSoon();
   }
+  // 描画の途中で位置を測らない（盤の大きさの合わせ直しが終わってから、次の描画の前に1回だけ測る）
+  let saRaf = 0;
+  const supArrowsSoon = () => { if (saRaf) return; saRaf = requestAnimationFrame(() => { saRaf = 0; try { renderSupArrows(); } catch (e) { /* 盤がまだ無い */ } }); };
+  // 補助の矢印（v5.4.0）：補助列の仲間から、真上の攻撃列の仲間へ。金＝攻撃補助、青＝防御補助。
+  //   実線＝このターンに効く。点線＝このターンは効かない（使い切り・真上が空き・防御補助は、真上の仲間が狙われていない／防無効）
+  //   陣立てと、選ぶ場面だけ出す。「回す」の長押し中は、回した後の並びで描く
+  function supArrowState(src, ghost) {
+    const fresh = ghost || phase === 'prep', inc = incoming(src, fresh, ghost), out = [];
+    for (let c = 0; c < COLS; c++) {
+      const u = src[1][c]; if (!u) continue;
+      const up = src[0][c];
+      if (u.atkSup > 0) out.push({ c, k: 'a', live: !!up && (fresh || !!u.atkReady) });
+      // 当たる相手が毎回変わる攻撃（random）は予告の内訳に入らないので、攻撃列に当たりうるなら効く側に数える
+      const rnd = frontRow(src) === 0 && (enemy.party ? enemy.party.filter(foeAlive).map((F) => actOf(F)) : [curAct()]).some((a) => a && a.rule === 'random' && a.dmg && !a.pierce);
+      if (u.defSup > 0) out.push({ c, k: 'd', live: !!up && (fresh || !!u.defReady) && (rnd || inc.per.some((x) => x.c === c && x.why === '防')) });
+    }
+    return out;
+  }
+  function renderSupArrows() {
+    const sv = $('supAr'); if (!sv) return;
+    const ghost = showGhost(), src = ghost ? previewGrid() : grid;
+    let h = '';
+    if (phase === 'prep' || phase === 'choose') {
+      const B = $('board'), br = B.getBoundingClientRect(), k = (B.offsetWidth ? br.width / B.offsetWidth : 1) || 1, st = supArrowState(src, ghost);
+      for (let c = 0; c < COLS; c++) {
+        const mine = st.filter((a) => a.c === c); if (!mine.length) continue;
+        const d1 = slotEl(1, c).querySelector('.disc'); if (!d1) continue;
+        const dr = d1.getBoundingClientRect(); if (!dr.width) continue;
+        const nm = src[0][c] ? slotEl(0, c).querySelector('.nm') : null, top = nm ? nm.getBoundingClientRect().bottom + 1 : slotEl(0, c).getBoundingClientRect().bottom - 6;
+        const sc = Math.min(1, dr.width / 95), cx = (dr.left + dr.right) / 2;
+        const X = (x) => ((x - br.left) / k).toFixed(1), Y = (y) => ((y - br.top) / k).toFixed(1);
+        const y0 = dr.top + 26 * sc, y1 = top, rr = Math.max(9, 10.5 * sc), w = Math.max(4, 7 * sc), hw = Math.max(6.5, 10 * sc), hh = Math.max(7, 11 * sc), fs = Math.max(10.5, 12 * sc);
+        mine.forEach((a, i) => {
+          const x = cx + (mine.length === 1 ? 0 : (i === 0 ? -1 : 1) * Math.max(rr + 2, 21 * sc));
+          const sy = Y(y0 - rr + 1), ey = Y(y1 + hh - 1);
+          h += '<g class="sa ' + a.k + (a.live ? ' on' : ' off') + '" data-c="' + c + '">' +
+            (a.live ? '<line class="sh" x1="' + X(x) + '" y1="' + sy + '" x2="' + X(x) + '" y2="' + ey + '" stroke-width="' + (w + 2.4).toFixed(1) + '"/>' +
+                '<line class="bd" x1="' + X(x) + '" y1="' + sy + '" x2="' + X(x) + '" y2="' + ey + '" stroke-width="' + w.toFixed(1) + '"/>' +
+                '<path class="hd" d="M' + X(x - hw) + ' ' + Y(y1 + hh) + 'L' + X(x) + ' ' + Y(y1) + 'L' + X(x + hw) + ' ' + Y(y1 + hh) + 'Z"/>'
+              : '<line class="ds" x1="' + X(x) + '" y1="' + sy + '" x2="' + X(x) + '" y2="' + Y(y1 + 2) + '" stroke-width="3" stroke-dasharray="4 4"/>') +
+            '<circle class="lb" cx="' + X(x) + '" cy="' + Y(y0) + '" r="' + rr.toFixed(1) + '"/><text x="' + X(x) + '" y="' + Y(y0 + fs * 0.36) + '" font-size="' + fs.toFixed(1) + '">' + (a.k === 'a' ? '攻' : '防') + '</text></g>';
+        });
+      }
+    }
+    if (sv.__h !== h) { sv.innerHTML = h; sv.__h = h; }
+  }
+  try { new ResizeObserver(supArrowsSoon).observe($('board')); } catch (e) { /* 古い端末：描き直しは次の render で */ }
 
   /* ============ 敵の予告 ============ */
   // 敵は「一番前の列」（通常は攻撃列）の仲間だけを狙う
