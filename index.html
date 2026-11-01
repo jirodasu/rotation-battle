@@ -636,6 +636,37 @@ body.boss-stage .en-u b { color: var(--ink); }
 #btnStay { flex: 0.8; }
 /* 選んだときに受けるダメージ（v5.3.0）：盤の赤い数字と同じ色・同じ書き方で、ボタンの右肩に */
 .dock .btn { position: relative; }
+/* 見通しの札（v5.3.8）：ボタンの中に、選んだときのこのターンを数行で */
+.dock .btn.oc { flex: 1 1 0; flex-direction: column; align-items: stretch; justify-content: center; gap: 4px; padding: 8px 12px 9px; white-space: normal; text-align: left; min-width: 0; }
+.dock #btnRotate.oc { display: grid; grid-template-columns: auto auto 1fr; grid-template-rows: auto auto; column-gap: 6px; align-items: center; align-content: center; }
+.dock #btnRotate.oc > svg { width: 18px; height: 18px; } .dock #btnRotate.oc .oc-b { grid-column: 1 / -1; }
+.dock .btn.oc .oc-h, .dock #btnRotate.oc .rot-lbl { font-size: 17px; line-height: 1.1; font-weight: 800; font-family: var(--serif); }
+#btnStart.oc .oc-h { text-align: center; }
+.oc-b { display: flex; flex-direction: column; gap: 1px; font-size: 12px; line-height: 1.35; font-weight: 700; }
+.oc-b:empty { display: none; }
+/* 札の中身は、行の数に関わらず決まった高さ（4行分。背の低い画面は2行・1行分）。回せないターン（理由1行）でも札の高さが変わらないように（v5.3.8） */
+.oc-b:not(:empty) { min-height: calc(4 * 1.35em + 3px); justify-content: flex-start; }
+@media (max-height: 700px) { .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); } }
+@media (max-height: 460px) { .oc-b:not(:empty) { min-height: 1.35em; } }
+/* 三位一体（敵3体）は敵のパネルに場所が要るので、札は「受ける・敵」の2行（v5.3.8。4行だとパネルが中身に合わせて縮み、毎ターン盤が揺れたため） */
+body:has(#stage.trio) .oc-r.x { display: none; }
+body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); }
+.oc-r { display: grid; grid-template-columns: 3.3em minmax(0, 1fr); gap: 4px; }
+/* 行は折り返さない（折り返すと札の高さが変わり、毎ターン盤の大きさが揺れるため。v5.3.8）。収まらない分は … で、数字の合計は「敵」の行に必ず出る */
+.oc-r b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.oc-r i { font-style: normal; font-weight: 500; opacity: 0.78; white-space: nowrap; }
+.oc-r b { font-weight: 800; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.oc-r b.bad { color: var(--danger-strong); } .oc-r b.ko { color: var(--danger-strong); text-decoration: underline; text-underline-offset: 2px; } .oc-r b.good { color: #3f8f55; }
+.oc-r b.why { grid-column: 1 / -1; font-weight: 700; }
+.btn.primary .oc-r b.bad, .btn.primary .oc-r b.ko { color: #8a1d0e; } .btn.primary .oc-r b.good { color: #24582f; }
+:root[data-skin="goth"] .dock .btn:not(.primary) .oc-r b.good { color: #8fd49c; }
+#btnRotate.oc .rot-meter { justify-self: start; }
+.dock .btn.oc[hidden] { display: none !important; }   /* 札の並べ方より「隠す」を優先（陣立てで回すが出てしまったため） */
+.dock #btnStart.oc { flex: 2.2 1 0; }
+.dock #btnPrepRot { flex: 0 0 auto; }
+@media (max-height: 700px) { .oc-r.x { display: none; } .dock .btn.oc { padding: 6px 10px 7px; gap: 2px; } .oc-b { font-size: 11.5px; } }
+/* さらに背の低い画面（横画面など）：2行を1行にまとめる（受ける／敵） */
+@media (max-height: 460px) { .oc-b { flex-direction: row; gap: 8px; } .oc-r { display: flex; gap: 3px; min-width: 0; } .oc-r i { display: none; } .oc-r:not(.x) + .oc-r:not(.x)::before { content: "／"; opacity: .5; } .dock .btn.oc { padding: 4px 8px 5px; } }
 .dk-out { position: absolute; top: -8px; right: 8px; display: inline-flex; align-items: center; gap: 3px; height: 22px; min-width: 30px; padding: 0 8px; border-radius: 11px; justify-content: center;
   background: var(--danger-strong); color: var(--on-danger); font: 900 14px/1 var(--serif); font-style: normal; font-variant-numeric: tabular-nums; pointer-events: none; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28); }
 .dk-out[hidden] { display: none; }
@@ -1029,6 +1060,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .prepban b { display: block; font-size: 16px; line-height: 1.2; color: var(--ink); }
 .prepban small { display: block; font-size: 12px; line-height: 1.4; font-weight: 700; color: var(--accent-text); }
 .prepban small.warn { color: var(--danger-strong); }
+/* 背の低い画面（はじめの3戦は行動順の枠も出る）：陣立ての印を省いて詰め、「戦闘開始」の札を画面に収める（v5.3.8） */
+@media (max-height: 620px) { .prepban .pb-ico { display: none; } .prepban { gap: 0; } .prepban b { font-size: 14px; line-height: 1.15; } .prepban small { font-size: 11.5px; line-height: 1.3; } #book { row-gap: 2px; } }
 .prepban .pb-how { margin-left: 10px; font: 700 11.5px/1 var(--sans, sans-serif); font-style: normal; color: var(--ink-soft); letter-spacing: 0; white-space: nowrap; }
 @media (max-width: 360px) { .prepban .pb-how { margin-left: 6px; font-size: 10.5px; } }
 .board.prep .slot { touch-action: none; }
@@ -2567,16 +2600,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       並びを回す
     </button>
-    <button class="btn primary" id="btnStart" type="button" hidden>戦闘開始</button>
+    <button class="btn primary" id="btnStart" type="button" hidden><span class="oc-h" id="startLbl">戦闘開始</span><span class="oc-b" id="ocStart"></span></button>
     <button class="btn skip" id="btnSkip" type="button" aria-label="この演出を飛ばして先へ進む" hidden>演出を飛ばす ▶▶</button>
     <button class="btn primary" id="btnRotate" type="button" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="rot-lbl">回す</span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span>
+      <span class="rot-lbl">回す</span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span><span class="oc-b" id="ocRot"></span>
     </button>
     <button class="btn icon" id="btnPreview" type="button" aria-pressed="false" aria-label="回した後の配置を先読み" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
     </button>
-    <button class="btn" id="btnStay" type="button" hidden>維持</button>
+    <button class="btn" id="btnStay" type="button" hidden><span class="oc-h">維持</span><span class="oc-b" id="ocStay"></span></button>
   </div>
 </main>
 
@@ -2617,7 +2650,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.7</p>
+    <p class="c-ver" id="cVer">ver 5.3.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2645,7 +2678,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。<br><b>気力</b>　回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
-      <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。先読み（目のボタン）で「突」が付いた仲間が対象。</div></li>
+      <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。「回す」を長押しした先読みで「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃が出る。敵をタップすると「その次」の行動も見える。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
@@ -2945,7 +2978,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.7';
+  const APP_VERSION = '5.3.8';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4084,7 +4117,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
-    entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。目のボタンの先読みで「突」が付く。'],
+    entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
     trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。<em>鎮守の像が生きている間</em>、祈り手と断罪者が受けるダメージは<em>半分</em>。パネルの「与」が、いまの並びで与えられるダメージ。像を先に倒すか、祈り手を先に落とすかで戦いが変わる。'],
     stamina: () => ['疲れている', '攻撃列で戦うたびに<em>スタミナ</em>（キャラ右横の点）が減り、0で攻撃が半分に。回復列で休めば全快。']
   };
@@ -4106,6 +4139,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 重なりの重み（v5.3.7）：盤・予告の札（回す/維持を決めるのに要る）を隠すのがいちばん悪い。敵の名前・HPは、ほかに場所が無いときだけ
     const TOP0 = innerHeight < 620 ? 2 : 8;   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）
     const wt = [10, 10, 1, 1].concat(enemy && enemy.party ? [10] : []);
+    // 見通しの札（v5.3.8）は、盤・予告より先に隠してよい（案内は「わかった」ですぐ閉じるため）。いちばん下を候補に足す
+    { const dk = $('dock').getBoundingClientRect(); if (dk.height > 0) { avoid.push(dk); wt.push(3); cands.push({ top: innerHeight - h - 4, left: null }); } }
     const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
@@ -4533,7 +4568,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         if (empty || kos) bubble(say, $('btnStart'), 0, 'prepWarn'); else hideBubble('prepWarn');
         return;
       }
-      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b><small class="' + (empty || kos ? 'warn' : '') + '">' + say + '</small></span></div>') + bh;
+      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b>' + (empty || kos ? '<small class="warn">' + say + '</small>' : '') + '</span></div>') + bh;   // 受けるダメージは「戦闘開始」の札に出るので、ここは警告のときだけ（v5.3.8）
       lockBook();   // 戦闘中に固めた枠の高さを、編成タイムでは外す（外さないと編成タイムの札が下で切れる。v5.1.62）
       return;
     }
@@ -4543,7 +4578,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (!b.innerHTML) bookFit();
       if (phase === 'choose' && previewOn) {
         const pg = previewGrid();
-        bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnPreview'), 0, 'pvTip');
+        bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnRotate'), 0, 'pvTip');
       } else hideBubble('pvTip');
       if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); hideBubble('foeTip'); hideBubble('tkTip'); hideBubble('holdTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
       lockBook();
@@ -4655,13 +4690,54 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const say = safe ? 'ダメージなし' : (r.maybe ? '運しだい。' : '') + (r.d ? '受けるダメージ' + r.d : '') + (r.ko ? '、倒れる仲間' + r.ko + '人' : '');
     btn.setAttribute('aria-label', lbl + '（' + say + '）');
   }
+  /* 見通しの札（v5.3.8）：「回す」「維持」「戦闘開始」のボタンに、それを選んだときのこのターンを出す。
+     敵の技／受ける（誰がいくつ・倒れるか）／攻撃（誰がいくつ）／敵（与える合計と残りHP）。数字は盤の剣・赤い数字と同じ計算。決めるのはプレイヤー
+     背の低い画面では「受ける」と「敵」の2行だけ（CSS の .oc-r.x） */
+  function outlook(src, fresh, ent) {
+    const o = outcomeOf(src, fresh, ent), inc = incoming(src, fresh, ent);
+    const hurt = Object.keys(inc).map((k) => { const [r, c] = k.split(',').map(Number); return { n: src[r][c].name, d: inc[k].d, ko: inc[k].ko }; }).sort((a, b) => (b.ko - a.ko) || (b.d - a.d));
+    let dealt = 0; const who = [];
+    units(src).forEach(({ u, r, c }) => { const d = expDmg(u, r, c, src, fresh, ent); if (d && d.val > 0) { dealt += d.val; who.push(u.name + d.val); } });
+    const T = enemy.party ? targetFoe() : enemy, left = T ? Math.max(0, T.hp - dealt) : 0;
+    const acts = enemy.party ? enemy.party.filter(foeAlive).map((F) => actOf(F).name) : [actOf(enemy).name];
+    return { o, hurt, dealt, who, T, left, acts };
+  }
+  const ocRow = (k, v, cls, x) => '<span class="oc-r' + (x ? ' x' : '') + '"><i>' + k + '</i><b' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</b></span>';
+  function outlookHTML(L) {
+    const hurtTxt = L.hurt.length ? L.hurt.map((h) => h.n + (h.ko ? ' 倒れる' : ' -' + h.d)).join('・') + (L.o.maybe ? '・運しだい' : '') : L.o.maybe ? '運しだい' : '無傷';
+    const foeTxt = !L.T ? '—' : L.dealt <= 0 ? '残り' + L.T.hp : L.left <= 0 ? '-' + L.dealt + ' 撃破' : '-' + L.dealt + '→残り' + L.left;
+    return ocRow('敵の技', L.acts.join('・'), '', true) +
+      ocRow('受ける', hurtTxt, L.hurt.some((h) => h.ko) ? 'ko' : L.hurt.length || L.o.maybe ? 'bad' : 'good') +
+      ocRow('攻撃', L.who.length ? L.who.join('＋') : 'なし', '', true) +
+      ocRow('敵', foeTxt, L.left <= 0 && L.dealt > 0 ? 'good' : '');
+  }
+  const ocSay = (el) => [...el.querySelectorAll('.oc-r')].map((r) => r.querySelector('i').textContent + ' ' + r.querySelector('b').textContent).join('、');
+  let ocKey = '';
   function renderOutcome() {
-    const on = phase === 'choose' && !!enemy;
-    outBadge($('btnStay'), on ? outcomeOf(grid, false, false) : null, '維持');
-    const rb = $('btnRotate');
-    outBadge(rb, on && !rb.disabled ? outcomeOf(previewGrid(), true, true) : null, rb.getAttribute('aria-label') || '隊列を回す');
-    if (!on || rb.disabled) delete rb.dataset.out;
-    if (!on) delete $('btnStay').dataset.out;
+    const ch = phase === 'choose' && !!enemy, pr = phase === 'prep' && !!enemy && !!grid;
+    const rb = $('btnRotate'), sb = $('btnStay'), st = $('btnStart');
+    [rb, sb, st].forEach((b) => b.classList.add('oc'));
+    let hs = '', hr = '', hp = '';
+    if (ch) {
+      hs = outlookHTML(outlook(grid, false, false));
+      hr = rb.disabled ? ocRow('', rb.dataset.why || '回せない', 'why') : outlookHTML(outlook(previewGrid(), true, true));
+    }
+    if (pr) hp = outlookHTML(outlook(grid, true, false));
+    const key = hs + '|' + hr + '|' + hp; if (key === ocKey) return; ocKey = key;
+    $('ocStay').innerHTML = hs; $('ocRot').innerHTML = hr; $('ocStart').innerHTML = hp;
+    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot'))); }
+    if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
+    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); });
+  }
+  // 下の段の高さを、見通しの札がいちばん高いときに合わせて固定する（v5.3.8）。演出中（「演出を飛ばす」だけ）や
+  // 回せないターンで低くなると、盤の大きさが毎ターン揺れるため。画面の大きさが変わったら測り直す
+  let dockKey = '', dockMax = 0;
+  function dockLock() {
+    const d = $('dock'), key = innerWidth + 'x' + innerHeight;
+    if (key !== dockKey) { dockKey = key; dockMax = 0; d.style.minHeight = ''; }
+    if (phase !== 'choose') return;   // 選ぶ場面の札の高さに合わせる（陣立ての札とは行数が違うことがある）
+    const h = Math.ceil(d.getBoundingClientRect().height);
+    if (h > dockMax) { dockMax = h; d.style.minHeight = h + 'px'; }
   }
   // 押せない「回す」を押したとき：ボタンを揺らし、理由（気力の札／縛り）を光らせる
   function rotDenied() {
@@ -4745,13 +4821,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     { const e = !$('book').innerHTML; if (e !== bookWasEmpty) { bookWasEmpty = e; requestAnimationFrame(() => { fitBoard(); setBleed(); }); } }   // 枠が消えた・戻ったら盤を合わせ直す（v5.3.6）
     $('btnStart').hidden = phase !== 'prep';
     $('btnPrepRot').hidden = phase !== 'prep' || !!tut;
-    $('btnStart').textContent = (phase === 'prep' && !tut) ? 'この並びで戦闘開始' : '戦闘開始';
+    $('startLbl').textContent = (phase === 'prep' && !tut && innerWidth > 360) ? 'この並びで戦闘開始' : '戦闘開始';   // 狭い画面では折れないよう短く（v5.3.8）
     $('btnRotate').hidden = phase !== 'choose';
     $('btnRotate').disabled = phase === 'choose' && (!!(enemy && enemy.bound) || !gaugeOk());
     renderRotBtn();
     $('btnStay').hidden = phase !== 'choose';
     renderOutcome();
-    $('btnPreview').hidden = phase !== 'choose';
+    $('btnPreview').hidden = true;   // 目のボタンは出さない（v5.3.8）。先読みは「回す」の長押し
     $('btnPreview').setAttribute('aria-pressed', String(previewOn));
     $('btnSkip').hidden = phase !== 'resolve' || !!tut;
     $('dock').style.visibility = (phase === 'over' || (phase === 'resolve' && $('btnSkip').hidden)) ? 'hidden' : 'visible';
@@ -4967,6 +5043,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let bookOn = true;
   function toPrep(restore) {
     bookOn = bookOnNow();
+    dockMax = 0; $('dock').style.minHeight = '';   // 下の段の高さは戦闘ごとに測り直す（v5.3.8）
     if (restore && snapshot) {
       grid = emptyGrid();
       snapshot.forEach(({ u, r, c }) => { grid[r][c] = u; });
@@ -5667,10 +5744,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     { t: '仲間を動かす ②', x: '次に、攻撃列の空きマスをタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
     { t: '攻撃列に出た', x: 'サムライに剣マークの数字が出た。次に与えるダメージの見込み。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
     { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
-    { t: '1ターン終了', x: 'ここからは毎ターン、隊列を「回す」か「維持」するかを選ぶ。ボタンの右肩の数字が、それを選んだときに受けるダメージ。', pos: 'top', spot: () => $('dock'), next: true },
+    { t: '1ターン終了', x: 'ここからは毎ターン、隊列を「回す」か「維持」するかを選ぶ。2つの札に、それを選んだときの結果が出ている。', pos: 'top', spot: () => $('dock'), next: true },
     { t: '気力', x: '回すには気力2が要る。気力は毎ターン1たまる（最大3）。「回す」ボタンの●が気力。', pos: 'top', spot: () => $('btnRotate'), next: true },
-    { t: '先読みしてみよう', x: '目のボタンで、回した後の配置が点線で見える。押してみよう。', pos: 'top', spot: () => $('btnPreview'), expect: { btn: 'btnPreview' }, hint: '光っているボタンを押す' },
-    { t: '点線が回した後', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。前に出た仲間が、次の攻撃を受ける。', pos: 'top', spot: () => bd(), next: true },
+    { t: '札を見比べる', x: '敵の技・受けるダメージ・仲間の攻撃・敵の残りHPを、2つの札で見比べて決めよう。', pos: 'top', spot: () => $('dock'), next: true },
+    { t: '回すと', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。前に出た仲間が、次の攻撃を受ける。「回す」を長押しすると、回した後の並びが盤に点線で出る。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
     { t: '維持のあと', x: '魔女の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
     { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。疲れた仲間を下げ、元気な仲間を前へ出す。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },

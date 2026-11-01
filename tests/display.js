@@ -192,7 +192,9 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
         if (st.prep || st.choose) {
           await settle();
           const rot = st.choose && !st.dis && rnd() < 0.45;
-          if (rot) { await p.click('#btnPreview'); await p.waitForTimeout(30); }   // 回したときの予告を見る
+          // v5.3.8：目のボタンは無くした。回すときは「回す」を長押しして先読みし（予告札も先読みの数字になる）、離して決める
+          let hb = null;
+          if (rot) { hb = await p.evaluate(() => { const q = document.getElementById('btnRotate').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; }); await p.mouse.move(hb.x, hb.y); await p.mouse.down(); await p.waitForTimeout(420); }
           pred = await p.evaluate((rot) => { const R = window.__rb, src = rot ? R.previewGrid() : R.grid, inc = R.incoming(src, rot || R.phase === 'prep', rot), m = {};
             Object.keys(inc).forEach((k) => { const [r, c] = k.split(',').map(Number); m[src[r][c].name] = inc[k].d; });
             const foes = R.enemy.party ? R.enemy.party.filter((f) => f.hp > 0) : [R.enemy], acts = foes.map((F) => F.pattern[(R.turn - 1) % F.pattern.length]);
@@ -203,7 +205,8 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
               const a = dmgActs[0], cutOn = el.classList.contains('cut'), mm = el.querySelector('b').textContent.replace(/×\d+$/, '').match(/^(\d+)(?:〜(\d+))?$/);
               if (mm) { const lo = +mm[1], hi = mm[2] ? +mm[2] : lo; tk = { all: a.rule === 'all', lo, hi, n: a.rule === 'all' ? lo : cutOn ? lo : lo * (a.hits || 1), cut: cutOn }; } }
             return { m, tk, random: acts.some((a) => a.rule === 'random'), ctx: (rot ? 'rot' : R.phase) + ' ' + acts.map((a) => a.rule).join('+'), snap: R.log.slice() }; }, rot);
-          await p.click(st.prep ? '#btnStart' : rot ? '#btnRotate' : '#btnStay'); await p.waitForTimeout(20); continue;
+          if (rot) { await p.mouse.up(); } else await p.click(st.prep ? '#btnStart' : '#btnStay');
+          await p.waitForTimeout(20); continue;
         }
         await p.waitForTimeout(25);
       }

@@ -149,7 +149,8 @@ async function open(b, w, h, kind, node) {
     // 気力不足の説明：ボタンは●だけ。理由は押したときの吹き出し1か所
     await p.evaluate(() => { window.__rb.setGauge(0); });
     const g = await p.evaluate(() => ({ book: document.getElementById('book').innerText, btn: document.getElementById('btnRotate').innerText.replace(/\s+/g, ''), dis: document.getElementById('btnRotate').disabled, n0: window.__rb.log.length }));
-    ok(g.dis && g.btn === '回す' && !/気力|あと/.test(g.book), '気力不足でも、ボタンと枠に説明の文字は出ない（ボタン：' + g.btn + '）');
+    // v5.3.8 で仕様を変えた：回せないときは、回すの札に理由を1行だけ出す（見通しの札）。枠（記録）には出さない
+    ok(g.dis && /^回す/.test(g.btn) && /回せる|縛/.test(g.btn) && !/気力|あと/.test(g.book), '気力不足：回すの札に理由が1行、枠には出ない（ボタン：' + g.btn + '）');
     const rr = await p.evaluate(() => { const x = document.getElementById('btnRotate').getBoundingClientRect(); return [x.left + x.width / 2, x.top + x.height / 2]; });
     await p.mouse.click(rr[0], rr[1]); await p.waitForTimeout(300);
     const tip = await p.evaluate(() => { const d = document.getElementById('rotTip'); return d && d.classList.contains('on') ? d.textContent : ''; });
@@ -336,7 +337,7 @@ async function open(b, w, h, kind, node) {
     // 戦闘へ
     await p.click('#rvGo'); await p.waitForTimeout(1500);
     // v5.3.4 で仕様を変えた：実演を見たあとも、短い入れ替え方（1行）と「誰が何を受けるか」をいつも出す。長い実演の説明（ドラッグ…）は出さない
-    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'), h = document.querySelector('.prepban .pb-how'); return { ok: !!document.querySelector('.prepban') && !!h && h.textContent === 'タップ→タップで入れ替え' && !!t && t.textContent.length > 0 && !/ドラッグ/.test(document.querySelector('.prepban').textContent), t: t && t.textContent }; });
+    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'), h = document.querySelector('.prepban .pb-how'); return { ok: !!document.querySelector('.prepban') && !!h && h.textContent === 'タップ→タップで入れ替え' && !/ドラッグ/.test(document.querySelector('.prepban').textContent) && /受ける/.test(document.getElementById('ocStart').textContent), t: document.getElementById('ocStart').textContent }; });   // v5.3.8：受けるダメージは「戦闘開始」の札へ
     ok(f0.ok, 'F 陣立ての一言：実演を見たあとは短い入れ替え方と、受けるダメージの一言だけ（' + f0.t + '）');
     // E 長押し：押している間だけ先読み、離すと決定（外でなく札の上）
     await p.evaluate(() => { window.__rb.run.members.forEach((m) => { m.max = Math.max(m.max, 60); m.hp = 20; }); });
