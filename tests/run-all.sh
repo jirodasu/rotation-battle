@@ -10,7 +10,7 @@ fail=0; failed=""
 for t in $LIST; do
   echo "== $t"
   log="tests/out/$t.log"; mkdir -p tests/out
-  if [ "$t" = fuzz ]; then timeout "$LIMIT" node tests/$t.js "${FUZZ_RUNS:-3}" >"$log" 2>&1; else timeout 600 node tests/$t.js >"$log" 2>&1; fi
+  if [ "$t" = fuzz ]; then timeout "$LIMIT" node tests/$t.js "${FUZZ_RUNS:-3}" >"$log" 2>&1; elif [ "$t" = expedition ]; then timeout 900 node tests/$t.js >"$log" 2>&1; else timeout 600 node tests/$t.js >"$log" 2>&1; fi   # expedition は10地点を通しで遊ぶので長い（重い時は9分を超える）
   code=$?
   # 不合格の行（NG・FAIL・不合格）と末尾を残す。どの画面で落ちたか後から分かる
   grep -E "NG|不合格|FAIL|Error" "$log" | head -20
