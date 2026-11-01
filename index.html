@@ -1060,6 +1060,8 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .prepban b { display: block; font-size: 16px; line-height: 1.2; color: var(--ink); }
 .prepban small { display: block; font-size: 12px; line-height: 1.4; font-weight: 700; color: var(--accent-text); }
 .prepban small.warn { color: var(--danger-strong); }
+/* 背の低い画面（はじめの3戦は行動順の枠も出る）：陣立ての印を省いて詰め、「戦闘開始」の札を画面に収める（v5.3.8） */
+@media (max-height: 620px) { .prepban .pb-ico { display: none; } .prepban { gap: 0; } .prepban b { font-size: 14px; line-height: 1.15; } .prepban small { font-size: 11.5px; line-height: 1.3; } #book { row-gap: 2px; } }
 .prepban .pb-how { margin-left: 10px; font: 700 11.5px/1 var(--sans, sans-serif); font-style: normal; color: var(--ink-soft); letter-spacing: 0; white-space: nowrap; }
 @media (max-width: 360px) { .prepban .pb-how { margin-left: 6px; font-size: 10.5px; } }
 .board.prep .slot { touch-action: none; }
@@ -4566,7 +4568,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         if (empty || kos) bubble(say, $('btnStart'), 0, 'prepWarn'); else hideBubble('prepWarn');
         return;
       }
-      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b><small class="' + (empty || kos ? 'warn' : '') + '">' + say + '</small></span></div>') + bh;
+      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b>' + (empty || kos ? '<small class="warn">' + say + '</small>' : '') + '</span></div>') + bh;   // 受けるダメージは「戦闘開始」の札に出るので、ここは警告のときだけ（v5.3.8）
       lockBook();   // 戦闘中に固めた枠の高さを、編成タイムでは外す（外さないと編成タイムの札が下で切れる。v5.1.62）
       return;
     }

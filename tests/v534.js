@@ -3,7 +3,7 @@
 //  1. ホーム画面アプリ（standalone）で、画面の高さが端末より「ステータスバーくらい」短いとき、アプリの高さを端末の高さにする（下の黒い帯をなくす）
 //     ブラウザで開いたとき・差が大きいとき（iPadの分割など）・iPadの大きさでは触らない
 //  2. 陣立ての印は金の丸にしない（地の色なし）
-//  3. 陣立ての一言はいつも出る：「タップ→タップで入れ替え」と、攻撃が当たる仲間・受けるダメージ（倒れるなら警告）。
+//  3. （v5.3.8 から「戦闘開始」の札の「受ける」で確かめる）陣立ての一言はいつも出る：「タップ→タップで入れ替え」と、攻撃が当たる仲間・受けるダメージ（倒れるなら警告）。
 //     当たる相手が毎回変わる攻撃は「運しだい」。予告に数字があるのに「攻撃が来ない」とは言わない
 //  4. 陣立ての「回す」は「並びを回す」（戦闘中の「回す」と名前を分ける）
 //  5. 陣立ての画面で、下のボタンが画面からはみ出さない（393×759・375×667・320×568）
@@ -40,7 +40,7 @@ async function toPrep(p) {
     await p.addInitScript(tipsOff);
     await toPrep(p);
     const r = await p.evaluate(() => {
-      const ico = document.querySelector('.prepban .pb-ico'), cs = ico && getComputedStyle(ico), sm = document.querySelector('.prepban small'), R = (e) => e.getBoundingClientRect();
+      const ico = document.querySelector('.prepban .pb-ico'), cs = ico && getComputedStyle(ico), sm = [...document.querySelectorAll('#ocStart .oc-r')].map((x) => x.querySelector('b')).find((b, i, a) => b.previousElementSibling.textContent === '受ける'), R = (e) => e.getBoundingClientRect();
       const tk = document.querySelector('#ticket .t-dmg b'), tnum = tk ? /\d/.test(tk.textContent) : false;
       return { bg: cs ? cs.backgroundImage + '|' + cs.backgroundColor : '', how: (document.querySelector('.prepban .pb-how') || {}).textContent, say: sm ? sm.textContent : '', tnum,
         prot: document.getElementById('btnPrepRot').textContent.trim(), dock: R(document.getElementById('dock')).bottom, start: R(document.getElementById('btnStart')).bottom, vh: innerHeight };
@@ -52,10 +52,10 @@ async function toPrep(p) {
     ok(r.start <= r.vh + 1, w + '×' + h + ' 5 戦闘開始のボタンが画面内（' + Math.round(r.start) + ' / ' + r.vh + '）');
     // 3. 一言が盤の数字と合う：当たる仲間の名前と数字
     const m = await p.evaluate(() => { const R = window.__rb, inc = R.incoming(R.grid, true, false), ks = Object.keys(inc); return ks.map((k) => { const [rr, cc] = k.split(',').map(Number); return R.grid[rr][cc].name + ':' + inc[k].d; }); });
-    ok(!m.length ? /運しだい|攻撃が来ない/.test(r.say) : m.some((x) => { const [n, d] = x.split(':'); return r.say.includes(n) && r.say.includes(d); }), w + '×' + h + ' 3 一言が盤の赤い数字と合う ' + JSON.stringify(m));
+    ok(!m.length ? /運しだい|無傷/.test(r.say) : m.some((x) => { const [n, d] = x.split(':'); return r.say.includes(n) && r.say.includes(d); }), w + '×' + h + ' 3 一言が盤の赤い数字と合う ' + JSON.stringify(m));
     // 当たる相手が毎回変わる攻撃
     await p.evaluate(() => { const R = window.__rb, a = R.actOf(R.enemy); a.rule = 'random'; a.hits = 2; R.render(); });
-    const rnd = await p.evaluate(() => document.querySelector('.prepban small').textContent);
+    const rnd = await p.evaluate(() => { const r = [...document.querySelectorAll('#ocStart .oc-r')].find((x) => x.querySelector('i').textContent === '受ける'); return r ? r.querySelector('b').textContent : ''; });
     ok(/運しだい/.test(rnd), w + '×' + h + ' 3 当たる相手が変わる攻撃は「運しだい」：' + rnd);
     ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
     await ctx.close();
