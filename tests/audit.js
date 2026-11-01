@@ -243,7 +243,7 @@ async function open(b, w, h, kind, node) {
       const sl = [...bd.querySelectorAll('.slot')].map((s) => { const r = s.getBoundingClientRect(); return r.left >= st[0].l && r.right <= st[0].r; });
       return { st, sl, bl: br.left, sw: document.documentElement.scrollWidth, iw: innerWidth };
     });
-    ok(L.st.length === 3 && L.st.every((s) => s.cn === 4 && s.ck > 5 && s.lamps === 2) && L.sl.every(Boolean) && L.sw <= L.iw, '石のレーン ' + w + '×' + h + '：3本・四隅4つ・ひび・ランタン2つ。マスはレーンの内側で、横にはみ出さない ' + JSON.stringify(L.st[0]));
+    ok(L.st.length === 3 && L.st.every((s) => s.cn === 4 && s.ck > 5 && s.lamps === 1) && L.sl.every(Boolean) && L.sw <= L.iw, '石のレーン ' + w + '×' + h + '：3本・四隅4つ・ひび・ランタン1つ（v5.3.7）。マスはレーンの内側で、横にはみ出さない ' + JSON.stringify(L.st[0]));
     const ex = await p.evaluate(() => { const pr = document.getElementById('stage').getBoundingClientRect(), s = document.querySelector('#board .strip').getBoundingClientRect(); return [Math.round(pr.left), Math.round(pr.right), Math.round(s.left), Math.round(s.right)]; });
     ok(Math.abs(ex[2] - ex[0]) <= 8 && Math.abs(ex[3] - ex[1]) <= 8 || w > 600, 'レーンは上の敵パネルとほぼ同じ幅（敵パネル ' + ex[0] + '〜' + ex[1] + '、レーン ' + ex[2] + '〜' + ex[3] + '）');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();

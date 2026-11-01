@@ -11,7 +11,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
   const map = await p.evaluate(() => [...document.querySelectorAll('#rvCards .rv-card')].map((c) => c.textContent).join('|'));
   ok(/報酬を4つから1つ/.test(map) && !/3つから1つ/.test(map), '地図の戦闘の札：報酬は「4つから1つ」');
   const help = await p.evaluate(() => document.getElementById('help').textContent);
-  ok(/二の列の補助は、一の列には届かない/.test(help), 'あそびかた：補助は同じ縦の列だけ');
+  ok(/右の補助は、左には届かない/.test(help), 'あそびかた：補助は同じ側（左・右）だけ（v5.3.7 で「一の列・二の列」から呼び名を変えた）');
   // 予告パネル：攻撃列が空だと2倍
   await p.evaluate(() => { const R = window.__rb; R.run.enemy = R.expEnemy(3, null, 0); document.getElementById('runv').hidden = true; R.toPrepForTest(); }); await p.waitForTimeout(300);
   const tk = () => p.evaluate(() => ({ n: +document.querySelector('#ticket .t-dmg b').childNodes[0].textContent, s: document.querySelector('#ticket .t-dmg small:last-child').textContent, dbl: document.querySelector('#ticket .t-dmg').classList.contains('dbl'), base: window.__rb.enemy.pattern[0].dmg }));

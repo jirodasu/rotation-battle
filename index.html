@@ -435,6 +435,7 @@ body.boss-stage #ename::after { color: #e4a8ff; box-shadow: inset 0 0 0 1px #e4a
   box-shadow: 0 5px 0 var(--paper-line), 0 18px 30px -14px var(--shadow); animation: peekin 0.24s cubic-bezier(.2, .9, .3, 1);
 }
 .peek[hidden] { display: none; }
+.peek .pk-hint { margin: 6px 0 0; padding: 6px 10px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 13px; font-weight: 700; text-align: center; }
 .peek::after {
   content: ""; position: absolute; bottom: -8px; left: var(--ax, 50%); width: 16px; height: 16px; margin-left: -8px;
   background: var(--paper); transform: rotate(45deg); box-shadow: 4px 4px 0 var(--paper-line); border-radius: 0 0 4px 0;
@@ -802,7 +803,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .cover.revealed .c-btns > :nth-child(2) { animation-delay: 0.08s; }
 .cover.revealed .c-btns > :nth-child(3) { animation-delay: 0.14s; }
 .cover.revealed .c-btns > :nth-child(4) { animation-delay: 0.2s; }
-@keyframes pressblink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes pressblink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }   /* 薄くなりすぎて読めない時間を減らす（v5.3.7） */
 @keyframes btnin { from { opacity: 0; transform: translateY(16px) scale(0.96); } }
 @media (prefers-reduced-motion: reduce) { .c-press b, .cover.revealed .c-btns > * { animation: none; } }
 .btn.stack { flex-direction: column; gap: 3px; min-height: 72px; padding: 8px 20px; position: relative; }
@@ -1366,7 +1367,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .ebar b { background: var(--vellum-hi); }
 .ebar i { background: linear-gradient(180deg, #c4503a, var(--danger-strong)); }
 .ehpn { font-family: var(--serif); font-weight: 800; font-size: 14px; }
-.espd { font-family: var(--serif); letter-spacing: 0.08em; opacity: 1; color: var(--ink-soft); }
+.espd { font-family: var(--serif); letter-spacing: 0.08em; opacity: 1; color: var(--ink); text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6); }   /* 背景に溶けないように（v5.3.7） */
 .eart svg { filter: drop-shadow(0 6px 5px rgba(60, 38, 14, 0.22)); }
 .ticket { filter: drop-shadow(0 1px 0 var(--rule-a)) drop-shadow(0 8px 12px rgba(46, 28, 10, 0.16)); }
 .ticket::after { content: ""; position: absolute; inset: 4px 9px; border: 1px solid var(--rule-a); border-radius: 2px; pointer-events: none; }
@@ -1602,6 +1603,9 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .steps .ico { background: var(--vellum-hi); box-shadow: inset 0 0 0 1px var(--rule-a); font-family: var(--serif); font-weight: 800; }
 .steps b { font-family: var(--serif); font-weight: 800; letter-spacing: 0.03em; }
 .h-foot { z-index: 3; background: linear-gradient(180deg, transparent, var(--vellum-hi) 35%); }
+/* あそびかたの下の帯：枠の下の余白まで覆い、帯の下に本文がはみ出して見えないように（v5.3.7） */
+.help:not(.settings) .h-card { padding-bottom: 0 !important; }
+.help:not(.settings) .h-foot { bottom: 0; margin-bottom: 0; padding-bottom: 20px; background: linear-gradient(180deg, transparent, var(--vellum-hi) 26%, var(--vellum-hi)); }
 .coach { border-radius: 6px; background: radial-gradient(130% 100% at 50% 0%, var(--vellum-hi), var(--paper)); box-shadow: inset 0 0 0 1px var(--rule-a), inset 0 3px 0 var(--rubric), 0 20px 36px -12px var(--shadow); }
 .co-step { color: var(--rubric); font-family: var(--serif); letter-spacing: 0.22em; }
 .co-title { font-family: var(--serif); font-weight: 800; }
@@ -2367,8 +2371,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
   box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.55), inset 0 0 0 3px rgba(255, 255, 255, 0.22), inset 0 0 0 6px rgba(0, 0, 0, 0.3), inset 0 4px 8px rgba(255, 255, 255, 0.1); }
 .strip .stone { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
 .strip .stone rect { mix-blend-mode: overlay; }
-.strip .ck path { fill: none; stroke: rgba(10, 6, 4, 0.6); stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
-.strip .ck.hi path { stroke: rgba(255, 255, 255, 0.16); stroke-width: 1.1; }
+.strip .ck path { fill: none; stroke: rgba(10, 6, 4, 0.32); stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.strip .ck.hi path { stroke: rgba(255, 255, 255, 0.08); stroke-width: 1.1; }
 .strip .cn { position: absolute; width: 26px; height: 26px; pointer-events: none; }
 .strip .cn svg { width: 100%; height: 100%; display: block; }
 .strip .cn.tl { left: 3px; top: 3px; } .strip .cn.tr { right: 3px; top: 3px; transform: scaleX(-1); }
@@ -2377,7 +2381,9 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 .strip .lamp svg { width: 100%; height: 100%; display: block; }
 .board.narrow .strip .lamp { display: block; }
 .strip .lamp.l { left: calc(var(--bleed, 0px) * 0.5 + 12px); top: 4px; } .strip .lamp.r { right: calc(var(--bleed, 0px) * 0.5 + 12px); bottom: 5px; animation-delay: -1.4s; }
-@keyframes lampFlick { 0%, 100% { opacity: 1; } 45% { opacity: 0.86; } 70% { opacity: 0.96; } }
+@keyframes lampFlick { 0%, 100% { opacity: 1; } 45% { opacity: 0.93; } 70% { opacity: 0.98; } }
+/* 提灯は1列に1つ（v5.3.7：盤の飾りが仲間と目立ち方を競っていたため） */
+.board.narrow .strip .lamp.r { display: none; }
 @media (prefers-reduced-motion: reduce) { .strip .lamp { animation: none; } }
 .board .rail { transform: translateX(calc(-1 * var(--bleed, 0px) + 8px)); color: #f4ead6; }
 .board .rail em { color: #f4ead6; font-size: 14px; font-weight: 800; text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6), 0 -1px 0 rgba(255, 255, 255, 0.12); }
@@ -2404,6 +2410,9 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 .lb-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
 .busy .lb-btn { opacity: .45; }
 /* 吹き出し：押したものの上に重ねる。レイアウトは動かさない */
+/* 画面の上に重なる窓（あそびかた・設定・敵の詳細・履歴）が開いている間は、吹き出しを出さない（v5.3.7） */
+body:has(#help:not([hidden])) .rb-bubble, body:has(#settings:not([hidden])) .rb-bubble, body:has(#logSheet:not([hidden])) .rb-bubble, body:has(#foeSheet:not([hidden])) .rb-bubble { display: none !important; }
+.rb-bubble { text-wrap: pretty; }
 .rb-bubble { position: fixed; z-index: 90; max-width: min(78vw, 300px); padding: 8px 12px; border-radius: 10px; background: #1b2132; color: #f3e6c4; font-size: 14px; font-weight: 700; line-height: 1.45; box-shadow: 0 0 0 1px rgba(230, 184, 76, .55), 0 8px 18px rgba(0, 0, 0, .45); pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .18s, transform .18s; }
 .rb-bubble.on { opacity: 1; transform: none; }
 .rb-bubble::after { content: ""; position: absolute; left: var(--ax, 50%); top: 100%; width: 10px; height: 10px; margin-left: -5px; margin-top: -5px; background: inherit; transform: rotate(45deg); box-shadow: 1px 1px 0 rgba(230, 184, 76, .55); }
@@ -2608,7 +2617,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.3.6</p>
+    <p class="c-ver" id="cVer">ver 5.3.7</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2628,7 +2637,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <h2 class="disp">あそびかた</h2>
     <ul class="steps">
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><div><b>攻撃列</b>敵を攻撃する。素早い順に動く。剣マークの数字は次に与えるダメージの見込み（金色は攻撃補助込み）。</div></li>
-      <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>同じ縦の列の攻撃列を支える（二の列の補助は、一の列には届かない）。攻撃補助と防御補助は1回で使い切り。</div></li>
+      <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>すぐ上の、同じ側（左・右）の攻撃列の仲間を支える（右の補助は、左には届かない）。攻撃補助と防御補助は1回で使い切り。</div></li>
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
@@ -2747,7 +2756,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   'use strict';
   const ROWS = 3, CIRC = 2 * Math.PI * 47;
   let COLS = 4;   // 盤の横幅。30年モード・チュートリアルは4、試作の遠征は EXP.cols
-  const COLN = ['一', '二', '三', '四'];
+  const COLN_N = ['一', '二', '三', '四'];
+  // 縦の並びの呼び名（v5.3.7）：横の「攻撃列・補助列・回復列」と混ざらないよう、2つのときは「左・右」と呼ぶ（以前は「一の列・二の列」）
+  const colN = (c) => (COLS === 2 ? ['左', '右'][c] : COLN_N[c]);
   const CHAP = ['第一章', '第二章', '第三章'];
   const RM = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = (id) => document.getElementById(id);
@@ -2925,7 +2936,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   /* ============ データ ============ */
   const JOBS = [
     { id: 'warrior', name: '戦士', cls: 'tank', hp: 48, spd: 3, atk: 11, ranged: 0, atkSup: 1, defSup: 2, heal: 0, rest: 12, hits: 1, sta: 3, entry: { name: '踏み込み', atk: 4, desc: 'このターン攻撃+4' } },
-    { id: 'knight', name: '騎士', cls: 'tank', hp: 36, spd: 4, atk: 8, ranged: 0, atkSup: 2, defSup: 8, heal: 0, rest: 10, hits: 1, sta: 3, entry: { name: '盾構え', guard: 6, desc: 'このターン自分の列の被ダメージ-6' } },
+    { id: 'knight', name: '騎士', cls: 'tank', hp: 36, spd: 4, atk: 8, ranged: 0, atkSup: 2, defSup: 8, heal: 0, rest: 10, hits: 1, sta: 3, entry: { name: '盾構え', guard: 6, desc: 'このターン同じ側の被ダメージ-6' } },
     { id: 'samurai', name: 'サムライ', cls: 'atk', hp: 26, spd: 8, atk: 12, ranged: 0, atkSup: 5, defSup: 0, heal: 0, rest: 8, hits: 1, sta: 2, entry: { name: '居合', spd: 10, atk: 3, desc: 'このターン先に動き、攻撃+3' } },
     { id: 'witch', name: '魔女', cls: 'sup', hp: 20, spd: 7, atk: 4, ranged: 0, atkSup: 7, defSup: 7, heal: 0, rest: 7, hits: 1, sta: 2, entry: { name: '雷撃', atk: 5, desc: 'このターン攻撃+5' } },
     { id: 'cleric', name: '神官', cls: 'heal', hp: 24, spd: 3, atk: 3, ranged: 0, atkSup: 0, defSup: 5, heal: 5, rest: 8, hits: 1, sta: 2, entry: { name: '祝福', heal: 6, desc: '攻撃列の全員をHP+6（最大HPまで）' } },
@@ -2934,7 +2945,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.3.6';
+  const APP_VERSION = '5.3.7';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3736,7 +3747,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function buildBoard() {
     const rows = [['sword', '攻撃'], ['star', '補助'], ['plus', '回復']];
     let h = '<span style="grid-row:1;grid-column:1"></span>';
-    for (let c = 0; c < COLS; c++) h += '<span class="ctag disp" data-c="' + c + '" style="grid-column:' + (c + 2) + '">' + COLN[c] + '</span>';
+    for (let c = 0; c < COLS; c++) h += '<span class="ctag disp" data-c="' + c + '" style="grid-column:' + (c + 2) + '">' + colN(c) + '</span>';
     rows.forEach((x, r) => { h += '<span class="strip r' + r + '" style="grid-row:' + (r + 2) + '">' + stoneHTML(r) + '</span>'; });
     rows.forEach((x, r) => { h += '<span class="rail r' + r + '" style="grid-row:' + (r + 2) + '">' + ICON[x[0]] + '<em>' + x[1] + '</em></span>'; });
     for (let c = 0; c < COLS; c++) h += '<span class="beam" data-c="' + c + '" style="grid-column:' + (c + 2) + '"></span>';
@@ -3899,7 +3910,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const isSel = phase === 'prep' && sel && sel.r === r && sel.c === c;
       el.classList.toggle('sel', !!isSel);
       el.classList.toggle('drop', phase === 'prep' && !!sel && !isSel);
-      el.setAttribute('aria-label', ROWLBL[r] + ' 列' + COLN[c] + (u ? ' ' + u.name + ' HP' + u.hp : ' 空き'));
+      el.setAttribute('aria-label', ROWLBL[r] + ' ' + colN(c) + '側' + (u ? ' ' + u.name + ' HP' + u.hp : ' 空き'));
       const html = u ? tokenHTML(u, r, ghost, (phase === 'prep' || phase === 'choose') ? expDmg(u, r, c, src, ghost || phase === 'prep', ghost) : null, inc[r + ',' + c]) : '<span class="tok"><span class="sock"></span></span>';
       if (el.__h !== html) { el.innerHTML = html; el.__h = html; }
       el.style.setProperty('--bi', (r * 3 + c * 2) % 7);
@@ -3922,10 +3933,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (act.rule === 'random') return { cols: null, desc: '狙い　一番前の列からランダム（' + act.hits + '回）' };
     if (act.rule === 'job') {
       const t = L.find((x) => (x.u.jname || x.u.name) === act.job);   // 本番の団員は個人名なので職業名で照合する
-      if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + COLN[t.c] + '）' };
+      if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + colN(t.c) + '）' };
     }
     const t = L.reduce((a, b) => (b.u.hp < a.u.hp ? b : a));
-    return { cols: [t.c], desc: act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + COLN[t.c] + '）' };
+    return { cols: [t.c], desc: act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）' };
   }
   const actOf = (F, t) => F.pattern[((t || turn) - 1) % F.pattern.length];
   const curAct = () => (enemy.party ? actOf(leadFoe()) : actOf(enemy));
@@ -4086,14 +4097,19 @@ body.fast #stampOk.on { animation-duration: .5s; }
     el.style.left = ''; el.style.right = ''; el.style.top = '';
     const bk = $('book').getBoundingClientRect(), r0 = el.getBoundingClientRect(), h = r0.height, w = r0.width;
     // 盤（仲間の列）と予告札は隠さない（v5.2.2）。回す・維持を決めるのに要る情報だから
-    const avoid = [$('ticket'), $('board')].concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0);
+    // 敵の名前・i・HP も隠さない（v5.3.7：章の行を消して、名前が上の帯のすぐ下に来たため）
+    const avoid = [$('ticket'), $('board'), document.querySelector('.plate'), document.querySelector('.ehp')].filter(Boolean).concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0);
     const land = innerWidth > innerHeight && innerWidth >= 640, bd = $('board').getBoundingClientRect(), st = $('stage').getBoundingClientRect();
-    const cands = [{ top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
+    const tk = $('ticket').getBoundingClientRect();
+    const cands = [{ top: tk.top - h - 4, left: null }, { top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ⓪予告の札のすぐ上（敵の絵の下の方）を先に試す   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
     if (land) cands.push({ top: Math.max(8, bd.top), left: Math.max(8, Math.min(innerWidth - w - 8, bd.left + (bd.width - w) / 2)) });
-    const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(8, c.top); return avoid.reduce((a, r) => a + Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
+    // 重なりの重み（v5.3.7）：盤・予告の札（回す/維持を決めるのに要る）を隠すのがいちばん悪い。敵の名前・HPは、ほかに場所が無いときだけ
+    const TOP0 = innerHeight < 620 ? 2 : 8;   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）
+    const wt = [10, 10, 1, 1].concat(enemy && enemy.party ? [10] : []);
+    const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
-    el.style.top = Math.round(Math.max(8, best.top)) + 'px';
+    el.style.top = Math.round(Math.max(TOP0, best.top)) + 'px';
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
   addEventListener('resize', () => placeTip());
@@ -4102,6 +4118,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (tut || !$('result').hidden || document.body.classList.contains('is-cover')) { if (tipKey) hideTip(); return; }
     if (phase !== 'prep' && phase !== 'choose') { if (tipKey) hideTip(); return; }
     if (tipKey) return;
+    // 演出の数字（ダメージなど）が残っている間は出さない。落ち着いてから（v5.3.7）
+    if (document.querySelector('#fx .pop, #fx .fly')) { clearTimeout(tipsCheck.t); tipsCheck.t = setTimeout(() => tipsCheck(curAct()), 450); return; }
     const seen = tipSeen();
     let k = null;
     if (enemy.party && !seen.trinity) k = 'trinity';
@@ -4152,7 +4170,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 敵のパネルを押したときの一言：いまの技と数字、狙う列（パネルからは技の名前を外したので、押した反応で返す。v5.1.59）
   function foeSay(F, a) {
     const tg = targetInfo(a, showGhost() ? previewGrid() : grid, F);
-    const to = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? COLN[tg.cols[0]] + 'の列' : a.rule === 'random' ? '一番前の列のだれか' : '';
+    const to = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? colN(tg.cols[0]) + '側' : a.rule === 'random' ? '一番前の列のだれか' : '';
     const n = a.dmg ? a.dmg + (a.hits > 1 ? '×' + a.hits : '') : a.rule === 'mend' ? '+' + a.heal : '';
     return '狙う：' + F.name + '　' + a.name + (n ? ' ' + n : '') + (to ? ' → ' + to : '');
   }
@@ -4168,7 +4186,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       let foeTxt = '';
       if (!tut && !dead) {
         const live2 = phase === 'prep' || phase === 'choose', h = live2 && a.dmg ? actHit(F, a) : null;
-        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : tg0.cols && tg0.cols.length ? COLN[tg0.cols[0]] : a.rule === 'random' ? '?' : '';
+        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? '?' : '';
         if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : '<small>受ける</small><b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>' + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
         else if (a.rule === 'mend') foeTxt = '<small>回復</small><b>+' + a.heal + '</b>';
         else if (a.rule === 'guard' || a.rule === 'aid') foeTxt = '<small>防御</small><b>+' + a.def + '</b>';
@@ -4178,7 +4196,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const brief = a.name;   // パネルの技名は、ログ・行動パターンと同じ名前（v5.1.41）
       const dl = live && !dead ? foeDealt(F) : 0, kill = dl >= F.hp && dl > 0;
       if (dead) return '<button type="button" class="fc dead" data-f="' + F.id + '" disabled aria-label="' + F.name + '（倒れた）"><b class="fc-nm disp">' + F.name + '</b><span class="fc-gone">倒れた</span></button>';   // 倒れた敵は、名前と「倒れた」だけに折りたたむ（v5.1.57）
-      const sel = F === tgt, tg = targetInfo(a, showGhost() ? previewGrid() : grid, F), tgt2 = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? COLN[tg.cols[0]] + 'の列' : a.rule === 'random' ? '一番前の列からランダム' : '';
+      const sel = F === tgt, tg = targetInfo(a, showGhost() ? previewGrid() : grid, F), tgt2 = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? colN(tg.cols[0]) + '側' : a.rule === 'random' ? '一番前の列からランダム' : '';
       return '<button type="button" class="fc' + (sel ? ' sel' : '') + (half ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '" aria-pressed="' + sel + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (sel ? '（攻撃対象）' : '（タップで攻撃対象にする）') + (tgt2 ? '　今ターン：' + a.name + '→' + tgt2 : '') + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
@@ -4320,7 +4338,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (u.atkSup) parts.push('攻+' + u.atkSup);
       if (u.defSup) parts.push('防-' + u.defSup);
       if (u.ranged) parts.push('間接' + u.ranged);
-      return '補助列：同じ列の攻撃列へ ' + (parts.length ? parts.join('／') : '支える力なし');
+      return '補助列：同じ側の攻撃列へ ' + (parts.length ? parts.join('／') : '支える力なし');
     }
     if (r === 2) return '回復列：休んで毎ターン' + u.rest + '回復' + (u.heal ? '、回復列のほかの仲間も' + u.heal + '回復' : '');
     return '';
@@ -4429,6 +4447,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (pk.__h !== html) { pk.innerHTML = html; pk.__h = html; }
     pk.hidden = false; pk.__id = u.uid;
     pk.style.left = st.offsetLeft + 'px'; pk.style.width = st.offsetWidth + 'px';
+    // 盤に重ならないよう、高さを敵の舞台の高さまでにする（中は縦に送れる。v5.3.7）
+    pk.style.maxHeight = Math.max(120, st.offsetHeight - 4) + 'px'; pk.style.overflowY = 'auto';
     pk.style.top = Math.max(st.offsetTop, st.offsetTop + st.offsetHeight - pk.offsetHeight - 12) + 'px';
     const pos = posOfUnit(u), slot = pos && slotEl(pos.r, pos.c);
     if (slot) { const sr = slot.getBoundingClientRect(), pr = pk.getBoundingClientRect(); pk.style.setProperty('--ax', Math.min(Math.max(sr.left + sr.width / 2 - pr.left, 26), pr.width - 26) + 'px'); }
@@ -4483,7 +4503,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
         const bh0 = run && benchList().length ? benchHTML(su) : '';
         b.innerHTML = bh0; bookFit();
         hideBubble('prepWarn');
-        bubble(su.name + 'の入れ替え先をタップ', $('dock'), 0, 'selTip');   // 仲間の詳細（上に出る）を隠さないよう、下のボタンの上に
+        // 入れ替えの手がかりは、仲間の詳細の中に1行で（吹き出しは盤の下の仲間を隠したため。v5.3.7）
+        const pk = $('peek'); if (pk && !pk.hidden && !pk.querySelector('.pk-hint')) pk.insertAdjacentHTML('beforeend', '<p class="pk-hint">' + su.name + 'の入れ替え先をタップ</p>');
         return;
       }
       b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(su);
@@ -6289,7 +6310,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (o.spd) p.push('先に動き');
     if (o.atk) p.push('攻撃+' + o.atk);
     if (o.hits) p.push('攻撃回数+' + o.hits);
-    if (o.guard) p.push('自分の列の被ダメージ-' + o.guard);
+    if (o.guard) p.push('同じ側の被ダメージ-' + o.guard);
     if (o.teamGuard) p.push('攻撃列の被ダメージ-' + o.teamGuard);
     if (o.heal) return '攻撃列の全員をHP+' + o.heal + '（最大HPまで）';
     return 'このターン' + p.join('、');
@@ -7317,7 +7338,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expUpDesc(m) {
     const e = m.entry, U = EXP.up;
-    return e.guard ? '自分の列の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : '攻撃+' + U.atk;
+    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : '攻撃+' + U.atk;
   }
   function expUpgrade(m) {
     const e = m.entry, U = EXP.up, k = e.guard ? 'guard' : e.heal ? 'heal' : e.teamGuard ? 'teamGuard' : 'atk';
