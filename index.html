@@ -2692,7 +2692,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.4.2</p>
+    <p class="c-ver" id="cVer">ver 5.4.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3020,7 +3020,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   /* ============ データ ============ */
   const JOBS = [
-    { id: 'warrior', name: '戦士', cls: 'tank', hp: 48, spd: 3, atk: 11, ranged: 0, atkSup: 1, defSup: 2, heal: 0, rest: 12, hits: 1, sta: 3, entry: { name: '踏み込み', atk: 4, desc: 'このターン攻撃+4' } },
+    { id: 'warrior', name: '戦士', cls: 'tank', hp: 48, spd: 3, atk: 11, ranged: 0, atkSup: 1, defSup: 2, heal: 0, rest: 12, hits: 1, sta: 3, entry: { name: '踏み込み', atk: 4, cap: 8, desc: 'このターン攻撃+4' } },
     { id: 'knight', name: '騎士', cls: 'tank', hp: 36, spd: 4, atk: 8, ranged: 0, atkSup: 2, defSup: 8, heal: 0, rest: 10, hits: 1, sta: 3, entry: { name: '盾構え', guard: 6, desc: 'このターン同じ側の被ダメージ-6' } },
     { id: 'samurai', name: 'サムライ', cls: 'atk', hp: 26, spd: 8, atk: 12, ranged: 0, atkSup: 5, defSup: 0, heal: 0, rest: 8, hits: 1, sta: 2, entry: { name: '居合', spd: 10, atk: 3, desc: 'このターン先に動き、攻撃+3' } },
     { id: 'witch', name: '魔女', cls: 'sup', hp: 20, spd: 7, atk: 4, ranged: 0, atkSup: 7, defSup: 7, heal: 0, rest: 7, hits: 1, sta: 2, entry: { name: '雷撃', atk: 5, desc: 'このターン攻撃+5' } },
@@ -3030,7 +3030,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.4.2';
+  const APP_VERSION = '5.4.3';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -6599,6 +6599,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const free = NAMES.filter((n) => !used.has(n));
     return free.length ? pick(free) : pick(NAMES) + '二世';
   }
+  // 上限のある突入技（踏み込みは攻撃+8まで。v5.4.3）。前の版で保存した遠征の仲間（上限の印が無い）にも、職業の突入技から上限を付け直す
+  function capEntry(m) {
+    const e = m && m.entry; if (!e || !e.name) return;
+    const base = JOBS.map((j) => j.entry).find((x) => x && x.name === e.name.replace(/^継承・/, ''));
+    if (!base || !base.cap) return;
+    e.cap = base.cap;
+    if (e.atk > e.cap) { e.atk = e.cap; e.desc = entryDesc(e); }
+  }
   function entryDesc(o) {
     const p = [];
     if (o.spd) p.push('先に動き');
@@ -6630,6 +6638,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     m.staMax = Math.max(1, b.sta + ph.sta + add('sta'));
     m.entry = scaleEntry(m.inherit ? m.inherit.entry : JOBS.find((j) => j.id === m.job).entry, ph.ent, m.inherit);
     if (m.up) { Object.keys(m.up).forEach((k) => { m.entry[k] = (m.entry[k] || 0) + m.up[k]; }); m.entry.desc = entryDesc(m.entry); }   // 遠征の「突入技の強化」
+    capEntry(m);
     m.phase = ph.key; m.phaseLabel = ph.label;
     if (fill) m.hp = m.max; else m.hp = Math.min(m.hp, m.max);
     m.sta = m.staMax;
@@ -7633,7 +7642,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expUpDesc(m) {
     const e = m.entry, U = EXP.up;
-    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : '攻撃+' + U.atk;
+    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : '攻撃+' + (e.cap ? Math.max(0, Math.min(U.atk, e.cap - e.atk)) : U.atk);
   }
   function expUpgrade(m) {
     const e = m.entry, U = EXP.up, k = e.guard ? 'guard' : e.heal ? 'heal' : e.teamGuard ? 'teamGuard' : 'atk';
@@ -7643,7 +7652,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function expReward(pre) {
     const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id));
     if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: ({ shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
-    const m = pick(run.members);
+    // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
+    const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }, { k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }], act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
     cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax + ((+run.tend || 0) ? '（合計+' + ((+run.tend || 0) + 1) * EXP.healMax + '）' : '') }], act: () => { run.tend = (+run.tend || 0) + 1; run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
@@ -7758,6 +7768,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     enterRun();
     run = o.run; rseed = o.rseed || 7; uidSeq = o.uidSeq || run.members.length;
     run.hist = run.hist || []; run.mentors = run.mentors || {}; run.relics = run.relics || []; run.pendId = null;
+    run.members.forEach(capEntry);   // 前の版の保存で踏み込みが+8を超えていたら、+8にそろえる（v5.4.3）
     { const f = expFill(); Object.keys(f).forEach((id) => { if (!run.map[id]) run.map[id] = f[id]; }); }   // 第1章だけだった頃の保存：第2・3章の中身を足す
     if (run.chRests == null) run.chRests = run.rests || 0;
     run.choices = routeChoices();
