@@ -4998,7 +4998,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     t.textContent = pre + '0';
     const step = (now) => {
       if (!p.isConnected) return;
-      const k = Math.min(1, (now - t0) / dur);
+      const k = Math.max(0, Math.min(1, (now - t0) / dur));   // 描画のタイムスタンプは呼んだ時刻より少し前のことがある（負にしない）
       t.textContent = pre + Math.round(goal * easeOut4(k));
       if (k < 1) { requestAnimationFrame(step); return; }
       t.textContent = text;

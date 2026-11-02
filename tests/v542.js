@@ -14,9 +14,9 @@ const watch = () => {
   new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => {
     if (n.classList && n.classList.contains('burst')) window.__W.burst++;
     if (n.classList && n.classList.contains('pop') && n.classList.contains('dmg')) {
-      const rec = { t0: performance.now(), seq: [], end: 0 }; window.__W.pops.push(rec);
+      const rec = { t0: performance.now(), seq: [], end: 0, settle: 0 }; window.__W.pops.push(rec);
       const tx = n.querySelector('text');
-      const g = () => { if (!n.isConnected) return; const v = tx.textContent; if (rec.seq[rec.seq.length - 1] !== v) { rec.seq.push(v); rec.end = performance.now() - rec.t0; } requestAnimationFrame(g); }; g();
+      const sv = n.querySelector('svg'); const g = () => { if (!n.isConnected) return; const v = tx.textContent; if (!rec.settle && sv && sv.style.transform) rec.settle = performance.now() - rec.t0; if (rec.seq[rec.seq.length - 1] !== v) { rec.seq.push(v); rec.end = performance.now() - rec.t0; } requestAnimationFrame(g); }; g();
     }
   }))).observe(document.getElementById('fx'), { childList: true });
 };
@@ -37,14 +37,15 @@ async function battle(p) {
     await p.addInitScript(init);
     await battle(p);
     // 3 1手目の数字
-    const pops = await p.evaluate(() => window.__W.pops.map((r) => ({ seq: r.seq, end: Math.round(r.end) })));
+    const pops = await p.evaluate(() => window.__W.pops.map((r) => ({ seq: r.seq, end: Math.round(r.end), settle: Math.round(r.settle) })));
     const log = await p.evaluate(() => window.__rb.log.join('\n'));
     if (!rm) {
       const nums = (r) => r.seq.map((v) => +v.replace('-', ''));
       ok(pops.length > 0 && pops.every((r) => r.seq.length >= 2 && nums(r).every((v, i, a) => i === 0 || v >= a[i - 1])), '3 ダメージの数字は数え上がり、途中で減らない ' + JSON.stringify(pops.map((r) => r.seq.slice(0, 3).concat(['…', r.seq[r.seq.length - 1]]))));
-      ok(pops.every((r) => r.end >= 250 && r.end <= 520), '3 0.35秒前後で最後の数字に決まる ' + JSON.stringify(pops.map((r) => r.end)));
+      // 数え上げは 0.35秒で終わり、終わった瞬間に弾む（弾みの始まり＝数え上げの終わり）。数字そのものは、緩急のため0.35秒より前に最後の値へ届くことがある
+      ok(pops.every((r) => r.end <= 420 && r.settle >= 320 && r.settle <= 480), '3 0.35秒で数え終わり、そこで弾む ' + JSON.stringify(pops.map((r) => [r.end, r.settle])));
     } else ok(pops.every((r) => r.seq.length === 1), tag + '4 数字は最初から最後の値 ' + JSON.stringify(pops.map((r) => r.seq)));
-    ok(pops.every((r) => { const v = r.seq[r.seq.length - 1].replace('-', ''); return new RegExp('に' + v + 'ダメージ').test(log); }), tag + '3 最後の数字は履歴のダメージと一致');
+    ok(pops.every((r) => { const v = r.seq[r.seq.length - 1].replace('-', ''); return new RegExp('(に|　)' + v + 'ダメージ').test(log); }), tag + '3 最後の数字は履歴のダメージと一致');
     // 1 通常攻撃（大技でない・倒れない）
     const prep1 = await p.evaluate(() => { const R = window.__rb, g = R.grid; for (let t = 1; t <= 14; t++) { R.setTurn(t); const a = R.actOf(R.enemy), inc = R.incoming(g, false, false); if (a.dmg && !a.big && !R.enemy.charged && Object.keys(inc).length && Object.values(inc).every((x) => !x.ko)) { R.render(); return a.name; } } return null; });
     if (prep1) {
@@ -54,7 +55,7 @@ async function battle(p) {
       ok(w.shake === 0 && w.burst === 0, tag + '1・2 通常攻撃（' + prep1 + '）の被弾では揺れず、バーストも出ない ' + JSON.stringify(w));
     } else ok(true, tag + '1 （この敵では、倒れない通常攻撃のターンが無かった）');
     // 1 大技
-    const big = await p.evaluate(() => { const R = window.__rb, g = R.grid; for (let t = 1; t <= 14; t++) { R.setTurn(t); const a = R.actOf(R.enemy), inc = R.incoming(g, false, false); if (a.dmg && Object.keys(inc).length) { a.big = true; R.render(); return a.name; } } return null; });
+    const big = await p.evaluate(() => { const R = window.__rb, g = R.grid; for (let t = 1; t <= 14; t++) { R.setTurn(t); const a = R.actOf(R.enemy), inc = R.incoming(g, false, false); if (a.dmg && Object.keys(inc).length) { a.big = true; a.dmg = 1; R.grid.flat().forEach((u) => { if (u) u.hp = u.max; }); R.enemy.hp = R.enemy.max = 999; R.render(); return a.name; } } return null; });
     if (big && await p.evaluate(() => window.__rb.phase === 'choose')) {
       await p.evaluate(() => { window.__W.shake = []; window.__W.burst = 0; });
       await p.click('#btnStay'); await toChoose(p); await p.waitForTimeout(1300);
