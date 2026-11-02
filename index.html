@@ -7582,7 +7582,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     enemy = B.enemy;
     run.members.forEach((m) => { const x = B.units[m.uid]; if (x) Object.assign(m, x); });
-    turn = B.turn; gauge = B.gauge; combo = +B.combo || 0; stayN = B.stayN;   // combo は v5.4.5 で足した（それより前の保存は0） tgtId = B.tgtId; swappedOnce = true;
+    turn = B.turn; gauge = B.gauge; combo = +B.combo || 0; stayN = B.stayN; tgtId = B.tgtId; swappedOnce = true;   // combo は v5.4.5 で足した（それより前の保存は0）
     snapshot = B.snap.map((x) => ({ u: U(x.uid), r: x.r, c: x.c })).filter((x) => x.u);
     stats = B.stats ? { dealt: B.stats.dealt, who: Object.keys(B.stats.who).reduce((o, k) => { const u = U(B.stats.who[k]); if (u) o[k] = u; return o; }, {}), taken: B.stats.taken, fallen: B.stats.fallen } : null;
     logLines = (B.log || []).concat(['（中断したところから再開した）']);
