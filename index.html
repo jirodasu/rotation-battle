@@ -1969,8 +1969,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rot-meter .pips.cb.full i, .rot-meter .pips.cb i.fire { background: #fff3b8; box-shadow: 0 0 0 1.5px #5a3a06, 0 0 6px 1px rgba(255, 236, 160, .95); opacity: 1; animation: cbGlow 1.2s ease-in-out infinite; }
 @keyframes cbGlow { 50% { box-shadow: 0 0 0 1.5px #5a3a06, 0 0 10px 3px rgba(255, 236, 160, .7); } }
 #btnRotate .cb-tag { display: none; }
-#btnRotate.cbfull .cb-tag { display: inline-block; margin-left: 4px; padding: 1px 5px 2px; border-radius: 6px; background: #3a2506; color: #fff3b8; font: 800 10.5px/1.2 var(--sans, sans-serif); vertical-align: middle; letter-spacing: .02em; }
+#btnRotate.cbfull .cb-tag { display: inline-block; white-space: nowrap; margin-left: 4px; padding: 1px 5px 2px; border-radius: 6px; background: #3a2506; color: #fff3b8; font: 800 10.5px/1.2 var(--sans, sans-serif); vertical-align: middle; letter-spacing: .02em; }
 @media (prefers-reduced-motion: reduce) { .rot-meter .pips.cb i { animation: none !important; } }
+@media (max-width: 360px) { #btnRotate .cb-l { display: none; } }
 .rot-meter small { font-size: 10.5px; font-weight: 700; letter-spacing: .02em; opacity: .85; text-shadow: none; }
 /* 回せない（v5.1.57）：ボタンの色は変えない（回す＝いつも金）。無効は「斜線」と「理由の文言」だけで示す */
 #btnRotate:disabled { cursor: not-allowed; pointer-events: none;
@@ -2656,7 +2657,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <button class="btn skip" id="btnSkip" type="button" aria-label="この演出を飛ばして先へ進む" hidden>演出を飛ばす ▶▶</button>
     <button class="btn primary" id="btnRotate" type="button" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="rot-lbl">回す<i class="cb-tag">突入技強化</i></span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span><span class="oc-b" id="ocRot"></span>
+      <span class="rot-lbl">回す<i class="cb-tag"><span class="cb-l">突入技</span>強化</i></span><span class="rot-meter" id="rotMeter" aria-hidden="true"></span><span class="oc-b" id="ocRot"></span>
     </button>
     <button class="btn icon" id="btnPreview" type="button" aria-pressed="false" aria-label="回した後の配置を先読み" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
@@ -2734,7 +2735,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr disp" style="font-size:14px">気</span><div><b>気力</b>回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
-      <li><span class="ico rs disp" style="font-size:14px">◆</span><div><b>回転コンボ</b>回すたびに◆が1つたまる（最大3。維持では変わらない。戦闘ごとに0から）。◆が3つの状態で回すと、その回転で攻撃列に入った仲間の突入技が2倍になり、◆は0に戻る。</div></li>
+      <li><span class="ico rs disp" style="font-size:14px">◆</span><div><b>回転コンボ</b>回すたびに◆が1つたまる（維持では変わらない。戦闘ごとに0から）。3つ目がたまる回転で、攻撃列に入った仲間の突入技が2倍になり、◆は0に戻る。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
       <li class="h-more"><button type="button" class="h-next" data-tier="2">もっと「くわしく」 →</button></li>
     </ul>
@@ -3809,7 +3810,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   //   途中保存には入れない（ユーザーの決定：保存形式は変えない。続きから遊ぶと0から）
   let combo = 0, comboFire = false;
   const comboOn = () => EXPM() && !tut && !!EXP.combo;
-  const comboFull = () => comboOn() && combo >= EXP.combo.max;
+  // 次に回すと満タンになって発動する（目盛りが max-1）。設計書の数値（発動0.95回／戦）は、満タンに「なった」回転で発動する読み方で測られていた（tools/expsim.mjs で確かめた）
+  const comboFull = () => comboOn() && combo + 1 >= EXP.combo.max;
   // 強化した突入技：数値効果を mul 倍（攻撃・軽減・回復・全体軽減）。速射は追加の攻撃回数を+1。居合の先行（速さ）は対象外。端数は四捨五入（tools/expsim.mjs の boostEntry と同じ）
   function boostEntry(e) {
     const o = Object.assign({}, e), mul = EXP.combo.mul;
@@ -4810,10 +4812,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 回転コンボの目盛り（v5.4.5）：気力の下に◆×3。満タンは光る。「回す」の長押し（先読み）中は、回した後の目盛りを出す（満タンで回すと発動して0）
     let ch = '', cSay = '';
     if (comboOn() && on) {
-      const mx = EXP.combo.max, full = comboFull(), cv = previewOn ? (full ? 0 : Math.min(mx, combo + 1)) : combo, fire = previewOn && full;
+      const mx = EXP.combo.max, full = comboFull(), cv = previewOn ? Math.min(mx, combo + 1) : combo, fire = previewOn && full;
       for (let i = 0; i < mx; i++) ch += '<i class="' + (i < cv ? 'on' : '') + (fire ? ' fire' : '') + '"></i>';
       ch = '<span class="pips cb' + (!previewOn && full ? ' full' : '') + (fire ? ' fire' : '') + '" title="回転コンボ ' + cv + '／' + mx + '">' + ch + '</span>';
-      cSay = full ? '。回転コンボ満タン：回すと突入技が強化される' : '。回転コンボ' + combo + '／' + mx;
+      cSay = full ? '。回転コンボ：次に回すと満タン、突入技が強化される' : '。回転コンボ' + combo + '／' + mx;
     }
     m.innerHTML = on ? '<span class="pips">' + h + '</span>' + ch : '';
     b.classList.toggle('cbfull', comboFull() && on && !bound && !low);
@@ -4892,7 +4894,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const key = hs + '|' + hr + '|' + hp; if (key === ocKey) return; ocKey = key;
     $('ocStay').innerHTML = hs; $('ocRot').innerHTML = hr; $('ocStart').innerHTML = hp;
     ocRollIn();
-    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。回転コンボ満タン：突入技強化' : '')); }
+    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。回転コンボで突入技強化' : '')); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
     requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); });
   }
@@ -5794,10 +5796,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     stayN = 0;
     if (gaugeOn()) gauge -= EXP.rot.cost;
     say('隊列を回した。補助が再び使える。');
-    // 回転コンボ（v5.4.5）：満タンで回したら、この回転で入った仲間の突入技を強化して0に戻す。そうでなければ+1
+    // 回転コンボ（v5.4.5）：+1。満タンになったら、この回転で入った仲間の突入技を強化して0に戻す
     if (comboOn()) {
-      if (comboFull()) { comboFire = true; combo = 0; say('回転コンボ！　攻撃列に入った仲間の突入技が強化される。'); }
-      else combo += 1;
+      combo += 1;
+      if (combo >= EXP.combo.max) { comboFire = true; combo = 0; say('回転コンボ！　攻撃列に入った仲間の突入技が強化される。'); }
     }
     if (relOn('incense')) {
       const hv = relD('incense').backHeal, got = [];
@@ -6573,7 +6575,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回・最大HP+4
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
-    // 回転コンボ（v5.4.5）：回すたびに+1（最大 max）。満タンで回すと、その回転で攻撃列に入った仲間の突入技が mul 倍。戦闘ごとに0から
+    // 回転コンボ（v5.4.5）：回すたびに+1。満タン（max）になる回転で、その回転で攻撃列に入った仲間の突入技が mul 倍になり、0に戻る。戦闘ごとに0から
     combo: { max: 3, mul: 2 },
     // 休むたびに章の主が強くなる（HP・威力の割合）。休めば安全だが、主が強くなる
     restPen: { hp: 0.05, dmg: 0.025 },

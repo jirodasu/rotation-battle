@@ -38,7 +38,7 @@ export function battle(en, party, policy, o) {
   let fallen = 0, stay = 0, bound = false;
   // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
   const RT = o.rot || null; let gauge = RT ? RT.start : 0;
-  // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンで回すとその回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
+  // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンになった回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
   const CB = o.combo || null; let combo = 0; const boosted = new Set(); CSTAT.battles++;
   const hpMap = () => { const m = {}; unitsOf(grid).forEach(({ u }) => { m[u.uid] = u.hp; }); return m; };
   for (let turn = 1; turn <= 40; turn++) {
@@ -120,8 +120,8 @@ export function battle(en, party, policy, o) {
       if (rel.has('incense')) for (let c = 0; c < COLS; c++) { const u = n[2][c]; if (u) u.hp = Math.min(u.max, u.hp + RD.incense.backHeal); }
       grid = n; stay = 0; if (RT) gauge -= RT.cost;
       unitsOf(grid).forEach(({ u, r }) => { u.atkReady = true; u.defReady = true; u.entered = r === 0; });
-      // 実験用：CB.onReach … 満タンに「なった」回転で発動する読み方（設計書の数値の確かめ用。ゲームは満タンの状態で回したときに発動）
-      if (CB) { if (CB.onReach) combo++; if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.add(u); }); combo = 0; CSTAT.fires++; } else if (!CB.onReach) combo++; }
+      // 満タンに「なった」回転で発動して0に戻る（ゲームと同じ。設計書の数値はこの読み方で再現する：発動0.92回／戦）
+      if (CB) { combo++; if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.add(u); }); combo = 0; CSTAT.fires++; } }
     } else stay++;
   }
   return { win: false, turns: 40, fallen, hp: hpMap(), timeout: true };
