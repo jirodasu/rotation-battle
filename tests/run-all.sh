@@ -6,7 +6,7 @@
 #   tests/out/summary.md  … テストごとの時間・合否・落ちた行を1枚に（毎回上書き）。遅い順の上位も出す
 #   tests/out/history.tsv … 日時・コミット・テスト・秒・終了コードを1行ずつ足していく（揺れの記録。消さない）
 cd "$(dirname "$0")/.." || exit 2
-LIST="reg nav tutheal layout phonefit route speed skin expedition expparity gaugeui refill world ux2 sound wording settings trinity display battlesave fixes updates fx audit depth ui522 v530 v531 v532 v533 v534 tune v536 v537 v538 v539 v5310 v540 v541 v542 v543 v544"   # 騎士団の30年専用のテスト(rogue・squads・telemetry)は、モードの削除に合わせて外した
+LIST="reg nav tutheal layout phonefit route speed skin expedition expparity gaugeui refill world ux2 sound wording settings trinity display battlesave fixes updates fx audit depth ui522 v530 v531 v532 v533 v534 tune v536 v537 v538 v539 v5310 v540 v541 v542 v543 v544 v545"   # 騎士団の30年専用のテスト(rogue・squads・telemetry)は、モードの削除に合わせて外した
 [ -n "$ONLY" ] && LIST="$ONLY"   # ONLY="reg nav" のように、流すテストを絞れる（まとめの確かめ・短いテスト用）
 [ -n "$FUZZ" ] && LIST="$LIST fuzz"
 LIMIT="${FUZZ_LIMIT:-900}"

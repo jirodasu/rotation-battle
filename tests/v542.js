@@ -55,7 +55,7 @@ async function battle(p) {
       ok(w.shake === 0 && w.burst === 0, tag + '1・2 通常攻撃（' + prep1 + '）の被弾では揺れず、バーストも出ない ' + JSON.stringify(w));
     } else ok(true, tag + '1 （この敵では、倒れない通常攻撃のターンが無かった）');
     // 1 大技
-    const big = await p.evaluate(() => { const R = window.__rb, g = R.grid; for (let t = 1; t <= 14; t++) { R.setTurn(t); const a = R.actOf(R.enemy), inc = R.incoming(g, false, false); if (a.dmg && Object.keys(inc).length) { a.big = true; a.dmg = 1; R.grid.flat().forEach((u) => { if (u) u.hp = u.max; }); R.enemy.hp = R.enemy.max = 999; R.render(); return a.name; } } return null; });
+    const big = await p.evaluate(() => { const R = window.__rb, g = R.grid; for (let t = 1; t <= 14; t++) { R.setTurn(t); const a = R.actOf(R.enemy), inc = R.incoming(g, false, false); if (a.dmg && Object.keys(inc).length) { a.big = true; a.dmg = 1; a.hits = 1; if (a.rule === 'all' || a.rule === 'random') a.rule = 'lowhp'; /* 1回だけ当てる（全体攻撃・連続攻撃だと揺れが2回続いて、1回分の長さを測れない） */ R.grid.flat().forEach((u) => { if (u) u.hp = u.max; }); R.enemy.hp = R.enemy.max = 999; R.render(); return a.name; } } return null; });
     if (big && await p.evaluate(() => window.__rb.phase === 'choose')) {
       await p.evaluate(() => { window.__W.shake = []; window.__W.burst = 0; });
       await p.click('#btnStay'); await toChoose(p); await p.waitForTimeout(1300);
