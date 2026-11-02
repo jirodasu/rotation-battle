@@ -3839,6 +3839,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     h += '<svg class="sup-ar" id="supAr" aria-hidden="true"></svg>';   // 補助の矢印（v5.4.0）
     $('board').innerHTML = h;
+    saWatchSlots();
   }
   // 隊列の石のレーン（v5.1.57）：石の地（凹凸の陰影）＋ひび＋金の四隅＋ランタン。飾りだけで、盤の当たり・操作には関わらない
   function stoneHTML(r) {
@@ -4057,7 +4058,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     //   （同じ並びで描き直しても、伸びている途中の線を最初からやり直さない）
     if (sv.__h !== sig) { sv.innerHTML = hg; sv.__h = sig; }
   }
-  try { new ResizeObserver(supArrowsSoon).observe($('board')); } catch (e) { /* 古い端末：描き直しは次の render で */ }
+  // 盤・マスの大きさが変わったら描き直す（マスは盤を作り直すたびに付け直す）。書体の読み込みで名前の札の高さが変わったときも描き直す
+  var saRO = null;   // buildBoard（ファイルの前の方）から先に呼ばれても使えるように var と function にする
+  try { saRO = new ResizeObserver(supArrowsSoon); saRO.observe($('board')); } catch (e) { /* 古い端末：描き直しは次の render で */ }
+  function saWatchSlots() { if (saRO) $('board').querySelectorAll('.slot').forEach((el) => saRO.observe(el)); }
+  try { document.fonts && document.fonts.ready.then(supArrowsSoon); } catch (e) { /* 対象外 */ }
 
   /* ============ 敵の予告 ============ */
   // 敵は「一番前の列」（通常は攻撃列）の仲間だけを狙う

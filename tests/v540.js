@@ -24,10 +24,11 @@ const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { c
     ok(s1.seals === 0 && /攻撃補助\+\d+/.test(s1.aria) && /防御補助-\d+/.test(s1.aria), tag + ' 1 札は出ず、読み上げに数字が残る ' + s1.aria);
     // 2・6（陣立て）
     const geo = async (lbl) => {
-      const r = await p.evaluate((fn) => { const A = eval(fn)(), R = window.__rb, g = R.ghost ? null : null, out = [];
+      const r = await p.evaluate((fn) => { const B = document.getElementById('board'), bR = B.getBoundingClientRect(), lay = (el) => { let t = 0, e = el; while (e && e !== B) { t += e.offsetTop; e = e.offsetParent; } return { bottom: bR.top + t + el.offsetHeight }; };   // 名前の札は、仲間の絵の揺れ（transform）を含まない置き場所で比べる
+        const A = eval(fn)(), R = window.__rb, g = R.ghost ? null : null, out = [];
         const src = R.previewOn ? R.previewGrid() : R.grid;
-        A.forEach((a) => { const d = document.querySelector('.slot[data-r="1"][data-c="' + a.c + '"] .disc').getBoundingClientRect(), nm = src[0][a.c] ? document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .nm').getBoundingClientRect() : null, bd = document.getElementById('board').getBoundingClientRect();
-          out.push({ c: a.c, k: a.k, on: a.on, inDisc: a.x > d.left && a.x < d.right && a.lb.t >= d.top - 2 && a.lb.b <= d.bottom, reach: nm ? (a.on ? Math.abs(a.top - nm.bottom) <= 3 : a.top <= nm.bottom + 4) : true, inBoard: a.box.l >= bd.left - 1 && a.box.r <= bd.right + 1, sup: !!(src[1][a.c] && (a.k === 'a' ? src[1][a.c].atkSup : src[1][a.c].defSup)) }); });
+        A.forEach((a) => { const d = document.querySelector('.slot[data-r="1"][data-c="' + a.c + '"] .disc').getBoundingClientRect(), nm = src[0][a.c] ? lay(document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .nm')) : null, bd = document.getElementById('board').getBoundingClientRect();
+          out.push({ c: a.c, k: a.k, on: a.on, inDisc: a.x > d.left && a.x < d.right && a.lb.t >= d.top - 2 && a.lb.b <= d.bottom, reach: nm ? (a.on ? Math.abs(a.top - nm.bottom) <= 3 : a.top <= nm.bottom + 4) : true, dbg: nm ? Math.round(a.top) + "/" + Math.round(nm.bottom) : "", inBoard: a.box.l >= bd.left - 1 && a.box.r <= bd.right + 1, sup: !!(src[1][a.c] && (a.k === 'a' ? src[1][a.c].atkSup : src[1][a.c].defSup)) }); });
         const lbs = A.map((a) => a.lb), clash = lbs.some((x, i) => lbs.some((y, j) => j > i && Math.min(x.r, y.r) - Math.max(x.l, y.l) > 1 && Math.min(x.b, y.b) - Math.max(x.t, y.t) > 1));
         const want = []; for (let c = 0; c < src[1].length; c++) { const u = src[1][c]; if (u && u.atkSup > 0) want.push(c + 'a'); if (u && u.defSup > 0) want.push(c + 'd'); }
         return { out, clash, want: want.join(), got: A.map((a) => a.c + a.k).join() }; }, '(' + arrows.toString() + ')');
