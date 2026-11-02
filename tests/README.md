@@ -11,6 +11,10 @@ bash tests/run-all.sh            # fuzz 以外を順番に実行。1本でも失
 FUZZ=1 bash tests/run-all.sh     # fuzz も実行（FUZZ_RUNS=ラン数 既定3、FUZZ_LIMIT=秒 既定900。打ち切りは不合格）
 ```
 
+終わると `tests/out/summary.md` に、テストごとの時間・合否・落ちた行（遅い順の上位・これまでに落ちた回数も）が1枚にまとまる。
+`tests/out/history.tsv` には、流すたびに「日時・コミット・テスト・秒・終了コード・NG件数」が1行ずつ足される（揺れの記録。消さない）。
+`ONLY="reg nav" bash tests/run-all.sh` のように、流すテストを絞ることもできる。
+
 | ファイル | 内容 |
 |---|---|
 | `reg.js` | 本番の1戦を最後まで・チュートリアル全手順 |
