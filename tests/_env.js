@@ -13,7 +13,9 @@ function testPage() {
   // RB_KEEP_WIN=1：遠征の途中の勝利でも、以前の勝利パネルを出す（v5.3.3）。戦闘そのものを測るテストが、勝敗をパネルで待てるように。
   //   勝利→報酬の新しい流れは tests/v533.js・expedition.js・battlesave.js などが本来の動きで確かめる
   if (process.env.RB_KEEP_WIN) s = s.replace('<head>', '<head><script>window.__rbKeepWinPanel = true;</script>');
-  const p = path.join(OUT, process.env.RB_KEEP_WIN ? 'tk.html' : 't.html'); fs.writeFileSync(p, s);
+  // RB_FAST=1：ゲームの「×2」（演出を倍速）で動かす（v5.4.5）。戦闘を最後まで進めて待つ、時間のかかるテストを速くする。時間そのものを測るテストには使わない
+  if (process.env.RB_FAST) s = s.replace('<head>', '<head><script>try { localStorage.setItem("rb-fast", "1"); } catch (e) { /* */ }</script>');
+  const p = path.join(OUT, (process.env.RB_KEEP_WIN ? 'tk' : 't') + (process.env.RB_FAST ? 'f' : '') + '.html'); fs.writeFileSync(p, s);
   try { fs.copyFileSync(path.join(ROOT, 'tune.js'), path.join(OUT, 'tune.js')); } catch (e) { /* 調整モードの道具（v5.3.4）。無ければ読まない */ }
   return 'file://' + p;
 }

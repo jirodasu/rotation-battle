@@ -3,7 +3,8 @@
 const fs = require('fs'), path = require('path');
 const { launch, ROOT, OUT } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const BASE = { 'bgm-title': 0.0503, 'bgm-battle': 0.0643, 'bgm-boss': 0.0722, rotate: 0.0818, start: 0.0819, hit: 0.0402, hurt: 0.0373, heal: 0.0473, guard: 0.034, entry: 0.0319, chapter: 0.0518, win: 0.1603 };
+// v5.4.5：bgm-boss の基準を、今の大聖堂版の実測（0.0897〜0.0899）に合わせた。元の基準 0.0722 の1.25倍（0.09025）ぎりぎりで、毎回の揺れで落ちていたため（ユーザー承認済み）
+const BASE = { 'bgm-title': 0.0503, 'bgm-battle': 0.0643, 'bgm-boss': 0.0898, rotate: 0.0818, start: 0.0819, hit: 0.0402, hurt: 0.0373, heal: 0.0473, guard: 0.034, entry: 0.0319, chapter: 0.0518, win: 0.1603 };
 let s = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 s = s.replace('  function beginMain(sqId, legacy) {', `  window.__snd = {
     st(b) { const n = b.length, L = b.getChannelData(0), R = b.getChannelData(Math.min(1, b.numberOfChannels - 1)); let pk = 0, sq = 0; for (let i = 0; i < n; i++) { const v = Math.max(Math.abs(L[i]), Math.abs(R[i])); if (v > pk) pk = v; sq += (L[i] * L[i] + R[i] * R[i]) / 2; } return { peak: pk, rms: Math.sqrt(sq / n) }; },

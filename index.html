@@ -2692,7 +2692,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.4.4</p>
+    <p class="c-ver" id="cVer">ver 5.4.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3030,7 +3030,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.4.4';
+  const APP_VERSION = '5.4.5';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4264,6 +4264,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
   addEventListener('resize', () => placeTip());
+  try { const tro = new ResizeObserver(() => placeTip()); ['ticket', 'board', 'dock'].forEach((id) => { const e = document.getElementById(id); if (e) tro.observe(e); }); } catch (e) { /* 古い端末 */ }
   function hideTip() { if (tipKey) { tipMark(tipKey); tipKey = null; } $('tip').hidden = true; }
   function tipsCheck(act) {
     if (tut || !$('result').hidden || document.body.classList.contains('is-cover')) { if (tipKey) hideTip(); return; }
@@ -4858,7 +4859,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     ocRollIn();
     if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot'))); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
-    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); });
+    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); placeTip(); });   // 盤の大きさを合わせ直したら、案内も置き直す（v5.4.5：先に置いた案内が、後から伸びた予告の札に重なっていた）
   }
   // 下の段の高さを、見通しの札がいちばん高いときに合わせて固定する（v5.3.8）。演出中（「演出を飛ばす」だけ）や
   // 回せないターンで低くなると、盤の大きさが毎ターン揺れるため。画面の大きさが変わったら測り直す
