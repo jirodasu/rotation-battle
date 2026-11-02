@@ -4,7 +4,7 @@
 //  2. 3つ目がたまる回転で発動して0に戻る（設計書の数値と同じ読み方）。その回転で攻撃列に入った仲間の突入技が2倍（履歴に「回転コンボ」）
 //  3. 先読み：次に回すと満タンのとき（2）、ボタンに「突入技強化」、盤の「突」に＋。剣の数字は強化後（2倍の差がそのまま乗る）。先読み中の目盛りは回した後の値
 //  4. 見通しの札の「敵」の数字が、実際に与えたダメージと一致する（発動するターン）
-//  5. チュートリアルには目盛りが出ない。途中保存から続きを遊ぶと0から（ユーザーの決定：保存形式は変えない）
+//  5. チュートリアルには目盛りが出ない。途中保存から続きを遊んでもコンボは残る（ユーザーの決定：途中保存に入れる）
 //  6. あそびかたの「しくみ」に回転コンボの説明。ページのエラーなし（393×852・320×568）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -66,10 +66,16 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     // 6 あそびかた
     ok(await p.evaluate(() => /回転コンボ/.test(document.getElementById('hTier1').textContent)), tag + ' 6 あそびかたの「しくみ」に回転コンボ');
     // 5 途中保存から続き
-    await p.evaluate(() => { window.__rb.setCombo(2); });
+    await p.evaluate(() => { window.__rb.setCombo(2); window.__rb.setGauge(3); window.__rb.render(); });
+    await p.click('#btnStay'); await toChoose(p);   // 選ぶ場面に戻ったときに途中保存される
+    const before = await p.evaluate(() => window.__rb.combo);
     await p.goto(testPage()); await p.waitForTimeout(500);
     await p.evaluate(() => { const r = document.getElementById('resume'); if (r && !r.hidden) r.click(); }); await toChoose(p); await p.waitForTimeout(300);
-    ok(await p.evaluate(() => window.__rb.combo) === 0, tag + ' 5 途中保存から続きを遊ぶと0から');
+    ok(before === 2 && await p.evaluate(() => window.__rb.combo) === 2, tag + ' 5 途中保存から続きを遊んでもコンボは残る（' + before + '）');
+    ok(await p.evaluate(() => { const o = JSON.parse(localStorage.getItem('rb-exp-save')); const b = o.battle; delete b.combo; localStorage.setItem('rb-exp-save', JSON.stringify(o)); return true; }), tag + ' 5 前の版の保存（combo なし）を用意');
+    await p.goto(testPage()); await p.waitForTimeout(500);
+    await p.evaluate(() => { const r = document.getElementById('resume'); if (r && !r.hidden) r.click(); }); await toChoose(p); await p.waitForTimeout(300);
+    ok(await p.evaluate(() => window.__rb.combo) === 0, tag + ' 5 前の版の保存はコンボ0として読む');
     ok(!errs.length, tag + ' 6 ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }

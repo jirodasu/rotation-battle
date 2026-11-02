@@ -3808,7 +3808,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let stayN = 0;   // 続けて「維持」した回数（不動の構え）
   let gauge = 0;   // 気力（回すには EXP.rot.cost）。遠征とチュートリアルで使う
   // 回転コンボ（v5.4.5）：遠征だけ（チュートリアルには無い）。combo＝いまの目盛り、comboFire＝このターンの突入技が強化されている
-  //   途中保存には入れない（ユーザーの決定：保存形式は変えない。続きから遊ぶと0から）
+  //   戦闘の途中保存に入れる（ユーザーの決定 2026-11-02：閉じて続きを遊んでも同じ結末になるように。前の版の保存は0として読む）
   let combo = 0, comboFire = false;
   const comboOn = () => EXPM() && !tut && !!EXP.combo;
   // 次に回すと満タンになって発動する（目盛りが max-1）。設計書の数値（発動0.95回／戦）は、満タンに「なった」回転で発動する読み方で測られていた（tools/expsim.mjs で確かめた）
@@ -7567,7 +7567,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!EXPM() || tut) return;
     const uid = (u) => (u ? u.uid : null), un = {};
     run.members.forEach((m) => { un[m.uid] = { hp: m.hp, sta: m.sta, atkReady: m.atkReady, defReady: m.defReady, entered: m.entered }; });
-    bsave = Object.assign({ at, commit: null, result: null, pend: run.pendId || null, turn, gauge, stayN, tgtId, swapped: swappedOnce, edef: run.enemy, enemy: JSON.parse(JSON.stringify(enemy)), units: un,
+    bsave = Object.assign({ at, commit: null, result: null, pend: run.pendId || null, turn, gauge, combo, stayN, tgtId, swapped: swappedOnce, edef: run.enemy, enemy: JSON.parse(JSON.stringify(enemy)), units: un,
       grid: grid.map((row) => row.map(uid)), snap: (snapshot || []).map((x) => ({ uid: x.u.uid, r: x.r, c: x.c })),
       stats: stats ? { dealt: stats.dealt, who: Object.keys(stats.who).reduce((o, k) => { o[k] = uid(stats.who[k]); return o; }, {}), taken: stats.taken, fallen: stats.fallen } : null,
       log: (logLines || []).slice(-30) }, extra || {});
@@ -7582,7 +7582,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     enemy = B.enemy;
     run.members.forEach((m) => { const x = B.units[m.uid]; if (x) Object.assign(m, x); });
-    turn = B.turn; gauge = B.gauge; stayN = B.stayN; tgtId = B.tgtId; swappedOnce = true;
+    turn = B.turn; gauge = B.gauge; combo = +B.combo || 0; stayN = B.stayN;   // combo は v5.4.5 で足した（それより前の保存は0） tgtId = B.tgtId; swappedOnce = true;
     snapshot = B.snap.map((x) => ({ u: U(x.uid), r: x.r, c: x.c })).filter((x) => x.u);
     stats = B.stats ? { dealt: B.stats.dealt, who: Object.keys(B.stats.who).reduce((o, k) => { const u = U(B.stats.who[k]); if (u) o[k] = u; return o; }, {}), taken: B.stats.taken, fallen: B.stats.fallen } : null;
     logLines = (B.log || []).concat(['（中断したところから再開した）']);
