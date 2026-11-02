@@ -60,7 +60,7 @@ async function fight(p, seq) {
     // 自動対戦（同じ並び・同じ敵・同じ順）
     const pol = (st) => !!k.seq[(st.turn - 1) % k.seq.length];
     const party0 = setup.members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
-    const res = sim.battle(setup.e, party0, pol, { cols: 2, seed: 1, relics: k.relics, rot: sim.EXP.rot });   // 気力も同じ規則
+    const res = sim.battle(setup.e, party0, pol, { cols: 2, seed: 1, relics: k.relics, rot: sim.EXP.rot, combo: sim.EXP.combo });   /* 気力・回転コンボも同じ規則 */
     const shp = Object.fromEntries(setup.members.map((m) => [m.uid, res.hp[m.uid] != null ? res.hp[m.uid] : 0]));
     const same = game.win === res.win && game.turns === res.turns && JSON.stringify(game.hp) === JSON.stringify(shp);
     ok(same, `ケース${i + 1}（${setup.e.name}・レリック ${k.relics.join(',') || 'なし'}${k.up ? '・強化あり' : ''}）ゲーム ${game.win ? '勝ち' : '負け'}${game.turns}T ${JSON.stringify(Object.values(game.hp))} ／ 自動対戦 ${res.win ? '勝ち' : '負け'}${res.turns}T ${JSON.stringify(Object.values(shp))}`);

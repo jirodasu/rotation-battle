@@ -120,7 +120,8 @@ export function battle(en, party, policy, o) {
       if (rel.has('incense')) for (let c = 0; c < COLS; c++) { const u = n[2][c]; if (u) u.hp = Math.min(u.max, u.hp + RD.incense.backHeal); }
       grid = n; stay = 0; if (RT) gauge -= RT.cost;
       unitsOf(grid).forEach(({ u, r }) => { u.atkReady = true; u.defReady = true; u.entered = r === 0; });
-      if (CB) { if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.add(u); }); combo = 0; CSTAT.fires++; } else combo++; }
+      // 実験用：CB.onReach … 満タンに「なった」回転で発動する読み方（設計書の数値の確かめ用。ゲームは満タンの状態で回したときに発動）
+      if (CB) { if (CB.onReach) combo++; if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.add(u); }); combo = 0; CSTAT.fires++; } else if (!CB.onReach) combo++; }
     } else stay++;
   }
   return { win: false, turns: 40, fallen, hp: hpMap(), timeout: true };

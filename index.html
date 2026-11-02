@@ -4892,7 +4892,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const key = hs + '|' + hr + '|' + hp; if (key === ocKey) return; ocKey = key;
     $('ocStay').innerHTML = hs; $('ocRot').innerHTML = hr; $('ocStart').innerHTML = hp;
     ocRollIn();
-    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot'))); }
+    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。回転コンボ満タン：突入技強化' : '')); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
     requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); });
   }
