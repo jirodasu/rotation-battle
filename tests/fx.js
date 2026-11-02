@@ -49,9 +49,10 @@ const turnMs = async (p, skipAt) => {
     ok(!p.__errs.length, '飛ばした後もエラーなし ' + p.__errs.join('/')); await ctx.close(); }
   const med = (a) => a.sort((x, y) => x - y)[Math.floor(a.length / 2)];
   const ns = [normal], bs = [];
-  for (let i = 0; i < 3; i++) {
+  // 交互に5回ずつ測って真ん中の値で比べる（2026-11-02：3回では、機械の混み具合で1.14倍まで揺れて落ちることがあった）
+  for (let i = 0; i < 5; i++) {
     { const { ctx, p } = await page(b, mainURL, false); bs.push(await turnMs(p, null)); await ctx.close(); }
-    if (i < 2) { const { ctx, p } = await page(b, indexURL, false); ns.push(await turnMs(p, null)); await ctx.close(); }
+    if (i < 4) { const { ctx, p } = await page(b, indexURL, false); ns.push(await turnMs(p, null)); await ctx.close(); }
   }
   normal = med(ns); base = med(bs);
   console.log('通常', normal, 'ms / 飛ばす', skipped, 'ms / v5.1.50', base, 'ms');

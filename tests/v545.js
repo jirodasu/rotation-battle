@@ -56,6 +56,13 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     const m = /-(\d+)/.exec(pred), dealt = hp0 - after.hp;
     ok(after.combo === 0 && /回転コンボ/.test(after.log) && /（強化）|突入技/.test(after.log), tag + ' 2 3つ目がたまる回転で発動して0に戻る');
     ok(!!m && +m[1] === dealt, tag + ' 4 見通しの札の「敵」（' + pred + '）が、実際に与えたダメージ（' + dealt + '）と一致');
+    // 3 目盛りの上を長押しして離しても「回す」が届く（先読みで目盛りを描き直しても、指の下の印を作り直さない）
+    { await p.evaluate(() => { const R = window.__rb; R.setGauge(3); R.enemy.bound = false; R.render(); });
+      const pt = await p.evaluate(() => { const q = document.querySelector('#rotMeter .pips.cb i').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; });
+      const t0 = await p.evaluate(() => window.__rb.turn);
+      await p.mouse.move(pt.x, pt.y); await p.mouse.down(); await p.waitForFunction(() => window.__rb.previewOn, null, { timeout: 3000 }).catch(() => {}); await p.waitForTimeout(150); await p.mouse.up();
+      await p.waitForTimeout(300); await toChoose(p);
+      ok(await p.evaluate(() => window.__rb.turn) === t0 + 1, tag + ' 3 目盛りの上を長押しして離しても回る'); }
     // 6 あそびかた
     ok(await p.evaluate(() => /回転コンボ/.test(document.getElementById('hTier1').textContent)), tag + ' 6 あそびかたの「しくみ」に回転コンボ');
     // 5 途中保存から続き

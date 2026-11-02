@@ -1969,7 +1969,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rot-meter .pips.cb.full i, .rot-meter .pips.cb i.fire { background: #fff3b8; box-shadow: 0 0 0 1.5px #5a3a06, 0 0 6px 1px rgba(255, 236, 160, .95); opacity: 1; animation: cbGlow 1.2s ease-in-out infinite; }
 @keyframes cbGlow { 50% { box-shadow: 0 0 0 1.5px #5a3a06, 0 0 10px 3px rgba(255, 236, 160, .7); } }
 #btnRotate .cb-tag { display: none; }
-#btnRotate.cbfull .cb-tag { display: inline-block; white-space: nowrap; margin-left: 4px; padding: 1px 5px 2px; border-radius: 6px; background: #3a2506; color: #fff3b8; font: 800 10.5px/1.2 var(--sans, sans-serif); vertical-align: middle; letter-spacing: .02em; }
+#btnRotate { position: relative; }
+#btnRotate.cbfull .cb-tag { display: inline-block; position: absolute; top: -9px; left: 10px; z-index: 2; white-space: nowrap; box-shadow: 0 2px 0 rgba(0, 0, 0, .35); padding: 1px 5px 2px; border-radius: 6px; background: #3a2506; color: #fff3b8; font: 800 10.5px/1.2 var(--sans, sans-serif); vertical-align: middle; letter-spacing: .02em; }
 @media (prefers-reduced-motion: reduce) { .rot-meter .pips.cb i { animation: none !important; } }
 @media (max-width: 360px) { #btnRotate .cb-l { display: none; } }
 .rot-meter small { font-size: 10.5px; font-weight: 700; letter-spacing: .02em; opacity: .85; text-shadow: none; }
@@ -4795,13 +4796,26 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (up && gaugeShown < cost && g >= cost) { const rb = $('btnRotate'); rb.classList.remove('glint'); void rb.offsetWidth; rb.classList.add('glint'); }   // 回せるようになった瞬間に光らせる
     gaugeShown = g;
   }
+  // 「回す」の目盛りは、形が同じなら中身を作り直さず、印（class・title）だけ書き換える（v5.4.5）。
+  //   長押しの先読みで描き直すとき、指の下の目盛りが作り直されると、離したときの「回す」が届かないため（ブラウザは、押した要素が消えると click を出さない）
+  function setMeter(m, html) {
+    if (m.__h === html) return;
+    const t = document.createElement('div'); t.innerHTML = html;
+    const same = (a, b) => a.nodeType === b.nodeType && a.nodeName === b.nodeName && a.childNodes.length === b.childNodes.length && [...a.childNodes].every((x, i) => same(x, b.childNodes[i]));
+    const sync = (a, b) => { if (a.nodeType === 3) { if (a.nodeValue !== b.nodeValue) a.nodeValue = b.nodeValue; return; } if (a.nodeType !== 1) return;
+      [...a.attributes].forEach((x) => { if (!b.hasAttribute(x.name)) a.removeAttribute(x.name); }); [...b.attributes].forEach((x) => { if (a.getAttribute(x.name) !== x.value) a.setAttribute(x.name, x.value); });
+      [...a.childNodes].forEach((x, i) => sync(x, b.childNodes[i])); };
+    const kids = (a, b) => a.childNodes.length === b.childNodes.length && [...a.childNodes].every((x, i) => same(x, b.childNodes[i]));   // 入れ物（span と div）は比べない
+    if (m.childNodes.length && kids(m, t)) [...m.childNodes].forEach((x, i) => sync(x, t.childNodes[i])); else m.innerHTML = html;
+    m.__h = html;
+  }
   function renderRotBtn() {
     const b = $('btnRotate'), m = $('rotMeter'), on = gaugeOn() && phase === 'choose';
     const bound = !!(enemy && enemy.bound) && phase === 'choose', low = on && !gaugeOk();
     const why = bound ? 'bind' : low ? 'low' : '';
     if (why) b.dataset.block = why; else delete b.dataset.block;
     $('btnStay').classList.remove('only');   // 状態でボタンの格を入れ替えない：回す＝常に金の主要、維持＝常に暗い副次（v5.1.57）
-    if (!on && !bound) { m.innerHTML = ''; b.setAttribute('aria-label', '隊列を回す'); return; }
+    if (!on && !bound) { setMeter(m, ''); b.setAttribute('aria-label', '隊列を回す'); return; }
     const cap = EXP.rot.cap, cost = EXP.rot.cost, g = Math.max(0, Math.min(cap, gauge));
     let h = '';
     if (on) { for (let i = 0; i < cap; i++) h += '<i class="' + (i < g ? 'on' : '') + (i < cost ? ' need' : '') + '"></i>'; }
@@ -4817,7 +4831,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       ch = '<span class="pips cb' + (!previewOn && full ? ' full' : '') + (fire ? ' fire' : '') + '" title="回転コンボ ' + cv + '／' + mx + '">' + ch + '</span>';
       cSay = full ? '。回転コンボ：次に回すと満タン、突入技が強化される' : '。回転コンボ' + combo + '／' + mx;
     }
-    m.innerHTML = on ? '<span class="pips">' + h + '</span>' + ch : '';
+    setMeter(m, on ? '<span class="pips">' + h + '</span>' + ch : '');
     b.classList.toggle('cbfull', comboFull() && on && !bound && !low);
     b.setAttribute('aria-label', (bound ? '回せない：縛られている。このターンは維持のみ' : low ? '回せない：気力' + g + '／' + cost + '。' + sub : '隊列を回す（気力' + cost + 'を使う。今' + g + '）') + cSay);
   }

@@ -213,7 +213,7 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
       if (p.__errs.length) { bad++; ex.push(['err', p.__errs.join(' / ')]); }
       await ctx.close();
     }
-    ok(bad === 0 && total > 40, '盤の被ダメ予告が、実際のダメージと一致（' + total + '人ぶん' + (bad ? '、不一致 ' + bad : '') + '）' + (ex.length ? ' ' + JSON.stringify(ex) : ''));
+    ok(bad === 0 && total > 30,   /* v5.4.5：回転コンボで戦闘が短くなり、比べられる人数が減った（44→37前後）。照合の数の下限を30に */  '盤の被ダメ予告が、実際のダメージと一致（' + total + '人ぶん' + (bad ? '、不一致 ' + bad : '') + '）' + (ex.length ? ' ' + JSON.stringify(ex) : ''));
     ok(tixBad === 0 && tix > 10, '予告札の数字が、実際のダメージと一致（' + tix + 'ターンぶん' + (tixBad ? '、不一致 ' + tixBad : '') + '）');
     ok(cut > 0, '防御補助などで減るターンは、予告札が「軽減後」の数字になり、それが実際と一致（' + cut + '回）');
   }
