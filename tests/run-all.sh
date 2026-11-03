@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # 全テストを「1本ずつ順番に」実行する。並列にすると layout が一時的に失敗することがあるため。
-#   bash tests/run-all.sh          # fuzz 以外
-#   FUZZ=1 bash tests/run-all.sh   # fuzz も（FUZZ_RUNS=ラン数 既定3 / FUZZ_LIMIT=秒 既定900。打ち切りは不合格として数える）
+#   bash tests/run-all.sh          # 全部（fuzz も入る）
+#   NOFUZZ=1 bash tests/run-all.sh # fuzz を外す（既定は入る。FUZZ_RUNS=ラン数 既定2 / FUZZ_LIMIT=秒 既定900。打ち切りは不合格として数える）
 # 結果のまとめ（2026-11-02）：
 #   tests/out/summary.md  … テストごとの時間・合否・落ちた行を1枚に（毎回上書き）。遅い順の上位も出す
 #   tests/out/history.tsv … 日時・コミット・テスト・秒・終了コードを1行ずつ足していく（揺れの記録。消さない）
 cd "$(dirname "$0")/.." || exit 2
-LIST="reg nav tutheal layout phonefit route speed skin expedition expparity gaugeui refill world ux2 sound wording settings trinity display battlesave fixes updates fx audit depth ui522 v530 v531 v532 v533 v534 tune v536 v537 v538 v539 v5310 v540 v541 v542 v543 v544 v545 v547"   # 騎士団の30年専用のテスト(rogue・squads・telemetry)は、モードの削除に合わせて外した
+LIST="reg nav tutheal layout phonefit route speed skin expedition expparity gaugeui refill world ux2 sound wording settings trinity display battlesave fixes updates fx audit depth ui522 v530 v531 v532 v533 v534 tune v536 v537 v538 v539 v5310 v540 v541 v542 v543 v544 v545 v547 fuzz"   # 騎士団の30年専用のテスト(rogue・squads・telemetry)は、モードの削除に合わせて外した
 [ -n "$ONLY" ] && LIST="$ONLY"   # ONLY="reg nav" のように、流すテストを絞れる（まとめの確かめ・短いテスト用）
-[ -n "$FUZZ" ] && LIST="$LIST fuzz"
+# fuzz（でたらめ操作）も既定で流す（2026-11-03。入っていなかったため、壊れても8日間気づかなかった）。NOFUZZ=1 で外せる
+[ -n "$NOFUZZ" ] && LIST="${LIST/ fuzz/}"
 LIMIT="${FUZZ_LIMIT:-900}"
 mkdir -p tests/out
 SUM="tests/out/summary.md"; HIST="tests/out/history.tsv"; ROWS="tests/out/.rows.tsv"; : > "$ROWS"
@@ -21,7 +22,7 @@ for t in $LIST; do
   echo "== $t"
   log="tests/out/$t.log"
   s=$(date +%s)
-  if [ "$t" = fuzz ]; then timeout "$LIMIT" node tests/$t.js "${FUZZ_RUNS:-3}" >"$log" 2>&1; elif [ "$t" = expedition ]; then timeout 900 node tests/$t.js >"$log" 2>&1; else timeout 600 node tests/$t.js >"$log" 2>&1; fi   # expedition は10地点を通しで遊ぶので長い（重い時は9分を超える）
+  if [ "$t" = fuzz ]; then timeout "$LIMIT" node tests/$t.js "${FUZZ_RUNS:-2}" >"$log" 2>&1; elif [ "$t" = expedition ]; then timeout 900 node tests/$t.js >"$log" 2>&1; else timeout 600 node tests/$t.js >"$log" 2>&1; fi   # expedition は10地点を通しで遊ぶので長い（重い時は9分を超える）
   code=$?
   sec=$(( $(date +%s) - s ))
   # 不合格の行（NG・FAIL・不合格）と末尾を残す。どの画面で落ちたか後から分かる

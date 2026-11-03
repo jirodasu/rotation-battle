@@ -3,6 +3,8 @@
 // 演出は「動きを減らす」設定で短縮して速く回す。画面サイズは横・縦・PCを順に使う。
 process.env.RB_KEEP_WIN = '1';   // 戦闘そのものを測る。勝敗は以前の勝利パネルで待つ（v5.3.3）
 const { launch, testPage, OUT } = require('./_env');
+// 表紙：保存があるときは最初の「タップ」画面が省かれる（v5.1.48）。そのときに表紙の真ん中を押すと「環廊へ」に当たるので、待ち画面のときだけ押す（2026-11-03）
+const gate = async (p) => { if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await p.waitForTimeout(300); } };
 const fs = require('fs'), path = require('path');
 const RUNS = +(process.argv[2] || 6);
 let seed = +(process.argv[3] || 1);
@@ -46,7 +48,8 @@ const INVARIANTS = () => {
     const p = await ctx.newPage();
     const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.goto(url); await p.waitForTimeout(400);
-    await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(500);
+    await gate(p); await p.click('#begin'); await p.waitForTimeout(500);
+    if (await p.evaluate(() => !document.getElementById('newConf').hidden)) { await p.waitForTimeout(500); await p.click('#ncGo'); await p.waitForTimeout(500); }   // 前のランの途中保存があると「新しく始めますか？」が出る
     let steps = 0, last = '', same = 0, battles = 0, resumes = 0, outcome = '途中', node = 0;
     const style = rnd() < 0.5 ? 'smart' : 'random';
     while (steps++ < 4000) {
@@ -69,7 +72,7 @@ const INVARIANTS = () => {
         if (/踏破/.test(st.title)) { outcome = 'クリア'; break; }
         // ときどき「中断して再開」：ページを読み直して続きから
         if (/どちらへ/.test(st.title) && rnd() < 0.15) {
-          await p.goto(url); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300);
+          await p.goto(url); await p.waitForTimeout(400); await gate(p);
           const can = await p.evaluate(() => !document.getElementById('resume').hidden);
           if (!can) { problems.push({ run: k, node: st.node, bad: ['再開ボタンが出ない'] }); break; }
           const before = st.node;
