@@ -12,7 +12,7 @@ const topId = (p, sel) => p.evaluate((s) => { const r = document.querySelector(s
   for (const [name, init] of [['1 選択肢なし', null], ['2 隊が開いている', { runs: 3, clears: 1, best: 9 }], ['3 遠征の途中', 'save']]) {
     const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-    await p.addInitScript((m) => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1 })); if (m) localStorage.setItem('rb-exp', JSON.stringify(m)); } catch (e) { /* */ } }, init && init !== 'save' ? init : null);
+    await p.addInitScript((m) => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); if (m) localStorage.setItem('rb-exp', JSON.stringify(m)); } catch (e) { /* */ } }, init && init !== 'save' ? init : null);
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
     if (init === 'save') { await p.click('#begin'); await p.waitForTimeout(700); await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(200); await p.click('#rvGo'); await p.waitForTimeout(1200); await p.evaluate(() => window.__rb.goTitle()); await p.waitForTimeout(400); }
     await p.click('#beginTut'); await p.waitForTimeout(1200);
