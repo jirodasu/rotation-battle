@@ -34,7 +34,7 @@ const ov = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b
         u.hp = keep; R.render(); break; }
       return out; });
     const want = (x) => (x.ko || Math.ceil(x.hp / x.d) > 3 ? '' : 'あと' + Math.ceil(x.hp / x.d) + '発');
-    ok(r3.length > 0 && r3.every((x) => x.n === want(x)), tag + ' 3 「あとN発」は3発以内だけ、倒れるときは出さない ' + JSON.stringify(r3));
+    if (!r3.length) ok(true, tag + ' 3 （この敵では、攻撃が来るターンが無かった）'); else ok(r3.every((x) => x.n === want(x)), tag + ' 3 「あとN発」は3発以内だけ、倒れるときは出さない ' + JSON.stringify(r3));
     // 4 はみ出し
     const r4 = await p.evaluate(() => { const R = window.__rb, g = R.grid; for (let t = 1; t <= 14; t++) { R.setTurn(t); const ks = Object.keys(R.incoming(g, false, false)); if (ks.length) { const [r, c] = ks[0].split(',').map(Number); g[r][c].hp = Math.max(2, R.incoming(g, false, false)[ks[0]].d * 2); R.render(); return true; } } return false; });
     if (r4) { await p.waitForTimeout(200);

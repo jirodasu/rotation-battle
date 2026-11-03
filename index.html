@@ -1131,6 +1131,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .tip b::before { content: "はじめての仕掛け"; display: block; font-family: inherit; font-size: 11px; letter-spacing: .18em; color: var(--accent-deep); margin-bottom: 1px; }
 .tip p { margin: 0; grid-column: 1; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }
 .tip p em { font-style: normal; color: var(--danger); font-weight: 700; }
+.tip.tight { padding: 8px 10px 8px 12px; }
+.tip.tight b::before { display: none; }
+.tip.tight p { font-size: 12px; line-height: 1.45; }
 .tip button { grid-row: 1 / span 2; grid-column: 2; min-height: 44px; min-width: 56px; padding: 0 14px; }
 .ico.rs { color: var(--accent); }
 .tip[data-k="stars"] b::before { content: "このゲームの目標"; }
@@ -4030,6 +4033,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (el.__h !== html) { el.innerHTML = html; el.__h = html; }
       el.style.setProperty('--bi', (r * 3 + c * 2) % 7);
     }
+    if (phase !== 'prep' && phase !== 'choose') { const sv = $('supAr'); if (sv && sv.__h) { sv.innerHTML = ''; sv.__h = ''; } }   // 演出中は、次のコマを待たずにすぐ消す（v5.4.8）
     supArrowsSoon();
   }
   // 描画の途中で位置を測らない（盤の大きさの合わせ直しが終わってから、次の描画の前に1回だけ測る）
@@ -4273,13 +4277,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
   function tipMark(k) { const o = tipSeen(); o[k] = 1; try { localStorage.setItem('rb-tips', JSON.stringify(o)); } catch (e) { /* 保存できない環境 */ } }
   const tipSession = {};
-  function placeTip() {
+  function placeTip(tight) {
     const el = $('tip'); if (el.hidden) return;
+    el.classList.toggle('tight', !!tight);
     el.style.left = ''; el.style.right = ''; el.style.top = '';
     const bk = $('book').getBoundingClientRect(), r0 = el.getBoundingClientRect(), h = r0.height, w = r0.width;
     // 盤（仲間の列）と予告札は隠さない（v5.2.2）。回す・維持を決めるのに要る情報だから
     // 敵の名前・i・HP も隠さない（v5.3.7：章の行を消して、名前が上の帯のすぐ下に来たため）
-    const avoid = [$('ticket'), $('board'), document.querySelector('.plate'), document.querySelector('.ehp')].filter(Boolean).concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0);
+    const avoid = [$('ticket'), $('board'), document.querySelector('.plate'), document.querySelector('.ehp')].filter(Boolean).concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0).map((r, i) => (i < 2 ? { left: r.left, right: r.right, top: r.top - 3, bottom: r.bottom + 3, width: r.width } : r));   // 予告の札・盤は3px の余白も避ける（v5.4.8：1px 未満の重なりが残っていた）
     const land = innerWidth > innerHeight && innerWidth >= 640, bd = $('board').getBoundingClientRect(), st = $('stage').getBoundingClientRect();
     const tk = $('ticket').getBoundingClientRect();
     const cands = [{ top: tk.top - h - 4, left: null }, { top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ⓪予告の札のすぐ上（敵の絵の下の方）を先に試す   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
@@ -4292,6 +4297,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
+    // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
+    if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
+      if (hard) { placeTip(true); return; } }
     el.style.top = Math.round(Math.max(TOP0, best.top)) + 'px';
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
