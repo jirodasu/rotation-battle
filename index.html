@@ -1131,6 +1131,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .tip b::before { content: "はじめての仕掛け"; display: block; font-family: inherit; font-size: 11px; letter-spacing: .18em; color: var(--accent-deep); margin-bottom: 1px; }
 .tip p { margin: 0; grid-column: 1; font-size: 13px; line-height: 1.6; color: var(--ink-soft); }
 .tip p em { font-style: normal; color: var(--danger); font-weight: 700; }
+.tip.tight { padding: 8px 10px 8px 12px; }
+.tip.tight b::before { display: none; }
+.tip.tight p { font-size: 12px; line-height: 1.45; }
 .tip button { grid-row: 1 / span 2; grid-column: 2; min-height: 44px; min-width: 56px; padding: 0 14px; }
 .ico.rs { color: var(--accent); }
 .tip[data-k="stars"] b::before { content: "このゲームの目標"; }
@@ -2557,9 +2560,9 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 
 /* ===== D 大技をしのいだ判（v5.1.60） ===== */
 #stampOk { position: fixed; left: 50%; top: 40%; z-index: 56; pointer-events: none; opacity: 0; transform: translate(-50%, -50%) rotate(-6deg) scale(1.4); padding: 8px 26px 7px; text-align: center; white-space: nowrap;
-  border: 3px double var(--gold, #d8b660); border-radius: 4px; background: rgba(20, 16, 10, .86); color: var(--gold-hi, #f3dc93); box-shadow: 0 0 34px rgba(216, 182, 96, .38); }
+  border: 3px double #c9d6e4; border-radius: 4px; background: rgba(14, 18, 26, .88); color: #f4f7fb; box-shadow: 0 0 34px rgba(159, 178, 200, .42); }   /* 白と青灰（金は「回す」と主ボタンだけ。v5.4.8） */
 #stampOk b { display: block; font-size: 30px; letter-spacing: .3em; margin-right: -.3em; line-height: 1.2; }
-#stampOk small { display: block; margin-top: 2px; font: 700 11px/1.2 var(--sans); letter-spacing: .1em; color: #d9cfa9; }
+#stampOk small { display: block; margin-top: 2px; font: 700 11px/1.2 var(--sans); letter-spacing: .1em; color: #b8c6d6; }
 #stampOk.on { animation: stampOk .8s cubic-bezier(.2, 1.3, .4, 1) both; }
 @keyframes stampOk { 0% { opacity: 0; transform: translate(-50%, -50%) rotate(-6deg) scale(1.5); } 22% { opacity: 1; transform: translate(-50%, -50%) rotate(-6deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -50%) rotate(-6deg) scale(.98); } }
 @media (prefers-reduced-motion: reduce) { #stampOk.on { animation: none; opacity: 1; transform: translate(-50%, -50%) rotate(-6deg); } }
@@ -2705,7 +2708,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.4.7</p>
+    <p class="c-ver" id="cVer">ver 5.4.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3044,7 +3047,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.4.7';
+  const APP_VERSION = '5.4.8';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -4030,6 +4033,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (el.__h !== html) { el.innerHTML = html; el.__h = html; }
       el.style.setProperty('--bi', (r * 3 + c * 2) % 7);
     }
+    if (phase !== 'prep' && phase !== 'choose') { const sv = $('supAr'); if (sv && sv.__h) { sv.innerHTML = ''; sv.__h = ''; } }   // 演出中は、次のコマを待たずにすぐ消す（v5.4.8）
     supArrowsSoon();
   }
   // 描画の途中で位置を測らない（盤の大きさの合わせ直しが終わってから、次の描画の前に1回だけ測る）
@@ -4273,13 +4277,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
   function tipMark(k) { const o = tipSeen(); o[k] = 1; try { localStorage.setItem('rb-tips', JSON.stringify(o)); } catch (e) { /* 保存できない環境 */ } }
   const tipSession = {};
-  function placeTip() {
+  function placeTip(tight) {
     const el = $('tip'); if (el.hidden) return;
+    el.classList.toggle('tight', !!tight);
     el.style.left = ''; el.style.right = ''; el.style.top = '';
     const bk = $('book').getBoundingClientRect(), r0 = el.getBoundingClientRect(), h = r0.height, w = r0.width;
     // 盤（仲間の列）と予告札は隠さない（v5.2.2）。回す・維持を決めるのに要る情報だから
     // 敵の名前・i・HP も隠さない（v5.3.7：章の行を消して、名前が上の帯のすぐ下に来たため）
-    const avoid = [$('ticket'), $('board'), document.querySelector('.plate'), document.querySelector('.ehp')].filter(Boolean).concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0);
+    const avoid = [$('ticket'), $('board'), document.querySelector('.plate'), document.querySelector('.ehp')].filter(Boolean).concat(enemy && enemy.party ? [$('party')] : []).map((x) => x.getBoundingClientRect()).filter((x) => x.width > 0).map((r, i) => (i < 2 ? { left: r.left, right: r.right, top: r.top - 3, bottom: r.bottom + 3, width: r.width } : r));   // 予告の札・盤は3px の余白も避ける（v5.4.8：1px 未満の重なりが残っていた）
     const land = innerWidth > innerHeight && innerWidth >= 640, bd = $('board').getBoundingClientRect(), st = $('stage').getBoundingClientRect();
     const tk = $('ticket').getBoundingClientRect();
     const cands = [{ top: tk.top - h - 4, left: null }, { top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ⓪予告の札のすぐ上（敵の絵の下の方）を先に試す   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
@@ -4292,10 +4297,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
+    // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
+    if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
+      if (hard) { placeTip(true); return; } }
     el.style.top = Math.round(Math.max(TOP0, best.top)) + 'px';
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
   addEventListener('resize', () => placeTip());
+  try { const tro = new ResizeObserver(() => placeTip()); ['ticket', 'board', 'dock'].forEach((id) => { const e = document.getElementById(id); if (e) tro.observe(e); }); } catch (e) { /* 古い端末 */ }
   function hideTip() { if (tipKey) { tipMark(tipKey); tipKey = null; } $('tip').hidden = true; }
   function tipsCheck(act) {
     if (tut || !$('result').hidden || document.body.classList.contains('is-cover')) { if (tipKey) hideTip(); return; }
@@ -4913,7 +4922,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     ocRollIn();
     if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。回転コンボで突入技強化' : '')); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
-    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); });
+    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); placeTip(); });   // 念のためもう一度。盤の大きさを合わせ直したら、案内も置き直す（v5.4.8：先に置いた案内が、後から伸びた予告の札に重なっていた。v537 が時々落ちる原因）
   }
   // 下の段の高さを、見通しの札がいちばん高いときに合わせて固定する（v5.3.8）。演出中（「演出を飛ばす」だけ）や
   // 回せないターンで低くなると、盤の大きさが毎ターン揺れるため。画面の大きさが変わったら測り直す
@@ -5019,6 +5028,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('dock').style.visibility = (phase === 'over' || (phase === 'resolve' && $('btnSkip').hidden)) ? 'hidden' : 'visible';
     tutRefresh();
     $('homeBtn').disabled = phase === 'resolve' && !(tut && tut.noteDone);
+    // 盤の大きさは、描いたその場で合わせる（v5.4.8：次の描画まで待つと、選ぶ場面に入った最初の1コマだけ敵の絵が5px 小さく出て、すぐ戻る揺れになっていた）。
+    //   下の段（「演出を飛ばす」の出し入れ・見える／見えない）を全部決めた後で測る。先に測ると、飛ばすボタンの分まで下の段の高さを固定してしまう
+    if (phase === 'choose' || phase === 'prep') { dockLock(); fitBoard(); setBleed(); }
   }
 
   /* ============ 演出ヘルパー ============ */
