@@ -12,7 +12,7 @@
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const sleep = (p, ms) => p.waitForTimeout(ms);
-const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"bench":1}';
+const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"bench":1,"combo":1}';
 async function open(b, meta, w, h) {
   const ctx = await b.newContext({ viewport: { width: w || 393, height: h || 759 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));

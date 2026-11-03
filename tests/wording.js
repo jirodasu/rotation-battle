@@ -6,7 +6,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
-  await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
+  await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
   await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(600);
   const map = await p.evaluate(() => [...document.querySelectorAll('#rvCards .rv-card')].map((c) => c.textContent).join('|'));
   ok(/報酬を4つから1つ/.test(map) && !/3つから1つ/.test(map), '地図の戦闘の札：報酬は「4つから1つ」');

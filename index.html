@@ -2228,6 +2228,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ls-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 .ls-list p { margin: 0; padding: 5px 0; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--paper-line); color: var(--ink); }
 .ls-list p:first-child { border-top: 0; }
+.inc-n { position: absolute; left: 4px; bottom: calc(100% + 2px); padding: 1px 5px 2px; border-radius: 6px; background: rgba(20, 12, 10, 0.86); color: #ffd2c6; font-size: 10px; font-weight: 800; line-height: 1.2; white-space: nowrap; pointer-events: none; }   /* あと何発で倒れるか（3発以内だけ。赤い数字の上に出す：下だと狭い画面で名前の札に重なる。v5.4.7） */
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
 .inc-w { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
 .t-dmg b { font-weight: var(--fw-1); }
@@ -2704,7 +2705,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.4.6</p>
+    <p class="c-ver" id="cVer">ver 5.4.7</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2736,7 +2737,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr disp" style="font-size:14px">気</span><div><b>気力</b>回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
-      <li><span class="ico rs disp" style="font-size:14px">◆</span><div><b>回転コンボ</b>回すたびに◆が1つたまる（維持では変わらない。戦闘ごとに0から）。3つ目がたまる回転で、攻撃列に入った仲間の突入技が2倍になり、◆は0に戻る。</div></li>
+      <li><span class="ico rs disp" style="font-size:14px">◆</span><div><b>回転コンボ</b>第2章から。回すたびに◆が1つたまる（維持では変わらない。戦闘ごとに0から）。3つ目がたまる回転で、攻撃列に入った仲間の突入技が2倍になり、◆は0に戻る。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
       <li class="h-more"><button type="button" class="h-next" data-tier="2">もっと「くわしく」 →</button></li>
     </ul>
@@ -3043,7 +3044,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.4.6';
+  const APP_VERSION = '5.4.7';
   const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
   const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
   const ENEMIES = [
@@ -3810,7 +3811,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 回転コンボ（v5.4.5）：遠征だけ（チュートリアルには無い）。combo＝いまの目盛り、comboFire＝このターンの突入技が強化されている
   //   戦闘の途中保存に入れる（ユーザーの決定 2026-11-02：閉じて続きを遊んでも同じ結末になるように。前の版の保存は0として読む）
   let combo = 0, comboFire = false;
-  const comboOn = () => EXPM() && !tut && !!EXP.combo;
+  const comboOn = () => EXPM() && !tut && !!EXP.combo && !!run && expCh(Math.min(run.node + 1, EXP.nodes)) >= (EXP.combo.from || 0);   // 第2章から（v5.4.7）
   // 次に回すと満タンになって発動する（目盛りが max-1）。設計書の数値（発動0.95回／戦）は、満タンに「なった」回転で発動する読み方で測られていた（tools/expsim.mjs で確かめた）
   const comboFull = () => comboOn() && combo + 1 >= EXP.combo.max;
   // 強化した突入技：数値効果を mul 倍（攻撃・軽減・回復・全体軽減）。速射は追加の攻撃回数を+1。居合の先行（速さ）は対象外。端数は四捨五入（tools/expsim.mjs の boostEntry と同じ）
@@ -4004,7 +4005,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const up = comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? '（回転コンボで強化）' : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
     return '<span class="tok ' + u.cls + (tired ? ' tired' : '') + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '"><span class="disc">' + face(u) + '</span>' + pips + ent +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' +
-      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.tired ? ' tired' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
+      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.tired ? ' tired' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(u.hp / inc.d) <= 3 ? '<small class="inc-n">あと' + Math.ceil(u.hp / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
 
@@ -4258,6 +4259,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 初めて出会う仕掛けを、その場で一度だけ教える（本番モードのみ）
   const TIPS = {
     stars: () => ['★3を目指そう', '勝つ・' + ((enemy.allowFallen || 0) ? '倒れる仲間を' + enemy.allowFallen + '人以下に' : '誰も倒れない') + '・<em>' + enemy.par + 'ターン以内</em>で★がそろう。' + (EXPM() ? '倒れた仲間は戻らない。' : '★3なら勝利の報酬が1つ増える。倒れた仲間は戦死して隊を去る。')],
+    combo: () => ['新しい力：回転コンボ', '回すたびに、「回す」の中の<em>◆</em>が1つたまる。<em>3つ目がたまる回転</em>で、攻撃列に入った仲間の突入技が<em>2倍</em>になる。'],
     gauge: () => ['気力', '回すには<em>気力' + EXP.rot.cost + '</em>が要る。気力は毎ターン' + EXP.rot.gain + 'たまる（最大' + EXP.rot.cap + '）。「回す」ボタンの●が気力。<em>いつ回すか</em>を考えよう。'],
     bind: () => ['縛り', '縛られると、<em>次のターンは回せない</em>。縛りの次に大技が来るなら、縛られる前に元気な仲間を前へ。'],
     bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
@@ -4308,6 +4310,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     else if (run && phase === 'prep' && benchList().length && !seen.bench) k = 'bench';
     else if (phase === 'choose' && units().some((x) => x.r === 0 && x.u.staMax > 0 && x.u.sta <= 0) && !seen.stamina) k = 'stamina';
     else if (EXPM() && phase === 'choose' && !seen.gauge) k = 'gauge';
+    else if (comboOn() && phase === 'choose' && !seen.combo) k = 'combo';   // 第2章で初めて出る（v5.4.7）
     else if (act.rule === 'bind') k = 'bind';
     else if (phase === 'choose' && !seen.entry) k = 'entry';
     else if (act.rule === 'charge') k = 'charge';
@@ -6590,7 +6593,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
     // 回転コンボ（v5.4.5）：回すたびに+1。満タン（max）になる回転で、その回転で攻撃列に入った仲間の突入技が mul 倍になり、0に戻る。戦闘ごとに0から
-    combo: { max: 3, mul: 2 },
+    combo: { max: 3, mul: 2, from: 1 },   // from：この章から（0＝第1章）。初めての人が最初の章で覚えることを増やさない（v5.4.7）
     // 休むたびに章の主が強くなる（HP・威力の割合）。休めば安全だが、主が強くなる
     restPen: { hp: 0.05, dmg: 0.025 },
     relics: [

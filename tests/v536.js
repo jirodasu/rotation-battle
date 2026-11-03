@@ -8,7 +8,7 @@
 //  6. 画面からはみ出さない（393×759・320×568）、ページのエラーなし
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const tipsOff = (n) => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1 })); localStorage.setItem('rb-order-n', String(n)); } catch (e) { /* */ } };
+const tipsOff = (n) => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); localStorage.setItem('rb-order-n', String(n)); } catch (e) { /* */ } };
 async function toPrep(p) {
   await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
   await p.click('#begin'); await p.waitForTimeout(700);

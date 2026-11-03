@@ -16,10 +16,10 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     const tag = w + '×' + h;
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-    await p.addInitScript(() => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1 })); } catch (e) { /* */ } });
+    await p.addInitScript(() => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); } catch (e) { /* */ } });
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
     await p.click('#begin'); await p.waitForTimeout(700); await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(200); await p.click('#rvGo'); await p.waitForTimeout(1500);
-    await p.evaluate(() => { const R = window.__rb; R.enemy.hp = R.enemy.max = 999; });   // 途中で勝たないように（数値の確かめ用。ゲームは変えない）
+    await p.evaluate(() => { const R = window.__rb; R.enemy.hp = R.enemy.max = 999; R.run.node = 3; });   // 途中で勝たないように。回転コンボは第2章から（v5.4.7）なので、第2章の地点にする（数値の確かめ用。ゲームは変えない）
     await p.click('#btnStart'); await toChoose(p);
     // 1
     const c0 = await p.evaluate(() => window.__rb.combo);
