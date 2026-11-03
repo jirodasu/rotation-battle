@@ -4914,7 +4914,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     ocRollIn();
     if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。回転コンボで突入技強化' : '')); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
-    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); placeTip(); });   // 盤の大きさを合わせ直したら、案内も置き直す（v5.4.8：先に置いた案内が、後から伸びた予告の札に重なっていた。v537 が時々落ちる原因）
+    requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); placeTip(); });   // 念のためもう一度。盤の大きさを合わせ直したら、案内も置き直す（v5.4.8：先に置いた案内が、後から伸びた予告の札に重なっていた。v537 が時々落ちる原因）
   }
   // 下の段の高さを、見通しの札がいちばん高いときに合わせて固定する（v5.3.8）。演出中（「演出を飛ばす」だけ）や
   // 回せないターンで低くなると、盤の大きさが毎ターン揺れるため。画面の大きさが変わったら測り直す
@@ -5020,6 +5020,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('dock').style.visibility = (phase === 'over' || (phase === 'resolve' && $('btnSkip').hidden)) ? 'hidden' : 'visible';
     tutRefresh();
     $('homeBtn').disabled = phase === 'resolve' && !(tut && tut.noteDone);
+    // 盤の大きさは、描いたその場で合わせる（v5.4.8：次の描画まで待つと、選ぶ場面に入った最初の1コマだけ敵の絵が5px 小さく出て、すぐ戻る揺れになっていた）。
+    //   下の段（「演出を飛ばす」の出し入れ・見える／見えない）を全部決めた後で測る。先に測ると、飛ばすボタンの分まで下の段の高さを固定してしまう
+    if (phase === 'choose' || phase === 'prep') { dockLock(); fitBoard(); setBleed(); }
   }
 
   /* ============ 演出ヘルパー ============ */
