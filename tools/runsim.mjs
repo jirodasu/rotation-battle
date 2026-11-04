@@ -37,7 +37,6 @@ function applyAge(m, fill) {
   m.defSup = b.defSup ? Math.max(1, mul(b.defSup)) + add('defSup') : 0;
   m.heal = b.heal ? Math.max(1, mul(b.heal)) : 0;
   m.rest = mul(b.rest) + add('rest');
-  m.staMax = Math.max(1, b.sta + ph.sta + add('sta'));
   const e = Object.assign({}, m.inherit || JOBS.find((j) => j.id === m.job).entry);
   ['atk', 'guard', 'heal', 'teamGuard'].forEach((k) => { if (e[k]) e[k] = Math.round(e[k] * ph.ent); });
   m.entry = e;
@@ -47,7 +46,7 @@ function applyAge(m, fill) {
 let uid = 0;
 function newMember(job, age, trait) {
   const j = JOBS.find((x) => x.id === job);
-  const m = Object.assign({}, j, { uid: 'm' + (++uid), job, age, trait: trait || null, base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest, sta: j.sta }, bonus: {}, equips: [], inherit: null, r: null, c: null });
+  const m = Object.assign({}, j, { uid: 'm' + (++uid), job, age, trait: trait || null, base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest }, bonus: {}, equips: [], inherit: null, r: null, c: null });
   applyAge(m, true);
   return m;
 }
@@ -71,12 +70,11 @@ export function runEnemy(step, cfg = RUN, vkey = null) {
 const power = (m) => m.hp * (m.atk + m.heal * 2 + m.defSup + 4);
 export function pickSortie(members, n) { return members.slice().sort((a, b) => power(b) - power(a)).slice(0, n); }
 
-// 戦い方：倒されそうな仲間がいる／前列が疲れている／前列の傷が深いときに回す
+// 戦い方：倒されそうな仲間がいる／前列の傷が深いときに回す
 export const SMART = (s) => {
   const g = s.grid, e = s.enemy, act = e.pattern[s.turn % e.pattern.length];
   const front = []; for (let c = 0; c < COLS; c++) if (g[0][c]) front.push(g[0][c]);
   if (!front.length) return true;
-  if (front.some((u) => u.staMax > 0 && u.sta <= 0)) return true;
   if (act.dmg) {
     const d = act.dmg * (act.hits || 1);
     if (act.rule === 'all' && front.some((u) => u.hp <= act.dmg)) return true;

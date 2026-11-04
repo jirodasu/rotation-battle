@@ -36,7 +36,7 @@ async function enter(p, foe, step) {
   return waitStable(p);
 }
 const snap = () => { const R = window.__rb, e = R.enemy;
-  return { turn: R.turn, gauge: R.gauge, phase: R.phase, tgt: R.tgtId, grid: R.grid.map((r) => r.map((u) => (u ? u.name + ':' + u.hp + '/' + u.sta + (u.defReady ? 'D' : '') + (u.atkReady ? 'A' : '') : '-')).join(',')).join('|'),
+  return { turn: R.turn, gauge: R.gauge, phase: R.phase, tgt: R.tgtId, grid: R.grid.map((r) => r.map((u) => (u ? u.name + ':' + u.hp + (u.defReady ? 'D' : '') + (u.atkReady ? 'A' : '') : '-')).join(',')).join('|'),
     enemy: e.party ? e.party.map((f) => f.id + f.hp + (f.charged ? 'c' : '') + 'd' + (f.defUp || 0) + 'n' + (f.defNext || 0)).join(',') : e.name + e.hp + (e.charged ? 'c' : '') + (e.bound ? 'b' : ''),
     members: R.run.members.map((m) => m.name + m.hp).join(',') }; };
 async function reloadResume(p) {

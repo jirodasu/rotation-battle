@@ -19,7 +19,7 @@ const INVARIANTS = () => {
   run.members.forEach((m) => {
     if (ids.has(m.uid)) bad.push('団員の重複 ' + m.name); ids.add(m.uid);
     if (!(m.hp >= 0) || !(m.hp <= m.max)) bad.push(m.name + ' のHPが範囲外 ' + m.hp + '/' + m.max);
-    if (!(m.max > 0) || !Number.isFinite(m.atk) || !Number.isFinite(m.staMax)) bad.push(m.name + ' の能力値が不正');
+    if (!(m.max > 0) || !Number.isFinite(m.atk)) bad.push(m.name + ' の能力値が不正');
     if (m.age >= 55) bad.push(m.name + ' が55歳以上なのに在籍 ' + m.age);
     if (m.hp <= 0 && document.getElementById('runv') && !document.getElementById('runv').hidden) bad.push(m.name + ' がHP0のまま在籍');
   });
@@ -57,7 +57,7 @@ const INVARIANTS = () => {
         rv: !document.getElementById('runv').hidden, res: !document.getElementById('result').hidden, en: !document.getElementById('ending').hidden,
         title: document.getElementById('rvTitle').textContent, cards: [...document.querySelectorAll('#rvCards [data-i]')].map((c) => c.dataset.i + (c.disabled ? 'x' : '')),
         prep: !document.getElementById('btnStart').hidden, choose: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden',
-        tip: !document.getElementById('tip').hidden, node: window.__rb.run ? window.__rb.run.node : -1, ko: document.querySelectorAll('.inc.ko').length, tired: document.querySelectorAll('#board .slot[data-r="0"] .tok.tired').length,
+        tip: !document.getElementById('tip').hidden, node: window.__rb.run ? window.__rb.run.node : -1, ko: document.querySelectorAll('.inc.ko').length,
         bench: document.querySelectorAll('.bn').length, cover: !document.getElementById('cover').hidden
       }));
       const bad = await p.evaluate(INVARIANTS);
@@ -108,7 +108,7 @@ const INVARIANTS = () => {
         continue;
       }
       if (st.choose) {
-        const rot = style === 'smart' ? (st.ko > 0 || st.tired > 0 || rnd() < 0.2) : rnd() < 0.5;
+        const rot = style === 'smart' ? (st.ko > 0 || rnd() < 0.2) : rnd() < 0.5;
         if (rnd() < 0.1) { await p.click('#btnPreview').catch(() => {}); await p.waitForTimeout(50); }
         const dis = await p.evaluate(() => document.getElementById('btnRotate').disabled);   // 縛り・気力不足のときは押せない
         await p.click(rot && !dis ? '#btnRotate' : '#btnStay', { timeout: 3000 }).catch(() => {});

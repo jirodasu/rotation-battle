@@ -18,7 +18,7 @@ for (const [k, pol, n] of [['回さない', STAY], ['毎ターン回す', ALWAYS
 }
 
 console.log('\n== 2) 1戦ごとの「勝てる手順の割合」（新品の4人・亜種なし。10手の回す／維持1024通り、その後は標準）');
-const party0 = () => EXP.party.map(([j, r, c], i) => { const J = JOBS.find((x) => x.id === j); return Object.assign({}, J, { uid: 'm' + i, name: 'u' + i, jname: J.name, r, c, max: J.hp, hp: J.hp, staMax: J.sta, entry: Object.assign({}, J.entry) }); });
+const party0 = () => EXP.party.map(([j, r, c], i) => { const J = JOBS.find((x) => x.id === j); return Object.assign({}, J, { uid: 'm' + i, name: 'u' + i, jname: J.name, r, c, max: J.hp, hp: J.hp, entry: Object.assign({}, J.entry) }); });
 for (const [step, foe] of [[1, 0], [1, 'binder'], [2, 0], [2, 'binder'], [3, 'chief']]) {
   const en = enemyAt(step, foe, EXP, null); let w = 0, noLoss = 0;
   for (let mk = 0; mk < 1024; mk++) { const r = battle(en, party0(), (st) => (st.turn <= 10 ? !!((mk >> (st.turn - 1)) & 1) : SMART(st)), { cols: 2, seed: 1, relics: [] }); if (r.win) { w++; if (!r.fallen) noLoss++; } }

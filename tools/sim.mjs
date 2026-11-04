@@ -18,11 +18,6 @@ export const JOBS = grab('JOBS');
 export const ENEMIES = grab('ENEMIES');
 export const DEFAULT_FORM = grab('DEFAULT_FORM');
 export const RULES = Object.assign({
-  stamina: false,      // 前列スタミナ
-  staCost: 1,          // 前列で1回攻撃するごとの消耗
-  staMid: 0,           // 補助列にいる間の回復量（1ターン）
-  staBack: 99,         // 回復列にいる間の回復量（1ターン）
-  tiredMul: 0.5,       // スタミナ0のときの攻撃倍率
   entry: false         // 突入技
 }, grab('RULES') || {});
 
@@ -32,7 +27,7 @@ const hpMap = (g) => { const m = {}; for (let r = 0; r < 3; r++) for (let c = 0;
 // 乱数（シード固定）
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 
-function makeUnits() { return JOBS.map((j) => Object.assign({}, j, { max: j.hp, atkReady: true, defReady: true, sta: j.sta || 0, staMax: j.sta || 0, entered: false })); }
+function makeUnits() { return JOBS.map((j) => Object.assign({}, j, { max: j.hp, atkReady: true, defReady: true, entered: false })); }
 const empty = () => Array.from({ length: ROWS }, () => Array(COLS).fill(null));
 const unitsOf = (g) => { const a = []; for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) if (g[r][c]) a.push({ u: g[r][c], r, c }); return a; };
 const frontRow = (g) => { for (let r = 0; r < ROWS; r++) if (g[r].some(Boolean)) return r; return -1; };
@@ -42,7 +37,7 @@ export function battle(enemyDef, form, policy, opt = {}) {
   const R = Object.assign({}, RULES, opt.rules || {});
   const rand = rng(opt.seed || 1);
   const g = empty();
-  if (opt.party) opt.party.forEach((p) => { g[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, sta: p.staMax, entered: false }); });
+  if (opt.party) opt.party.forEach((p) => { g[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, entered: false }); });
   else { const roster = makeUnits(); form.forEach(([id, r, c]) => { g[r][c] = roster.find((u) => u.id === id); }); }
   const e = Object.assign({}, enemyDef, { hpNow: enemyDef.hp, charged: false });
   let grid = g, fallen = 0, taken = 0;
@@ -54,10 +49,6 @@ export function battle(enemyDef, form, policy, opt = {}) {
       const back = []; for (let c = 0; c < COLS; c++) if (grid[2][c]) back.push(grid[2][c]);
       back.forEach((u) => { u.hp = Math.min(u.max, u.hp + (u.rest || 0)); });
       back.filter((h) => h.heal > 0).forEach((h) => back.forEach((u) => { if (u !== h) u.hp = Math.min(u.max, u.hp + h.heal); }));
-      if (R.stamina) {
-        back.forEach((u) => { u.sta = Math.min(u.staMax, u.sta + R.staBack); });
-        for (let c = 0; c < COLS; c++) if (grid[1][c]) grid[1][c].sta = Math.min(grid[1][c].staMax, grid[1][c].sta + R.staMid);
-      }
     }
     // 突入技（このターンだけ）
     const ent = new Map();
@@ -106,10 +97,6 @@ export function battle(enemyDef, form, policy, opt = {}) {
           if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
           const en = ent.get(u);
           if (en) power += en.atk || 0;
-          if (R.stamina && u.staMax > 0) {
-            if (u.sta <= 0) power = Math.ceil(power * R.tiredMul);
-            u.sta = Math.max(0, u.sta - R.staCost);
-          }
         } else power = u.ranged;
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
         let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - e.def);

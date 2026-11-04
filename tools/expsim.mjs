@@ -33,7 +33,7 @@ export function battle(en, party, policy, o) {
   const unitsOf = (g) => { const a = []; for (let r = 0; r < 3; r++) for (let c = 0; c < COLS; c++) if (g[r][c]) a.push({ u: g[r][c], r, c }); return a; };
   const frontRow = (g) => { for (let r = 0; r < 3; r++) if (g[r].some(Boolean)) return r; return -1; };
   let grid = empty();
-  party.forEach((p) => { grid[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, sta: p.staMax, entered: false }); });
+  party.forEach((p) => { grid[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, entered: false }); });
   const e = Object.assign({}, en, { hpNow: en.hp, charged: false });
   let fallen = 0, stay = 0, bound = false;
   // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
@@ -46,8 +46,6 @@ export function battle(en, party, policy, o) {
       const back = []; for (let c = 0; c < COLS; c++) if (grid[2][c]) back.push(grid[2][c]);
       back.forEach((u) => { u.hp = Math.min(u.max, u.hp + (u.rest || 0)); });
       back.filter((h) => h.heal > 0).forEach((h) => back.forEach((u) => { if (u !== h) u.hp = Math.min(u.max, u.hp + h.heal); }));
-      back.forEach((u) => { u.sta = Math.min(u.staMax, u.sta + R.staBack); });
-      for (let c = 0; c < COLS; c++) if (grid[1][c]) grid[1][c].sta = Math.min(grid[1][c].staMax, grid[1][c].sta + R.staMid);
     }
     const ent = new Map();
     unitsOf(grid).forEach(({ u, r }) => { if (r === 0 && u.entered && u.entry) ent.set(u, boosted.has(u) ? boostEntry(u.entry, CB.mul) : u.entry); });
@@ -102,7 +100,6 @@ export function battle(en, party, policy, o) {
           if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
           const x = ent.get(u);
           if (x) power += (x.atk || 0) + (rel.has('bell') ? RD.bell.entryAtk : 0);
-          if (u.staMax > 0) { if (u.sta <= 0) power = Math.ceil(power * R.tiredMul); u.sta = Math.max(0, u.sta - R.staCost); }
         } else power = u.ranged;
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
         let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - e.def);
@@ -133,7 +130,6 @@ export const SMART = (s) => {
   const g = s.grid, e = s.enemy, act = e.pattern[s.turn % e.pattern.length];
   const front = []; for (let c = 0; c < s.cols; c++) if (g[0][c]) front.push(g[0][c]);
   if (!front.length) return true;
-  if (front.some((u) => u.staMax > 0 && u.sta <= 0)) return true;
   if (act.dmg) {
     const d = act.dmg * (act.hits || 1);
     if (act.rule === 'all' && front.some((u) => u.hp <= act.dmg)) return true;
@@ -147,7 +143,7 @@ export const SMART = (s) => {
 function member(job, r, c, uid, cfg) {
   const j = JOBS.find((x) => x.id === job);
   // name は個人名、jname は職業名（ゲームの本番と同じ）。「職業を狙う」攻撃は jname で照合する
-  return Object.assign({}, j, { uid, name: '団員' + uid, jname: j.name, job, r, c, max: j.hp, hp: j.hp, staMax: j.sta, entry: Object.assign({}, j.entry) });
+  return Object.assign({}, j, { uid, name: '団員' + uid, jname: j.name, job, r, c, max: j.hp, hp: j.hp, entry: Object.assign({}, j.entry) });
 }
 export const chapterOf = (step, cfg) => cfg.chiefs.findIndex((c) => step <= c);
 // 亜種（vkey）は VARIANTS をそのまま使う。rests：その章で休んだ回数（章の主は休むたびに強くなる：cfg.restPen）

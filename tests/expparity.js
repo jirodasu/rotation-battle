@@ -52,7 +52,7 @@ async function fight(p, seq) {
       if (k.up) run.members.forEach((m) => { if (m.up) R.applyAge(m, false); });
       const e = R.expEnemy(k.step, null, k.foe === 'chief' ? 0 : k.foe);
       run.enemy = e;
-      return { e, members: run.members.map((m) => ({ uid: m.uid, name: m.name, jname: m.jname, r: m.r, c: m.c, hp: m.hp, max: m.max, atk: m.atk, ranged: m.ranged, atkSup: m.atkSup, defSup: m.defSup, heal: m.heal, rest: m.rest, staMax: m.staMax, spd: m.spd, hits: m.hits, entry: m.entry })) };
+      return { e, members: run.members.map((m) => ({ uid: m.uid, name: m.name, jname: m.jname, r: m.r, c: m.c, hp: m.hp, max: m.max, atk: m.atk, ranged: m.ranged, atkSup: m.atkSup, defSup: m.defSup, heal: m.heal, rest: m.rest, spd: m.spd, hits: m.hits, entry: m.entry })) };
     }, k);
     await p.evaluate(() => window.__rb.toPrepForTest && window.__rb.toPrepForTest());
     await fight(p, k.seq);

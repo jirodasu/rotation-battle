@@ -2,14 +2,14 @@
 // 合格の基準（測る前に決めたもの）：
 //  1. 開くと「はじめに」の段だけが出る。項目は4つ以下で、スクロールせずに全部見える（393×852・320×568）
 //  2. 「はじめに」には、やること（回す・維持）・下の札・赤い数字が入る
-//  3. 段は「はじめに・しくみ・くわしく」の3つ。押すと、その段だけが出る。「しくみ」には列と回す・気力、「くわしく」にはスタミナ・突入技・★・遠征
+//  3. 段は「はじめに・しくみ・くわしく」の3つ。押すと、その段だけが出る。「しくみ」には列と回す・気力、「くわしく」には突入技・★・遠征
 //  4. 段の終わりの「次へ」で、次の段へ進める
 //  5. 閉じてまた開くと、前に見ていた段が出る
 //  6. これまでの説明は1つも消えない（14項目＋新しい2項目が、どこかの段にある）
 //  7. 下の帯（わかった）の下に本文がはみ出さない。ページのエラーなし
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const OLD = ['攻撃列', '補助列', '回復列', '回す（ローテーション）', '敵をタップ', '赤い数字', '赤く光る仲間', '遠征', '気力', 'スタミナ', '突入技', '予兆', 'ちからをためる', '防無効', '★の条件'];
+const OLD = ['攻撃列', '補助列', '回復列', '回す（ローテーション）', '敵をタップ', '赤い数字', '赤く光る仲間', '遠征', '気力', '突入技', '予兆', 'ちからをためる', '防無効', '★の条件'];
 (async () => {
   const b = await launch();
   for (const [w, h] of [[393, 852], [320, 568], [852, 393]]) {
@@ -37,7 +37,7 @@ const OLD = ['攻撃列', '補助列', '回復列', '回す（ローテーショ
     await p.click('#hTab1'); await p.waitForTimeout(200); const s1 = await st();
     ok(s1.n === 1 && s1.id === 'hTier1' && ['攻撃列', '補助列', '回復列', '回す（ローテーション）', '気力'].every((k) => s1.items.includes(k)), tag + ' 3 しくみ ' + JSON.stringify(s1.items));
     await p.click('#hTab2'); await p.waitForTimeout(200); const s2 = await st();
-    ok(s2.n === 1 && s2.id === 'hTier2' && ['スタミナ', '突入技', '★の条件', '遠征'].every((k) => s2.items.includes(k)), tag + ' 3 くわしく ' + JSON.stringify(s2.items));
+    ok(s2.n === 1 && s2.id === 'hTier2' && ['突入技', '★の条件', '遠征'].every((k) => s2.items.includes(k)), tag + ' 3 くわしく ' + JSON.stringify(s2.items));
     // 6
     const all = await p.evaluate(() => [...document.querySelectorAll('#help .steps li:not(.h-more) b')].map((x) => x.textContent));
     ok(OLD.every((k) => all.includes(k)) && new Set(all).size === all.length, tag + ' 6 これまでの説明が全部ある（' + all.length + '項目・重複なし）');
