@@ -38,6 +38,13 @@ async function toPrep(p, n) {
       // 盤と予告の札は必ず避ける。敵の名前・HPは、背の低い画面（700px未満）で、ほかに場所が無いときだけ重なってよい
       const must = h < 700 ? ['ticket', 'board'] : ['plate', 'ehp', 'ticket', 'board'];
       ok(!!t && must.every((k) => !t[k] || ov(t.tip, t[k]) < 2), tag + ' 2 案内は' + (h < 700 ? '予告・盤' : '名前・HP・予告・盤') + 'に重ならない ' + (t ? JSON.stringify(['plate', 'ehp', 'ticket', 'board'].map((k) => t[k] ? Math.round(ov(t.tip, t[k])) : 0)) : '（出ていない）'));
+      // 2 ための案内も必ず出して測る。どちらが先に出るかは敵の技しだいで、ためだけが落ちていた（v5.5.4）。上でためを測ったときは要らない（防無効は最初に出て、もう出ない）
+      if (held.k !== 'charge') { const t2 = await p.evaluate(async (k1) => { const tip = document.getElementById('tip'); if (!tip.hidden) document.getElementById('tipOk').click(); localStorage.setItem('rb-tips', '{}');
+        const R = window.__rb, a = R.actOf(R.enemy); if (k1 === 'pierce') { a.pierce = false; a.rule = 'charge'; } else { a.pierce = true; a.rule = a.rule === 'charge' || a.rule === 'bind' ? 'job' : a.rule; }
+        const fx = document.getElementById('fx'), s = document.createElement('span'); s.className = 'pop'; fx.appendChild(s);   // 演出の数字が消えるのを待ってから出る道筋（落ちていたのはこちら）
+        R.render(); await new Promise((r) => setTimeout(r, 200)); s.remove(); await new Promise((r) => setTimeout(r, 1200)); if (tip.hidden) return null; const Q = (s) => { const e = document.querySelector(s); return e ? e.getBoundingClientRect() : null; };
+        return { k: tip.dataset.k, tip: Q('#tip'), ticket: Q('#ticket'), board: Q('#board') }; }, held.k);
+      ok(!!t2 && t2.k !== held.k && ['ticket', 'board'].every((k) => !t2[k] || ov(t2.tip, t2[k]) < 2), tag + ' 2 ための案内（' + (t2 ? t2.k : '出ていない') + '）も予告・盤に重ならない ' + (t2 ? JSON.stringify(['ticket', 'board'].map((k) => Math.round(ov(t2.tip, t2[k])))) : '')); }
       // --- 3. 呼び名 ---
       const nm = await p.evaluate(() => ({ tags: [...document.querySelectorAll('.ctag')].map((e) => e.textContent).join(''), help: document.getElementById('help').textContent }));
       ok(nm.tags === '左右' && /左・右/.test(nm.help) && !/一の列|二の列|縦の列/.test(nm.help), tag + ' 3 縦の並びは「左・右」（' + nm.tags + '）');
