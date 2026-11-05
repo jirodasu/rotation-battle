@@ -14,7 +14,7 @@
 process.env.RB_KEEP_WIN = '1';   // 以前の勝利パネルで勝敗を待つ（v5.3.3。新しい流れは v533.js）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1}';
+const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"hmIntro":1}';
 async function page(b, w, h) {
   const ctx = await b.newContext({ viewport: { width: w || 390, height: h || 844 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));

@@ -138,6 +138,7 @@ async function fight(p, seq) {
     for (let i = 0; i < 400 && !end; i++) {
       const st = await p.evaluate(() => ({ rv: !document.getElementById('runv').hidden, title: document.getElementById('rvTitle').textContent, n: document.querySelectorAll('#rvCards .rv-card').length, txt: document.body.innerText, node: window.__rb.run ? window.__rb.run.node : 0 }));
       far = Math.max(far, st.node + 1);
+      if (await p.evaluate(() => !document.getElementById('hmIntro').hidden)) { await p.click('#hmGo').catch(() => {}); continue; }   // 第2章の扉（v5.5.2）
       if (/NaN|undefined/.test(st.txt)) { bad = (st.txt.match(/.{0,20}(NaN|undefined).{0,20}/) || [''])[0]; break; }
       if (st.rv && /踏破|ここまで|途絶えた/.test(st.title)) { end = st.title; break; }
       if (st.rv) {

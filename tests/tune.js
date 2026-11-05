@@ -3,7 +3,7 @@
 //  1. 普通に開くと調整の道具は出ない
 //  2. ?tune で開くと「調」のボタンが出る。部品を選ぶ→画面の部品をタップしても、その部品の動作（ボタンなら押した扱い）は起きない
 //  3. 選んだ部品の文字の大きさを変えると、画面にすぐ反映される。全体の色（金）を変えると、:root の変数が変わる
-//  4. 書き出しに、変えた部品と色が出る。再読み込みしても（?tune なしでも）変更が残る。「終える」で道具が消え、変更も効かなくなる
+//  4. 書き出しに、変えた部品と色が出る。?tune で開き直すと変更が残る。?tune なしで開くと、道具も変更も出ない（v5.5.3）。「終える」で道具が消え、変更も効かなくなる
 //  5. 調整モード中も、ゲームのページのエラーが出ない
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -35,8 +35,11 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
   const out = await p.evaluate(() => document.getElementById('tnOut').value);
   ok(/--accent: #ff0000/.test(out) && /#begin \{[\s\S]*font-size: 30px/.test(out), '4 書き出しに変更が出る');
   await p.goto(url); await p.waitForTimeout(800);
+  const plain = await p.evaluate(() => ({ fab: !!document.getElementById('tnFab'), acc: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim() }));
+  ok(!plain.fab && plain.acc !== '#ff0000', '4 ?tune なしで開くと、「調」のボタンも変更も出ない（v5.5.3） ' + JSON.stringify(plain));
+  await p.goto(url + '?tune'); await p.waitForTimeout(800);
   const kept = await p.evaluate(() => ({ fab: !!document.getElementById('tnFab'), acc: getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), fs: parseFloat(getComputedStyle(document.querySelector('#begin')).fontSize) }));
-  ok(kept.fab && kept.acc === '#ff0000' && kept.fs === 30, '4 ?tune なしで開き直しても残る ' + JSON.stringify(kept));
+  ok(kept.fab && kept.acc === '#ff0000' && kept.fs === 30, '4 ?tune で開き直すと変更が残る ' + JSON.stringify(kept));
   await p.click('#tnFab'); await p.waitForTimeout(200); await p.click('#tnPanel [data-tab="out"]'); await p.waitForTimeout(100);
   // 読み込み：書き出しの文字を貼り直せる
   await p.fill('#tnIn', ':root {\n  --ink: #123456;\n}\n#rTitle {\n  font-size: 20px;\n}\n'); await p.click('#tnImport'); await p.waitForTimeout(100);
