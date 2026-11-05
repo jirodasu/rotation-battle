@@ -50,9 +50,9 @@ const toChoose = async (p) => { for (let k = 0; k < 200; k++) { if (await p.eval
       for (let t = 1; t <= 14 && !hit; t++) { R.setTurn(t); const inc = R.incoming(R.grid, false, false), k = Object.keys(inc)[0]; if (k) hit = k; }
       if (!hit) return null; R.render(); await new Promise((r) => requestAnimationFrame(r));
       const [r, c] = hit.split(',').map(Number), u = R.grid[r][c], keep = u.hp; u.hp = 1; R.render(); await new Promise((q) => requestAnimationFrame(q));
-      const b = [...document.querySelectorAll('#ocStay .oc-r')].find((x) => x.querySelector('i').textContent === '受ける').querySelector('b');
-      const res = { t: b.textContent, alarm: b.classList.contains('alarm'), roll: b.classList.contains('roll') }; u.hp = keep; R.render(); return res; });
-    if (r4b) ok(/倒れる/.test(r4b.t) && r4b.alarm && r4b.roll, '4 「倒れる」が新しく出たら強めに知らせる ' + JSON.stringify(r4b));
+      const b = [...document.querySelectorAll('#ocStay .oc-r')].find((x) => x.dataset.k === 'hurt').querySelector('b');   // v5.5.1：いちばん危ない仲間の行
+      const res = { t: b.textContent, ko: b.classList.contains('ko'), alarm: b.classList.contains('alarm'), roll: b.classList.contains('roll') }; u.hp = keep; R.render(); return res; });
+    if (r4b) ok(/→0/.test(r4b.t) && r4b.ko && r4b.alarm && r4b.roll, '4 倒れる（→0）が新しく出たら強めに知らせる ' + JSON.stringify(r4b));
     else ok(true, '4 （この敵では攻撃が来るターンが無かった）');
     // 3 回す
     await p.evaluate(() => { window.__rb.setGauge(3); window.__rb.setTurn(1); window.__rb.render(); }); await fr(p);

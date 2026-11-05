@@ -9,6 +9,17 @@
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const toChoose = async (p) => { for (let k = 0; k < 400; k++) { if (await p.evaluate(() => window.__rb.phase === 'choose' || !document.getElementById('result').hidden || !document.getElementById('runv').hidden)) break; await p.waitForTimeout(40); } await p.waitForTimeout(150); };
+// 読み込み直し（v5.5.1）：テストの環境（file://）では、読み込み直したときに保存（localStorage）がまれに丸ごと消える。
+//   ゲームの処理は保存を全部消さない（消すのは途中保存の1件だけ）ので、環境の問題。消えていたら同じ中身を書き戻してもう一度読み込む
+async function reloadKeep(p) {
+  const d = await p.evaluate(() => JSON.stringify(Object.assign({}, localStorage)));
+  for (let k = 0; k < 3; k++) {
+    await p.reload(); await p.waitForTimeout(500);
+    const lost = await p.evaluate((d) => { if (localStorage.getItem('rb-exp-save')) return false; const o = JSON.parse(d); Object.keys(o).forEach((x) => localStorage.setItem(x, o[x])); return true; }, d);
+    if (!lost) return;
+    console.log('  （環境）読み込み直しで保存が消えたので書き戻した');
+  }
+}
 const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .pips.cb i')].map((i) => (i.classList.contains('on') ? 1 : 0)).reduce((a, b) => a + b, -0) + '/' + document.querySelectorAll('#rotMeter .pips.cb i').length);
 (async () => {
   const b = await launch();
@@ -49,11 +60,11 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     await p.mouse.move(bx.x, bx.y + 400); await p.mouse.up(); await p.waitForTimeout(250);
     ok(pv.up > 0 && pv.fire === 1 && pv.on === 3, tag + ' 3 先読み中：盤の「突」に＋、目盛りは回した後（3つ光る） ' + JSON.stringify(pv));
     // 2・4 発動
-    const pred = await p.evaluate(() => { const b2 = [...document.querySelectorAll('#ocRot .oc-r')].find((r) => r.querySelector('i').textContent === '敵'); return b2 ? b2.querySelector('b').textContent : ''; });
+    const pred = await p.evaluate(() => { const b2 = [...document.querySelectorAll('#ocRot .oc-r')].find((r) => r.dataset.k === 'foe'); return b2 ? b2.querySelector('b').textContent : ''; });   // v5.5.1：札は「敵 HP いま→次」
     const hp0 = await p.evaluate(() => window.__rb.enemy.hp);
     await p.click('#btnRotate'); await toChoose(p);
     const after = await p.evaluate(() => ({ combo: window.__rb.combo, log: window.__rb.log.join('\n'), hp: window.__rb.enemy.hp }));
-    const m = /-(\d+)/.exec(pred), dealt = hp0 - after.hp;
+    const mm = /(\d+)→(\d+)/.exec(pred), m = mm ? [0, +mm[1] - +mm[2]] : null, dealt = hp0 - after.hp;
     ok(after.combo === 0 && /回転コンボ/.test(after.log) && /（強化）|突入技/.test(after.log), tag + ' 2 3つ目がたまる回転で発動して0に戻る');
     ok(!!m && +m[1] === dealt, tag + ' 4 見通しの札の「敵」（' + pred + '）が、実際に与えたダメージ（' + dealt + '）と一致');
     // 3 目盛りの上を長押しして離しても「回す」が届く（先読みで目盛りを描き直しても、指の下の印を作り直さない）
@@ -69,11 +80,11 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     await p.evaluate(() => { window.__rb.setCombo(2); window.__rb.setGauge(3); window.__rb.render(); });
     await p.click('#btnStay'); await toChoose(p);   // 選ぶ場面に戻ったときに途中保存される
     const before = await p.evaluate(() => window.__rb.combo);
-    await p.goto(testPage()); await p.waitForTimeout(500);
+    await reloadKeep(p);
     await p.evaluate(() => { const r = document.getElementById('resume'); if (r && !r.hidden) r.click(); }); await toChoose(p); await p.waitForTimeout(300);
     ok(before === 2 && await p.evaluate(() => window.__rb.combo) === 2, tag + ' 5 途中保存から続きを遊んでもコンボは残る（' + before + '）');
     ok(await p.evaluate(() => { const o = JSON.parse(localStorage.getItem('rb-exp-save')); const b = o.battle; delete b.combo; localStorage.setItem('rb-exp-save', JSON.stringify(o)); return true; }), tag + ' 5 前の版の保存（combo なし）を用意');
-    await p.goto(testPage()); await p.waitForTimeout(500);
+    await reloadKeep(p);
     await p.evaluate(() => { const r = document.getElementById('resume'); if (r && !r.hidden) r.click(); }); await toChoose(p); await p.waitForTimeout(300);
     ok(await p.evaluate(() => window.__rb.combo) === 0, tag + ' 5 前の版の保存はコンボ0として読む');
     ok(!errs.length, tag + ' 6 ページのエラーなし ' + errs.join('/'));

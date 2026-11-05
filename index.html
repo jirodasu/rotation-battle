@@ -674,7 +674,11 @@ body.boss-stage .en-u b { color: var(--ink); }
 @media (max-height: 460px) { .oc-b:not(:empty) { min-height: 1.35em; } }
 /* 三位一体（敵3体）は敵のパネルに場所が要るので、札は「受ける・敵」の2行（v5.3.8。4行だとパネルが中身に合わせて縮み、毎ターン盤が揺れたため） */
 body:has(#stage.trio) .oc-r.x { display: none; }
-body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); }
+body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 17px + 1px); gap: 1px; }   /* v5.5.1：三位一体は敵パネルに場所が要るので、2行を詰める（札の高さは従来の2行と同じ） */
+body:has(#stage.trio) .oc-r.oc-l { min-height: 17px; gap: 4px; grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); }
+body:has(#stage.trio) .oc-ico.uc-disc { width: 16px; height: 16px; }
+body:has(#stage.trio) .oc-r.oc-l b { font-size: 14px; line-height: 1; }
+body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom: 7px; }
 .oc-r { display: grid; grid-template-columns: 3.3em minmax(0, 1fr); gap: 4px; }
 /* 行は折り返さない（折り返すと札の高さが変わり、毎ターン盤の大きさが揺れるため。v5.3.8）。収まらない分は … で、数字の合計は「敵」の行に必ず出る */
 .oc-r b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -690,12 +694,33 @@ body:has(#stage.trio) .oc-b:not(:empty) { min-height: calc(2 * 1.35em + 1px); }
 .btn.primary .oc-r b.bad, .btn.primary .oc-r b.ko { color: #8a1d0e; } .btn.primary .oc-r b.good { color: #24582f; }
 :root[data-skin="goth"] .dock .btn:not(.primary) .oc-r b.good { color: #8fd49c; }
 #btnRotate.oc .rot-meter { justify-self: start; }
+/* 2行の札（v5.5.1）：顔・名前・「HP いま → 次」 */
+.oc-r.oc-l { display: grid; grid-template-columns: 22px minmax(0, auto) minmax(0, 1fr); align-items: center; gap: 6px; min-height: 24px; }
+.oc-ico.uc-disc { width: 22px; height: 22px; box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.55); }
+.oc-ico.c-safe, .oc-ico.c-maybe { background: rgba(0, 0, 0, 0.14); display: grid; place-items: center; }
+.oc-ico.c-safe svg { width: 70%; height: 70%; }
+.oc-q { font: 900 14px/1 var(--serif); }
+.oc-r.oc-l i { font-size: 12px; max-width: 4.6em; overflow: hidden; text-overflow: ellipsis; }
+.oc-r.oc-l b { font: 800 16px/1.1 var(--serif); font-variant-numeric: tabular-nums; text-decoration: none; }
+.oc-r.oc-l b small { font-size: 10px; font-weight: 700; opacity: 0.7; margin-right: 3px; }
+.oc-r.oc-l b em { font-style: normal; opacity: 0.6; margin: 0 3px; font-size: 13px; }
+.oc-r.oc-l b small.oc-more { margin: 0 0 0 5px; opacity: 0.85; }
+.oc-r.oc-l b.ko { text-decoration: none; }
+.oc-r.oc-l b.ko::after { content: "倒"; display: inline-block; margin-left: 5px; padding: 1px 4px; border-radius: 4px; background: var(--danger-strong); color: var(--on-danger, #fff); font: 900 10px/1.2 var(--serif); vertical-align: 2px; }
+.oc-b:not(:empty) { min-height: calc(2 * 24px + 2px); }
+.oc-anc { width: 16px; height: 16px; vertical-align: -2px; margin-right: 4px; }
+.dock #btnStay.oc { flex: 1 1 0; }
+.oc-r.oc-l b { overflow: visible; }
+/* 幅の狭い画面：「HP」の字を省き、名前は顔のアイコンに任せて短く切る（数字は必ず全部見せる） */
+@media (max-width: 419px) { .oc-r.oc-l b small:not(.oc-more) { display: none; } .oc-r.oc-l { gap: 5px; } .oc-r.oc-l b { font-size: 15px; } .oc-r.oc-l i { max-width: 3.2em; } }
+@media (max-width: 359px) { .oc-r.oc-l i { display: none; } .oc-r.oc-l { grid-template-columns: 22px minmax(0, 1fr); } .dock .btn.oc { padding-left: 10px; padding-right: 10px; } }
+@media (max-height: 460px) { .oc-ico.uc-disc { width: 18px; height: 18px; } .oc-r.oc-l { display: flex; align-items: center; gap: 4px; min-height: 0; } .oc-r.oc-l b { font-size: 14px; } .oc-r.oc-l b small:not(.oc-more) { display: none; } .oc-r.oc-l b.ko::after { margin-left: 3px; } .oc-b:not(:empty) { min-height: 1.35em; } .oc-r.oc-l + .oc-r.oc-l::before { content: none; } }
 .dock .btn.oc[hidden] { display: none !important; }   /* 札の並べ方より「隠す」を優先（陣立てで回すが出てしまったため） */
 .dock #btnStart.oc { flex: 2.2 1 0; }
 .dock #btnPrepRot { flex: 0 0 auto; }
 @media (max-height: 700px) { .oc-r.x { display: none; } .dock .btn.oc { padding: 6px 10px 7px; gap: 2px; } .oc-b { font-size: 11.5px; } }
 /* さらに背の低い画面（横画面など）：2行を1行にまとめる（受ける／敵） */
-@media (max-height: 460px) { .oc-b { flex-direction: row; gap: 8px; } .oc-r { display: flex; gap: 3px; min-width: 0; } .oc-r i { display: none; } .oc-r:not(.x) + .oc-r:not(.x)::before { content: "／"; opacity: .5; } .dock .btn.oc { padding: 4px 8px 5px; } }
+@media (max-height: 460px) { .oc-b { flex-direction: row; gap: 8px; } .oc-r { display: flex; gap: 3px; min-width: 0; } .oc-r i { display: none; } .dock .btn.oc { padding: 4px 8px 5px; } }
 .dk-out { position: absolute; top: -8px; right: 8px; display: inline-flex; align-items: center; gap: 3px; height: 22px; min-width: 30px; padding: 0 8px; border-radius: 11px; justify-content: center;
   background: var(--danger-strong); color: var(--on-danger); font: 900 14px/1 var(--serif); font-style: normal; font-variant-numeric: tabular-nums; pointer-events: none; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.28); }
 .dk-out[hidden] { display: none; }
@@ -2661,7 +2686,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <button class="btn icon" id="btnPreview" type="button" aria-pressed="false" aria-label="回した後の配置を先読み" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="12" cy="12" r="3.2" fill="currentColor"/></svg>
     </button>
-    <button class="btn" id="btnStay" type="button" hidden><span class="oc-h">維持</span><span class="oc-b" id="ocStay"></span></button>
+    <button class="btn" id="btnStay" type="button" hidden><span class="oc-h"><svg class="oc-anc" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="2.2" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 7.5V20M8 11h8M4.5 13.5a7.5 7.5 0 0 0 15 0" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>維持</span><span class="oc-b" id="ocStay"></span></button>
   </div>
 </main>
 
@@ -2702,7 +2727,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.5.0</p>
+    <p class="c-ver" id="cVer">ver 5.5.1</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3040,7 +3065,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.5.0';
+  const APP_VERSION = '5.5.1';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4868,7 +4893,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
      背の低い画面では「受ける」と「敵」の2行だけ（CSS の .oc-r.x） */
   function outlook(src, fresh, ent) {
     const o = outcomeOf(src, fresh, ent), inc = incoming(src, fresh, ent);
-    const hurt = Object.keys(inc).map((k) => { const [r, c] = k.split(',').map(Number); return { n: src[r][c].name, d: inc[k].d, ko: inc[k].ko }; }).sort((a, b) => (b.ko - a.ko) || (b.d - a.d));
+    const hurt = Object.keys(inc).map((k) => { const [r, c] = k.split(',').map(Number); return { n: src[r][c].name, u: src[r][c], d: inc[k].d, ko: inc[k].ko }; }).sort((a, b) => (b.ko - a.ko) || (b.d - a.d));
     let dealt = 0; const who = [];
     units(src).forEach(({ u, r, c }) => { const d = expDmg(u, r, c, src, fresh, ent); if (d && d.val > 0) { dealt += d.val; who.push(u.name + d.val); } });
     const T = enemy.party ? targetFoe() : enemy, left = T ? Math.max(0, T.hp - dealt) : 0;
@@ -4876,15 +4901,23 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return { o, hurt, dealt, who, T, left, acts };
   }
   const ocRow = (k, v, cls, x) => '<span class="oc-r' + (x ? ' x' : '') + '"><i>' + k + '</i><b' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</b></span>';
+  /* 札は2行（v5.5.1）：「敵 HP いま → 次」と「いちばん危ない仲間 HP いま → 次」。顔のアイコンと数字だけで、左右の札を同じ場所で見比べる。
+     誰が攻撃するか・敵の技は、盤（剣の数字・先読み）と上の帯に任せる。数字の計算は従来と同じ（盤の剣の合計・赤い数字） */
+  const ocIco = (html, c) => '<span class="oc-ico uc-disc' + (c ? ' c-' + c : '') + '" aria-hidden="true">' + html + '</span>';
+  const ocNum = (a, b) => '<small>HP</small>' + a + '<em>→</em>' + b;
   function outlookHTML(L) {
-    const hurtTxt = L.hurt.length ? L.hurt.map((h) => h.n + (h.ko ? ' 倒れる' : ' -' + h.d)).join('・') + (L.o.maybe ? '・運しだい' : '') : L.o.maybe ? '運しだい' : '無傷';
-    const foeTxt = !L.T ? '—' : L.dealt <= 0 ? '残り' + L.T.hp : L.left <= 0 ? '-' + L.dealt + ' 撃破' : '-' + L.dealt + '→残り' + L.left;
-    return ocRow('敵の技', L.acts.join('・'), '', true) +
-      ocRow('受ける', hurtTxt, L.hurt.some((h) => h.ko) ? 'ko' : L.hurt.length || L.o.maybe ? 'bad' : 'good') +
-      ocRow('攻撃', L.who.length ? L.who.join('＋') : 'なし', '', true) +
-      ocRow('敵', foeTxt, L.left <= 0 && L.dealt > 0 ? 'good' : '');
+    const T = L.T, kill = T && L.dealt > 0 && L.left <= 0;
+    const foe = !T ? '' : '<span class="oc-r oc-l" data-k="foe" data-say="敵 HP ' + T.hp + 'から' + L.left + (kill ? '、撃破' : '') + '">' + ocIco(foeMini(enemy.party ? T : null), 'enemy') + '<i>敵</i><b' + (kill ? ' class="good"' : '') + '>' + ocNum(T.hp, L.left) + '</b></span>';
+    const h = L.hurt[0], more = L.hurt.length - 1;
+    let ally;
+    if (!h) ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + (L.o.maybe ? '受ける 運しだい' : '受ける なし、無傷') + '">' + ocIco(L.o.maybe ? '<span class="oc-q">?</span>' : ICON.shield, L.o.maybe ? 'maybe' : 'safe') + '<i>' + (L.o.maybe ? '受ける' : '味方') + '</i><b class="' + (L.o.maybe ? 'bad' : 'good') + '">' + (L.o.maybe ? '運しだい' : '無傷') + '</b></span>';
+    else {
+      const aft = Math.max(0, h.u.hp - h.d), cls = L.hurt.some((x) => x.ko) ? 'ko' : 'bad';
+      ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + h.n + ' HP ' + h.u.hp + 'から' + aft + (h.ko ? '、倒れる' : '') + (more ? '、ほか' + more + '人も受ける' : '') + (L.o.maybe ? '、運しだい' : '') + '">' + ocIco(face(h.u), h.u.cls) + '<i>' + h.n + '</i><b class="' + cls + '">' + ocNum(h.u.hp, aft) + (L.o.maybe ? '?' : '') + (more ? '<small class="oc-more">ほか' + more + '人</small>' : '') + '</b></span>';
+    }
+    return foe + ally;
   }
-  const ocSay = (el) => [...el.querySelectorAll('.oc-r')].map((r) => r.querySelector('i').textContent + ' ' + r.querySelector('b').textContent).join('、');
+  const ocSay = (el) => [...el.querySelectorAll('.oc-r')].map((r) => r.dataset.say || (r.querySelector('i').textContent + ' ' + r.querySelector('b').textContent)).join('、');
   let ocKey = '';
   // 見通しの札の数字が新しくなったら、その行だけ下から回して入れ替える（テキストロール。v5.4.1）。
   //   比べる相手は、同じ札・同じ行の直前の中身（演出中は札が空になるので、その前と比べる）。「倒れる」が新しく出たときは強めに知らせる
@@ -4894,7 +4927,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const rows = [...$(id).querySelectorAll('.oc-r')]; if (!rows.length) return;
       let n = 0;
       rows.forEach((r) => {
-        const k = id + ':' + r.querySelector('i').textContent, b = r.querySelector('b'), t = b.textContent, was = ocPrev[k];
+        const k = id + ':' + (r.dataset.k || r.querySelector('i').textContent), b = r.querySelector('b'), t = b.textContent, was = ocPrev[k];
         if (!RM && was && was.t !== t) { b.classList.add('roll'); b.style.animationDelay = (n++ * 0.05) + 's'; if (b.classList.contains('ko') && !was.ko) b.classList.add('alarm'); }
         ocPrev[k] = { t, ko: b.classList.contains('ko') };
       });
