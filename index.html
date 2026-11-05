@@ -679,6 +679,7 @@ body:has(#stage.trio) .oc-r.oc-l { min-height: 17px; gap: 4px; grid-template-col
 body:has(#stage.trio) .oc-ico.uc-disc { width: 16px; height: 16px; }
 body:has(#stage.trio) .oc-r.oc-l b { font-size: 14px; line-height: 1; }
 body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom: 7px; }
+
 .oc-r { display: grid; grid-template-columns: 3.3em minmax(0, 1fr); gap: 4px; }
 /* 行は折り返さない（折り返すと札の高さが変わり、毎ターン盤の大きさが揺れるため。v5.3.8）。収まらない分は … で、数字の合計は「敵」の行に必ず出る */
 .oc-r b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -714,6 +715,9 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 /* 幅の狭い画面：「HP」の字を省き、名前は顔のアイコンに任せて短く切る（数字は必ず全部見せる） */
 @media (max-width: 419px) { .oc-r.oc-l b small:not(.oc-more) { display: none; } .oc-r.oc-l { gap: 5px; } .oc-r.oc-l b { font-size: 15px; } .oc-r.oc-l i { max-width: 3.2em; } }
 @media (max-width: 359px) { .oc-r.oc-l i { display: none; } .oc-r.oc-l { grid-template-columns: 22px minmax(0, 1fr); } .dock .btn.oc { padding-left: 10px; padding-right: 10px; } }
+/* 背の低い画面（700px 未満）も、2行を詰めて札の高さを従来の2行と同じに（v5.5.1。盤とチュートリアルの案内の場所を減らさない） */
+@media (max-height: 700px) { .dock .btn.oc { gap: 2px; } .oc-b:not(:empty) { min-height: calc(2 * 17px + 1px); gap: 1px; } .oc-r.oc-l { min-height: 17px; gap: 4px; grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } .oc-ico.uc-disc { width: 16px; height: 16px; } .oc-r.oc-l b { font-size: 14px; line-height: 1; } }
+@media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l { grid-template-columns: 16px minmax(0, 1fr); } }
 @media (max-height: 460px) { .oc-ico.uc-disc { width: 18px; height: 18px; } .oc-r.oc-l { display: flex; align-items: center; gap: 4px; min-height: 0; } .oc-r.oc-l b { font-size: 14px; } .oc-r.oc-l b small:not(.oc-more) { display: none; } .oc-r.oc-l b.ko::after { margin-left: 3px; } .oc-b:not(:empty) { min-height: 1.35em; } .oc-r.oc-l + .oc-r.oc-l::before { content: none; } }
 .dock .btn.oc[hidden] { display: none !important; }   /* 札の並べ方より「隠す」を優先（陣立てで回すが出てしまったため） */
 .dock #btnStart.oc { flex: 2.2 1 0; }
