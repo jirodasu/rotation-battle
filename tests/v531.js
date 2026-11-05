@@ -14,6 +14,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
   for (const [w, h] of [[393, 759], [320, 568]]) {
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
+    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', JSON.stringify({ hmIntro: 1 })); } catch (e) { /* */ } });   // 第2章の扉（v5.5.2）は v552 で確かめる
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
     const bs = await p.evaluate(() => document.getElementById('beginSub').textContent);
     ok(/地点7まで行くと新しい隊/.test(bs), w + '×' + h + ' 5 表紙に次に開くもの：' + bs);
@@ -50,6 +51,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     const ctx = await b.newContext({ viewport: { width: 393, height: 759 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.addInitScript(() => { try { localStorage.setItem('rb-exp', JSON.stringify({ runs: 5, clears: 3, best: 10, ach: { mid: 1, first: 1, honor: 1 }, won: { 'std:1': 1, 'fast:1': 1, 'guard:1': 1 } })); } catch (e) { /* */ } });
+    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', JSON.stringify({ hmIntro: 1 })); } catch (e) { /* */ } });   // 第2章の扉（v5.5.2）は v552 で確かめる
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
     const bs = await p.evaluate(() => document.getElementById('beginSub').textContent);
     ok(/突破 3回/.test(bs) && !/新しい隊|双魔/.test(bs), '5 すべて開いた人の表紙：' + bs);

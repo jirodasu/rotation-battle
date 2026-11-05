@@ -6624,7 +6624,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     document.body.classList.remove('boss-stage'); Music.boss(false); Music.era(1);
     phase = 'title';
     inspect = null; sel = null;
-    $('foeSheet').hidden = true; $('foeBg').hidden = true; $('result').hidden = true; $('help').hidden = true; $('ending').hidden = true;
+    $('foeSheet').hidden = true; $('foeBg').hidden = true; $('result').hidden = true; $('help').hidden = true; $('ending').hidden = true; $('hmIntro').hidden = true;   // 第2章の扉を開いたままタイトルへ戻っても残さない（v5.5.3）
     ['btnStart', 'btnRotate', 'btnStay', 'btnPreview'].forEach((id) => $(id).classList.remove('tut-off'));
     const cv = $('cover');
     cv.hidden = false; cv.classList.remove('out');
@@ -7990,6 +7990,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const closeNc = () => { clearTimeout(ncTimer); $('newConf').hidden = true; try { if (ncFrom && ncFrom.focus) ncFrom.focus(); } catch (e) { /* 戻せない */ } };
   $('ncNo').addEventListener('click', () => { SFX.tap(); closeNc(); });
   $('hmGo').addEventListener('click', () => { $('hmIntro').hidden = true; });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('hmIntro').hidden) $('hmIntro').hidden = true; });
   $('ncGo').addEventListener('click', () => { if ($('ncGo').disabled) return; clearTimeout(ncTimer); $('newConf').hidden = true; expClearSave(); startExpFlow(); });
   $('newConf').addEventListener('click', (ev) => { if (ev.target === $('newConf')) closeNc(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('newConf').hidden) closeNc(); });

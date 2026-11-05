@@ -66,6 +66,7 @@ const INVARIANTS = () => {
       const key = JSON.stringify(st);
       if (key === last) { if (++same > 60) { problems.push({ run: k, node: st.node, bad: ['進行が止まった: ' + key] }); break; } } else { same = 0; last = key; }
       if (st.tip) { await p.click('#tipOk').catch(() => {}); continue; }
+      if (await p.evaluate(() => !document.getElementById('hmIntro').hidden)) { await p.click('#hmGo').catch(() => {}); continue; }   // 第2章の扉（v5.5.2）
       if (st.en) { outcome = 'クリア'; break; }
       if (st.rv) {
         if (/ここまで|途絶えた/.test(st.title)) { outcome = '全滅（地点' + (st.node + 1) + '）'; break; }
