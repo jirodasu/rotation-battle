@@ -29,7 +29,7 @@ async function battle(p) {
 }
 (async () => {
   const b = await launch();
-  const init = () => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); } catch (e) { /* */ } };
+  const init = () => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1, hmIntro: 1 })); } catch (e) { /* */ } };
   for (const rm of [false, true]) {
     const tag = rm ? '［動きを減らす］' : '';
     const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, reducedMotion: rm ? 'reduce' : 'no-preference' });

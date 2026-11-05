@@ -16,7 +16,7 @@ async function toPrep(p) {
 const toChoose = async (p) => { for (let k = 0; k < 200; k++) { if (await p.evaluate(() => window.__rb.phase === 'choose')) break; await p.waitForTimeout(60); } await fr(p); await fr(p); };
 (async () => {
   const b = await launch();
-  const init = () => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); } catch (e) { /* */ } };
+  const init = () => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1, hmIntro: 1 })); } catch (e) { /* */ } };
   {
     const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));

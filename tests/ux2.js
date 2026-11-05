@@ -8,7 +8,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     const ctx = await b.newContext({ viewport: { width: w, height: h }, isMobile: w < 900, hasTouch: w < 900, reducedMotion: 'reduce' });
     const p = await ctx.newPage();
     await p.clock.setFixedTime(new Date('2026-11-10T10:00:00'));
-    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
+    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1,"hmIntro":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(600);
     await p.evaluate(() => { const R = window.__rb; R.run.enemy = R.expEnemy(3, null, 0); document.getElementById('runv').hidden = true; R.toPrepForTest(); }); await p.waitForTimeout(400);
     const r = await p.evaluate(() => {
@@ -30,7 +30,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
   {
     const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
     const p = await ctx.newPage();
-    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
+    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1,"hmIntro":1}'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) {} });
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(600);
     await p.evaluate(() => { const R = window.__rb; R.run.enemy = R.expEnemy(1, null, 0); document.getElementById('runv').hidden = true; R.toPrepForTest(); }); await p.waitForTimeout(300);
     await p.click('#btnStart');

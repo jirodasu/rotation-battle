@@ -16,7 +16,7 @@
 //       突入技の強化カードの本文に仲間の名前が繰り返されない。間接のない味方の詳細に「間接」の行がない。タイトルのチュートリアルに重なるピルがなく、副文に統合
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"bench":1,"combo":1}';
+const TIPS_ALL = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"bench":1,"combo":1,"hmIntro":1}';
 async function open(b, w, h, kind, node) {
   const ctx = await b.newContext({ viewport: { width: w || 390, height: h || 844 }, deviceScaleFactor: 1, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
