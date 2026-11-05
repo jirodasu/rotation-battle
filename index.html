@@ -1082,15 +1082,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .bn.on { transform: translateY(-3px); box-shadow: 0 0 0 3px var(--accent), 0 3px 0 3px var(--accent-deep); }
 .bn-out { flex: none; min-height: 34px; padding: 0 10px; border: 2px dashed var(--accent); border-radius: 17px; background: transparent; color: var(--accent-text); font: 700 12px/1 inherit; font-family: inherit; cursor: pointer; }
 .bench .bn-none { font-size: 12px; color: var(--ink-soft); }
-/* スタミナ・突入技 */
-.tok .sta { position: absolute; right: -5px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 2px; padding: 3px 2px; border-radius: 6px; background: var(--paper); box-shadow: 0 1px 0 var(--paper-line); z-index: 3; }
-.slot[data-r="1"] .tok .sta { top: auto; bottom: 16px; transform: none; }
-.tok .sta i { width: 6px; height: 6px; border-radius: 50%; background: var(--paper-line); }
-.tok .sta i.on { background: var(--accent); }
-.tok.tired .disc { filter: saturate(0.35) brightness(0.92); }
-.tok.tired .sta { background: var(--danger); }
-.tok.tired .sta i { background: rgba(255, 255, 255, 0.45); }
-.dm.tired { background: var(--danger-strong); color: #fff; }
+/* 突入技 */
 .tok .ent { position: absolute; right: -4px; top: -4px; z-index: 3; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; background: var(--atk); color: #fff; box-shadow: 0 0 0 2px var(--paper), 0 2px 0 2px rgba(35, 49, 74, 0.25); }
 .t-main .t-nx { margin-top: 1px; font-size: 11px; font-weight: 700; color: var(--accent-text); }
 .pk-extra { margin: 4px 0 6px; display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; line-height: 1.45; color: var(--ink-soft); }
@@ -1480,7 +1472,6 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .inc { border-radius: 3px; background: var(--danger-strong); box-shadow: 0 1px 2px rgba(46, 28, 10, 0.35); }
 .inc.ko { background: #5e140a; }
 .sock { border: 1.5px dashed var(--rule-a); background: rgba(255, 250, 235, 0.22); }
-.tok .sta { border-radius: 3px; box-shadow: inset 0 0 0 1px var(--rule-a); }
 .tok .ent { font-family: var(--serif); font-weight: 800; background: var(--danger-strong); box-shadow: 0 0 0 1.5px var(--paper); }
 .spinicon { color: var(--gold); filter: drop-shadow(0 2px 2px rgba(46, 28, 10, 0.35)); }
 
@@ -2711,7 +2702,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.4.9</p>
+    <p class="c-ver" id="cVer">ver 5.5.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2748,7 +2739,6 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li class="h-more"><button type="button" class="h-next" data-tier="2">もっと「くわしく」 →</button></li>
     </ul>
     <ul class="steps" id="hTier2" role="tabpanel" aria-labelledby="hTab2" hidden>
-      <li><span class="ico r0"><svg viewBox="0 0 24 24"><circle cx="6" cy="12" r="3" fill="currentColor"/><circle cx="12" cy="12" r="3" fill="currentColor"/><circle cx="18" cy="12" r="3" fill="currentColor" opacity=".35"/></svg></span><div><b>スタミナ</b>キャラ右横の点。攻撃列で攻撃するたびに1つ減り、0になると攻撃が半分になる。回復列で休むと全快、補助列では1つ戻る。</div></li>
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。「回す」を長押しした先読みで「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃が出る。敵をタップすると「その次」の行動も見える。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
@@ -3040,19 +3030,19 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   /* ============ データ ============ */
   const JOBS = [
-    { id: 'warrior', name: '戦士', cls: 'tank', hp: 48, spd: 3, atk: 11, ranged: 0, atkSup: 1, defSup: 2, heal: 0, rest: 12, hits: 1, sta: 3, entry: { name: '踏み込み', atk: 4, cap: 8, desc: 'このターン攻撃+4' } },
-    { id: 'knight', name: '騎士', cls: 'tank', hp: 36, spd: 4, atk: 8, ranged: 0, atkSup: 2, defSup: 8, heal: 0, rest: 10, hits: 1, sta: 3, entry: { name: '盾構え', guard: 6, desc: 'このターン同じ側の被ダメージ-6' } },
-    { id: 'samurai', name: 'サムライ', cls: 'atk', hp: 26, spd: 8, atk: 12, ranged: 0, atkSup: 5, defSup: 0, heal: 0, rest: 8, hits: 1, sta: 2, entry: { name: '居合', spd: 10, atk: 3, desc: 'このターン先に動き、攻撃+3' } },
-    { id: 'witch', name: '魔女', cls: 'sup', hp: 20, spd: 7, atk: 4, ranged: 0, atkSup: 7, defSup: 7, heal: 0, rest: 7, hits: 1, sta: 2, entry: { name: '雷撃', atk: 5, desc: 'このターン攻撃+5' } },
-    { id: 'cleric', name: '神官', cls: 'heal', hp: 24, spd: 3, atk: 3, ranged: 0, atkSup: 0, defSup: 5, heal: 5, rest: 8, hits: 1, sta: 2, entry: { name: '祝福', heal: 6, desc: '攻撃列の全員をHP+6（最大HPまで）' } },
-    { id: 'monk', name: '僧侶', cls: 'heal', hp: 32, spd: 4, atk: 7, ranged: 0, atkSup: 2, defSup: 2, heal: 6, rest: 10, hits: 1, sta: 3, entry: { name: '喝', teamGuard: 2, desc: 'このターン攻撃列の被ダメージ-2' } },
-    { id: 'archer', name: 'アーチャー', cls: 'atk', hp: 28, spd: 5, atk: 9, ranged: 8, atkSup: 2, defSup: 1, heal: 0, rest: 8, hits: 1, sta: 3, entry: { name: '速射', hits: 1, desc: 'このターン攻撃回数+1' } }
+    { id: 'warrior', name: '戦士', cls: 'tank', hp: 48, spd: 3, atk: 11, ranged: 0, atkSup: 1, defSup: 2, heal: 0, rest: 12, hits: 1, entry: { name: '踏み込み', atk: 4, cap: 8, desc: 'このターン攻撃+4' } },
+    { id: 'knight', name: '騎士', cls: 'tank', hp: 36, spd: 4, atk: 8, ranged: 0, atkSup: 2, defSup: 8, heal: 0, rest: 10, hits: 1, entry: { name: '盾構え', guard: 6, desc: 'このターン同じ側の被ダメージ-6' } },
+    { id: 'samurai', name: 'サムライ', cls: 'atk', hp: 26, spd: 8, atk: 12, ranged: 0, atkSup: 5, defSup: 0, heal: 0, rest: 8, hits: 1, entry: { name: '居合', spd: 10, atk: 3, desc: 'このターン先に動き、攻撃+3' } },
+    { id: 'witch', name: '魔女', cls: 'sup', hp: 20, spd: 7, atk: 4, ranged: 0, atkSup: 7, defSup: 7, heal: 0, rest: 7, hits: 1, entry: { name: '雷撃', atk: 5, desc: 'このターン攻撃+5' } },
+    { id: 'cleric', name: '神官', cls: 'heal', hp: 24, spd: 3, atk: 3, ranged: 0, atkSup: 0, defSup: 5, heal: 5, rest: 8, hits: 1, entry: { name: '祝福', heal: 6, desc: '攻撃列の全員をHP+6（最大HPまで）' } },
+    { id: 'monk', name: '僧侶', cls: 'heal', hp: 32, spd: 4, atk: 7, ranged: 0, atkSup: 2, defSup: 2, heal: 6, rest: 10, hits: 1, entry: { name: '喝', teamGuard: 2, desc: 'このターン攻撃列の被ダメージ-2' } },
+    { id: 'archer', name: 'アーチャー', cls: 'atk', hp: 28, spd: 5, atk: 9, ranged: 8, atkSup: 2, defSup: 1, heal: 0, rest: 8, hits: 1, entry: { name: '速射', hits: 1, desc: 'このターン攻撃回数+1' } }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.4.9';
-  const RULES = { stamina: true, staCost: 1, staMid: 1, staBack: 99, tiredMul: 0.5, entry: true };
-  const NORULES = { stamina: false, staCost: 0, staMid: 0, staBack: 0, tiredMul: 1, entry: false };
+  const APP_VERSION = '5.5.0';
+  const RULES = { entry: true };
+  const NORULES = { entry: false };
   const ENEMIES = [
     { name: 'ヒュージラット', voice: 'bite', hp: 130, spd: 5, def: 1, par: 4, allowFallen: 0, pattern: [
       { name: 'かみつき', glyph: '牙', rule: 'job', job: '戦士', dmg: 17 },
@@ -3308,8 +3298,6 @@ body.fast #stampOk.on { animation-duration: .5s; }
     recruit() { if (!can()) return; const t = now(); [77, 81, 84, 89].forEach((m, i) => INST.xylo(t + i * 0.07, m, 0.3, bus.sfx, 0.25)); INST.bell(t + 0.3, 93, 0.12, bus.sfx, 0.5); },
     // 継承：ベテランの低い鐘から、若手の高い鐘へ
     inherit() { if (!can()) return; duck(0.55, 1.2); const t = now(); INST.bell(t, 65, 0.18, bus.sfx, 0.7); INST.swish(t + 0.1, 0.7, 0.1, bus.sfx, 400, 6000); INST.bell(t + 0.62, 89, 0.18, bus.sfx, 0.7); INST.bell(t + 0.66, 77, 0.1, bus.sfx, 0.7); },
-    // 疲労：力の抜けた鈍い音
-    tired() { if (!can()) return; const t = now(); INST.pizz(t, 47, 0.22, bus.sfx, 0.1); INST.pizz(t + 0.09, 43, 0.18, bus.sfx, 0.1); INST.thud(t, 0.3, bus.sfx, 90); },
     swap(r1, r2) { if (!can()) return; const t = now(); INST.swish(t, 0.16, 0.1, bus.sfx, 700, 3600); INST.xylo(t + 0.02, MOTIF[r1] || 77, 0.26, bus.sfx, 0.2); INST.xylo(t + 0.1, MOTIF[r2] || 81, 0.3, bus.sfx, 0.25); INST.wood(t + 0.1, 1500, 0.18, bus.sfx); },
     pick(r) { if (!can()) return; const t = now(); INST.xylo(t, MOTIF[r] || 77, 0.32, bus.sfx, 0.15); INST.swish(t, 0.08, 0.05, bus.sfx, 1500, 4000); },
     page() { if (!can()) return; const t = now(); INST.swish(t, 0.16, 0.12, bus.sfx, 900, 5000); INST.xylo(t + 0.03, 84, 0.12, bus.sfx, 0.2); },
@@ -3851,7 +3839,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     '<span class="uc-tag">ターン ' + turn + (enemy && enemy.par && !tut ? '（★は' + enemy.par + 'ターン以内）' : '') + '</span>';
   const chapLabel = () => (tut ? 'チュートリアル' : (run ? (run.mode === 'exp' ? '第' + (expCh(run.node + 1) + 1) + '章 ' + chName(expCh(run.node + 1)) + (enemy && enemy.chief ? (enemy.boss ? '　最後の主' : '　章の主') : '') : '騎士団 ' + run.year + '年目') : CHAP[battleIdx]));
 
-  function makeRoster() { return JOBS.map((j) => Object.assign({}, j, { uid: 't-' + j.id, job: j.id, jname: j.name, max: j.hp, atkReady: true, defReady: true, sta: j.sta || 0, staMax: j.sta || 0, entered: false })); }
+  function makeRoster() { return JOBS.map((j) => Object.assign({}, j, { uid: 't-' + j.id, job: j.id, jname: j.name, max: j.hp, atkReady: true, defReady: true, entered: false })); }
   const RX = () => RULES;   // 本番・チュートリアル共通
   let entryNow = {};
   function emptyGrid() { return Array.from({ length: ROWS }, () => Array(COLS).fill(null)); }
@@ -3913,19 +3901,18 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function expDmg(u, r, c, src, fresh, entering, F) {
     if (!(r === 0 || (r === 1 && u.ranged > 0))) return null;
     const R = RX();
-    let power = r === 0 ? u.atk : u.ranged, tired = false;
+    let power = r === 0 ? u.atk : u.ranged;
     const ue = entryFor(u, entering);
     if (r === 0 && entering && R.entry && ue && ue.atk) power += ue.atk;
     if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
     if (r === 0) power += stanceAtk(entering ? 0 : phase === 'choose' ? stayN + 1 : stayN);
-    if (r === 0 && R.stamina && u.staMax > 0 && u.sta <= 0) { power = Math.ceil(power * R.tiredMul); tired = true; }
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
     let sup = 0;
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
     let t = 0;
     const T = F || targetFoe();
     for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T);
-    return { val: t, buf: sup > 0, tired, half: foeShare(T) < 1 };
+    return { val: t, buf: sup > 0, half: foeShare(T) < 1 };
   }
   /* 先制撃破（表示専用・v5.1.57）：行動順どおりに味方が先に攻撃して、攻撃対象の敵のHPが0になるなら、その敵は行動できない。
      その敵の被ダメ予測と「倒」は出さない。味方の与ダメは既存の予測（expDmg）と同じ計算。実際の戦闘の行動順・結果には一切触れない。
@@ -4012,13 +3999,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const p = pct(u);
     let seals = '';
     // 補助列の「攻+7」「防-7」の札は出さない。誰から誰へ効くかは、盤の矢印（renderSupArrows）で見せる（v5.4.0）
-    const R = RX(), tired = R.stamina && u.staMax > 0 && u.sta <= 0;
-    let pips = '';
-    if (R.stamina && u.staMax > 0) { pips = '<span class="sta" aria-label="スタミナ' + u.sta + '/' + u.staMax + '">'; for (let i = 0; i < u.staMax; i++) pips += '<i class="' + (i < u.sta ? 'on' : '') + '"></i>'; pips += '</span>'; }
+    const R = RX();
     const up = comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? '（回転コンボで強化）' : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
-    return '<span class="tok ' + u.cls + (tired ? ' tired' : '') + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '"><span class="disc">' + face(u) + '</span>' + pips + ent +
+    return '<span class="tok ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '"><span class="disc">' + face(u) + '</span>' + ent +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' +
-      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.tired ? ' tired' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(u.hp / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(u.hp / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(u.hp / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
+      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(u.hp / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(u.hp / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(u.hp / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
 
@@ -4280,8 +4265,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
-    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。<em>鎮守の像が生きている間</em>、祈り手と断罪者が受けるダメージは<em>半分</em>。パネルの「与」が、いまの並びで与えられるダメージ。像を先に倒すか、祈り手を先に落とすかで戦いが変わる。'],
-    stamina: () => ['疲れている', '攻撃列で戦うたびに<em>スタミナ</em>（キャラ右横の点）が減り、0で攻撃が半分に。回復列で休めば全快。']
+    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。<em>鎮守の像が生きている間</em>、祈り手と断罪者が受けるダメージは<em>半分</em>。パネルの「与」が、いまの並びで与えられるダメージ。像を先に倒すか、祈り手を先に落とすかで戦いが変わる。']
   };
   let tipKey = null;
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
@@ -4327,7 +4311,6 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (enemy.party && !seen.trinity) k = 'trinity';
     else if (!EXPM() && battleIdx === 0 && ((phase === 'prep' && swappedOnce) || phase === 'choose') && !seen.stars) k = 'stars';   // 遠征の目標は★ではなく踏破。地図の最初の画面で伝える（v5.2.2）
     else if (run && phase === 'prep' && benchList().length && !seen.bench) k = 'bench';
-    else if (phase === 'choose' && units().some((x) => x.r === 0 && x.u.staMax > 0 && x.u.sta <= 0) && !seen.stamina) k = 'stamina';
     else if (EXPM() && phase === 'choose' && !seen.gauge) k = 'gauge';
     else if (comboOn() && phase === 'choose' && !seen.combo) k = 'combo';   // 第2章で初めて出る（v5.4.7）
     else if (act.rule === 'bind') k = 'bind';
@@ -4633,7 +4616,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       '<span class="pk-hp"><b class="disp">' + ICON.heart + u.hp + '<small> / ' + u.max + '</small></b><span class="uc-hpbar' + (p <= 35 ? ' low' : '') + '"><i style="width:' + p + '%"></i></span></span>' +
       '<button type="button" class="pk-x" aria-label="閉じる">' + ICON.x + '</button></div>' +
       (r >= 0 ? '<p class="pk-role">' + roleText(u, r) + '</p>' : '') +
-      ((RX().entry && u.entry) || (RX().stamina && u.staMax) ? '<p class="pk-extra">' + (RX().stamina && u.staMax ? '<span>スタミナ ' + u.sta + '/' + u.staMax + '</span>' : '') + (RX().entry && u.entry ? '<span><b class="disp">突入技「' + u.entry.name + '」</b>' + u.entry.desc + '<em class="pk-when">回して攻撃列に入ったターンだけ出る</em></span>' : '') + (u.inherit ? '<span>' + u.inherit.from + '（' + u.inherit.fromJob + '）から継承</span>' : '') + (u.trait ? '<span>素質「' + TRAITS[u.trait].name + '」' + TRAITS[u.trait].desc + '</span>' : '') + (run && run.mentors && run.mentors[u.job] && run.mentors[u.job].uid !== u.uid ? '<span>教官' + run.mentors[u.job].name + 'の指導：攻撃+' + RUN.mentorAtk + '・最大HP+' + RUN.mentorHp + '</span>' : '') + (u.equips && u.equips.length ? '<span>装備：' + u.equips.join('・') + '</span>' : '') + '</p>' : '') +
+      ((RX().entry && u.entry) ? '<p class="pk-extra">' + (RX().entry && u.entry ? '<span><b class="disp">突入技「' + u.entry.name + '」</b>' + u.entry.desc + '<em class="pk-when">回して攻撃列に入ったターンだけ出る</em></span>' : '') + (u.inherit ? '<span>' + u.inherit.from + '（' + u.inherit.fromJob + '）から継承</span>' : '') + (u.trait ? '<span>素質「' + TRAITS[u.trait].name + '」' + TRAITS[u.trait].desc + '</span>' : '') + (run && run.mentors && run.mentors[u.job] && run.mentors[u.job].uid !== u.uid ? '<span>教官' + run.mentors[u.job].name + 'の指導：攻撃+' + RUN.mentorAtk + '・最大HP+' + RUN.mentorHp + '</span>' : '') + (u.equips && u.equips.length ? '<span>装備：' + u.equips.join('・') + '</span>' : '') + '</p>' : '') +
       '<div class="uc-grid pk-grid">' +
       statTile('spd', '素早さ', u, ICON.bolt, 'var(--shield)', act) +
       statTile('atk', '攻撃', u, ICON.sword, 'var(--atk)', act) +
@@ -5335,7 +5318,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       grid = emptyGrid();
       snapshot.forEach(({ u, r, c }) => { grid[r][c] = u; });
     }
-    roster.forEach((u) => { if (!run || tut) u.hp = u.max; u.sta = u.staMax; u.entered = false; });
+    roster.forEach((u) => { if (!run || tut) u.hp = u.max; u.entered = false; });
     entryNow = {};
     resetFlags();
     const edef = tut ? TUT_ENEMY : (run && run.enemy) || ENEMIES[battleIdx];
@@ -5477,7 +5460,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     snapshot = units().map((x) => ({ u: x.u, r: x.r, c: x.c }));
     stats = { dealt: {}, who: {}, taken: 0, fallen: 0 };
     resetFlags();
-    roster.forEach((u) => { u.entered = false; u.sta = u.staMax; });   // 突入技は「回して攻撃列に入った」ときだけ
+    roster.forEach((u) => { u.entered = false; });   // 突入技は「回して攻撃列に入った」ときだけ
     sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = gaugeOn() ? EXP.rot.start : 0; combo = 0; comboFire = false;
     logLines = ['戦闘開始。'];
     battleSave('start');
@@ -5486,16 +5469,6 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
 
   async function healPhase() {
-    // スタミナ：回復列で全快、補助列で少し戻る
-    const R = RX();
-    if (R.stamina) {
-      for (let c = 0; c < COLS; c++) {
-        const b = grid[2][c], m = grid[1][c];
-        if (b) b.sta = Math.min(b.staMax, b.sta + R.staBack);
-        if (m) m.sta = Math.min(m.staMax, m.sta + R.staMid);
-      }
-      renderBoard();
-    }
     // 回復列：全員が休んで自分を回復。神官・僧侶は、回復列のほかの仲間（本人以外）も回復する
     const back = [];
     for (let c = 0; c < COLS; c++) if (grid[2][c]) back.push({ u: grid[2][c], c });
@@ -5562,24 +5535,17 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     if (r === 1) await tutNote('ranged', '補助列も攻撃する', u.name + 'のような間接攻撃の仲間は、補助列からでも攻撃できる。', () => tokEl(1, c), 'top');
     const en = r === 0 ? entryNow[u.uid] : null, R = RX();
-    let tired = false;
     if (r === 0) {
       if (en && en.atk) power += en.atk;
       if (en && relOn('bell')) power += relD('bell').entryAtk;
-      if (R.stamina && u.staMax > 0) {
-        if (u.sta <= 0) { power = Math.ceil(power * R.tiredMul); tired = true; }
-        u.sta = Math.max(0, u.sta - R.staCost);
-      }
     }
-    if (tired) await tutNote('tired', '疲れて半減', u.name + 'はスタミナが0。攻撃が半分になる。回して回復列で休ませよう。', () => tokEl(0, c), 'bottom');
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
     let total = 0;
     for (let i = 0; i < hitsN; i++) total += foeHit(power + (i === 0 ? sup : 0), T);
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
-    say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (tired ? '（疲れて半減）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
-    if (tired) SFX.tired();
+    say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
     renderBook();
     lunge(tokEl(r, c), r === 1 ? 14 : 24);
     await wait(170);
@@ -5588,7 +5554,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     weaponFX(u.id, tokEl(r, c)); shake(ea, 8); flashBright(ea.firstElementChild);
     const jx = (hitSeq++ % 2 ? 1 : -1) * (34 + Math.random() * 16);
     popAt(ea, '-' + total, 'dmg big', -40, jx);
-    popAt(ea, u.name + '　' + power + (tired ? '（疲労½）' : '') + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
+    popAt(ea, u.name + '　' + power + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
     const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
     if (!enemy.party) renderEnemy(false);
     const fin = T.hp <= 0 && foeList().every((f) => f === T || f.hp <= 0);   // これが最後の一撃（とどめ）
@@ -6033,7 +5999,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   const bd = () => $('board');
   // チュートリアル（v5.3.0 段階化）：最初は「並び・予告・動かす・回す/維持」だけ。説明は「やる直前」に1つずつ。
-  //   回復列・補助の届き方・スタミナ・突入技などは、戦闘中にその場面が来たとき（tutNote）に出す。敵の詳細・2手先は最後に一言だけ
+  //   回復列・補助の届き方・突入技などは、戦闘中にその場面が来たとき（tutNote）に出す。敵の詳細・2手先は最後に一言だけ
   const STEPS = [
     { t: 'ようこそ', x: 'ここは地の底の大聖堂「環廊」。隊列を回して、敵の大技をしのぎながら奥へ進む。動かしながら覚えよう。', pos: 'bottom', next: true },
     // 仲間の紹介（v5.2.3 → v5.3.0 で1枚に）：役目だけを短く。人ごとの細かい話は、仲間をタップした詳細で
@@ -6050,7 +6016,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     { t: '回すと', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。前に出た仲間が、次の攻撃を受ける。「回す」を長押しすると、回した後の並びが盤に点線で出る。', pos: 'top', spot: () => bd(), next: true },
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
     { t: '維持のあと', x: '魔女の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
-    { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。疲れた仲間を下げ、元気な仲間を前へ出す。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
+    { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
     { t: '基本はここまで', x: 'あとは自由に。敵の名前をタップすると、行動の一覧と「その次」の行動が見える。新しい仕掛けは、出てきたときに案内する。', pos: 'bottom', next: true, last: true }
   ];
 
@@ -6637,16 +6603,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
   };
   EXP.trinity = { name: TRI.name, party: TRI.foes, par: TRI.par, allowFallen: TRI.allowFallen };   // 三位一体（定数は TRI）。tools/expsim.mjs が EXP を取り出すので、リテラルの外に置く
   const AGE_PH = [
-    { max: 19, key: 'young', label: '若手', mul: 0.85, sta: 0, ent: 1 },
-    { max: 34, key: 'prime', label: '盛り', mul: 1, sta: 0, ent: 1 },
-    { max: 44, key: 'vet', label: '円熟', mul: 1, sta: -1, ent: 1.5 },
-    { max: 999, key: 'old', label: '衰え', mul: 0.8, sta: -1, ent: 1 }
+    { max: 19, key: 'young', label: '若手', mul: 0.85, ent: 1 },
+    { max: 34, key: 'prime', label: '盛り', mul: 1, ent: 1 },
+    { max: 44, key: 'vet', label: '円熟', mul: 1, ent: 1.5 },
+    { max: 999, key: 'old', label: '衰え', mul: 0.8, ent: 1 }
   ];
   const NAMES = ['アルト', 'ベル', 'カイ', 'ドナ', 'エマ', 'フィン', 'ギル', 'ハナ', 'イオ', 'ジン', 'ケイ', 'リオ', 'ミナ', 'ノア', 'オト', 'ルカ', 'サラ', 'トマ', 'ユナ', 'ロイ', 'ゼン', 'ニコ', 'マオ', 'レナ', 'ソラ', 'ヒロ', 'アン', 'テオ', 'ナギ', 'ルル'];
   const EQUIPS = [
     { name: '鋼の剣', key: 'atk', v: 4, desc: '攻撃+4', ok: (m) => m.base.atk >= 6 },
     { name: '大盾', key: 'defSup', v: 5, desc: '防御補助+5', ok: (m) => m.base.defSup >= 2 },
-    { name: '軽い鎧', key: 'sta', v: 1, desc: 'スタミナ+1', ok: () => true },
+    { name: '軽い鎧', key: 'none', v: 0, desc: '効果なし', ok: () => true },
     { name: '薬草袋', key: 'rest', v: 8, desc: '休んで回復+8', ok: () => true },
     { name: '長弓', key: 'ranged', v: 5, desc: '間接攻撃+5', ok: (m) => m.base.ranged > 0 },
     { name: '守りの護符', key: 'hp', v: 14, desc: '最大HP+14', ok: () => true }
@@ -6726,19 +6692,17 @@ body.fast #stampOk.on { animation-duration: .5s; }
     m.defSup = b.defSup ? Math.max(1, mul(b.defSup)) + add('defSup') : 0;
     m.heal = b.heal ? Math.max(1, mul(b.heal)) : 0;
     m.rest = mul(b.rest) + add('rest');
-    m.staMax = Math.max(1, b.sta + ph.sta + add('sta'));
     m.entry = scaleEntry(m.inherit ? m.inherit.entry : JOBS.find((j) => j.id === m.job).entry, ph.ent, m.inherit);
     if (m.up) { Object.keys(m.up).forEach((k) => { m.entry[k] = (m.entry[k] || 0) + m.up[k]; }); m.entry.desc = entryDesc(m.entry); }   // 遠征の「突入技の強化」
     capEntry(m);
     m.phase = ph.key; m.phaseLabel = ph.label;
     if (fill) m.hp = m.max; else m.hp = Math.min(m.hp, m.max);
-    m.sta = m.staMax;
   }
   function newMember(jobId, age, trait) {
     const j = JOBS.find((x) => x.id === jobId);
     const m = Object.assign({}, j, {
       uid: 'm' + (++uidSeq), job: jobId, jname: j.name, name: pickName(), age, joinYear: run ? run.year : 0, trait: trait || null,
-      base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest, sta: j.sta },
+      base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest },
       bonus: {}, equips: [], inherit: null, dealt: 0, atkReady: true, defReady: true, entered: false, r: null, c: null
     });
     applyAge(m, true);
@@ -7270,7 +7234,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     run.hist[run.node] = c.type;
     if (c.type === 'rest') {
-      run.members.forEach((m) => { m.hp = m.max; m.sta = m.staMax; });
+      run.members.forEach((m) => { m.hp = m.max; });
       SFX.heal();
       const ev = ['休息をとった。全員のHPが全快した。' + (RUN.healTrain ? trainYoung() : '')];
       if (RUN.restRecruit && !isFull()) { runRecruit((rev) => runAdvance(ev.concat(rev)), ev, '休息の地に、入団を望む若者が訪ねてきた。'); return; }
@@ -7593,7 +7557,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function battleSave(at, extra) {
     if (!EXPM() || tut) return;
     const uid = (u) => (u ? u.uid : null), un = {};
-    run.members.forEach((m) => { un[m.uid] = { hp: m.hp, sta: m.sta, atkReady: m.atkReady, defReady: m.defReady, entered: m.entered }; });
+    run.members.forEach((m) => { un[m.uid] = { hp: m.hp, atkReady: m.atkReady, defReady: m.defReady, entered: m.entered }; });
     bsave = Object.assign({ at, commit: null, result: null, pend: run.pendId || null, turn, gauge, combo, stayN, tgtId, swapped: swappedOnce, edef: run.enemy, enemy: JSON.parse(JSON.stringify(enemy)), units: un,
       grid: grid.map((row) => row.map(uid)), snap: (snapshot || []).map((x) => ({ uid: x.u.uid, r: x.r, c: x.c })),
       stats: stats ? { dealt: stats.dealt, who: Object.keys(stats.who).reduce((o, k) => { o[k] = uid(stats.who[k]); return o; }, {}), taken: stats.taken, fallen: stats.fallen } : null,
@@ -7608,7 +7572,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     grid = B.grid.map((row) => row.map(U));
     toPrep(false);
     enemy = B.enemy;
-    run.members.forEach((m) => { const x = B.units[m.uid]; if (x) Object.assign(m, x); });
+    run.members.forEach((m) => { const x = B.units[m.uid]; if (x) { const { sta, ...rest } = x; Object.assign(m, rest); } });   // 旧セーブのスタミナ（sta）は読み捨てる
     turn = B.turn; gauge = B.gauge; combo = +B.combo || 0; stayN = B.stayN; tgtId = B.tgtId; swappedOnce = true;   // combo は v5.4.5 で足した（それより前の保存は0）
     snapshot = B.snap.map((x) => ({ u: U(x.uid), r: x.r, c: x.c })).filter((x) => x.u);
     stats = B.stats ? { dealt: B.stats.dealt, who: Object.keys(B.stats.who).reduce((o, k) => { const u = U(B.stats.who[k]); if (u) o[k] = u; return o; }, {}), taken: B.stats.taken, fallen: B.stats.fallen } : null;
@@ -7713,7 +7677,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     run.hist[run.node] = 'rest';
     run.rests = (run.rests || 0) + 1; run.chRests = (run.chRests || 0) + 1;
-    run.members.forEach((m) => { m.hp = m.max; m.sta = m.staMax; });
+    run.members.forEach((m) => { m.hp = m.max; });
     SFX.heal();
     expAdvance(['灯のそばで休んだ。全員のHPが全快した。章の主の気配が強まった（HP+' + Math.round(EXP.restPen.hp * run.chRests * 100) + '%）。']);
   }
@@ -7791,7 +7755,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 章を越えたとき：全員全快し、欠けた仲間の代わり（職業はでたらめ）が4人まで合流。章の休息回数を数え直す
   function expChapterClear(events) {
     const ch = expCh(run.node + 1);
-    run.members.forEach((m) => { m.hp = m.max; m.sta = m.staMax; });
+    run.members.forEach((m) => { m.hp = m.max; });
     const joined = [];
     while (run.members.length < EXP.party.length) { const m = newMember(pick(JOBS).id, EXP.age); run.members.push(m); joined.push(m.name + '（' + m.jname + '）'); }
     roster = run.members; run.chRests = 0;
@@ -7859,6 +7823,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     enterRun();
     run = o.run; rseed = o.rseed || 7; uidSeq = o.uidSeq || run.members.length;
     run.hist = run.hist || []; run.mentors = run.mentors || {}; run.relics = run.relics || []; run.pendId = null;
+    run.members.forEach((m) => { delete m.sta; delete m.staMax; if (m.base) delete m.base.sta; });   // 前の版の保存にあるスタミナは読み捨てる（v5.5.0）
     run.members.forEach(capEntry);   // 前の版の保存で踏み込みが+8を超えていたら、+8にそろえる（v5.4.3）
     { const f = expFill(); Object.keys(f).forEach((id) => { if (!run.map[id]) run.map[id] = f[id]; }); }   // 第1章だけだった頃の保存：第2・3章の中身を足す
     if (run.chRests == null) run.chRests = run.rests || 0;

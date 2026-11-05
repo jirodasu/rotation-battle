@@ -3,10 +3,10 @@ const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const sleep = (p, ms) => p.waitForTimeout(ms);
 // 戦闘を最後まで：seq[ターン-1] が true なら回す（縛られていれば維持になる）
-// 標準的な遊び方：tools/expsim.mjs の SMART と同じ判断（前列が疲れた／次の攻撃で倒れる／前列のHPが半分未満なら回す）
+// 標準的な遊び方：tools/expsim.mjs の SMART と同じ判断（次の攻撃で倒れる／前列のHPが半分未満なら回す）
 const SM = () => { const R = window.__rb, g = R.grid, e = R.enemy, act = e.pattern[(R.turn - 1) % e.pattern.length];
   const front = []; for (let c = 0; c < R.cols; c++) if (g[0][c]) front.push(g[0][c]);
-  if (!front.length) return true; if (front.some((u) => u.staMax > 0 && u.sta <= 0)) return true;
+  if (!front.length) return true;
   if (act.dmg) { const d = act.dmg * (act.hits || 1); if (act.rule === 'all' && front.some((u) => u.hp <= act.dmg)) return true; const low = front.reduce((a, b) => (b.hp < a.hp ? b : a)); if (low.hp <= d) return true; }
   return front.reduce((s, u) => s + u.hp / u.max, 0) / front.length < 0.5; };
 async function fightSmart(p) {
