@@ -29,7 +29,7 @@ async function enter(p) {
   await p.click('#rvCards .rv-card[data-i="' + i + '"]'); await p.click('#rvGo'); await p.waitForTimeout(600);
 }
 (async () => {
-  ok(!/軽い鎧/.test(SRC) && SRC.split('\n').every((l) => !/\bstaMax\b|\bsta:/.test(l) || /delete m\.sta/.test(l)), '2 本体のソースに、軽い鎧・staMax・sta: が残っていない（旧セーブを読み捨てる1行を除く）');
+  ok(/name: '軽い鎧', key: 'none', v: 0/.test(SRC) && SRC.split('\n').every((l) => !/\bstaMax\b|\bsta:/.test(l) || /delete m\.sta/.test(l)), '2 本体のソースに、staMax・sta: が残っていない。軽い鎧は名前だけ残り、効果なし（旧セーブを読み捨てる1行を除く）');
   const b = await launch();
   for (const [w, h] of [[393, 852], [320, 568]]) {
     const tag = w + '×' + h;

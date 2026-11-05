@@ -6612,6 +6612,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const EQUIPS = [
     { name: '鋼の剣', key: 'atk', v: 4, desc: '攻撃+4', ok: (m) => m.base.atk >= 6 },
     { name: '大盾', key: 'defSup', v: 5, desc: '防御補助+5', ok: (m) => m.base.defSup >= 2 },
+    { name: '軽い鎧', key: 'none', v: 0, desc: '効果なし', ok: () => true },
     { name: '薬草袋', key: 'rest', v: 8, desc: '休んで回復+8', ok: () => true },
     { name: '長弓', key: 'ranged', v: 5, desc: '間接攻撃+5', ok: (m) => m.base.ranged > 0 },
     { name: '守りの護符', key: 'hp', v: 14, desc: '最大HP+14', ok: () => true }
