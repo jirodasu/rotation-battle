@@ -18,8 +18,12 @@ async function battle(b, fast) {
 }
 (async () => {
   const b = await launch();
-  const a = await battle(b, false), f = await battle(b, true);
-  console.log('通常', a.ms, 'ms / 2倍速', f.ms, 'ms');
+  // 交互に3回ずつ測って真ん中の値で比べる（v5.5.4：1回ずつだと機械の混み具合で 58〜68% まで揺れ、main でも3回中2回落ちた）
+  const med = (xs) => xs.slice().sort((x, y) => x - y)[Math.floor(xs.length / 2)];
+  const A = [], F = [];
+  for (let i = 0; i < 3; i++) { A.push(await battle(b, false)); F.push(await battle(b, true)); }
+  const a = { ms: med(A.map((x) => x.ms)), st: A[0].st, errs: A.flatMap((x) => x.errs) }, f = { ms: med(F.map((x) => x.ms)), st: F[0].st, errs: F.flatMap((x) => x.errs) };
+  console.log('通常', A.map((x) => x.ms).join('/'), 'ms / 2倍速', F.map((x) => x.ms).join('/'), 'ms（真ん中の値で比べる）');
   ok(a.st.pressed === 'false' && !a.st.cls, '初期は通常速度（ボタンは押されていない）');
   ok(f.st.pressed === 'true' && f.st.cls, '保存された2倍速が復元される');
   ok(f.ms < a.ms * 0.65, '2倍速の戦闘は通常の65%未満の時間（' + Math.round(f.ms / a.ms * 100) + '%）');
