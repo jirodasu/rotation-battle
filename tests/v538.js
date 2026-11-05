@@ -1,14 +1,14 @@
 // v5.3.8 見通しの札（下）と、目のボタンを消す
 // 合格の基準（測る前に決めたもの）：
-//  1. 選ぶ場面：「回す」「維持」の札に、敵の技・受ける・攻撃・敵が出る。数字は盤と同じ計算（受ける＝盤の赤い数字、敵＝剣の数字の合計と、残りHP）
+//  1. 選ぶ場面：「回す」「維持」の札に、敵とHPの「いま→次」、いちばん危ない仲間とHPの「いま→次」の2行（v5.5.1）。数字は盤と同じ計算（仲間＝盤の赤い数字、敵＝剣の数字の合計）
 //  2. 回せないとき（気力不足）：回すの札は理由を出す。維持の札は見通しのまま
 //  3. 陣立て：「戦闘開始」の札に、いまの並びの見通し。「回す」「維持」は出ない
 //  4. 目のボタンは出ない。「回す」を長押しすると、回した後の並び（点線）が盤に出る
-//  5. 背の低い画面（700px未満）では、受ける・敵の2行だけ。札は画面内に収まる
+//  5. どの画面でも2行（敵・仲間）。札は画面内に収まり、数字が … で切れない
 //  6. ページのエラーなし（393×852・320×568）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const rows = (id) => [...document.querySelectorAll('#' + id + ' .oc-r')].filter((r) => getComputedStyle(r).display !== 'none').map((r) => [r.querySelector('i').textContent, r.querySelector('b').textContent]);
+const rows = (id) => [...document.querySelectorAll('#' + id + ' .oc-r')].filter((r) => getComputedStyle(r).display !== 'none').map((r) => [r.dataset.k || r.querySelector('i').textContent, r.querySelector('b').textContent.replace(/HP/g, ''), r.dataset.say || '', r.querySelector('b').className, r.querySelector('b').scrollWidth <= r.querySelector('b').clientWidth + 1]);
 (async () => {
   const b = await launch();
   for (const [w, h] of [[393, 852], [320, 568]]) {
@@ -21,7 +21,7 @@ const rows = (id) => [...document.querySelectorAll('#' + id + ' .oc-r')].filter(
     await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(200); await p.click('#rvGo'); await p.waitForTimeout(1400);
     // 3. 陣立て
     const pr = await p.evaluate((rs) => { const rows = eval(rs); return { start: rows('ocStart'), rot: !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('btnRotate')).display !== 'none', stay: !document.getElementById('btnStay').hidden }; }, '(' + rows.toString() + ')');
-    ok(pr.start.length >= 2 && pr.start.some((r) => r[0] === '受ける') && pr.start.some((r) => r[0] === '敵') && !pr.rot && !pr.stay, tag + ' 3 陣立ての戦闘開始に見通し ' + JSON.stringify(pr.start));
+    ok(pr.start.length >= 2 && pr.start.some((r) => r[0] === 'hurt') && pr.start.some((r) => r[0] === 'foe') && !pr.rot && !pr.stay, tag + ' 3 陣立ての戦闘開始に見通し ' + JSON.stringify(pr.start));
     await p.click('#btnStart');
     for (let k = 0; k < 120; k++) { if (await p.evaluate(() => window.__rb.phase === 'choose')) break; await p.waitForTimeout(150); }
     await p.waitForTimeout(500);
@@ -30,14 +30,15 @@ const rows = (id) => [...document.querySelectorAll('#' + id + ' .oc-r')].filter(
     // 1. 数字が盤と同じ計算
     const r = await p.evaluate((rs) => { const rows = eval(rs), R = window.__rb;
       const exp = (src, fresh, ent) => { const inc = R.incoming(src, fresh, ent); let d = 0; R.units(src).forEach(({ u, r, c }) => { const x = R.expDmg(u, r, c, src, fresh, ent); if (x && x.val > 0) d += x.val; });
-        return { hurt: Object.keys(inc).map((k) => { const [a, c] = k.split(',').map(Number); return src[a][c].name + ':' + inc[k].d + ':' + (inc[k].ko ? 1 : 0); }), dealt: d }; };
+        return { hurt: Object.keys(inc).map((k) => { const [a, c] = k.split(',').map(Number); return { n: src[a][c].name, hp: src[a][c].hp, d: inc[k].d, ko: inc[k].ko ? 1 : 0 }; }).sort((x, y) => (y.ko - x.ko) || (y.d - x.d)), dealt: d }; };
       return { stay: rows('ocStay'), rot: rows('ocRot'), es: exp(R.grid, false, false), er: exp(R.previewGrid(), true, true), hp: R.enemy.hp, prev: !document.getElementById('btnPreview').hidden }; }, '(' + rows.toString() + ')');
-    const chk = (card, e) => { const m = Object.fromEntries(card), hurtOk = e.hurt.every((x) => { const [n, d, ko] = x.split(':'); return m['受ける'].includes(n) && (ko === '1' ? /倒れる/.test(m['受ける']) : m['受ける'].includes('-' + d)); }) && (e.hurt.length || /無傷|運しだい/.test(m['受ける']));
-      const foeOk = e.dealt > 0 ? m['敵'].includes('-' + e.dealt) : /残り/.test(m['敵']); return hurtOk && foeOk; };
-    ok(chk(r.stay, r.es), tag + ' 1 維持の札が盤と同じ計算 ' + JSON.stringify(r.stay) + ' / ' + JSON.stringify(r.es));
-    ok(chk(r.rot, r.er), tag + ' 1 回すの札が先読みと同じ計算 ' + JSON.stringify(r.rot) + ' / ' + JSON.stringify(r.er));
-    if (h >= 700) ok(r.stay.map((x) => x[0]).join() === '敵の技,受ける,攻撃,敵', tag + ' 1 4行（敵の技・受ける・攻撃・敵）');
-    else ok(r.stay.map((x) => x[0]).join() === '受ける,敵', tag + ' 5 背の低い画面は2行（受ける・敵）');
+    const chk = (card, e, hp) => { const m = Object.fromEntries(card.map((x) => [x[0], x])), h = e.hurt[0], u = m.hurt;
+      const hurtOk = u && (h ? u[2].includes(h.n) && u[1].includes(h.hp + '→' + Math.max(0, h.hp - h.d)) && (e.hurt.some((x) => x.ko) ? /ko/.test(u[3]) : true) && (e.hurt.length > 1 ? u[1].includes('ほか' + (e.hurt.length - 1) + '人') : true) : /無傷|運しだい/.test(u[1]));
+      const foeOk = m.foe && m.foe[1].includes(hp + '→' + Math.max(0, hp - e.dealt)); return !!(hurtOk && foeOk); };
+    ok(chk(r.stay, r.es, r.hp), tag + ' 1 維持の札が盤と同じ計算 ' + JSON.stringify(r.stay) + ' / ' + JSON.stringify(r.es));
+    ok(chk(r.rot, r.er, r.hp), tag + ' 1 回すの札が先読みと同じ計算 ' + JSON.stringify(r.rot) + ' / ' + JSON.stringify(r.er));
+    ok(r.stay.map((x) => x[0]).join() === 'foe,hurt' && r.rot.map((x) => x[0]).join() === 'foe,hurt', tag + ' 1・5 2行（敵・仲間）');
+    ok(r.stay.concat(r.rot).every((x) => x[4]), tag + ' 5 数字が切れない ' + JSON.stringify(r.stay.concat(r.rot).map((x) => x[1])));
     // 4. 目のボタンは出ない・長押しで先読み
     ok(!r.prev, tag + ' 4 目のボタンは出ない');
     const box = await p.evaluate(() => { const q = document.getElementById('btnRotate').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; });

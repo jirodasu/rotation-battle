@@ -40,9 +40,9 @@ async function toPrep(p) {
     await p.addInitScript(tipsOff);
     await toPrep(p);
     const r = await p.evaluate(() => {
-      const ico = document.querySelector('.prepban .pb-ico'), cs = ico && getComputedStyle(ico), sm = [...document.querySelectorAll('#ocStart .oc-r')].map((x) => x.querySelector('b')).find((b, i, a) => b.previousElementSibling.textContent === '受ける'), R = (e) => e.getBoundingClientRect();
+      const ico = document.querySelector('.prepban .pb-ico'), cs = ico && getComputedStyle(ico), sm = document.querySelector('#ocStart .oc-r[data-k="hurt"]'), R = (e) => e.getBoundingClientRect();
       const tk = document.querySelector('#ticket .t-dmg b'), tnum = tk ? /\d/.test(tk.textContent) : false;
-      return { bg: cs ? cs.backgroundImage + '|' + cs.backgroundColor : '', how: (document.querySelector('.prepban .pb-how') || {}).textContent, say: sm ? sm.textContent : '', tnum,
+      return { bg: cs ? cs.backgroundImage + '|' + cs.backgroundColor : '', how: (document.querySelector('.prepban .pb-how') || {}).textContent, say: sm ? sm.dataset.say : '', tnum,
         prot: document.getElementById('btnPrepRot').textContent.trim(), dock: R(document.getElementById('dock')).bottom, start: R(document.getElementById('btnStart')).bottom, vh: innerHeight };
     });
     ok(/none\|rgba\(0, 0, 0, 0\)/.test(r.bg), w + '×' + h + ' 2 陣立ての印は金の丸ではない（' + r.bg + '）');
@@ -51,11 +51,11 @@ async function toPrep(p) {
     ok(r.prot === '並びを回す', w + '×' + h + ' 4 陣立ての回すは「' + r.prot + '」');
     ok(r.start <= r.vh + 1, w + '×' + h + ' 5 戦闘開始のボタンが画面内（' + Math.round(r.start) + ' / ' + r.vh + '）');
     // 3. 一言が盤の数字と合う：当たる仲間の名前と数字
-    const m = await p.evaluate(() => { const R = window.__rb, inc = R.incoming(R.grid, true, false), ks = Object.keys(inc); return ks.map((k) => { const [rr, cc] = k.split(',').map(Number); return R.grid[rr][cc].name + ':' + inc[k].d; }); });
+    const m = await p.evaluate(() => { const R = window.__rb, inc = R.incoming(R.grid, true, false), ks = Object.keys(inc); return ks.map((k) => { const [rr, cc] = k.split(',').map(Number); return R.grid[rr][cc].name + ':' + Math.max(0, R.grid[rr][cc].hp - inc[k].d); }); });   // v5.5.1：札は「名前 HP いまから次」
     ok(!m.length ? /運しだい|無傷/.test(r.say) : m.some((x) => { const [n, d] = x.split(':'); return r.say.includes(n) && r.say.includes(d); }), w + '×' + h + ' 3 一言が盤の赤い数字と合う ' + JSON.stringify(m));
     // 当たる相手が毎回変わる攻撃
     await p.evaluate(() => { const R = window.__rb, a = R.actOf(R.enemy); a.rule = 'random'; a.hits = 2; R.render(); });
-    const rnd = await p.evaluate(() => { const r = [...document.querySelectorAll('#ocStart .oc-r')].find((x) => x.querySelector('i').textContent === '受ける'); return r ? r.querySelector('b').textContent : ''; });
+    const rnd = await p.evaluate(() => { const r = document.querySelector('#ocStart .oc-r[data-k="hurt"]'); return r ? r.querySelector('b').textContent : ''; });
     ok(/運しだい/.test(rnd), w + '×' + h + ' 3 当たる相手が変わる攻撃は「運しだい」：' + rnd);
     ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
     await ctx.close();

@@ -339,7 +339,7 @@ async function open(b, w, h, kind, node) {
     // 戦闘へ
     await p.click('#rvGo'); await p.waitForTimeout(1500);
     // v5.3.4 で仕様を変えた：実演を見たあとも、短い入れ替え方（1行）と「誰が何を受けるか」をいつも出す。長い実演の説明（ドラッグ…）は出さない
-    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'), h = document.querySelector('.prepban .pb-how'); return { ok: !!document.querySelector('.prepban') && !!h && h.textContent === 'タップ→タップで入れ替え' && !/ドラッグ/.test(document.querySelector('.prepban').textContent) && /受ける/.test(document.getElementById('ocStart').textContent), t: document.getElementById('ocStart').textContent }; });   // v5.3.8：受けるダメージは「戦闘開始」の札へ
+    const f0 = await p.evaluate(() => { const t = document.querySelector('.prepban small'), h = document.querySelector('.prepban .pb-how'); return { ok: !!document.querySelector('.prepban') && !!h && h.textContent === 'タップ→タップで入れ替え' && !/ドラッグ/.test(document.querySelector('.prepban').textContent) && !!document.querySelector('#ocStart .oc-r[data-k="hurt"]'), t: document.getElementById('ocStart').textContent }; });   // v5.3.8：受けるダメージは「戦闘開始」の札へ（v5.5.1：札は2行。仲間の行＝data-k="hurt"）
     ok(f0.ok, 'F 陣立ての一言：実演を見たあとは短い入れ替え方と、受けるダメージの一言だけ（' + f0.t + '）');
     // E 長押し：押している間だけ先読み、離すと決定（外でなく札の上）
     await p.evaluate(() => { window.__rb.run.members.forEach((m) => { m.max = Math.max(m.max, 60); m.hp = 20; }); });
