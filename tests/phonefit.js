@@ -11,7 +11,7 @@ const FOES = [[3, 'poison', 0, '第1章の主（毒）'], [2, 'swarm', 'binder',
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.clock.setFixedTime(new Date('2026-10-25T12:00:00+09:00'));
-    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1}'); } catch (e) { /* */ } });
+    await p.addInitScript(() => { try { localStorage.setItem('rb-tips', '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1,"hmIntro":1}'); } catch (e) { /* */ } });
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300);
     await p.click('#begin'); await p.waitForTimeout(500);
     await p.evaluate(([step, vk, foe]) => { const R = window.__rb; R.run.node = step - 1; R.run.enemy = R.expEnemy(step, vk, foe); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, [step, vk, foe]);

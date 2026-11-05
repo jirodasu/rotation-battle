@@ -1,7 +1,7 @@
 // v5.4.7 初めての人が離れないように：回転コンボは第2章から、赤い数字に「あと何発」
 // 合格の基準（測る前に決めたもの）：
 //  1. 第1章の戦闘では、回転コンボの◆が出ない（回してもたまらない）
-//  2. 第2章の戦闘では◆が出て、初めての時だけ案内「新しい力：回転コンボ」が出る
+//  2. 第2章の戦闘では◆が出て、初めての時だけ案内「一巡りの灯」が出る（v5.5.2 で改名）
 //  3. 赤い数字に「あとN発」：N＝そのダメージで倒れるまでの回数（HP÷ダメージを切り上げ）。3発以内のときだけ。倒れる（倒）ときは出さない
 //  4. 「あとN発」が盤からはみ出さず、名前の札と重ならない（320×568）。ページのエラーなし
 const { launch, testPage } = require('./_env');
@@ -44,7 +44,7 @@ const ov = (a, b) => Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b
     await p.evaluate(() => { const R = window.__rb; R.run.node = 3; localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1 })); R.setGauge(3); R.enemy.bound = false; R.render(); });
     await p.waitForTimeout(1600);   // 案内は、その場ですぐ出る（維持を押すと閉じて「見た」になる）
     const c2 = await p.evaluate(() => ({ pips: document.querySelectorAll('#rotMeter .pips.cb i').length, tip: document.getElementById('tip').hidden ? '' : document.getElementById('tipT').textContent }));
-    ok(c2.pips === 3 && /回転コンボ/.test(c2.tip), tag + ' 2 第2章では◆が出て、初めての案内が出る ' + JSON.stringify(c2));
+    ok(c2.pips === 3 && /一巡りの灯/.test(c2.tip), tag + ' 2 第2章では◆が出て、初めての案内が出る ' + JSON.stringify(c2));
     ok(!errs.length, tag + ' ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }

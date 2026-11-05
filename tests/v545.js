@@ -27,7 +27,7 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     const tag = w + '×' + h;
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-    await p.addInitScript(() => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); } catch (e) { /* */ } });
+    await p.addInitScript(() => { try { localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1, hmIntro: 1 })); } catch (e) { /* */ } });
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
     await p.click('#begin'); await p.waitForTimeout(700); await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(200); await p.click('#rvGo'); await p.waitForTimeout(1500);
     await p.evaluate(() => { const R = window.__rb; R.enemy.hp = R.enemy.max = 999; R.run.node = 3; });   // 途中で勝たないように。回転コンボは第2章から（v5.4.7）なので、第2章の地点にする（数値の確かめ用。ゲームは変えない）
@@ -65,7 +65,7 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
     await p.click('#btnRotate'); await toChoose(p);
     const after = await p.evaluate(() => ({ combo: window.__rb.combo, log: window.__rb.log.join('\n'), hp: window.__rb.enemy.hp }));
     const mm = /(\d+)→(\d+)/.exec(pred), m = mm ? [0, +mm[1] - +mm[2]] : null, dealt = hp0 - after.hp;
-    ok(after.combo === 0 && /回転コンボ/.test(after.log) && /（強化）|突入技/.test(after.log), tag + ' 2 3つ目がたまる回転で発動して0に戻る');
+    ok(after.combo === 0 && /一巡りの灯/.test(after.log) && /（強化）|突入技/.test(after.log), tag + ' 2 3つ目がたまる回転で発動して0に戻る');
     ok(!!m && +m[1] === dealt, tag + ' 4 見通しの札の「敵」（' + pred + '）が、実際に与えたダメージ（' + dealt + '）と一致');
     // 3 目盛りの上を長押しして離しても「回す」が届く（先読みで目盛りを描き直しても、指の下の印を作り直さない）
     { await p.evaluate(() => { const R = window.__rb; R.setGauge(3); R.enemy.bound = false; R.render(); });
@@ -75,7 +75,7 @@ const pips = (p) => p.evaluate(() => [...document.querySelectorAll('#rotMeter .p
       await p.waitForTimeout(300); await toChoose(p);
       ok(await p.evaluate(() => window.__rb.turn) === t0 + 1, tag + ' 3 目盛りの上を長押しして離しても回る'); }
     // 6 あそびかた
-    ok(await p.evaluate(() => /回転コンボ/.test(document.getElementById('hTier1').textContent)), tag + ' 6 あそびかたの「しくみ」に回転コンボ');
+    ok(await p.evaluate(() => /一巡りの灯/.test(document.getElementById('hTier1').textContent)), tag + ' 6 あそびかたの「しくみ」に回転コンボ');
     // 5 途中保存から続き
     await p.evaluate(() => { window.__rb.setCombo(2); window.__rb.setGauge(3); window.__rb.render(); });
     await p.click('#btnStay'); await toChoose(p);   // 選ぶ場面に戻ったときに途中保存される

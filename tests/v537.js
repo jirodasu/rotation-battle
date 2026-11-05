@@ -54,7 +54,7 @@ async function toPrep(p, n) {
     // --- 4・5. 枠の無い戦闘で仲間を選ぶ ---
     { const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
       const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-      await p.addInitScript(() => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1 })); } catch (e) { /* */ } });
+      await p.addInitScript(() => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1, hmIntro: 1 })); } catch (e) { /* */ } });
       await toPrep(p, 5);
       await p.click('.slot[data-r="1"][data-c="0"]'); await p.waitForTimeout(400);
       const s = await p.evaluate(() => { const pk = document.getElementById('peek').getBoundingClientRect(), bd = document.querySelector('#board .strip.r0') ? document.querySelector('#board .strip.r0').getBoundingClientRect() : document.getElementById('board').getBoundingClientRect(), sel = document.getElementById('selTip');

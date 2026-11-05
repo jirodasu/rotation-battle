@@ -8,7 +8,7 @@
 //  5. ページのエラーなし（393×852・320×568）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1}';   // 旧版で付いた "stamina" の既読印が残っていても困らない
+const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"combo":1,"hmIntro":1}';   // 旧版で付いた "stamina" の既読印が残っていても困らない
 const BAD = /スタミナ|疲労|疲れ/;
 // 画面の全文（隠れている説明も含む。script・style の中身は除く）
 const TXT = () => { const c = document.documentElement.cloneNode(true); c.querySelectorAll('script,style').forEach((e) => e.remove()); return c.textContent.match(/スタミナ|疲労|疲れ/g); };
