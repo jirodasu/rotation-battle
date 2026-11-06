@@ -48,8 +48,10 @@ const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { c
     // 3 攻撃補助は剣の数字の金色と一致
     const s3 = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')');
     ok(s3.length > 0 && s3.every((a) => a.on === a.buf), tag + ' 3 攻撃補助の実線＝剣の数字が金色 ' + JSON.stringify(s3));
-    await p.evaluate(() => { const R = window.__rb; R.grid[1].forEach((u) => { if (u) u.atkReady = true; }); R.render(); }); await p.waitForTimeout(120);   // 矢印は次の描画の前に描く（v5.4.0）
-    const s3b = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')');
+    await p.evaluate(() => { const R = window.__rb; R.grid[1].forEach((u) => { if (u) u.atkReady = true; }); R.render(); });
+    // 矢印は次の描画の前に描く（v5.4.0）。決め打ちの0.12秒ではなく、最大2秒まで待って確かめる（v5.5.6：並べて流すと描き直しが遅れて落ちた）
+    let s3b = [];
+    for (let k = 0; k < 20; k++) { await p.waitForTimeout(100); s3b = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')'); if (s3b.every((a) => a.on === a.buf)) break; }
     ok(s3b.every((a) => a.on === a.buf), tag + ' 3 補助を戻すと実線（剣の数字も金色） ' + JSON.stringify(s3b));
     // 4 防御補助
     const s4 = await p.evaluate(async (fn) => { const fr = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const R = window.__rb, A = eval(fn), g = R.grid; let col = -1, found = false;
