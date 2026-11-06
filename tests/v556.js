@@ -26,7 +26,10 @@ const AFTER = (Tid) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.p
     await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.clear(); localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-fast', '1'); sessionStorage.setItem('s', '1'); } } catch (e) {} }, TIPS);
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(700);
     if (node > 0) { await p.evaluate((n) => { const o = JSON.parse(localStorage.getItem('rb-exp-save')); o.run.node = n; delete o.battle; localStorage.setItem('rb-exp-save', JSON.stringify(o)); }, node);
-      await p.reload(); await p.waitForTimeout(500); if (await p.evaluate(() => !document.getElementById('cover').classList.contains('revealed'))) await p.click('#cover'); await p.waitForTimeout(300); await p.click('#resume'); await p.waitForTimeout(900); }
+      // file:// では読み込み直しで保存が消えることがある（環境の揺れ。v545 と同じ）。消えていたら書き戻して読み込み直す
+      { const d = await p.evaluate(() => JSON.stringify(Object.assign({}, localStorage)));
+        for (let k = 0; k < 3; k++) { await p.reload(); await p.waitForTimeout(500); const lost = await p.evaluate((d) => { if (localStorage.getItem('rb-exp-save')) return false; const o = JSON.parse(d); Object.keys(o).forEach((x) => localStorage.setItem(x, o[x])); return true; }, d); if (!lost) break; console.log('  （環境）読み込み直しで保存が消えたので書き戻した'); } }
+      if (await p.evaluate(() => !document.getElementById('cover').classList.contains('revealed'))) await p.click('#cover'); await p.waitForTimeout(300); await p.click('#resume'); await p.waitForTimeout(900); }
     const i = await p.evaluate(() => Math.max(0, window.__rb.run.choices.findIndex((x) => x.type === 'battle' || x.type === 'boss' || x.type === 'elite')));
     await p.click('#rvCards .rv-card[data-i="' + i + '"]'); await p.click('#rvGo'); await p.waitForTimeout(1200);
     const ch = async () => { for (let k = 0; k < 600; k++) { const s = await p.evaluate(() => ({ ph: window.__rb.phase, end: !document.getElementById('result').hidden || !document.getElementById('runv').hidden, tip: !document.getElementById('tip').hidden }));
@@ -60,6 +63,7 @@ const AFTER = (Tid) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.p
       for (const h of s.hurt) { const got = a.hp[h.uid], want = Math.max(0, Math.min(h.max, h.hp + h.heal) - h.d); if (got !== want && !(got === undefined && want === 0)) issues.push(h.n + ' 予測' + want + ' 実際' + got); }
       for (const u of s.all) { if (s.hurt.some((h) => h.uid === u.uid)) continue; const got = a.hp[u.uid]; if (got !== undefined && got < u.hp) issues.push('予測なしで被弾 ' + u.uid + ' ' + u.hp + '→' + got); }
     }
+    n++; if (issues.length && process.env.DBG) console.log('      ログ：' + a.log.join(' | ') + '\n      予測：' + JSON.stringify(s.hurt) + ' 前 ' + JSON.stringify(s.all));
     n++; if (issues.length) bad.push('地点' + (node + 1) + ' ' + s.turn + 'ターン目 ' + (s.rot ? '回す' : '維持') + ' ' + s.names.join('/') + '（' + s.rules.join('/') + '）：' + issues.join('；'));
   }
   bad.forEach((x) => console.log('    ' + x));
