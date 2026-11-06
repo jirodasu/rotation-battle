@@ -2914,6 +2914,21 @@ body.fast #stampOk.on { animation-duration: .5s; }
 <script>
 (() => {
   'use strict';
+  /* QAの保存の切り離し（v5.5.5）：?qa で開いたら、どの処理よりも先に、このゲームの保存（rb- で始まるキー）への書き込みを
+     すべてメモリへ振り向ける。遠征・30年の保存と星・記録・実績は、本物を読みもしない。設定（音・速さ）やヒントの既読は本物を読む（書かない）。
+     地点の指定が正しくなければ、保存を初めて読む coverProgress の前に qaRelease で元に戻す（普通の起動と同じになる） */
+  const QA_REQ = /[?&]qa\b/.test(location.search);
+  let qaRelease = () => {};
+  if (QA_REQ) {
+    const ISO = /^rb-(run-save|exp-save|stars|run-best|exp|meta)$/, OWN = /^rb-/, mem = new Map(), S = Storage.prototype, g = S.getItem, st = S.setItem, rm = S.removeItem;
+    let ls = null; try { ls = window.localStorage; } catch (e) { /* 保存できない環境 */ }
+    if (ls) {
+      S.getItem = function (k) { if (this === ls && OWN.test(k)) { if (mem.has(k)) return mem.get(k); if (ISO.test(k)) return null; } return g.call(this, k); };
+      S.setItem = function (k, v) { if (this === ls && OWN.test(k)) { mem.set(k, String(v)); return; } return st.call(this, k, v); };
+      S.removeItem = function (k) { if (this === ls && OWN.test(k)) { mem.set(k, null); return; } return rm.call(this, k); };
+      qaRelease = () => { S.getItem = g; S.setItem = st; S.removeItem = rm; mem.forEach((v, k) => { try { if (v === null) rm.call(ls, k); else st.call(ls, k, v); } catch (e) { /* */ } }); mem.clear(); };   // 普通の起動に戻す：それまでの書き込み（古い設定の掃除など）は普通の起動と同じく本物へ
+    }
+  }
   const ROWS = 3, CIRC = 2 * Math.PI * 47;
   let COLS = 4;   // 盤の横幅。30年モード・チュートリアルは4、試作の遠征は EXP.cols
   const COLN_N = ['一', '二', '三', '四'];
@@ -6035,7 +6050,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       }
       confetti();
       // 勝利と報酬を1枚に（v5.3.3）：遠征の途中の勝利は、勝利パネルを出さずに報酬の画面へ。★と「いちばん活躍」は報酬の画面の上に出す
-      if (!tut && run && EXPM() && !last && !window.__rbKeepWinPanel) {   // __rbKeepWinPanel：テストの一部だけが使う（以前の勝利パネル）
+      if (!tut && run && EXPM() && !last && !window.__rbKeepWinPanel && !qaOn) {   // QAでは報酬へ進まず、勝利パネルで止める   // __rbKeepWinPanel：テストの一部だけが使う（以前の勝利パネル）
         let mv = null; Object.keys(stats.dealt).forEach((id) => { if (!mv || stats.dealt[id] > stats.dealt[mv]) mv = id; });
         expWin = { stars: gotStars, sub: turn + 'ターンで撃破' + (mv && stats.who[mv] ? '・いちばん活躍 ' + stats.who[mv].name : '') + '。' };
         setTimeout(() => { if (phase !== 'over' || lastResult !== 'win' || !$('result').hidden || !$('runv').hidden) return; const ev = expAfterBattle(true); expReward(ev); }, RM ? 0 : 650);
@@ -6051,10 +6066,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
       $('next').textContent = tut ? 'もう一度' : run ? (EXPM() ? '遠征の結果へ' : '騎士団の記録へ') : '編成に戻る';
       $('confetti').innerHTML = '';
     }
+    if (qaOn) { $('next').textContent = 'タイトルへ'; $('resultAlt').hidden = true; }   // QAは1戦だけ（先へは進めない）
     setTimeout(() => { $('result').hidden = false; $('next').focus(); }, RM ? 0 : 450);
   }
 
   $('next').addEventListener('click', () => {
+    if (qaOn) { qaExit(); return; }
     if (tut) { if (lastResult === 'win') askNewRun(); else beginTutorial(); return; }
     if (EXPM()) {
       $('result').hidden = true;
@@ -6615,6 +6632,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toastT = setTimeout(() => { t.classList.remove('on'); toastH = setTimeout(() => { t.hidden = true; }, RM ? 0 : 300); }, ms || 3200);
   }
   function goTitle() {
+    if (qaOn) { qaExit(); return; }   // QAの途中でタイトルへ戻るときも、?qa を外して普通のタイトルへ
     dangerEdge(false); ['foeTip', 'tkTip', 'rotTip', 'incTip', 'pvTip', 'holdTip'].forEach(hideBubble);
     // 戦闘の途中まで保存してあるなら、タイトルに着いたときにそれを知らせる（v5.1.48）
     const sv0 = !tut && run && EXPM() ? expSaved() : null, bat0 = sv0 && sv0.battle ? sv0.battle : null;
@@ -7922,36 +7940,35 @@ body.fast #stampOk.on { animation-duration: .5s; }
     swappedOnce = false;
     expShowMap([]);
   }
-  /* QAジャンプ（v5.5.5）：?qa&ch=章&loc=地点 で開くと、その地点の戦闘の陣立てから遠征を始める（検証用。画面には何も出さない）。
-     loc は章の中の番号（第3章なら1〜4）でも、通しの地点番号（第3章なら7〜10）でもよい。範囲外・?qa が無いときは 0（普通に起動） */
+  /* QAジャンプ（v5.5.5）：?qa&ch=章&loc=地点 で開くと、その地点の戦闘1つだけを陣立てから遊べる（検証用。画面には何も出さない）。
+     loc は全10地点の通し番号（第1章 1〜3／第2章 4〜6／第3章 7〜10）。ch と loc が合わないとき・範囲外・?qa が無いときは 0（普通に起動）。
+     編成は普通の新しい遠征と同じ4人・全員全快・報酬なし・普通の開始気力。戦い終えたら結果を見て、普通のタイトルへ戻る（先の地点へは進めない） */
   function qaStep(q) {
     if (!/[?&]qa\b/.test(q)) return 0;
     const ch = +((q.match(/[?&]ch=(\d+)/) || [])[1]), loc = +((q.match(/[?&]loc=(\d+)/) || [])[1]);
-    if (!(ch >= 1 && ch <= EXP.chiefs.length) || !(loc >= 1)) return 0;
+    if (!(ch >= 1 && ch <= EXP.chiefs.length)) return 0;
     const a = ch === 1 ? 1 : EXP.chiefs[ch - 2] + 1, b = EXP.chiefs[ch - 1];
-    if (loc >= a && loc <= b) return loc;
-    return loc <= b - a + 1 ? a + loc - 1 : 0;
+    return loc >= a && loc <= b ? loc : 0;
   }
-  // QAのあいだ、遠征・30年の保存と星・記録は本物の保存場所を読まず・書かない（メモリの上だけ）。ほかの設定（音・速さ・ヒントの既読）は普段どおり
-  function qaIsolate() {
-    const ISO = /^rb-(run-save|exp-save|stars|run-best|exp|meta)$/, mem = {}, S = Storage.prototype, g = S.getItem, st = S.setItem, rm = S.removeItem;
-    let ls = null; try { ls = window.localStorage; } catch (e) { return; }
-    S.getItem = function (k) { return this === ls && ISO.test(k) ? (Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null) : g.call(this, k); };
-    S.setItem = function (k, v) { if (this === ls && ISO.test(k)) { mem[k] = String(v); return; } return st.call(this, k, v); };
-    S.removeItem = function (k) { if (this === ls && ISO.test(k)) { delete mem[k]; return; } return rm.call(this, k); };
-  }
+  let qaOn = 0;
   function qaBoot(step) {
     // 出発点からその地点の戦闘までの道をたどる。通った地点は「通った」だけ（戦闘・報酬・星は無し）
     const ids = Object.keys(ROUTE.nodes), at = (st) => ids.filter((id) => ROUTE.nodes[id].step === st);
-    const tgt = at(step).find((id) => isFightKind(ROUTE.nodes[id].kind)); if (!tgt) return;
+    const tgt = at(step).find((id) => isFightKind(ROUTE.nodes[id].kind)); if (!tgt) return false;
     const path = []; let cur = tgt;
-    for (let st = step - 1; st >= 1; st--) { const pr = at(st).find((id) => ROUTE.nodes[id].next.includes(cur)); if (!pr) return; path.unshift(pr); cur = pr; }
-    if (!ROUTE.nodes.start.next.includes(cur)) return;
+    for (let st = step - 1; st >= 1; st--) { const pr = at(st).find((id) => ROUTE.nodes[id].next.includes(cur)); if (!pr) return false; path.unshift(pr); cur = pr; }
+    if (!ROUTE.nodes.start.next.includes(cur)) return false;
+    qaOn = step;
+    document.documentElement.dataset.qa = String(step);   // 開発者向け：DOM の data-qa と console で QA だと分かる（画面には出さない）
+    try { console.info('[QA] 地点' + step + 'の戦闘から開始（保存・星・記録は書き換えない）'); } catch (e) { /* */ }
     beginExp('std', 1);   // 普通の新しい遠征と同じ初期編成・全員全快
     run.path = path; run.node = step - 1; run.choices = routeChoices();
     const c = run.choices.find((x) => x.rid === tgt);
     if (c) expEnter(c);
+    return true;
   }
+  // QAを終える：?qa を外して開き直す（本物の保存で、普通のタイトルから）
+  function qaExit() { try { console.info('[QA] 終了。普通のタイトルへ'); } catch (e) { /* */ } location.replace(location.pathname); }
   function resumeExp() {
     const o = expSaved(); if (!o) { beginExp(); return; }
     enterRun();
@@ -8032,6 +8049,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
   $('tutSub').textContent = tutDone() ? '操作しながら一つずつ覚える' : 'はじめての方はこちら　操作しながら覚える';
+  const QA_STEP = qaStep(location.search);
+  if (QA_REQ && !QA_STEP) qaRelease();   // 地点の指定が正しくない ?qa は、保存を初めて読む coverProgress より前に元へ戻す（普通の起動）
   coverProgress();
 
   // 縦画面の盤をできるだけ大きく。v5.1.46
@@ -8076,10 +8095,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   window.addEventListener('resize', layout);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
-  const QA_STEP = qaStep(location.search);
-  if (QA_STEP) qaIsolate();   // 保存を読む init より前に切り離す
   init();
-  if (QA_STEP) qaBoot(QA_STEP);
+  if (QA_STEP && !qaBoot(QA_STEP)) qaExit();
   layout();
   setTimeout(layout, 300);
 })();
