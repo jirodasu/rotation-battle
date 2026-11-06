@@ -335,7 +335,10 @@ async function open(b, w, h, kind, node) {
     const a0 = await p.evaluate(() => [...document.querySelectorAll('#rvCards .rv-card')].map((c) => { const k = c.querySelector('.rv-k'), d = c.querySelector('.rv-d'); return { k: k ? k.textContent : '', kv: !!k && k.getBoundingClientRect().height > 0, dv: d.getBoundingClientRect().height > 1 }; }));
     ok(a0.length >= 2 && a0.every((x) => x.kv && /\d|全快/.test(x.k)) && a0.every((x) => !x.dv), 'A 道カード：数字の1行が見え、本文はまだ開いていない ' + JSON.stringify(a0));
     await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(500);
-    ok(await p.evaluate(() => { const c = document.querySelector('#rvCards .rv-card.sel .rv-d'); return !!c && c.getBoundingClientRect().height > 8 && /HP|防御|素早さ/.test(c.textContent); }), 'A 選んだ札だけ本文が開く');
+    // v5.5.7：本文は「詳しく」で開く（HP・防・速は数字の札にあるので、本文には書かない）
+    const shut = await p.evaluate(() => { const c = document.querySelector('#rvCards .rv-card.sel .rv-d'); return !!c && c.getBoundingClientRect().height <= 1; });
+    if (await p.evaluate(() => !!document.getElementById('rvMore'))) { await p.click('#rvMore'); await p.waitForTimeout(400); }
+    ok(shut && await p.evaluate(() => { const c = document.querySelector('#rvCards .rv-card.sel .rv-d'); const o = document.querySelectorAll('#rvCards .rv-card:not(.sel) .rv-d'); return !!c && c.getBoundingClientRect().height > 8 && [...o].every((d) => d.getBoundingClientRect().height <= 1); }), 'A 選んだ札の本文は「詳しく」で開く（ほかの札は閉じたまま）');
     // 戦闘へ
     await p.click('#rvGo'); await p.waitForTimeout(1500);
     // v5.3.4 で仕様を変えた：実演を見たあとも、短い入れ替え方（1行）と「誰が何を受けるか」をいつも出す。長い実演の説明（ドラッグ…）は出さない

@@ -593,9 +593,9 @@ body.boss-stage .en-u b { color: var(--ink); }
   position: absolute; left: -6px; bottom: 30%; z-index: 3; display: inline-flex; align-items: center; gap: 3px; height: 21px; padding: 0 7px; border-radius: 11px;
   background: var(--danger-strong); color: var(--on-danger); font-style: normal; font-size: 12px; font-weight: 700; line-height: 1; box-shadow: 0 2px 0 rgba(35, 49, 74, 0.25);
 }
-.inc.ko { background: #7e1d14; color: #fff; animation: kopulse 1s ease-in-out infinite; }
+.inc.ko { background: #c0281b; color: #fff; box-shadow: 0 0 0 2px #fff, 0 2px 0 rgba(35, 49, 74, 0.25); animation: kopulse 0.6s ease-in-out infinite; }   /* 倒＝このターンで倒れる。いちばん強く（明るい赤・白い縁・速い脈打ち）。v5.5.7：「あと2発」より弱く見えていた */
 .inc s { text-decoration: none; display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #fff; color: #7e1d14; font-size: 11px; }
-@keyframes kopulse { 50% { box-shadow: 0 0 0 4px rgba(229, 96, 77, 0.35), 0 2px 0 rgba(35, 49, 74, 0.25); } }
+@keyframes kopulse { 50% { box-shadow: 0 0 0 2px #fff, 0 0 0 7px rgba(229, 96, 77, 0.5), 0 2px 0 rgba(35, 49, 74, 0.25); transform: scale(1.08); } }
 .order { display: flex; align-items: center; gap: 8px; margin: -2px 0 6px; min-height: 30px; }
 .od-l { flex: none; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; color: var(--ink-soft); }
 .od-list { display: flex; align-items: center; gap: 5px; min-width: 0; padding: 3px; overflow: hidden; }
@@ -1501,7 +1501,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .seal.d { background: radial-gradient(circle at 38% 32%, #5b84b4, var(--shield-strong) 70%); color: #f3efe4; box-shadow: inset 0 0 0 1px #1d3a5e; font-family: var(--serif); font-weight: 800; }
 .seal.off { background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule-a); font-family: var(--serif); }
 .inc { border-radius: 3px; background: var(--danger-strong); box-shadow: 0 1px 2px rgba(46, 28, 10, 0.35); }
-.inc.ko { background: #5e140a; }
+.inc.ko { background: #c0281b; }   /* v5.5.7：倒はいちばん強く（明るい赤）。「あと2発」（暗い赤）と逆にならないように */
 .sock { border: 1.5px dashed var(--rule-a); background: rgba(255, 250, 235, 0.22); }
 .tok .ent { font-family: var(--serif); font-weight: 800; background: var(--danger-strong); box-shadow: 0 0 0 1.5px var(--paper); }
 .spinicon { color: var(--gold); filter: drop-shadow(0 2px 2px rgba(46, 28, 10, 0.35)); }
@@ -2255,9 +2255,9 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ls-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 .ls-list p { margin: 0; padding: 5px 0; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--paper-line); color: var(--ink); }
 .ls-list p:first-child { border-top: 0; }
-.inc-n { position: absolute; left: 4px; bottom: calc(100% + 2px); padding: 1px 5px 2px; border-radius: 6px; background: rgba(20, 12, 10, 0.86); color: #ffd2c6; font-size: 10px; font-weight: 800; line-height: 1.2; white-space: nowrap; pointer-events: none; }   /* あと何発で倒れるか（3発以内だけ。赤い数字の上に出す：下だと狭い画面で名前の札に重なる。v5.4.7） */
-.inc-n.n1 { background: #b0261a; color: #fff; animation: n1pulse 0.7s ease-in-out infinite; }   /* あと2発＝このターンを受けると、次の1発で倒れる：速い脈打ちで知らせる（v5.4.9。「あと1発」は「倒」として出る） */
-@keyframes n1pulse { 50% { box-shadow: 0 0 0 3px rgba(229, 96, 77, 0.45); transform: scale(1.06); } }
+.inc-n { position: absolute; left: 4px; bottom: calc(100% + 2px); padding: 1px 5px 2px; border-radius: 6px; background: rgba(20, 12, 10, 0.86); color: #ffd2c6; font-size: 11px; font-weight: 800; line-height: 1.2; white-space: nowrap; pointer-events: none; }   /* あと何発で倒れるか（3発以内だけ。赤い数字の上に出す：下だと狭い画面で名前の札に重なる。v5.4.7） */
+.inc-n.n1 { background: #7a2016; color: #fff; animation: n1pulse 1.4s ease-in-out infinite; }   /* v5.5.7：「倒」より一段弱く（暗い赤・ゆっくり）。危なさの順に強さをそろえる */   /* あと2発＝このターンを受けると、次の1発で倒れる：速い脈打ちで知らせる（v5.4.9。「あと1発」は「倒」として出る） */
+@keyframes n1pulse { 50% { box-shadow: 0 0 0 2px rgba(229, 96, 77, 0.35); } }
 @media (prefers-reduced-motion: reduce) { .inc-n.n1 { animation: none; } }
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
 .inc-w { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
@@ -2593,6 +2593,33 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .runv.is-map .rv-card.sel .rv-d { max-height: 9em; opacity: 1; margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--rule-a, rgba(0,0,0,.2)); }
 @media (prefers-reduced-motion: reduce) { .runv.is-map .rv-txt > .rv-d { transition: none; } }
 
+/* ===== 地点選び A（v5.5.7）：選ぶたびに読む文字を減らす。見出しは「第N章 名前」と10地点の目盛り、目標は「?」、札の本文は「詳しく」 ===== */
+.runv.map-a .r-card { position: relative; }
+.runv.map-a.pick2 #rvTitle { display: none; }   /* 「どちらへ進む？」は、札が2つ並んでいれば分かる */
+.runv.map-a #rvSub { display: none; }
+.runv.map-a.show-goal #rvSub { display: block; position: absolute; left: 12px; right: 12px; top: 48px; z-index: 3; margin: 0; padding: 10px 12px; border: 1px solid var(--gold); border-radius: 12px; background: var(--paper, #f3ead6); box-shadow: 0 8px 24px rgba(0,0,0,.35); font-size: 13px; line-height: 1.6; text-align: left; pointer-events: none; }   /* 押しても下の地図・札に届く（吹き出しが邪魔をしない）。道を選ぶと閉じる。地図の上に吹き出しで重ねる。下の札と「進む」を押し下げない（小さい画面でも「進む」が見える） */
+.rv-help { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink-soft) 55%, transparent); background: transparent; color: var(--ink-soft); font: 800 15px/1 var(--sans); cursor: pointer; z-index: 4; }   /* 目標の吹き出しより手前（閉じられるように） */
+.rv-help[hidden] { display: none; }
+.runv .r-card > .rv-help { position: absolute; top: 8px; right: 10px; margin: 0; }   /* 右上の角に（ほかの .r-card の子の決まりに負けないように） */
+.runv.map-a .r-card > #rvSmall { padding-right: 44px; padding-left: 44px; }
+.runv.map-a.show-goal .rv-help { color: var(--gold); border-color: var(--gold); }
+.runv.map-a .rt-ch, .runv.map-a .rt-y { display: none; }   /* 章の名前の札と、地点の番号は、上の目盛りに任せる */
+.rt-prog { display: flex; gap: 4px; align-items: center; margin: 2px 6px 8px; }
+.runv.map-a .rt-prog { margin-right: 44px; }   /* 右上の「?」と重ならない */
+.rt-prog i { flex: 1 1 0; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink-soft) 28%, transparent); }
+.rt-prog i.done { background: var(--gold); }
+.rt-prog i.now { background: var(--rubric); }
+.rt-prog i.chief { flex: 0 0 11px; height: 11px; border-radius: 50%; background: transparent; border: 2px dashed var(--rubric); }
+.rt-prog i.chief.done { background: var(--gold); border: 2px solid var(--gold); }
+.rt-prog i.chief.now { background: var(--rubric); border-style: solid; }
+.runv.map-a .rv-m > b, .runv.map-a .rv-m > small { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }   /* 名前と職業は読み上げにだけ残す。顔とHPの棒で足りる */
+.runv.map-a .rv-m { position: relative; }
+.runv.is-map.map-a:not(.more) .rv-card.sel .rv-txt > .rv-d { display: none; }
+.runv.is-map.map-a.more .rv-card.sel .rv-txt > .rv-d { display: block; -webkit-line-clamp: unset; max-height: none; opacity: 1; margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--rule-a, rgba(0,0,0,.2)); font-size: 12.5px; line-height: 1.5; }
+.rv-more { display: none; }
+.runv.map-a .rv-more { display: block; margin: 0 2px 0 auto; padding: 6px 4px; min-height: 32px; background: none; border: 0; color: var(--ink-soft); font: 700 12.5px var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.runv.map-a .rv-card:not(.sel) .rv-k { opacity: .8; }
+
 /* ===== B 回復はHP棒の伸びと「+N」で返す。説明の文章は読み上げ用に残し、見える場所からは外す（v5.1.60） ===== */
 .rv-m.healed .hpb i { animation: hpGrow .9s cubic-bezier(.2,.8,.3,1) .35s both; background: #7fe0a6; }
 @keyframes hpGrow { from { width: var(--from); background: var(--age-young); } }
@@ -2755,7 +2782,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.5.6</p>
+    <p class="c-ver" id="cVer">ver 5.5.7</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2883,6 +2910,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 <div class="result runv" id="runv" role="dialog" aria-live="polite" hidden>
   <div class="r-card rv-card">
     <small class="disp" id="rvSmall"></small>
+    <button type="button" class="rv-help" id="rvHelp" aria-label="目標と隊の育ちを見る" aria-expanded="false" hidden>?</button>
     <h2 class="disp" id="rvTitle"></h2>
     <div class="r-stars rv-stars" id="rvStars" hidden></div>
     <p id="rvSub"></p>
@@ -3122,7 +3150,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.5.6';
+  const APP_VERSION = '5.5.7';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4121,7 +4149,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const up = comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? '（一巡りの灯で強化）' : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
     return '<span class="tok ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '"><span class="disc">' + face(u) + '</span>' + ent + torch +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' +
-      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(u.hp / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(u.hp / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(u.hp / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
+      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
 
@@ -7111,7 +7139,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     G.span.forEach(([st, x]) => { yrs += '<text class="rt-y' + (st === ROUTE.nodes[here].step + 1 ? ' now' : '') + '" x="' + x.toFixed(1) + '" y="' + (RT_H - 4) + '">' + (st === 0 ? '出陣' : EXPM() ? '地点' + st : (1 + RUN.years * (st - 1)) + '年') + '</text>'; });
     const names = ['序盤', '中盤', '終盤'], chips = [];
     for (let i = 0; i < ROUTE.chapters; i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + (EXPM() ? chName(i) : names[i] || '第' + (i + 1) + '章') + '</span>');
-    return '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div><svg class="route" viewBox="0 0 ' + RT_W + ' ' + RT_H + '" role="group" aria-label="遠征地図（' + (names[ch] || '') + '）。' + (here === 'start' ? '出陣前' : '現在地は地点' + ROUTE.nodes[here].step) + '。光っている領地へ進める">' +
+    const prog = EXPM() ? '<div class="rt-prog" role="img" aria-label="地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '">' + Array.from({ length: EXP.nodes }, (_, i) => '<i class="' + (i < run.node ? 'done' : i === run.node ? 'now' : '') + (EXP.chiefs.includes(i + 1) ? ' chief' : '') + '"></i>').join('') + '</div>' : '';   // 地点選び A（v5.5.7）：章の名前の札の代わりに、全10地点の目盛り（済み・いま・章の主）
+    return prog + '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div><svg class="route" viewBox="0 0 ' + RT_W + ' ' + RT_H + '" role="group" aria-label="遠征地図（' + (names[ch] || '') + '）。' + (here === 'start' ? '出陣前' : '現在地は地点' + ROUTE.nodes[here].step) + '。光っている領地へ進める">' +
       '<path class="isle" d="' + rtD(G.isl) + '"/>' + land + '<g class="rt-roads">' + road + '</g>' + mark + yrs + '</svg>';
   }
   function choiceName(c) {
@@ -7123,7 +7152,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function nextHTML() {
     const cur = run.node + 1, fz = Object.keys(RUN.forced).map(Number).concat(RUN.nodes).filter((k) => k >= cur).sort((a, b) => a - b)[0];
     if (!fz || fz === cur) return '';
-    return 'どの道も地点' + fz + 'の' + (fz === RUN.nodes ? '<b>決戦</b>' : EXPM() ? '<b>章の主</b>' : '<b>避けられない戦い</b>') + 'で合流（あと' + (fz - cur) + '地点）';
+    if (EXPM()) return (fz === RUN.nodes ? '<b>最後の主</b>' : '<b>章の主</b>') + 'まで あと' + (fz - cur) + '地点';   // 地点選び A（v5.5.7）：短く
+    return 'どの道も地点' + fz + 'の' + (fz === RUN.nodes ? '<b>決戦</b>' : '<b>避けられない戦い</b>') + 'で合流（あと' + (fz - cur) + '地点）';
   }
   // 出来事：1件目（引退・戦死など大事なものが先頭）を見せ、残りはタップで開く
   function eventsHTML(list, open) {
@@ -7151,10 +7181,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvEvents').innerHTML = o.body || eventsHTML(o.events || [], o.openLog);
     $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
       (o.aux ? '<div class="rv-btnrow">' : '') + (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') + (o.aux ? '<button type="button" class="btn rv-skip rv-aux" data-i="-2">' + o.aux + '</button></div>' : '') +
+      (o.map && EXPM() ? '<button type="button" class="rv-more" id="rvMore" aria-expanded="false">詳しく</button>' : '') +
       (o.map ? '<button type="button" class="btn primary rv-go" id="rvGo" data-go="1"></button>' : '');
     if (o.map) routeRefresh();
     $('rvCards').__on = o.on;
     const v = $('runv');
+    { const A = !!o.map && EXPM(); v.classList.toggle('map-a', A); v.classList.toggle('pick2', A && o.cards.length > 1); v.classList.remove('more');   // 地点選び A（v5.5.7）：読む文字を減らす。目標は「?」、本文は「詳しく」の中
+      v.classList.toggle('show-goal', A && !!o.goal); $('rvHelp').hidden = !A || !o.sub; $('rvHelp').setAttribute('aria-expanded', String(A && !!o.goal)); }
     v.hidden = false; v.classList.toggle('is-map', !!o.map); v.classList.toggle('is-squad', !!o.squad); v.classList.toggle('is-legacy', !!o.legacy); v.classList.toggle('is-clear', !!o.clear); v.classList.toggle('many', !o.map && !o.squad && !o.legacy && o.cards.length >= 4);
     v.style.setProperty('--rr', (o.roster || (run ? run.members : [])).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
@@ -7166,11 +7199,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
     const go = $('rvGo'); if (!go) return;
     const c = routeSel != null ? run.choices[routeSel] : null;
-    go.disabled = !c; go.textContent = c ? '「' + choiceName(c) + '」へ進む' : '地図か札で、進む道を選ぶ';
+    const A = EXPM();   // 地点選び A（v5.5.7。rvShow の中では印を付ける前に呼ばれるので、印ではなく遠征かどうかで決める）：選んだ札の名前はすぐ上に見えているので、ボタンは短く。読み上げには名前を入れる
+    go.disabled = !c; go.textContent = c ? (A ? '進む' : '「' + choiceName(c) + '」へ進む') : (A ? '道を選ぶ' : '地図か札で、進む道を選ぶ');
+    if (c) go.setAttribute('aria-label', '「' + choiceName(c) + '」へ進む'); else go.removeAttribute('aria-label');
     $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
     $('rvTrack').innerHTML = trackHTML();
   }
-  function routePick(i) { if (!run.choices[i]) return; routeSel = i; SFX.page(); routeRefresh(); }
+  $('rvHelp').addEventListener('click', () => { const v = $('runv'), on = !v.classList.contains('show-goal'); v.classList.toggle('show-goal', on); $('rvHelp').setAttribute('aria-expanded', String(on)); SFX.page(); });
+  $('rvCards').addEventListener('click', (ev) => { const b = ev.target.closest('#rvMore'); if (!b) return; const v = $('runv'), on = !v.classList.contains('more'); v.classList.toggle('more', on); b.setAttribute('aria-expanded', String(on)); b.textContent = on ? '閉じる' : '詳しく'; SFX.page(); });
+  function routePick(i) { if (!run.choices[i]) return; routeSel = i; if ($('runv').classList.contains('show-goal')) { $('runv').classList.remove('show-goal'); $('rvHelp').setAttribute('aria-expanded', 'false'); }   // 道を選んだら目標の吹き出しは閉じる（v5.5.7）
+    SFX.page(); routeRefresh(); }
   $('rvTrack').addEventListener('click', (ev) => { const n = ev.target.closest('[data-pick]'); if (n && $('rvCards').__on) routePick(+n.dataset.pick); });
   $('rvTrack').addEventListener('keydown', (ev) => { const n = ev.target.closest && ev.target.closest('[data-pick]'); if (n && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if ($('rvCards').__on) routePick(+n.dataset.pick); } });
   $('rvCards').addEventListener('click', (ev) => {
@@ -7796,7 +7834,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       d: '敵は3体（' + e.party.map((f) => f.name + ' HP' + f.hp + '・防御' + f.def + '・素早さ' + f.spd).join('／') + '）。倒す順番を考えるパズル戦。鎮守の像が生きている間、ほかの2体へのダメージは半分。勝てば報酬を4つから1つ。',
       k: [['敵', '3体'], ['HP', e.party.reduce((a, f) => a + f.hp, 0)], ['報酬', '4択']] };   // 本文と同じ数字のピルは付けない（v5.1.57）。いつも見せるのは数字の1行だけ（v5.1.60）
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
-      d: 'HP ' + e.hp + '　防御 ' + e.def + (e.variant && VARIANTS[e.variant].def ? '（亜種で+' + VARIANTS[e.variant].def + '）' : '') + '　素早さ ' + e.spd + '。' + (e.variant ? '亜種「' + VARIANTS[e.variant].pre.replace(/の$/, '') + '」：' + VARIANTS[e.variant].desc.replace(/^防御\+\d+。/, '') : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
+      d: (e.variant && VARIANTS[e.variant].def ? '防御は亜種で+' + VARIANTS[e.variant].def + '。' : '') + (e.variant ? '亜種「' + VARIANTS[e.variant].pre.replace(/の$/, '') + '」：' + VARIANTS[e.variant].desc.replace(/^防御\+\d+。/, '') : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
       k: [['HP', e.hp], ['防', e.def], ['速', e.spd]].concat(chief ? [['', '章の主']] : last ? [] : [['報酬', '4択']]) };   // 本文・題と同じ内容のピルは付けない（v5.1.57）。数字の1行を常に、本文は選んだ札だけ（v5.1.60）
   }
   // 第2章の扉（v5.5.2）：一巡りの灯が始まる章に初めて着いたとき、一度だけ物語として知らせる
@@ -7818,7 +7856,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
-    rvShow({ map: true, small: expSmall(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
+    const chN = expCh(Math.min(run.node + 1, EXP.nodes)), goal = run.node === 0 && !(+expMeta().runs);   // 地点選び A（v5.5.7）：上は「第N章 名前」だけ（地点は目盛りで）。目標は初めての遠征の最初だけ自動で開く
+    rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN) + xTag(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
   function expEnter(c) {

@@ -106,7 +106,8 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
               continue;
             }
             const st = { name: document.getElementById('ename').textContent, hp: +document.getElementById('ehpn').textContent, spd: num(document.getElementById('espd').getAttribute('aria-label'), /素早さ (\d+)/), def: num(document.getElementById('espd').getAttribute('aria-label'), /防御 (\d+)/) };
-            const cd = { name: card.t.replace(/^(章の主|戦闘)\s+/, ''), hp: num(card.d, /HP (\d+)/), def: num(card.d, /防御 (\d+)/), spd: num(card.d, /素早さ (\d+)/), tag: (card.tags || []).map((x) => x.t).find((t) => /^HP\d+ 防\d+$/.test(t)) };
+            const K = Object.fromEntries((card.k || []).map((x) => [x[0], +x[1]]));   // v5.5.7：HP・防・速は数字の札（k）にだけ書く（本文には書かない）
+            const cd = { name: card.t.replace(/^(章の主|戦闘)\s+/, ''), hp: K.HP, def: K['防'], spd: K['速'], tag: (card.tags || []).map((x) => x.t).find((t) => /^HP\d+ 防\d+$/.test(t)) };
             if (cd.name !== st.name || cd.hp !== st.hp || cd.def !== st.def || cd.spd !== st.spd) bad.push([id, rests, JSON.stringify(cd), JSON.stringify(st)]);
           }
         }

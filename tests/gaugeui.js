@@ -11,8 +11,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300);
     await p.click('#begin'); await p.waitForTimeout(600);
     // 地図：札の名前と進むボタンの名前
-    const names = await p.evaluate(async () => { const out = []; const cards = [...document.querySelectorAll('#rvCards .rv-card')]; for (const c of cards) { c.click(); await new Promise((r) => setTimeout(r, 60)); out.push([c.querySelector('b').textContent.replace(/\s+/g, ' ').trim(), document.getElementById('rvGo').textContent]); } return out; });
-    ok(names.every(([t, g]) => g.replace(/\s+/g, ' ').includes(t.replace(/^(戦闘|章の主|休息)\s*/, '$1 ').trim())), w + 'x' + h + ' 地図の札と「進む」の名前が一致 ' + JSON.stringify(names));
+    const names = await p.evaluate(async () => { const out = []; const cards = [...document.querySelectorAll('#rvCards .rv-card')]; for (const c of cards) { c.click(); await new Promise((r) => setTimeout(r, 60)); out.push([c.querySelector('b').textContent.replace(/\s+/g, ' ').trim(), (document.getElementById('rvGo').getAttribute('aria-label') || document.getElementById('rvGo').textContent)]); } return out; });
+    ok(names.every(([t, g]) => g.replace(/\s+/g, ' ').includes(t.replace(/^(戦闘|章の主|休息)\s*/, '$1 ').trim())), w + 'x' + h + ' 地図の札と「進む」の名前（読み上げ。v5.5.7 でボタンの字は「進む」だけ）が一致 ' + JSON.stringify(names));
     await p.evaluate(() => { const R = window.__rb; R.run.enemy = R.expEnemy(1, null, 0); document.getElementById('runv').hidden = true; R.toPrepForTest(); });
     await p.waitForTimeout(300); await p.click('#btnStart');
     for (let k = 0; k < 80; k++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(120); }

@@ -16,7 +16,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
     await p.click('#begin'); await p.waitForTimeout(800);
     const m = await p.evaluate(() => {
-      const R = (e) => e.getBoundingClientRect(), tx = [...document.querySelectorAll('#rvTrack svg text')].filter((t) => t.textContent.trim());
+      const R = (e) => e.getBoundingClientRect(), tx = [...document.querySelectorAll('#rvTrack svg text')].filter((t) => t.textContent.trim() && getComputedStyle(t).display !== 'none');   // 見せていない文字（v5.5.7 の地点の番号）は数えない
       const small = tx.filter((t) => !t.classList.contains('g') && R(t).height < 8).map((t) => t.textContent + ':' + R(t).height.toFixed(1));
       const star = tx.some((t) => /★/.test(t.textContent)) || [...document.querySelectorAll('#rvTrack [aria-label]')].some((e) => /★/.test(e.getAttribute('aria-label')));
       const chips = [...document.querySelectorAll('.rt-ch span')].map((e) => R(e).height);

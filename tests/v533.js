@@ -4,7 +4,7 @@
 //  2. 戦闘のあとの回復は、報酬の画面の名簿と一文で見える（回復した仲間がいるとき）
 //  3. 入れ替えを「やめる」で戻っても、題は「勝利」のまま。報酬を選んで地図へ進むと「勝利」は消える
 //  4. 負け・最後の戦い・チュートリアルは、これまでどおり勝利／全滅のパネル
-//  5. 地図の「進む」ボタン：選ぶ前は金のボタンに見せない（地の色なし）。選ぶと金になり「「…」へ進む」
+//  5. 地図の「進む」ボタン：選ぶ前は金のボタンに見せない（地の色なし）。選ぶと金になり「進む」（読み上げは「「…」へ進む」。v5.5.7）
 //  6. 画面からはみ出さない（393×759・320×568）：題・★・報酬の1枚目が見える
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -12,9 +12,9 @@ const tipsOff = () => { try { localStorage.setItem('rb-tips', JSON.stringify({ s
 async function toBattle(p) {
   await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
   await p.click('#begin'); await p.waitForTimeout(700);
-  const go = await p.evaluate(() => { const g = document.getElementById('rvGo'), s = getComputedStyle(g); return { dis: g.disabled, bg: s.backgroundImage + s.backgroundColor, t: g.textContent }; });
+  const go = await p.evaluate(() => { const g = document.getElementById('rvGo'), s = getComputedStyle(g); return { dis: g.disabled, bg: s.backgroundImage + s.backgroundColor, t: g.textContent, aria: g.getAttribute('aria-label') || '' }; });
   await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(200);
-  const go2 = await p.evaluate(() => { const g = document.getElementById('rvGo'), s = getComputedStyle(g); return { dis: g.disabled, bg: s.backgroundImage + s.backgroundColor, t: g.textContent }; });
+  const go2 = await p.evaluate(() => { const g = document.getElementById('rvGo'), s = getComputedStyle(g); return { dis: g.disabled, bg: s.backgroundImage + s.backgroundColor, t: g.textContent, aria: g.getAttribute('aria-label') || '' }; });
   await p.click('#rvGo'); await p.waitForTimeout(1300);
   return { go, go2 };
 }
@@ -26,7 +26,7 @@ async function toBattle(p) {
     await p.addInitScript(tipsOff);
     const { go, go2 } = await toBattle(p);
     ok(go.dis && /rgba\(0, 0, 0, 0\)|transparent/.test(go.bg) && !/gradient/.test(go.bg) && /選ぶ/.test(go.t), w + '×' + h + ' 5 選ぶ前の「進む」は地の色なし：' + go.t);
-    ok(!go2.dis && /「.+」へ進む/.test(go2.t), w + '×' + h + ' 5 選ぶと押せる：' + go2.t);
+    ok(!go2.dis && go2.t === '進む' && /「.+」へ進む/.test(go2.aria), w + '×' + h + ' 5 選ぶと押せる：「' + go2.t + '」（読み上げ ' + go2.aria + '）');   // v5.5.7：ボタンは短く「進む」、名前は読み上げに
     await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; }); R.run.members[2].hp = 3; });
     await p.click('#btnStart');
     let sawResult = false;
