@@ -8,25 +8,28 @@
 //  4. ch と loc が合わない・範囲外（ch=1&loc=7／ch=3&loc=1／ch=4&loc=1／ch=3&loc=11／?qa だけ）は、?qa の無い起動と同じ
 //  5. 画面に「QA」の文字は出さない。開発者向けに <html data-qa="章-地点">（例 3-7）と console の [QA] で分かる。ページのエラーなし
 const { launch, testPage } = require('./_env');
-let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
+let lines = [], envWiped = false; const ok = (c, m) => { lines.push([!!c, m]); };
+// 見張りのキー：rb- で始まらないので、QAは決して触らない。これまで消えていたら、テスト環境（file://）が保存を丸ごと消した（v545・settings と同じ揺れ）。
+// そのときは、この回の結果を捨てて最初からやり直す（3回まで）。QAが消したのなら、見張りは残る
+const SENT = 'qa-test-sentinel';
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"trinity":1,"bench":1,"combo":1,"hmIntro":1}';
 const DUMP = () => { const o = {}; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (/^rb-/.test(k)) o[k] = localStorage.getItem(k); } return o; };
 const same = (a, b) => { const ks = new Set(Object.keys(a).concat(Object.keys(b))); return [...ks].filter((k) => a[k] !== b[k]); };
-(async () => {
-  const b = await launch();
+async function attempt(b) {
+  lines = []; envWiped = false;
   const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
   const base = testPage();
   // 本物の保存を作る：普通に遠征を始めて地図まで（rb-exp-save・rb-exp ができる）。星・記録・30年の保存・実績は目印の値
   const p0 = await ctx.newPage();
   await p0.addInitScript((t) => { try { if (!localStorage.getItem('rb-tips')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); } } catch (e) { /* */ } }, TIPS);
   await p0.goto(base); await p0.waitForTimeout(300); await p0.click('#cover'); await p0.waitForTimeout(300); await p0.click('#begin'); await p0.waitForTimeout(800);
-  await p0.evaluate(() => { localStorage.setItem('rb-stars', '[3,2,1]'); localStorage.setItem('rb-run-best', '4'); localStorage.setItem('rb-meta', '{"mark":"real"}'); localStorage.setItem('rb-run-save', '{"mark":"real-run"}');
-    const m = JSON.parse(localStorage.getItem('rb-exp')); m.mark = 'real-meta'; localStorage.setItem('rb-exp', JSON.stringify(m)); });
+  await p0.evaluate((S) => { localStorage.setItem(S, '1'); localStorage.setItem('rb-stars', '[3,2,1]'); localStorage.setItem('rb-run-best', '4'); localStorage.setItem('rb-meta', '{"mark":"real"}'); localStorage.setItem('rb-run-save', '{"mark":"real-run"}');
+    const m = JSON.parse(localStorage.getItem('rb-exp')); m.mark = 'real-meta'; localStorage.setItem('rb-exp', JSON.stringify(m)); }, SENT);
   const real = await p0.evaluate(DUMP);
   ok(['rb-run-save', 'rb-exp-save', 'rb-stars', 'rb-run-best', 'rb-exp', 'rb-meta', 'rb-tips'].every((k) => real[k] != null), '準備：本物の保存・星・記録・実績・既読がある（' + Object.keys(real).length + 'キー）');
   await p0.close();
   // 本物を読む：?qa の無い別のページで（QAのページの中では読み替えられているので）
-  const readReal = async () => { const q = await ctx.newPage(); await q.goto(base); await q.waitForTimeout(150); const v = await q.evaluate(DUMP); await q.close(); return v; };
+  const readReal = async () => { const q = await ctx.newPage(); await q.goto(base); await q.waitForTimeout(150); const v = await q.evaluate(DUMP); if (!(await q.evaluate((S) => localStorage.getItem(S), SENT))) envWiped = true; await q.close(); return v; };
   const check = async (when) => { const d = same(real, await readReal()); ok(!d.length, '2 ' + when + '：本物の保存は変わらない ' + d.join(',')); };
   // 普通の戦闘の最初のターンの気力（比べる相手）。別の箱で
   let normalGauge;
@@ -84,7 +87,7 @@ const same = (a, b) => { const ks = new Set(Object.keys(a).concat(Object.keys(b)
   // 4 合わない・範囲外（4時点目）
   const look = async (url) => { const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message)); await p.goto(url); await p.waitForTimeout(700);
     if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await p.waitForTimeout(300); }
-    const s = await p.evaluate(() => ({ cover: !document.getElementById('cover').hidden, resume: !document.getElementById('resume').hidden, phase: window.__rb.phase, run: !!window.__rb.run, qa: document.documentElement.dataset.qa || null })); await p.close(); return Object.assign(s, { errs }); };
+    const s = await p.evaluate(() => ({ cover: !document.getElementById('cover').hidden, resume: !document.getElementById('resume').hidden, phase: window.__rb.phase, run: !!window.__rb.run, qa: document.documentElement.dataset.qa || null })); if (!(await p.evaluate((S) => localStorage.getItem(S), SENT))) envWiped = true; await p.close(); return Object.assign(s, { errs }); };
   const plain = await look(base);
   for (const q of ['?qa&ch=1&loc=7', '?qa&ch=3&loc=1', '?qa&ch=4&loc=1', '?qa&ch=3&loc=11', '?qa']) {
     const s = await look(base + q);
@@ -92,6 +95,14 @@ const same = (a, b) => { const ks = new Set(Object.keys(a).concat(Object.keys(b)
   }
   ok(plain.resume, '4 普通の起動では「続きから」が出る');
   await check('普通に起動した後（指定が正しくない ?qa）');
-  await ctx.close(); await b.close();
+  await ctx.close();
+}
+(async () => {
+  const b = await launch();
+  for (let k = 0; k < 3; k++) { await attempt(b); if (!envWiped) break; console.log('  （環境）テスト環境が保存を丸ごと消した（見張りのキーも消えた）ので、最初からやり直す'); }
+  await b.close();
+  lines.forEach(([c, m]) => console.log((c ? '  OK  ' : '  NG  ') + m));
+  if (envWiped) console.log('  NG  3回とも環境が保存を消した（判定できない）');
+  const fails = lines.filter((x) => !x[0]).length + (envWiped ? 1 : 0);
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();
