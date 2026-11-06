@@ -2753,7 +2753,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.5.4</p>
+    <p class="c-ver" id="cVer">ver 5.5.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3105,7 +3105,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.5.4';
+  const APP_VERSION = '5.5.5';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -7922,6 +7922,36 @@ body.fast #stampOk.on { animation-duration: .5s; }
     swappedOnce = false;
     expShowMap([]);
   }
+  /* QAジャンプ（v5.5.5）：?qa&ch=章&loc=地点 で開くと、その地点の戦闘の陣立てから遠征を始める（検証用。画面には何も出さない）。
+     loc は章の中の番号（第3章なら1〜4）でも、通しの地点番号（第3章なら7〜10）でもよい。範囲外・?qa が無いときは 0（普通に起動） */
+  function qaStep(q) {
+    if (!/[?&]qa\b/.test(q)) return 0;
+    const ch = +((q.match(/[?&]ch=(\d+)/) || [])[1]), loc = +((q.match(/[?&]loc=(\d+)/) || [])[1]);
+    if (!(ch >= 1 && ch <= EXP.chiefs.length) || !(loc >= 1)) return 0;
+    const a = ch === 1 ? 1 : EXP.chiefs[ch - 2] + 1, b = EXP.chiefs[ch - 1];
+    if (loc >= a && loc <= b) return loc;
+    return loc <= b - a + 1 ? a + loc - 1 : 0;
+  }
+  // QAのあいだ、遠征・30年の保存と星・記録は本物の保存場所を読まず・書かない（メモリの上だけ）。ほかの設定（音・速さ・ヒントの既読）は普段どおり
+  function qaIsolate() {
+    const ISO = /^rb-(run-save|exp-save|stars|run-best|exp|meta)$/, mem = {}, S = Storage.prototype, g = S.getItem, st = S.setItem, rm = S.removeItem;
+    let ls = null; try { ls = window.localStorage; } catch (e) { return; }
+    S.getItem = function (k) { return this === ls && ISO.test(k) ? (Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null) : g.call(this, k); };
+    S.setItem = function (k, v) { if (this === ls && ISO.test(k)) { mem[k] = String(v); return; } return st.call(this, k, v); };
+    S.removeItem = function (k) { if (this === ls && ISO.test(k)) { delete mem[k]; return; } return rm.call(this, k); };
+  }
+  function qaBoot(step) {
+    // 出発点からその地点の戦闘までの道をたどる。通った地点は「通った」だけ（戦闘・報酬・星は無し）
+    const ids = Object.keys(ROUTE.nodes), at = (st) => ids.filter((id) => ROUTE.nodes[id].step === st);
+    const tgt = at(step).find((id) => isFightKind(ROUTE.nodes[id].kind)); if (!tgt) return;
+    const path = []; let cur = tgt;
+    for (let st = step - 1; st >= 1; st--) { const pr = at(st).find((id) => ROUTE.nodes[id].next.includes(cur)); if (!pr) return; path.unshift(pr); cur = pr; }
+    if (!ROUTE.nodes.start.next.includes(cur)) return;
+    beginExp('std', 1);   // 普通の新しい遠征と同じ初期編成・全員全快
+    run.path = path; run.node = step - 1; run.choices = routeChoices();
+    const c = run.choices.find((x) => x.rid === tgt);
+    if (c) expEnter(c);
+  }
   function resumeExp() {
     const o = expSaved(); if (!o) { beginExp(); return; }
     enterRun();
@@ -8046,7 +8076,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   window.addEventListener('resize', layout);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
+  const QA_STEP = qaStep(location.search);
+  if (QA_STEP) qaIsolate();   // 保存を読む init より前に切り離す
   init();
+  if (QA_STEP) qaBoot(QA_STEP);
   layout();
   setTimeout(layout, 300);
 })();
