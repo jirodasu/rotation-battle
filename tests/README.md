@@ -9,7 +9,7 @@ Playwright（Chromium）でゲームを実際に動かして確かめる。`test
 ```
 bash tests/run-all.sh            # fuzz も含めて全部を順番に実行（2026-11-03 から既定で fuzz が入る）。1本でも失敗すれば終了コード1
 NOFUZZ=1 bash tests/run-all.sh   # fuzz を外す（FUZZ_RUNS=ラン数 既定2、FUZZ_LIMIT=秒 既定900。打ち切りは不合格）
-JOBS=1 bash tests/run-all.sh     # 2段にせず、全部を1本ずつ（v5.5.6 より前と同じ）。既定は1段目を CPU の数だけ並べ、2段目（STAGE2：speed fx layout v537 v538）を1本ずつ
+JOBS=1 bash tests/run-all.sh     # 2段にせず、全部を1本ずつ（v5.5.6 より前と同じ）。既定は1段目を CPU の数だけ並べ、2段目（STAGE2：speed fx layout v537 v538 v542）を1本ずつ
 ```
 
 終わると `tests/out/summary.md` に、テストごとの時間・合否・落ちた行（遅い順の上位・これまでに落ちた回数も）が1枚にまとまる。
