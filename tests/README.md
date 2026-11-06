@@ -7,8 +7,8 @@ Playwright（Chromium）でゲームを実際に動かして確かめる。`test
 **テストは1本ずつ順番に実行する**（同時に回すと `layout` が一時的に失敗することがあった）。まとめて回すには:
 
 ```
-bash tests/run-all.sh            # fuzz 以外を順番に実行。1本でも失敗すれば終了コード1
-FUZZ=1 bash tests/run-all.sh     # fuzz も実行（FUZZ_RUNS=ラン数 既定3、FUZZ_LIMIT=秒 既定900。打ち切りは不合格）
+bash tests/run-all.sh            # fuzz も含めて全部を順番に実行（2026-11-03 から既定で fuzz が入る）。1本でも失敗すれば終了コード1
+NOFUZZ=1 bash tests/run-all.sh   # fuzz を外す（FUZZ_RUNS=ラン数 既定2、FUZZ_LIMIT=秒 既定900。打ち切りは不合格）
 ```
 
 終わると `tests/out/summary.md` に、テストごとの時間・合否・落ちた行（遅い順の上位・これまでに落ちた回数も）が1枚にまとまる。
