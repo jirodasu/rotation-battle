@@ -4391,7 +4391,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
     // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
     if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
-      if (hard) { placeTip(true); return; } }
+      if (hard || bv > 0) { placeTip(true); return; } }   // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
     el.style.top = Math.round(Math.max(TOP0, best.top)) + 'px';
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
