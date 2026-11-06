@@ -7959,8 +7959,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     for (let st = step - 1; st >= 1; st--) { const pr = at(st).find((id) => ROUTE.nodes[id].next.includes(cur)); if (!pr) return false; path.unshift(pr); cur = pr; }
     if (!ROUTE.nodes.start.next.includes(cur)) return false;
     qaOn = step;
-    document.documentElement.dataset.qa = String(step);   // 開発者向け：DOM の data-qa と console で QA だと分かる（画面には出さない）
-    try { console.info('[QA] 地点' + step + 'の戦闘から開始（保存・星・記録は書き換えない）'); } catch (e) { /* */ }
+    const ch = expCh(step) + 1;
+    document.documentElement.dataset.qa = ch + '-' + step;   // 開発者向け：<html data-qa="章-地点">（例 3-7）と console の [QA] で分かる（画面には出さない）
+    try { console.info('[QA] 第' + ch + '章 地点' + step + 'の戦闘から開始（保存・星・実績・記録は書き換えない）'); } catch (e) { /* */ }
     beginExp('std', 1);   // 普通の新しい遠征と同じ初期編成・全員全快
     run.path = path; run.node = step - 1; run.choices = routeChoices();
     const c = run.choices.find((x) => x.rid === tgt);

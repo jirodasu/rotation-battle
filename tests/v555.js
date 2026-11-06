@@ -6,7 +6,7 @@
 //     QAを開いた直後（開始前）／戦闘中（1ターン後）／戦闘が終わってタイトルへ戻った後／?qa の指定が正しくなくて普通に起動した後
 //  3. 戦闘が終わると、報酬へ進まず結果の画面で止まり、ボタンは「タイトルへ」。押すと ?qa の無い普通のタイトルに戻り、「続きから」は本物の保存のとおり出る
 //  4. ch と loc が合わない・範囲外（ch=1&loc=7／ch=3&loc=1／ch=4&loc=1／ch=3&loc=11／?qa だけ）は、?qa の無い起動と同じ
-//  5. 画面に「QA」の文字は出さない。開発者向けに <html data-qa="地点"> と console の [QA] で分かる。ページのエラーなし
+//  5. 画面に「QA」の文字は出さない。開発者向けに <html data-qa="章-地点">（例 3-7）と console の [QA] で分かる。ページのエラーなし
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"trinity":1,"bench":1,"combo":1,"hmIntro":1}';
@@ -44,7 +44,7 @@ const same = (a, b) => { const ks = new Set(Object.keys(a).concat(Object.keys(b)
     await p.goto(base + '?qa&' + q); await p.waitForTimeout(900);
     const s = await p.evaluate(() => { const R = window.__rb, run = R.run; return { phase: R.phase, node: run && run.node, n: run ? run.members.length : 0, full: run ? run.members.every((m) => m.hp === m.max) : false,
       cover: !document.getElementById('cover').hidden, runv: !document.getElementById('runv').hidden, boss: !!(R.enemy && R.enemy.boss), hist: run ? run.hist.slice(0, run.node).filter(Boolean).length : -1, relics: run ? run.relics.length : -1, qa: document.documentElement.dataset.qa }; });
-    ok(s.phase === 'prep' && s.node === step - 1 && !s.cover && !s.runv && s.qa === String(step), '1 ?qa&' + q + '：地点' + step + 'の陣立てから（data-qa=' + s.qa + '） ' + JSON.stringify({ phase: s.phase, node: s.node }));
+    ok(s.phase === 'prep' && s.node === step - 1 && !s.cover && !s.runv && s.qa === q.replace(/ch=(\d+)&loc=(\d+)/, '$1-$2'), '1 ?qa&' + q + '：地点' + step + 'の陣立てから（data-qa=' + s.qa + '） ' + JSON.stringify({ phase: s.phase, node: s.node }));
     ok(s.n === 4 && s.full && s.hist === 0 && s.relics === 0, '1 ?qa&' + q + '：普通の初期4人・全員全快・前の地点の報酬なし');
     if (step === 10) ok(s.boss, '1 地点10は最後の主');
     ok(!errs.length, '5 ?qa&' + q + '：ページのエラーなし ' + errs.join('/'));
