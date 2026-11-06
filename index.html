@@ -2597,12 +2597,15 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .runv.map-a .r-card { position: relative; }
 .runv.map-a.pick2 #rvTitle { display: none; }   /* 「どちらへ進む？」は、札が2つ並んでいれば分かる */
 .runv.map-a #rvSub { display: none; }
-.runv.map-a.show-goal #rvSub { display: block; margin: 6px 40px 4px; padding: 8px 10px; border: 1px solid color-mix(in srgb, var(--gold) 70%, transparent); border-radius: 10px; font-size: 12.5px; line-height: 1.55; text-align: left; }
-.rv-help { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink-soft) 55%, transparent); background: transparent; color: var(--ink-soft); font: 800 15px/1 var(--sans); cursor: pointer; z-index: 2; }
+.runv.map-a.show-goal #rvSub { display: block; position: absolute; left: 12px; right: 12px; top: 48px; z-index: 3; margin: 0; padding: 10px 12px; border: 1px solid var(--gold); border-radius: 12px; background: var(--paper, #f3ead6); box-shadow: 0 8px 24px rgba(0,0,0,.35); font-size: 13px; line-height: 1.6; text-align: left; cursor: pointer; }   /* 地図の上に吹き出しで重ねる。下の札と「進む」を押し下げない（小さい画面でも「進む」が見える） */
+.rv-help { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink-soft) 55%, transparent); background: transparent; color: var(--ink-soft); font: 800 15px/1 var(--sans); cursor: pointer; z-index: 4; }   /* 目標の吹き出しより手前（閉じられるように） */
 .rv-help[hidden] { display: none; }
+.runv .r-card > .rv-help { position: absolute; top: 8px; right: 10px; margin: 0; }   /* 右上の角に（ほかの .r-card の子の決まりに負けないように） */
+.runv.map-a .r-card > #rvSmall { padding-right: 44px; padding-left: 44px; }
 .runv.map-a.show-goal .rv-help { color: var(--gold); border-color: var(--gold); }
 .runv.map-a .rt-ch, .runv.map-a .rt-y { display: none; }   /* 章の名前の札と、地点の番号は、上の目盛りに任せる */
 .rt-prog { display: flex; gap: 4px; align-items: center; margin: 2px 6px 8px; }
+.runv.map-a .rt-prog { margin-right: 44px; }   /* 右上の「?」と重ならない */
 .rt-prog i { flex: 1 1 0; height: 5px; border-radius: 3px; background: color-mix(in srgb, var(--ink-soft) 28%, transparent); }
 .rt-prog i.done { background: var(--gold); }
 .rt-prog i.now { background: var(--rubric); }
@@ -7196,12 +7199,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
     const go = $('rvGo'); if (!go) return;
     const c = routeSel != null ? run.choices[routeSel] : null;
-    const A = $('runv').classList.contains('map-a');   // 地点選び A（v5.5.7）：選んだ札の名前はすぐ上に見えているので、ボタンは短く。読み上げには名前を入れる
+    const A = EXPM();   // 地点選び A（v5.5.7。rvShow の中では印を付ける前に呼ばれるので、印ではなく遠征かどうかで決める）：選んだ札の名前はすぐ上に見えているので、ボタンは短く。読み上げには名前を入れる
     go.disabled = !c; go.textContent = c ? (A ? '進む' : '「' + choiceName(c) + '」へ進む') : (A ? '道を選ぶ' : '地図か札で、進む道を選ぶ');
     if (c) go.setAttribute('aria-label', '「' + choiceName(c) + '」へ進む'); else go.removeAttribute('aria-label');
     $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
     $('rvTrack').innerHTML = trackHTML();
   }
+  $('rvSub').addEventListener('click', () => { const v = $('runv'); if (!v.classList.contains('map-a') || !v.classList.contains('show-goal')) return; v.classList.remove('show-goal'); $('rvHelp').setAttribute('aria-expanded', 'false'); });   // 吹き出しをタップしても閉じる
   $('rvHelp').addEventListener('click', () => { const v = $('runv'), on = !v.classList.contains('show-goal'); v.classList.toggle('show-goal', on); $('rvHelp').setAttribute('aria-expanded', String(on)); SFX.page(); });
   $('rvCards').addEventListener('click', (ev) => { const b = ev.target.closest('#rvMore'); if (!b) return; const v = $('runv'), on = !v.classList.contains('more'); v.classList.toggle('more', on); b.setAttribute('aria-expanded', String(on)); b.textContent = on ? '閉じる' : '詳しく'; SFX.page(); });
   function routePick(i) { if (!run.choices[i]) return; routeSel = i; SFX.page(); routeRefresh(); }
