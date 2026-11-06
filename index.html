@@ -7857,7 +7857,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
     const chN = expCh(Math.min(run.node + 1, EXP.nodes)), goal = run.node === 0 && !(+expMeta().runs);   // 地点選び A（v5.5.7）：上は「第N章 名前」だけ（地点は目盛りで）。目標は初めての遠征の最初だけ自動で開く
-    rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
+    rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN) + xTag(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
   function expEnter(c) {

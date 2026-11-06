@@ -14,10 +14,10 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     if (w === 390) ok(/環廊/.test(cover.copy) && /環廊/.test(cover.sub), '表紙に「環廊」' + JSON.stringify(cover));
     await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(600);
     const map = await p.evaluate(() => {
-      const ch = [...document.querySelectorAll('.rt-ch span')], box = document.querySelector('.rt-ch').getBoundingClientRect();
-      return { small: document.getElementById('rvSmall').textContent, chips: ch.map((x) => x.textContent), over: ch.some((x) => { const r = x.getBoundingClientRect(); return r.right > box.right + 1 || r.left < box.left - 1 || x.scrollWidth > x.clientWidth + 1; }), rest: [...document.querySelectorAll('#rvCards .rv-card')].map((c) => c.textContent).join('|') };
+      const ch = [...document.querySelectorAll('.rt-ch span')], pg = document.querySelector('.rt-prog'), box = (pg || document.querySelector('.rt-ch')).getBoundingClientRect(), sm = document.getElementById('rvSmall');   // v5.5.7：章の名前の札は目盛りに置き換えた（札の文字は残る）
+      return { small: document.getElementById('rvSmall').textContent, chips: ch.map((x) => x.textContent), over: (pg ? box.right > innerWidth + 1 || sm.scrollWidth > sm.clientWidth + 1 : ch.some((x) => { const r = x.getBoundingClientRect(); return r.right > box.right + 1 || r.left < box.left - 1 || x.scrollWidth > x.clientWidth + 1; })), rest: [...document.querySelectorAll('#rvCards .rv-card')].map((c) => c.textContent).join('|') };
     });
-    ok(/第1章 祈りの間/.test(map.small) && map.chips.join() === '祈りの間,貝殻の書庫,竜の眠る祭壇' && !map.over, w + 'x' + h + ' 地図：章の名前がはみ出さない ' + JSON.stringify(map));
+    ok(/第1章[ 　]祈りの間/.test(map.small) && map.chips.join() === '祈りの間,貝殻の書庫,竜の眠る祭壇' && !map.over, w + 'x' + h + ' 地図：章の名前がはみ出さない ' + JSON.stringify(map));
     const names = await p.evaluate(() => { const R = window.__rb; return [R.expEnemy(1, null, 0).name, R.expEnemy(1, null, 'binder').name, R.expEnemy(3, null, 0).name, R.expEnemy(6, null, 0).name, R.expEnemy(10, null, 0).name, R.expEnemy(1, 'swarm', 'binder').name]; });
     if (w === 390) ok(names.join() === '灯喰いネズミ,鎖ネズミ,石棺の巨人,角面の書守,祭壇の毒竜,群れの鎖ネズミ', '敵の名前 ' + JSON.stringify(names));
     // 戦闘中の場所表示
