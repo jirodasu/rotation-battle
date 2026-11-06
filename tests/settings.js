@@ -33,7 +33,12 @@ async function open(b, w, h, opt = {}) {
     const g2 = await p.evaluate(() => { const B = window.__rb.bus; return B ? [+B.bgmVol.gain.value.toFixed(2), +B.sfx.gain.value.toFixed(2)] : null; });
     ok(g2 && Math.abs(g2[0] - 0.4) < 0.02 && Math.abs(g2[1] - 0.36) < 0.02, '音の出口に反映（BGM 0.4／効果音 0.72×0.5） ' + JSON.stringify(g2));
     await p.evaluate(() => document.getElementById('setClose').click());
-    await p.reload(); await p.waitForTimeout(500); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#setBtn');
+    // file:// では、読み込み直しで保存が消えることがある（環境の揺れ。v545 と同じ）。消えていたら書き戻して読み込み直す（v5.5.5）
+    { const d = await p.evaluate(() => JSON.stringify(Object.assign({}, localStorage)));
+      for (let k = 0; k < 3; k++) { await p.reload(); await p.waitForTimeout(500);
+        const lost = await p.evaluate((d) => { if (localStorage.getItem('rb-set')) return false; const o = JSON.parse(d); Object.keys(o).forEach((x) => localStorage.setItem(x, o[x])); return true; }, d);
+        if (!lost) break; console.log('  （環境）読み込み直しで保存が消えたので書き戻した'); } }
+    await p.click('#cover'); await p.waitForTimeout(300); await p.click('#setBtn');
     const back = await p.evaluate(() => [document.getElementById('setBgm').value, document.getElementById('setSfx').value, document.getElementById('setBgmV').textContent]);
     ok(back.join() === '40,50,40', '再読み込みしても音量が戻る ' + back.join());
     // 押せる高さ

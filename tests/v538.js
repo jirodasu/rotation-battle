@@ -27,6 +27,7 @@ const rows = (id) => [...document.querySelectorAll('#' + id + ' .oc-r')].filter(
     await p.waitForTimeout(500);
     let found = false;
     for (let t = 1; t <= 12 && !found; t++) { await p.evaluate((t) => { window.__rb.setGauge(3); window.__rb.setTurn(t); }, t); found = await p.evaluate(() => Object.keys(window.__rb.incoming(window.__rb.grid, false, false)).length > 0); }
+    await p.evaluate(() => window.__rb.render()); await p.waitForTimeout(600);   // 札の数字が入れ替わる動き（ocRollIn）が終わってから測る（v5.5.5：動きの途中で「切れている」と測ることがあった）
     // 1. 数字が盤と同じ計算
     const r = await p.evaluate((rs) => { const rows = eval(rs), R = window.__rb;
       const exp = (src, fresh, ent) => { const inc = R.incoming(src, fresh, ent); let d = 0; R.units(src).forEach(({ u, r, c }) => { const x = R.expDmg(u, r, c, src, fresh, ent); if (x && x.val > 0) d += x.val; });
