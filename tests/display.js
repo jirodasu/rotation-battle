@@ -39,8 +39,10 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
     const s1 = await p.evaluate(() => ({ open: !document.getElementById('newConf').hidden, body: document.getElementById('ncBody').textContent, focus: document.activeElement && document.activeElement.id, cover: !document.getElementById('cover').hidden }));
     ok(s1.open && /地点 4 \/ 10/.test(s1.body) && s1.cover, '保存があると確認が出る（' + s1.body + '）');
     ok(s1.focus === 'ncNo', '既定の選択は「やめる」');
-    await p.click('#ncGo', { force: true }); await p.waitForTimeout(50);
-    ok(await vis(p, 'newConf') && (await p.evaluate(() => localStorage.getItem('rb-exp-save'))) === save0, '開いた直後の「始める」は受け付けない（連続タップで消えない）');
+    // 開いた直後（0.45秒の守りの間）に押す。テストの外から時間を決めて押すと、並べて流したときに守りが終わってから届くことがあるので、
+    //   ページの中で「まだ守りの間か」を確かめたその場で押す（v5.5.6）。基準は同じ：開いた直後の「始める」は受け付けない
+    const early = await p.evaluate(() => { const g = document.getElementById('ncGo'), was = g.disabled; g.click(); return was; }); await p.waitForTimeout(50);
+    ok(early && await vis(p, 'newConf') && (await p.evaluate(() => localStorage.getItem('rb-exp-save'))) === save0, '開いた直後の「始める」は受け付けない（連続タップで消えない）');
     await p.click('#ncNo'); await p.waitForTimeout(150);
     ok(!(await vis(p, 'newConf')) && (await p.evaluate(() => localStorage.getItem('rb-exp-save'))) === save0 && await vis(p, 'resume'), '「やめる」で閉じ、保存も「続きから」も残る');
     await p.click('#begin'); await p.waitForTimeout(100); await p.keyboard.press('Escape'); await p.waitForTimeout(100);

@@ -89,8 +89,9 @@ async function winNow(p) {
     const before = await p.evaluate(() => ({ name: document.getElementById('ename').textContent, hp: window.__rb.run.members.map((m) => m.name + ' ' + m.hp) }));
     const won = await winNow(p);
     ok(won, sk.name + '：勝利（報酬）のパネルが出る');
-    await p.waitForTimeout(500);
-    ok(await appHidden(p), sk.name + '：勝利パネルの間、背面の戦闘表示（HP・次の行動）は読めない');
+    // 隠れるのはパネルの出る動きのあと。並べて流すと遅れることがあるので、決め打ちの0.5秒ではなく、最大3秒まで待って確かめる（v5.5.6）
+    let hid = false; for (let k = 0; k < 30 && !(hid = await appHidden(p)); k++) await p.waitForTimeout(100);
+    ok(hid, sk.name + '：勝利パネルの間、背面の戦闘表示（HP・次の行動）は読めない');
     ok(await p.evaluate(() => getComputedStyle(document.querySelector('.scene')).visibility !== 'hidden' && +getComputedStyle(document.querySelector('.scene')).opacity > 0), sk.name + '：背景の絵は残る');
     if (await vis(p, 'result')) await p.click('#next'); await p.waitForTimeout(600);
     const rv = await p.evaluate(() => ({ open: !document.getElementById('runv').hidden, map: document.getElementById('runv').classList.contains('is-map') }));

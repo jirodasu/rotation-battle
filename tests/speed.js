@@ -1,5 +1,6 @@
 // 戦闘2倍速：ボタンで切り替わり、戦闘の所要時間が約半分になる／保存される／戦闘外の演出は変えない
-const { launch, indexURL } = require('./_env');
+const { launch, testPage } = require('./_env');
+const indexURL = testPage();   // 戦闘の段階（phase）を読むため、中を見られるページを使う（v5.5.6）
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 async function battle(b, fast) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 } });
@@ -11,9 +12,14 @@ async function battle(b, fast) {
   await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);
   await p.click('#rvCards .rv-card[data-i="0"]'); await p.click('#rvGo'); await p.waitForTimeout(1500);
   const st = await p.evaluate(() => ({ pressed: document.getElementById('spdBtn').getAttribute('aria-pressed'), cls: document.body.classList.contains('fast') }));
-  const t0 = Date.now(); await p.click('#btnStart');
+  // 戦闘そのものの時間を、ページの中で測る：ターンの処理が始まって（resolve）から、次に選べる（choose）・決着（over）まで（v5.5.6）。
+  //   以前は「押してからボタンが出るまで」をテストの外から測っていて、押す・待つの手間（約1秒、速さに関係ない）が混ざり、62〜65% と基準のすぐ下で揺れていた。
+  //   ゲームの中では、2倍速でちょうど半分（3232ms→1616ms）だった
+  await p.evaluate(() => { window.__sp = {}; let lp = null; const tick = () => { const R = window.__rb, ph = R ? R.phase : null; if (ph !== lp) { if (ph === 'resolve' && window.__sp.a == null) window.__sp.a = performance.now(); if ((ph === 'choose' || ph === 'over') && window.__sp.a != null && window.__sp.b == null) window.__sp.b = performance.now(); lp = ph; } if (window.__sp.b == null) requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+  await p.click('#btnStart');
   await p.waitForSelector('#btnRotate:not([hidden]), #result:not([hidden]), #runv:not([hidden])', { timeout: 60000 });
-  const ms = Date.now() - t0; await ctx.close();
+  await p.waitForFunction(() => window.__sp && window.__sp.b != null, null, { timeout: 10000 }).catch(() => {});
+  const ms = await p.evaluate(() => Math.round((window.__sp.b || 0) - (window.__sp.a || 0))); await ctx.close();
   return { ms, st, errs };
 }
 (async () => {
