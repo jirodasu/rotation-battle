@@ -706,6 +706,8 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 .oc-r.oc-l b small { font-size: 10px; font-weight: 700; opacity: 0.7; margin-right: 3px; }
 .oc-r.oc-l b em { font-style: normal; opacity: 0.6; margin: 0 3px; font-size: 13px; }
 .oc-r.oc-l b small.oc-more { margin: 0 0 0 5px; opacity: 0.85; }
+/* 狭い画面では「ほか1人」を「+1」に（v5.5.6：393・375幅の「回す」の札で、数字がはみ出して切れていた）。読み上げは data-say のまま */
+@media (max-width: 419px) { .oc-r.oc-l b small.oc-more { font-size: 0; margin-left: 3px; } .oc-r.oc-l b small.oc-more::after { content: attr(data-s); font-size: 12px; } }
 .oc-r.oc-l b.ko { text-decoration: none; }
 .oc-r.oc-l b.ko::after { content: "倒"; display: inline-block; margin-left: 5px; padding: 1px 4px; border-radius: 4px; background: var(--danger-strong); color: var(--on-danger, #fff); font: 900 10px/1.2 var(--serif); vertical-align: 2px; }
 .oc-b:not(:empty) { min-height: calc(2 * 24px + 2px); }
@@ -2753,7 +2755,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.5.5</p>
+    <p class="c-ver" id="cVer">ver 5.5.6</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3120,7 +3122,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.5.5';
+  const APP_VERSION = '5.5.6';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4032,15 +4034,32 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     return dead;
   }
+  /* 敵が動き始める時点の仲間のHP（予測専用・v5.5.6）。ターンの始まりの順は、回す（休息の香）→ 回復列で休む・列回復（2ターン目から）→ 突入技（祝福）→ 行動。
+     狙われる列（fr）の仲間にだけ効けばよい（ほかの列は狙われない）。戦闘の結果には一切触れない */
+  function startHp(src, fr, entering) {
+    const m = new Map(); units(src).forEach(({ u }) => m.set(u, u.hp));
+    const add = (u, g) => m.set(u, Math.min(u.max, m.get(u) + Math.max(0, g)));
+    if (fr === 2) {
+      const back = units(src).filter((x) => x.r === 2);
+      if (entering && relOn('incense')) back.forEach((x) => add(x.u, relD('incense').backHeal));
+      if (phase === 'choose' || turn > 1) { back.forEach((x) => add(x.u, x.u.rest || 0)); const hs = back.filter((x) => x.u.heal > 0); back.forEach((x) => add(x.u, hs.reduce((a, h) => a + (h.u !== x.u ? h.u.heal : 0), 0))); }
+    }
+    if (fr === 0 && entering && RX().entry) { const n = src[0].reduce((a, x) => { const xe = x && entryFor(x, true); return a + ((xe && xe.heal) || 0); }, 0); src[0].forEach((u) => { if (u) add(u, n); }); }
+    return m;
+  }
   function incoming(src, fresh, entering) {
     const out = {}, used = {}, fr = frontRow(src), per = [];
     Object.defineProperty(out, 'per', { value: per });   // 技ごと・列ごとの内訳（予告の数字に使う。数えるときは列挙されない）
     if (fr < 0) return out;
     const pre = preKilled(src, fresh, entering);
     const acts = (enemy.party ? enemy.party.filter(foeAlive).sort((a, b) => b.spd - a.spd).map((F) => ({ F, act: actOf(F) })) : [{ F: enemy, act: curAct() }]).filter((x) => !pre.has(x.F));
+    // 狙いは、敵が動くその時点のHPで決まる（祝福の回復はどの攻撃より先。先に動いた敵の攻撃も引く）。実際の戦闘と同じ順で数える（v5.5.6）
+    const start = startHp(src, fr, entering), hpNow = new Map(start);
+    Object.defineProperty(out, 'start', { value: start });   // 敵が動き始める時点の仲間のHP（見通しの札が使う）
+    const hpOf = (u) => hpNow.get(u);
     acts.forEach(({ F, act }) => {
     if (!act || !act.dmg || act.rule === 'charge' || act.rule === 'random' || act.rule === 'bind') return;
-    const info = targetInfo(act, src, F);
+    const info = targetInfo(act, src, F, hpOf);
     if (!info.cols || !info.cols.length) return;
     const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
     cols.forEach((c) => {
@@ -4050,16 +4069,17 @@ body.fast #stampOk.on { animation-duration: .5s; }
       else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup; used[c] = 1; why = '防'; }  }
       if (fr === 0 && entering && RX().entry) { src[0].forEach((x) => { const xe = entryFor(x, true); if (xe && xe.teamGuard) d -= xe.teamGuard; }); const ue = entryFor(u, true); if (ue && ue.guard) d -= ue.guard; }
       if (fr === 0 && entering && relOn('shield')) d -= relD('shield').guard;
-      const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d);
+      const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d); hpNow.set(u, hpNow.get(u) - Math.max(1, d));
       per.push({ F, act, c, d: Math.max(1, d), why });
     });
     });
+    // 敵より先に入る回復（祝福・回復列で休む・列回復・休息の香）を足したHPで「倒」を決める。表示にも入れる（v5.5.6：入れていなかったので、耐えるのに「倒」と出ることがあった）
     Object.keys(out).forEach((k) => {
       const [r, c] = k.split(',').map(Number), u = src[r][c], h = src[2][c];
-      const heal = 0;
+      const heal = start.get(u) - u.hp;
       const mine = per.filter((x) => r === fr && x.c === c);
       // 合計と内訳（複数の敵・複数回の攻撃を、味方1人に1つの数で。内訳は小さく添える）。v5.1.57
-      out[k] = { d: out[k], ko: out[k] >= Math.min(u.max, u.hp + heal), parts: mine.map((x) => ({ n: x.act.name, d: x.d })), why: mine.map((x) => x.why).filter(Boolean)[0] || '' };
+      out[k] = { d: out[k], heal, ko: out[k] >= start.get(u), parts: mine.map((x) => ({ n: x.act.name, d: x.d })), why: mine.map((x) => x.why).filter(Boolean)[0] || '' };
     });
     return out;
   }
@@ -4199,20 +4219,22 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function frontRow(g) { const G = g || grid; for (let r = 0; r < ROWS; r++) if (G[r].some(Boolean)) return r; return -1; }
   const nextActOf = (F) => F.pattern[turn % F.pattern.length];
   const nextAct = () => nextActOf(enemy);
-  function targetInfo(act, g, F) {
+  function targetInfo(act, g, F, hpOf) {   // hpOf：予測で、その時点のHP（祝福の回復・先の敵の攻撃のあと）で狙いを決める（v5.5.6）
     if (act.rule === 'bind') return { cols: [], desc: '縛られると、次のターンは隊列を回せない' };
     if (act.rule === 'charge') { const n = nextActOf(F || enemy); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' }; }
     if (act.rule === 'guard' || act.rule === 'mend' || act.rule === 'aid') return { cols: [], desc: '' };
     const fr = frontRow(g);
     if (fr < 0) return { cols: [], desc: '' };
-    const L = units(g).filter((x) => x.r === fr);
+    const HP = (u) => (hpOf ? hpOf(u) : u.hp);
+    const L = units(g).filter((x) => x.r === fr && (!hpOf || HP(x.u) > 0));
+    if (!L.length) return { cols: [], desc: '' };
     if (act.rule === 'all') return { cols: L.map((x) => x.c).sort(), desc: '狙い　一番前の列の全員' };
     if (act.rule === 'random') return { cols: null, desc: '狙い　一番前の列からランダム（' + act.hits + '回）' };
     if (act.rule === 'job') {
       const t = L.find((x) => (x.u.jname || x.u.name) === act.job);   // 本番の団員は個人名なので職業名で照合する
       if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + colN(t.c) + '）' };
     }
-    const t = L.reduce((a, b) => (b.u.hp < a.u.hp ? b : a));
+    const t = L.reduce((a, b) => (HP(b.u) < HP(a.u) ? b : a));
     return { cols: [t.c], desc: act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）' };
   }
   const actOf = (F, t) => F.pattern[((t || turn) - 1) % F.pattern.length];
@@ -4966,12 +4988,29 @@ body.fast #stampOk.on { animation-duration: .5s; }
      背の低い画面では「受ける」と「敵」の2行だけ（CSS の .oc-r.x） */
   function outlook(src, fresh, ent) {
     const o = outcomeOf(src, fresh, ent), inc = incoming(src, fresh, ent);
-    const hurt = Object.keys(inc).map((k) => { const [r, c] = k.split(',').map(Number); return { n: src[r][c].name, u: src[r][c], d: inc[k].d, ko: inc[k].ko }; }).sort((a, b) => (b.ko - a.ko) || (b.d - a.d));
-    let dealt = 0; const who = [];
-    units(src).forEach(({ u, r, c }) => { const d = expDmg(u, r, c, src, fresh, ent); if (d && d.val > 0) { dealt += d.val; who.push(u.name + d.val); } });
+    const hurt = Object.keys(inc).map((k) => { const [r, c] = k.split(',').map(Number); return { n: src[r][c].name, u: src[r][c], d: inc[k].d, heal: inc[k].heal || 0, ko: inc[k].ko }; }).sort((a, b) => (b.ko - a.ko) || (b.d - a.d));
+    /* 敵に与える量は、行動順どおりに数える（v5.5.6）：敵の攻撃で先に倒れる仲間の分は数えない（以前は数えていて、敵の残りHPが少なく見えた）。
+       ランダムの技で、敵より後に動く仲間が倒れうるときは、敵の残りHPも「運しだい」（foeMaybe）。計算は表示だけ。戦闘の結果には触れない */
+    let dealt = 0, foeMaybe = false; const who = [], fr = frontRow(src), hp = new Map();
+    units(src).forEach(({ u }) => hp.set(u, inc.start ? inc.start.get(u) : u.hp));
+    const per = inc.per || [];
+    const AL = actorList(src, ent);   // 同じ並びを2回使う（ランダムの技の印 rnd を、下の「?」の判定で読む。v5.5.6）
+    for (const a of AL) {
+      if (a.kind === 'e') {
+        const F = a.foe || enemy;
+        per.filter((x) => x.F === F).forEach((x) => { const u = fr >= 0 && src[fr][x.c]; if (u) hp.set(u, hp.get(u) - x.d); });
+        const ac = enemy.party ? actOf(F) : curAct();
+        if (ac && ac.rule === 'random' && ac.dmg && fr >= 0 && foeAlive(F)) { const most = ac.dmg * (fr > 0 ? 2 : 1) * (ac.hits || 1); a.rnd = most; }
+        continue;
+      }
+      if (hp.get(a.u) <= 0) continue;
+      const d = expDmg(a.u, a.r, a.c, src, fresh, ent);
+      if (d && d.val > 0) { dealt += d.val; who.push(a.u.name + d.val); }
+    }
+    { const L = AL; L.forEach((a, i) => { if (a.kind !== 'e' || !a.rnd) return; if (L.slice(i + 1).some((b) => b.kind === 'p' && b.r === fr && hp.get(b.u) > 0 && hp.get(b.u) <= a.rnd)) foeMaybe = true; }); }
     const T = enemy.party ? targetFoe() : enemy, left = T ? Math.max(0, T.hp - dealt) : 0;
     const acts = enemy.party ? enemy.party.filter(foeAlive).map((F) => actOf(F).name) : [actOf(enemy).name];
-    return { o, hurt, dealt, who, T, left, acts };
+    return { o, hurt, dealt, who, T, left, acts, foeMaybe };
   }
   const ocRow = (k, v, cls, x) => '<span class="oc-r' + (x ? ' x' : '') + '"><i>' + k + '</i><b' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</b></span>';
   /* 札は2行（v5.5.1）：「敵 HP いま → 次」と「いちばん危ない仲間 HP いま → 次」。顔のアイコンと数字だけで、左右の札を同じ場所で見比べる。
@@ -4980,13 +5019,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const ocNum = (a, b) => '<small>HP</small>' + a + '<em>→</em>' + b;
   function outlookHTML(L) {
     const T = L.T, kill = T && L.dealt > 0 && L.left <= 0;
-    const foe = !T ? '' : '<span class="oc-r oc-l" data-k="foe" data-say="敵 HP ' + T.hp + 'から' + L.left + (kill ? '、撃破' : '') + '">' + ocIco(foeMini(enemy.party ? T : null), 'enemy') + '<i>敵</i><b' + (kill ? ' class="good"' : '') + '>' + ocNum(T.hp, L.left) + '</b></span>';
+    const fq = L.foeMaybe ? '?' : '';   // ランダムの技で、攻撃する仲間が先に倒れうる（v5.5.6）
+    const foe = !T ? '' : '<span class="oc-r oc-l" data-k="foe" data-say="敵 HP ' + T.hp + 'から' + L.left + (kill ? '、撃破' : '') + (fq ? '、運しだい' : '') + '">' + ocIco(foeMini(enemy.party ? T : null), 'enemy') + '<i>敵</i><b' + (kill ? ' class="good"' : '') + '>' + ocNum(T.hp, L.left) + fq + '</b></span>';
     const h = L.hurt[0], more = L.hurt.length - 1;
     let ally;
     if (!h) ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + (L.o.maybe ? '受ける 運しだい' : '受ける なし、無傷') + '">' + ocIco(L.o.maybe ? '<span class="oc-q">?</span>' : ICON.shield, L.o.maybe ? 'maybe' : 'safe') + '<i>' + (L.o.maybe ? '受ける' : '味方') + '</i><b class="' + (L.o.maybe ? 'bad' : 'good') + '">' + (L.o.maybe ? '運しだい' : '無傷') + '</b></span>';
     else {
-      const aft = Math.max(0, h.u.hp - h.d), cls = L.hurt.some((x) => x.ko) ? 'ko' : 'bad';
-      ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + h.n + ' HP ' + h.u.hp + 'から' + aft + (h.ko ? '、倒れる' : '') + (more ? '、ほか' + more + '人も受ける' : '') + (L.o.maybe ? '、運しだい' : '') + '">' + ocIco(face(h.u), h.u.cls) + '<i>' + h.n + '</i><b class="' + cls + '">' + ocNum(h.u.hp, aft) + (L.o.maybe ? '?' : '') + (more ? '<small class="oc-more">ほか' + more + '人</small>' : '') + '</b></span>';
+      const aft = Math.max(0, Math.min(h.u.max, h.u.hp + (h.heal || 0)) - h.d), cls = L.hurt.some((x) => x.ko) ? 'ko' : 'bad';
+      ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + h.n + ' HP ' + h.u.hp + 'から' + aft + (h.ko ? '、倒れる' : '') + (more ? '、ほか' + more + '人も受ける' : '') + (L.o.maybe ? '、運しだい' : '') + '">' + ocIco(face(h.u), h.u.cls) + '<i>' + h.n + '</i><b class="' + cls + '">' + ocNum(h.u.hp, aft) + (L.o.maybe ? '?' : '') + (more ? '<small class="oc-more" data-s="+' + more + '">ほか' + more + '人</small>' : '') + '</b></span>';
     }
     return foe + ally;
   }

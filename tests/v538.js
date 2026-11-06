@@ -40,6 +40,11 @@ const rows = (id) => [...document.querySelectorAll('#' + id + ' .oc-r')].filter(
     ok(chk(r.rot, r.er, r.hp), tag + ' 1 回すの札が先読みと同じ計算 ' + JSON.stringify(r.rot) + ' / ' + JSON.stringify(r.er));
     ok(r.stay.map((x) => x[0]).join() === 'foe,hurt' && r.rot.map((x) => x[0]).join() === 'foe,hurt', tag + ' 1・5 2行（敵・仲間）');
     ok(r.stay.concat(r.rot).every((x) => x[4]), tag + ' 5 数字が切れない ' + JSON.stringify(r.stay.concat(r.rot).map((x) => x[1])));
+    // 5 いちばん長くなる形を必ず作って測る：2人が受けて（ほか1人）、仲間のHPは2桁、敵は3桁（v5.5.6：393・375幅の「回す」で切れていた）
+    await p.evaluate(() => { const R = window.__rb, a = R.actOf(R.enemy); a.rule = 'all'; a.dmg = 6; a.pierce = true; R.grid.flat().filter(Boolean).forEach((u) => { u.hp = Math.min(u.max, 47); }); R.enemy.hp = 133; R.render(); });
+    await p.waitForTimeout(700);
+    const lw = await p.evaluate((rs) => { const rows = eval(rs); return rows('ocStay').concat(rows('ocRot')); }, '(' + rows.toString() + ')');
+    ok(lw.some((x) => /ほか1人/.test(x[1])) && lw.every((x) => x[4]), tag + ' 5 長い形（ほか1人・3桁）でも数字が切れない ' + JSON.stringify(lw.map((x) => x[1] + (x[4] ? '' : '（切れ）'))));
     // 4. 目のボタンは出ない・長押しで先読み
     ok(!r.prev, tag + ' 4 目のボタンは出ない');
     const box = await p.evaluate(() => { const q = document.getElementById('btnRotate').getBoundingClientRect(); return { x: q.left + q.width / 2, y: q.top + q.height / 2 }; });
