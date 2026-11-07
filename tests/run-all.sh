@@ -21,7 +21,7 @@ COMMIT="$(git rev-parse --short HEAD 2>/dev/null || echo '-')$(git diff --quiet 
 BRANCH="$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo '-')"
 START="$(date '+%Y-%m-%d %H:%M:%S')"; T0=$(date +%s)
 # 2段目に回す：速さ・時間を測るテスト（speed・fx・v542 の数え上げ0.35秒）、並べると揺れたことのあるテスト（layout）、動きの途中を測るテスト（v537・v538）
-STAGE2="${STAGE2:-speed fx layout v537 v538 v542 audit battlesave}"
+STAGE2="${STAGE2:-speed fx layout v537 v538 v542 audit battlesave reg}"
 JOBS="${JOBS:-$(nproc 2>/dev/null || echo 2)}"
 S1=""; S2=""
 for t in $LIST; do case " $STAGE2 " in *" $t "*) S2="$S2 $t";; *) S1="$S1 $t";; esac; done

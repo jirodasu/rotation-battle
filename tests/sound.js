@@ -22,6 +22,11 @@ const page = path.join(OUT, 'snd.html'); fs.writeFileSync(page, s);
     chk(n, await p.evaluate(([st, ls, w]) => window.__snd.mix(st, ls, w), [st, ls, w]), 0.75, 1.25);
   for (const [n, a, sec] of [['rotate', [], 2.2], ['start', [], 2], ['hit', [true], 1.4], ['hurt', [], 1.2], ['heal', [], 2.2], ['guard', [], 1.4], ['entry', [1], 1.6], ['chapter', [], 2.5], ['win', [], 4.5]])
     chk(n, await p.evaluate(([n, a, s]) => window.__snd.sfx(n, a, s), [n, a, sec]), 0.6, 1.6);
+  // 冒頭の物語の音（v5.6.0）：7枚とも無音でない（RMS 0.005 以上）・音割れしない（ピーク 0.95 以下）・出発の音（start）より大きすぎない（基準の1.2倍まで）
+  for (let i = 0; i < 7; i++) {
+    const r = await p.evaluate((i) => window.__snd.sfx('story', [i], 2.6), i);
+    ok(r.rms >= 0.005 && r.peak <= 0.95 && r.rms <= BASE.start * 1.2, '物語 ' + (i + 1) + '枚目の音 ' + r.rms.toFixed(4) + '（出発の基準 ' + BASE.start + '）ピーク ' + r.peak.toFixed(3));
+  }
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));
   await b.close();
   console.log(fails ? '不合格 ' + fails : '全て合格'); process.exit(fails ? 1 : 0);
