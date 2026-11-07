@@ -130,7 +130,7 @@ async function play(foe, seq, cut, step) {
     const t0 = await p.evaluate(() => document.getElementById('rTitle').textContent);
     await reloadResume(p); await p.waitForTimeout(600);
     const r = await p.evaluate(() => ({ shown: !document.getElementById('result').hidden, title: document.getElementById('rTitle').textContent, next: document.getElementById('next').textContent }));
-    ok(t0 === '全滅' && r.shown && r.title === '全滅' && /遠征の結果へ/.test(r.next), '負けた直後に閉じて再開すると、全滅の画面に戻る');
+    ok(t0 === '全滅' && r.shown && r.title === '全滅' && /遠征の結果へ/.test(r.next), '負けた直後に閉じて再開すると、全滅の画面に戻る ' + JSON.stringify({ t0, r }));
     await p.click('#next'); await p.waitForTimeout(500);
     ok(await p.evaluate(() => !localStorage.getItem('rb-exp-save') && /途絶え/.test(document.getElementById('rvTitle').textContent)), '「遠征の結果へ」で遠征が終わり、保存が消える');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join(' / '));
