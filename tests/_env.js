@@ -19,5 +19,15 @@ function testPage() {
   return 'file://' + p;
 }
 const indexURL = 'file://' + path.join(ROOT, 'index.html');
-const launch = () => chromium.launch({ executablePath: CHROME });
+// 冒頭の物語（v5.5.8）は、初めて「環廊へ」を押したときに出る。ほかのテストは「もう見た」から始める（物語は tests/v558.js が確かめる）。
+//   RB_STORY=1 のときだけ、まだ見ていない状態のまま開く
+const SEEN_STORY = () => { try { if (!localStorage.getItem('rb-story')) localStorage.setItem('rb-story', '1'); } catch (e) { /* 保存できない */ } };
+const launch = async () => {
+  const b = await chromium.launch({ executablePath: CHROME });
+  if (process.env.RB_STORY) return b;
+  const nc = b.newContext.bind(b), np = b.newPage.bind(b);
+  b.newContext = async (o) => { const c = await nc(o); await c.addInitScript(SEEN_STORY); return c; };
+  b.newPage = async (o) => { const p = await np(o); await p.addInitScript(SEEN_STORY); return p; };
+  return b;
+};
 module.exports = { chromium, devices, launch, testPage, indexURL, OUT, ROOT };
