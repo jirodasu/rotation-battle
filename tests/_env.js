@@ -22,8 +22,21 @@ const indexURL = 'file://' + path.join(ROOT, 'index.html');
 // 冒頭の物語（v5.5.8）は、初めて「環廊へ」を押したときに出る。ほかのテストは「もう見た」から始める（物語は tests/v558.js が確かめる）。
 //   RB_STORY=1 のときだけ、まだ見ていない状態のまま開く
 const SEEN_STORY = () => { try { if (!localStorage.getItem('rb-story')) localStorage.setItem('rb-story', '1'); } catch (e) { /* 保存できない */ } };
+/* 読み込みの最初に保存へ書く addInitScript は、同じタブでは最初の1回だけ流す（v5.5.9）。
+   file:// では、すでに保存があるページの読み込みの最初に localStorage へ書くと、保存が消えることがあった（v5.5.8 の調べ）。
+   テストの種まき（ヒントの既読など）は1回入れれば残るので、読み込み直しのたびに書き直さない。読み込みのたびに要る関数の定義など（保存に書かないもの）はそのまま毎回流す。
+   RB_INIT_EVERY=1 で以前と同じ（毎回流す） */
+let initSeq = 0;
+const onceInit = (orig) => async (script, arg) => {
+  if (process.env.RB_INIT_EVERY || typeof script !== 'function' || !/localStorage\.(setItem|clear|removeItem)/.test(script.toString())) return orig(script, arg);
+  const k = '__rbInit' + (++initSeq);
+  return orig('(() => { try { if (sessionStorage.getItem(' + JSON.stringify(k) + ')) return; sessionStorage.setItem(' + JSON.stringify(k) + ', "1"); } catch (e) { /* */ } (' + script.toString() + ')(' + (arg === undefined ? '' : JSON.stringify(arg)) + '); })()');
+};
+const guardPage = (p) => { p.addInitScript = onceInit(p.addInitScript.bind(p)); return p; };
+const guardCtx = (c) => { c.addInitScript = onceInit(c.addInitScript.bind(c)); const cnp = c.newPage.bind(c); c.newPage = async () => guardPage(await cnp()); return c; };
 const launch = async () => {
   const b = await chromium.launch({ executablePath: CHROME });
+  { const nc0 = b.newContext.bind(b), np0 = b.newPage.bind(b); b.newContext = async (o) => guardCtx(await nc0(o)); b.newPage = async (o) => guardPage(await np0(o)); }
   if (process.env.RB_STORY) return b;
   // ページの読み込みが終わってから書く（goto・reload のあと）。読み込みの最初（addInitScript）で書くと、file:// では
   //   すでにある保存が消えることがあった（v5.5.8 の全テストで、読み込み直しのあとの「続きから」が3〜4本で消えた）

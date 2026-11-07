@@ -2807,7 +2807,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.5.8</p>
+    <p class="c-ver" id="cVer">ver 5.5.9</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2850,7 +2850,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
       <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。目指すのは、底に眠る「最初の灯」。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。</div></li>
     </ul>
     <div class="h-foot"><button class="btn set-open" id="helpSet" type="button">設定</button><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
   </div>
@@ -3189,7 +3189,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.5.8';
+  const APP_VERSION = '5.5.9';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -7896,7 +7896,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const step = run.node + 1;
     const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
     const chN = expCh(Math.min(run.node + 1, EXP.nodes)), goal = run.node === 0 && !(+expMeta().runs);   // 地点選び A（v5.5.7）：上は「第N章 名前」だけ（地点は目盛りで）。目標は初めての遠征の最初だけ自動で開く
-    rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN) + xTag(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒して、環廊を抜ける。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
+    rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN) + xTag(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒し、底に眠る「最初の灯」へ。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
   }
   function expEnter(c) {
