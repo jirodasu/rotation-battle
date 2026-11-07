@@ -19,5 +19,18 @@ function testPage() {
   return 'file://' + p;
 }
 const indexURL = 'file://' + path.join(ROOT, 'index.html');
-const launch = () => chromium.launch({ executablePath: CHROME });
+// 冒頭の物語（v5.5.8）は、初めて「環廊へ」を押したときに出る。ほかのテストは「もう見た」から始める（物語は tests/v558.js が確かめる）。
+//   RB_STORY=1 のときだけ、まだ見ていない状態のまま開く
+const SEEN_STORY = () => { try { if (!localStorage.getItem('rb-story')) localStorage.setItem('rb-story', '1'); } catch (e) { /* 保存できない */ } };
+const launch = async () => {
+  const b = await chromium.launch({ executablePath: CHROME });
+  if (process.env.RB_STORY) return b;
+  // ページの読み込みが終わってから書く（goto・reload のあと）。読み込みの最初（addInitScript）で書くと、file:// では
+  //   すでにある保存が消えることがあった（v5.5.8 の全テストで、読み込み直しのあとの「続きから」が3〜4本で消えた）
+  const patch = (p) => { for (const m of ['goto', 'reload']) { const f = p[m].bind(p); p[m] = async (...a) => { const r = await f(...a); try { await p.evaluate(SEEN_STORY); } catch (e) { /* 閉じたページ */ } return r; }; } return p; };
+  const nc = b.newContext.bind(b), np = b.newPage.bind(b);
+  b.newContext = async (o) => { const c = await nc(o); const cnp = c.newPage.bind(c); c.newPage = async () => patch(await cnp()); return c; };
+  b.newPage = async (o) => patch(await np(o));
+  return b;
+};
 module.exports = { chromium, devices, launch, testPage, indexURL, OUT, ROOT };

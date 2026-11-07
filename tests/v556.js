@@ -23,7 +23,7 @@ const AFTER = (Tid) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.p
   for (const node of [0, 3, 5, 7, 9]) for (let rep = 0; rep < (+process.env.REP || 2); rep++) {
     const ctx = await b.newContext({ viewport: { width: 393, height: 852 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.clear(); localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-fast', '1'); sessionStorage.setItem('s', '1'); } } catch (e) {} }, TIPS);
+    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.clear(); localStorage.setItem('rb-story', '1'); localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-fast', '1'); sessionStorage.setItem('s', '1'); } } catch (e) {} }, TIPS);
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(700);
     if (node > 0) { await p.evaluate((n) => { const o = JSON.parse(localStorage.getItem('rb-exp-save')); o.run.node = n; delete o.battle; localStorage.setItem('rb-exp-save', JSON.stringify(o)); }, node);
       // file:// では読み込み直しで保存が消えることがある（環境の揺れ。v545 と同じ）。消えていたら書き戻して読み込み直す

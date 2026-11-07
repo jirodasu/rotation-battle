@@ -2620,6 +2620,31 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .runv.map-a .rv-more { display: block; margin: 0 2px 0 auto; padding: 6px 4px; min-height: 32px; background: none; border: 0; color: var(--ink-soft); font: 700 12.5px var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .runv.map-a .rv-card:not(.sel) .rv-k { opacity: .8; }
 
+/* ===== 冒頭の物語（v5.5.8）：初めて「環廊へ」を押したときだけ。タップで1枚ずつ。「とばす」でいつでも抜ける ===== */
+.story { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: radial-gradient(ellipse 80% 55% at 50% 42%, #2a2433 0%, #15131c 55%, #0a0a0f 100%); color: #efe6d0; cursor: pointer; -webkit-user-select: none; user-select: none; overflow: hidden; }
+.story[hidden] { display: none; }
+.st-arch { position: absolute; inset: 0; width: 100%; height: 100%; opacity: .22; pointer-events: none; }
+.st-skip { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; z-index: 2; min-height: 36px; padding: 6px 14px; border-radius: 999px; border: 1px solid #4a4656; background: rgba(10,10,15,.4); color: #c9c2b0; font: 700 13px var(--sans); cursor: pointer; }
+.st-body { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 420px; }
+.st-art { width: min(300px, 82vw); height: min(220px, 30vh); display: grid; place-items: center; }
+.st-art svg { width: 100%; height: 100%; overflow: visible; }
+.st-num { font-size: 13px; color: #8f7a52; letter-spacing: .4em; }
+.st-txt { margin: 0; text-align: center; font-size: min(19px, 4.9vw); line-height: 2; letter-spacing: .04em; text-shadow: 0 2px 10px #000; min-height: 8em; }
+.st-txt em { font-style: normal; color: #f2c46a; }
+.st-txt.in { animation: stIn .9s ease both; }
+@keyframes stIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.st-go { width: min(280px, 80vw); margin-top: 6px; letter-spacing: .3em; }
+.st-dots { position: absolute; bottom: max(44px, calc(env(safe-area-inset-bottom) + 30px)); left: 0; right: 0; display: flex; justify-content: center; gap: 8px; pointer-events: none; }
+.st-dots i { width: 7px; height: 7px; border-radius: 50%; background: #3a3746; }
+.st-dots i.on { background: #f2c46a; }
+.st-tap { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; text-align: center; font: 500 12px var(--sans); color: #7d7888; letter-spacing: .2em; pointer-events: none; }
+.st-lamp { animation: stFlick 3.2s ease-in-out infinite; transform-origin: center; }
+@keyframes stFlick { 50% { opacity: .82; } }
+@media (max-height: 460px) { .st-body { flex-direction: row; flex-wrap: wrap; justify-content: center; max-width: 820px; column-gap: 28px; row-gap: 6px; } .st-art { width: min(260px, 32vw); height: min(180px, 46vh); } .st-txt { line-height: 1.75; min-height: 0; } .st-num { display: none; } .st-go { flex-basis: 100%; max-width: 280px; } .st-dots { bottom: 30px; } }   /* 横向き：絵を左、文を右に（重ならない） */
+@media (prefers-reduced-motion: reduce) { .st-txt.in, .st-lamp { animation: none; } }
+
+
 /* ===== B 回復はHP棒の伸びと「+N」で返す。説明の文章は読み上げ用に残し、見える場所からは外す（v5.1.60） ===== */
 .rv-m.healed .hpb i { animation: hpGrow .9s cubic-bezier(.2,.8,.3,1) .35s both; background: #7fe0a6; }
 @keyframes hpGrow { from { width: var(--from); background: var(--age-young); } }
@@ -2782,13 +2807,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.5.7</p>
+    <p class="c-ver" id="cVer">ver 5.5.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
       <button class="btn primary big stack" id="resume" type="button" hidden><b class="disp">続きから</b><small id="resumeSub"></small></button>
       <button class="btn primary big stack" id="begin" type="button"><b class="disp">環廊へ</b><small id="beginSub">4人で下る</small></button>
       <button class="btn set-open" id="setBtn" type="button">設定</button>
+      <button class="btn st-open" id="storyBtn" type="button" hidden>物語</button>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
       <p class="install" id="installIos">全画面で遊ぶには、Safariの<b>共有</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>から<b>「ホーム画面に追加」</b></p>
       <button class="btn big stack" id="beginTut" type="button"><b class="disp">チュートリアル</b><small id="tutSub">操作しながら一つずつ覚える</small></button>
@@ -2862,6 +2888,19 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <p class="nc-body" id="ncBody"></p>
     <div class="h-foot nc-foot"><button class="btn primary big" id="ncGo" type="button">記録を消して始める</button><button class="btn big" id="ncNo" type="button">やめる</button></div>
   </div>
+</div>
+
+<div class="story" id="story" role="dialog" aria-modal="true" aria-label="環廊の物語" hidden>
+  <svg class="st-arch" viewBox="0 0 320 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="#c9a24d" stroke-width="1.2"><path d="M18 560V220Q88 90 158 220V560"/><path d="M162 560V220Q232 90 302 220V560"/><path d="M38 560V236Q88 150 138 236V560"/><path d="M182 560V236Q232 150 282 236V560"/></g></svg>
+  <button class="st-skip" id="stSkip" type="button">とばす ›</button>
+  <div class="st-body">
+    <div class="st-art" id="stArt" aria-hidden="true"></div>
+    <div class="st-num disp" id="stNum" aria-hidden="true"></div>
+    <p class="st-txt disp" id="stTxt" aria-live="polite"></p>
+    <button class="btn primary big st-go" id="stGo" type="button" hidden>遠征へ</button>
+  </div>
+  <div class="st-dots" id="stDots" aria-hidden="true"></div>
+  <p class="st-tap" id="stTap" aria-hidden="true">タップで次へ</p>
 </div>
 
 <div class="result help settings confirm" id="hmIntro" role="dialog" aria-modal="true" aria-labelledby="hmTitle" hidden>
@@ -3150,7 +3189,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.5.7';
+  const APP_VERSION = '5.5.8';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8105,9 +8144,58 @@ body.fast #stampOk.on { animation-duration: .5s; }
   document.addEventListener('keydown', (ev) => { if (gated && !$('cover').hidden && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); ungate(true); } });
   // 「続きから」がある状態で新しく始めるときは確認する（誤タップで途中の記録を消さない）。押してすぐは「始める」を受け付けない
   let ncFrom = null, ncTimer = 0;
+  /* ===== 冒頭の物語（v5.5.8）：なぜ環廊に潜るのか。初めて「環廊へ」を押したときだけ自動で流し、2回目からはタイトルの「物語」から見返せる ===== */
+  const STORY = [
+    { a: 'far', t: '地の底に、輪のかたちをした<br>大聖堂がある。<br>人はそれを<em>「環廊」</em>と呼ぶ。' },
+    { a: 'bright', t: 'その最も深い場所に、<br><em>「最初の灯」</em>が眠るという。<br>手にした者には、<br>尽きぬ富を――と。' },
+    { a: 'descend', t: '金を求める者、名を求める者、<br>ただ明日を求める者。<br>あまたの冒険者が灯を掲げ、<br>環廊へ降りていった。' },
+    { a: 'beast', t: '戻った者は、ひとりもいない。<br>散らばった灯を喰らった獣が、<br>いまも<em>「十二の門」</em>を守っている。' },
+    { a: 'pass', t: 'それでも、灯は消えきらなかった。<br>倒れた者の灯を拾い、<br>次の者がそれを掲げる。<br>ほつれた道を繕いながら、深くへ。' },
+    { a: 'party', t: '人は彼らを<br><em>「修繕隊」</em>と呼んだ。' },
+    { a: 'party2', t: '灯は、<em>受け渡す</em>もの。<br>前に立つ者が掲げ、<br>疲れたら後ろへ渡す。<br>――さあ、灯を手に取れ。' }
+  ];
+  const ST_NUM = ['一', '二', '三', '四', '五', '六', '七'];
+  const stLamp = (x, y, s, a) => '<g class="st-lamp" transform="translate(' + x + ' ' + y + ') scale(' + s + ')" opacity="' + a + '"><circle r="70" fill="url(#stGlow)"/><path d="M-14 -20h28l6 10v26q0 10-10 10h-20q-10 0-10-10v-26z" fill="#ffd27a" stroke="#2a1d14" stroke-width="3"/><path d="M-9 -28h18v8h-18z" fill="#2a1d14"/><path d="M0 -28v-10" stroke="#2a1d14" stroke-width="3"/></g>';
+  const stParty = '<g fill="#050508"><rect x="-120" y="-30" width="44" height="40" rx="6"/><path d="M-130 95 L-126 10 H-70 L-66 95Z"/><ellipse cx="-36" cy="-36" rx="9" ry="12"/><circle cx="-36" cy="-14" r="16"/><path d="M-52 95 L-50 6 H-22 L-20 95Z"/><path d="M8 -6 L36 -70 L52 -6Z"/><path d="M-4 -6 H64 L60 2 H0Z"/><path d="M10 95 Q12 20 30 6 Q48 20 50 95Z"/><path d="M80 10 Q80 -36 108 -38 Q136 -36 136 10Z"/><path d="M76 95 Q76 20 108 10 Q140 20 140 95Z"/></g>';
+  const STORY_ART = {
+    far: stLamp(0, 0, 0.8, 0.6),
+    bright: stLamp(0, 0, 1.25, 1),
+    descend: [[-90, -70], [-45, -30], [0, 10], [45, 50], [90, 90]].map(([x, y], i) => stLamp(x, y, 0.42, 0.9 - i * 0.15)).join(''),
+    beast: [[-104, -64, 0.32], [104, -70, 0.3], [-70, 20, 0.26], [86, 10, 0.3]].map(([x, y, a]) => stLamp(x, y, 0.4, a)).join('') + '<g transform="scale(.8)"><path d="M-130 80 Q-120 -10 -40 -30 Q0 -80 40 -30 Q120 -10 130 80Z" fill="#050508"/><path d="M-40 -30 l-24 -40 l30 22 M40 -30 l24 -40 l-30 22" fill="#050508"/><circle cx="-26" cy="-14" r="5" fill="#d9573f"/><circle cx="26" cy="-14" r="5" fill="#d9573f"/></g>',
+    pass: '<path d="M-150 60 Q-90 40 -40 30 L-30 44 Q-90 60 -150 84Z" fill="#050508"/><path d="M150 60 Q90 40 40 30 L30 44 Q90 60 150 84Z" fill="#050508"/>' + stLamp(0, -10, 0.9, 0.95),
+    party: '<g transform="translate(0 20) scale(.85)">' + stParty + '</g>' + stLamp(0, -70, 0.45, 0.45),
+    party2: '<g transform="translate(0 20) scale(.85)">' + stParty + '</g>' + stLamp(0, -78, 0.6, 0.95)
+  };
+  let stI = 0, stThen = null;
+  const storySeen = () => { try { return !!localStorage.getItem('rb-story'); } catch (e) { return true; } };
+  function storyShow(i) {
+    stI = i; const pg = STORY[i], last = i === STORY.length - 1;
+    $('stArt').innerHTML = '<svg viewBox="-160 -110 320 220"><defs><radialGradient id="stGlow"><stop offset="0" stop-color="#ffe3a3" stop-opacity=".95"/><stop offset=".35" stop-color="#f5b04a" stop-opacity=".45"/><stop offset="1" stop-color="#f5b04a" stop-opacity="0"/></radialGradient></defs>' + STORY_ART[pg.a] + '</svg>';
+    $('stNum').textContent = ST_NUM[i];
+    const t = $('stTxt'); t.innerHTML = pg.t; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
+    $('stDots').innerHTML = STORY.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('');
+    $('stGo').hidden = !last; $('stGo').textContent = stThen ? '遠征へ' : 'タイトルへ';
+    $('stTap').textContent = last ? '' : 'タップで次へ';
+    if (last) $('stGo').focus();
+  }
+  function openStory(then) { stThen = then || null; $('story').hidden = false; storyShow(0); try { $('stSkip').focus(); } catch (e) { /* */ } }
+  function closeStory(go) {
+    $('story').hidden = true; try { localStorage.setItem('rb-story', '1'); } catch (e) { /* 保存できない */ }
+    $('storyBtn').hidden = false;
+    const f = stThen; stThen = null; if (go && f) f(); else { try { $('storyBtn').focus(); } catch (e) { /* */ } }
+  }
+  $('story').addEventListener('click', (ev) => { if (ev.target.closest('#stSkip, #stGo')) return; if (stI < STORY.length - 1) { SFX.page(); storyShow(stI + 1); } });
+  $('stSkip').addEventListener('click', () => { SFX.tap(); closeStory(true); });
+  $('stGo').addEventListener('click', () => { SFX.tap(); closeStory(true); });
+  $('storyBtn').addEventListener('click', () => { SFX.tap(); openStory(null); });
+  document.addEventListener('keydown', (ev) => { if ($('story').hidden) return;
+    if (ev.key === 'Escape') { ev.preventDefault(); closeStory(true); return; }
+    if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < STORY.length - 1) storyShow(stI + 1); } });
+  $('storyBtn').hidden = !storySeen();
+
   function askNewRun() {
     const sv = expSaved();
-    if (!sv) { startExpFlow(); return; }
+    if (!sv) { if (!storySeen()) { openStory(startExpFlow); return; } startExpFlow(); return; }   // 初めての遠征の前に、冒頭の物語（v5.5.8）
     SFX.tap();
     ncFrom = document.activeElement;
     $('ncBody').innerHTML = 'いまの遠征（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + (sv.battle && sv.battle.at !== 'over' ? '　戦闘中（ターン' + sv.battle.turn + '）' : '') + '）の記録は<b>消えて、元に戻せません</b>。';
