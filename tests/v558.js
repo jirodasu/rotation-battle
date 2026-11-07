@@ -65,6 +65,19 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     const s = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden, seen: localStorage.getItem('rb-story') }));
     ok(!s.story && s.runv && s.seen === '1', '3 「とばす」で抜けて、そのまま遠征が始まる ' + JSON.stringify(s));
     await ctx.close(); }
+  // 6 キーボード（v5.6.0）：開いた直後の Enter で「とばす」が押されず、1枚進む。← で1枚戻る。Esc で抜ける
+  { const ctx = await b.newContext({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' }); const p = await ctx.newPage();
+    await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); } catch (e) { /* */ } }, TIPS);
+    await p.addInitScript('window.__st = ' + ST.toString());
+    await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(300);
+    await p.keyboard.press('Enter'); await p.waitForTimeout(120); const k1 = await p.evaluate(() => window.__st());
+    await p.keyboard.press(' '); await p.waitForTimeout(120); const k2 = await p.evaluate(() => window.__st());
+    await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(120); const k3 = await p.evaluate(() => window.__st());
+    ok(k1.open && k1.on === 1 && k2.on === 2 && k3.open && k3.on === 1, '6 開いた直後の Enter・Space で1枚ずつ進み（とばさない）、← で戻る ' + [k1.on, k2.on, k3.on].join(','));
+    await p.keyboard.press('Escape'); await p.waitForTimeout(800);
+    const e = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden }));
+    ok(!e.story && e.runv, '6 Esc で抜けて遠征が始まる ' + JSON.stringify(e));
+    await ctx.close(); }
   await b.close();
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();

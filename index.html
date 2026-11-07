@@ -2621,6 +2621,7 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .runv.map-a .rv-card:not(.sel) .rv-k { opacity: .8; }
 
 /* ===== 冒頭の物語（v5.5.8）：初めて「環廊へ」を押したときだけ。タップで1枚ずつ。「とばす」でいつでも抜ける ===== */
+.story:focus { outline: none; }
 .story { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
   background: radial-gradient(ellipse 80% 55% at 50% 42%, #2a2433 0%, #15131c 55%, #0a0a0f 100%); color: #efe6d0; cursor: pointer; -webkit-user-select: none; user-select: none; overflow: hidden; }
 .story[hidden] { display: none; }
@@ -2890,7 +2891,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   </div>
 </div>
 
-<div class="story" id="story" role="dialog" aria-modal="true" aria-label="環廊の物語" hidden>
+<div class="story" id="story" role="dialog" aria-modal="true" aria-label="環廊の物語" tabindex="-1" hidden>
   <svg class="st-arch" viewBox="0 0 320 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="#c9a24d" stroke-width="1.2"><path d="M18 560V220Q88 90 158 220V560"/><path d="M162 560V220Q232 90 302 220V560"/><path d="M38 560V236Q88 150 138 236V560"/><path d="M182 560V236Q232 150 282 236V560"/></g></svg>
   <button class="st-skip" id="stSkip" type="button">とばす ›</button>
   <div class="st-body">
@@ -8187,7 +8188,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('stTap').textContent = last ? '' : 'タップで次へ';
     if (last) $('stGo').focus();
   }
-  function openStory(then) { stThen = then || null; $('story').hidden = false; storyShow(0); SFX.story(0); try { $('stSkip').focus(); } catch (e) { /* */ } }
+  function openStory(then) { stThen = then || null; $('story').hidden = false; storyShow(0); SFX.story(0); try { $('story').focus(); } catch (e) { /* */ } }
   function closeStory(go) {
     $('story').hidden = true; try { localStorage.setItem('rb-story', '1'); } catch (e) { /* 保存できない */ }
     $('storyBtn').hidden = false;
@@ -8199,7 +8200,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('storyBtn').addEventListener('click', () => { SFX.tap(); openStory(null); });
   document.addEventListener('keydown', (ev) => { if ($('story').hidden) return;
     if (ev.key === 'Escape') { ev.preventDefault(); closeStory(true); return; }
-    if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < STORY.length - 1) { storyShow(stI + 1); SFX.story(stI); } } });
+    if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < STORY.length - 1) { storyShow(stI + 1); SFX.story(stI); } }
+    else if (ev.key === 'ArrowLeft' && stI > 0) { ev.preventDefault(); storyShow(stI - 1); $('story').focus(); } });   // 開いたときは物語そのものに焦点（Enter で「とばす」が押されないように・v5.6.0）。← で1枚戻る
   $('storyBtn').hidden = !storySeen();
 
   function askNewRun() {
