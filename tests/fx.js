@@ -45,8 +45,10 @@ const turnMs = async (p, skipAt) => {
     const post = await p.evaluate(() => !document.getElementById('btnSkip').hidden);
     ok(!post, '判断の画面に戻ると「演出を飛ばす」は消える');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close(); }
-  { const { ctx, p } = await page(b, indexURL, false); skipped = await turnMs(p, 600);
-    ok(!p.__errs.length, '飛ばした後もエラーなし ' + p.__errs.join('/')); await ctx.close(); }
+  // 飛ばした時間も3回測って真ん中の値（v5.5.9：1回だけ測っていて、ふだん40%前後なのが51%になって落ちたことがあった。基準50%未満は据え置き）
+  { const sk = []; for (let i = 0; i < 3; i++) { const { ctx, p } = await page(b, indexURL, false); sk.push(await turnMs(p, 600));
+      if (i === 0) ok(!p.__errs.length, '飛ばした後もエラーなし ' + p.__errs.join('/')); await ctx.close(); }
+    skipped = sk.sort((x, y) => x - y)[1]; }
   const med = (a) => a.sort((x, y) => x - y)[Math.floor(a.length / 2)];
   const ns = [normal], bs = [];
   // 交互に5回ずつ測って真ん中の値で比べる（2026-11-02：3回では、機械の混み具合で1.14倍まで揺れて落ちることがあった）
