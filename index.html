@@ -2640,7 +2640,7 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .st-dots i { width: 7px; height: 7px; border-radius: 50%; background: #3a3746; }
 .st-dots i.on { background: #f2c46a; }
 .st-tap { position: absolute; bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0; margin: 0; text-align: center; font: 500 12px var(--sans); color: #7d7888; letter-spacing: .2em; pointer-events: none; }
-.st-lamp { animation: stFlick 3.2s ease-in-out infinite; transform-origin: center; }
+.st-lamp { animation: stFlick 3.2s ease-in-out infinite; }   /* transform-origin: center にすると、小さい灯ほど右下へずれていた（v5.6.1） */
 @keyframes stFlick { 50% { opacity: .82; } }
 @media (max-height: 460px) { .st-body { flex-direction: row; flex-wrap: wrap; justify-content: center; max-width: 820px; column-gap: 28px; row-gap: 6px; } .st-art { width: min(260px, 32vw); height: min(180px, 46vh); } .st-txt { line-height: 1.75; min-height: 0; } .st-num { display: none; } .st-go { flex-basis: 100%; max-width: 280px; } .st-dots { bottom: 30px; } }   /* 横向き：絵を左、文を右に（重ならない） */
 @media (prefers-reduced-motion: reduce) { .st-txt.in, .st-lamp { animation: none; } }
@@ -2808,7 +2808,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.6.0</p>
+    <p class="c-ver" id="cVer">ver 5.6.1</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3190,7 +3190,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.6.0';
+  const APP_VERSION = '5.6.1';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -3459,6 +3459,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (i === 3) { duck(0.55, 1.2); INST.thud(t + 0.05, 0.5, bus.sfx, 110); INST.bell(t + 0.12, 51, 0.12, bus.sfx, 0.9); INST.bell(t + 0.5, 54, 0.07, bus.sfx, 0.9); return; }
       if (i === 2) { [72, 70, 67].forEach((m, k) => INST.bell(t + 0.08 + k * 0.22, m, 0.06, bus.sfx, 0.7)); return; }
       INST.bell(t + 0.06, i === 6 ? 77 : i === 5 ? 72 : 65, 0.08, bus.sfx, 0.8); },
+    ending(i) { if (!can()) return; const t = now();   // 踏破の結末（v5.6.1）：底に着く低い音 → 輪の灯がともる鐘 → 受け渡し → 主題を鐘でゆっくり。物語の音と同じ楽器だけで
+      if (i === 2) { SFX.inherit(); return; }
+      INST.swish(t, 0.5, 0.06, bus.sfx, 300, 2600);
+      if (i === 0) { duck(0.6, 1.4); INST.thud(t + 0.05, 0.45, bus.sfx, 100); INST.bell(t + 0.15, 53, 0.1, bus.sfx, 0.9); INST.bell(t + 0.55, 60, 0.08, bus.sfx, 0.9); return; }
+      if (i === 1) { duck(0.6, 1.8); [60, 65, 69, 72, 77].forEach((m, k) => INST.bell(t + 0.1 + k * 0.18, m, 0.06 + k * 0.012, bus.sfx, 0.8)); return; }
+      duck(0.5, 2.4); MOTIF.forEach((m, k) => INST.bell(t + 0.12 + k * 0.3, m, 0.08, bus.sfx, 0.9)); INST.bell(t + 0.12 + MOTIF.length * 0.3, 89, 0.1, bus.sfx, 1); },
     page() { if (!can()) return; const t = now(); INST.swish(t, 0.16, 0.12, bus.sfx, 900, 5000); INST.xylo(t + 0.03, 84, 0.12, bus.sfx, 0.2); },
     nope() { if (!can()) return; const t = now(); INST.wood(t, 520, 0.4, bus.sfx); INST.wood(t + 0.09, 470, 0.32, bus.sfx); },
     start() { if (!can()) return; const t = now(); MOTIF.forEach((m, i) => INST.marimba(t + i * 0.09, m - 12, 0.5, bus.sfx, 0.25)); INST.bell(t + 0.27, 89, 0.22, bus.sfx); },
@@ -8042,13 +8048,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     mm.last = null;
     try { localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 保存できない環境 */ }
     coverProgress();
-    if (clear) confetti();
+    const firstEnd = clear && !endingSeen();
+    if (clear && !firstEnd) confetti();
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
-    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '環廊を踏破！' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
+    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
       cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
+    if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
   }
   function beginExp(sqId, depth) {
     sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 2 ? 2 : 1;
@@ -8176,31 +8184,53 @@ body.fast #stampOk.on { animation-duration: .5s; }
     party: '<g transform="translate(0 20) scale(.85)">' + stParty + '</g>' + stLamp(0, -70, 0.45, 0.45),
     party2: '<g transform="translate(0 20) scale(.85)">' + stParty + '</g>' + stLamp(0, -78, 0.6, 0.95)
   };
+  /* ===== 踏破の結末（v5.6.1・案A）：底の「最初の灯」は宝ではなく、受け渡されてきた灯そのもの。初めて踏破したときだけ流す ===== */
+  const stRing = (n, a) => Array.from({ length: n }, (_, k) => { const r = k / n * Math.PI * 2 - Math.PI / 2; return stLamp(Math.round(Math.cos(r) * 122), Math.round(Math.sin(r) * 78), 0.3, a); }).join('');
+  Object.assign(STORY_ART, {
+    bottom: '<ellipse cx="0" cy="62" rx="120" ry="12" fill="#000" opacity=".45"/>' + stLamp(0, -6, 0.95, 0.75),
+    ring: stRing(12, 0.8) + stLamp(0, 0, 1.05, 1),
+    names: stRing(12, 1) + stLamp(0, 0, 1.15, 1),
+    rise: [[0, 70, 0.6, 1], [-50, 20, 0.42, 0.85], [40, -30, 0.36, 0.7], [-20, -80, 0.3, 0.55]].map(([x, y, sc, a]) => stLamp(x, y, sc, a)).join('')
+  });
+  function endingPages(fallen) {
+    const nm = fallen.slice(0, 4).map((n) => '「' + String(n).replace(/[<>&"]/g, '') + '」').join('') + (fallen.length > 4 ? 'ほか' + (fallen.length - 4) + '人' : '');
+    return [
+      { a: 'bottom', t: '門をくぐり、<br>環廊の底へ。<br>そこに<em>「最初の灯」</em>はあった。' },
+      { a: 'ring', t: '宝ではなかった。<br>倒れた者たちが残した灯が、<br>輪になって燃えていた。' },
+      { a: 'names', t: fallen.length ? nm + '――<br>道の途中で渡された灯も、<br>その輪の中にあった。' : '誰ひとり欠けずに、ここまで来た。<br>それでも輪の中には、<br>名も知らぬ者たちの灯があった。' },
+      { a: 'rise', t: '尽きぬ富とは、<br>受け渡されてきた<em>この灯</em>のこと。<br>灯は、また次の者へ。' }
+    ];
+  }
+  let stPages = STORY, stEnd = false;
+  const stSfx = (i) => { if (stEnd) SFX.ending(i); else SFX.story(i); };
+  const endingSeen = () => { try { return !!localStorage.getItem('rb-ending'); } catch (e) { return true; } };
+  function openEnding(fallen, then) { stPages = endingPages(fallen); stEnd = true; $('story').setAttribute('aria-label', '環廊の結末'); openStory(then); }
   let stI = 0, stThen = null;
   const storySeen = () => { try { return !!localStorage.getItem('rb-story'); } catch (e) { return true; } };
   function storyShow(i) {
-    stI = i; const pg = STORY[i], last = i === STORY.length - 1;
+    stI = i; const pg = stPages[i], last = i === stPages.length - 1;
     $('stArt').innerHTML = '<svg viewBox="-160 -110 320 220"><defs><radialGradient id="stGlow"><stop offset="0" stop-color="#ffe3a3" stop-opacity=".95"/><stop offset=".35" stop-color="#f5b04a" stop-opacity=".45"/><stop offset="1" stop-color="#f5b04a" stop-opacity="0"/></radialGradient></defs>' + STORY_ART[pg.a] + '</svg>';
     $('stNum').textContent = ST_NUM[i];
     const t = $('stTxt'); t.innerHTML = pg.t; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
-    $('stDots').innerHTML = STORY.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('');
-    $('stGo').hidden = !last; $('stGo').textContent = stThen ? '遠征へ' : 'タイトルへ';
+    $('stDots').innerHTML = stPages.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('');
+    $('stGo').hidden = !last; $('stGo').textContent = stEnd ? '結果へ' : stThen ? '遠征へ' : 'タイトルへ';
     $('stTap').textContent = last ? '' : 'タップで次へ';
     if (last) $('stGo').focus();
   }
-  function openStory(then) { stThen = then || null; $('story').hidden = false; storyShow(0); SFX.story(0); try { $('story').focus(); } catch (e) { /* */ } }
+  function openStory(then) { stThen = then || null; $('story').hidden = false; storyShow(0); stSfx(0); try { $('story').focus(); } catch (e) { /* */ } }
   function closeStory(go) {
-    $('story').hidden = true; try { localStorage.setItem('rb-story', '1'); } catch (e) { /* 保存できない */ }
+    $('story').hidden = true; try { localStorage.setItem(stEnd ? 'rb-ending' : 'rb-story', '1'); } catch (e) { /* 保存できない */ }
     $('storyBtn').hidden = false;
-    const f = stThen; stThen = null; if (go && f) f(); else { try { $('storyBtn').focus(); } catch (e) { /* */ } }
+    const wasEnd = stEnd; stPages = STORY; stEnd = false; $('story').setAttribute('aria-label', '環廊の物語');
+    const f = stThen; stThen = null; if (wasEnd) { if (f) f(); return; } if (go && f) f(); else { try { $('storyBtn').focus(); } catch (e) { /* */ } }
   }
-  $('story').addEventListener('click', (ev) => { if (ev.target.closest('#stSkip, #stGo')) return; if (stI < STORY.length - 1) { storyShow(stI + 1); SFX.story(stI); } });   // ページごとの音（v5.6.0）
+  $('story').addEventListener('click', (ev) => { if (ev.target.closest('#stSkip, #stGo')) return; if (stI < stPages.length - 1) { storyShow(stI + 1); stSfx(stI); } });   // ページごとの音（v5.6.0）
   $('stSkip').addEventListener('click', () => { SFX.tap(); closeStory(true); });
-  $('stGo').addEventListener('click', () => { if (stThen) SFX.start(); else SFX.tap(); closeStory(true); });   // 「遠征へ」は出発の音
+  $('stGo').addEventListener('click', () => { if (stThen && !stEnd) SFX.start(); else SFX.tap(); closeStory(true); });   // 「遠征へ」は出発の音
   $('storyBtn').addEventListener('click', () => { SFX.tap(); openStory(null); });
   document.addEventListener('keydown', (ev) => { if ($('story').hidden) return;
     if (ev.key === 'Escape') { ev.preventDefault(); closeStory(true); return; }
-    if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < STORY.length - 1) { storyShow(stI + 1); SFX.story(stI); } }
+    if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < stPages.length - 1) { storyShow(stI + 1); stSfx(stI); } }
     else if (ev.key === 'ArrowLeft' && stI > 0) { ev.preventDefault(); storyShow(stI - 1); $('story').focus(); } });   // 開いたときは物語そのものに焦点（Enter で「とばす」が押されないように・v5.6.0）。← で1枚戻る
   $('storyBtn').hidden = !storySeen();
 
