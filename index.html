@@ -701,6 +701,10 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 .oc-ico.c-safe, .oc-ico.c-maybe { background: rgba(0, 0, 0, 0.14); display: grid; place-items: center; }
 .oc-ico.c-safe svg { width: 70%; height: 70%; }
 .oc-q { font: 900 14px/1 var(--serif); }
+.oc-q svg { width: 15px; height: 15px; display: block; }
+.oc-luck { display: inline-flex; align-items: center; gap: 1px; margin-left: 3px; vertical-align: -1px; font-size: 0.72em; font-weight: 700; color: var(--ink-soft); }
+.oc-luck svg { width: 1.15em; height: 1.15em; }
+.oc-luck s { text-decoration: none; }
 .oc-r.oc-l i { font-size: 12px; max-width: 4.6em; overflow: hidden; text-overflow: ellipsis; }
 .oc-r.oc-l b { font: 800 16px/1.1 var(--serif); font-variant-numeric: tabular-nums; text-decoration: none; }
 .oc-r.oc-l b small { font-size: 10px; font-weight: 700; opacity: 0.7; margin-right: 3px; }
@@ -3172,6 +3176,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const ICON_SWAP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4 3 8l4 4M3 8h13M17 20l4-4-4-4M21 16H8" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const ICON = {
+    dice: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.3" cy="8.3" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="15.7" cy="15.7" r="1.8" fill="currentColor"/></svg>',   // 運しだい（v5.6.4：「?」では意味が伝わらなかった）
     sword: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
     star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg>',
     plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg>',
@@ -4307,9 +4312,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function frontRow(g) { const G = g || grid; for (let r = 0; r < ROWS; r++) if (G[r].some(Boolean)) return r; return -1; }
   const nextActOf = (F) => F.pattern[turn % F.pattern.length];
   const nextAct = () => nextActOf(enemy);
+  // 大技の狙い方（v5.6.4）：ためているターンから出す。だれに当たるかは、次のターンの並びで決まるので、決まり方を言う
+  const aimOf = (n) => (!n || !n.dmg ? '' : n.rule === 'all' ? '一番前の列の全員' : n.rule === 'random' ? '一番前の列からランダム' : n.rule === 'job' ? n.job + '（いなければHP最低）' : n.rule === 'lowhp' ? 'HPがいちばん低い仲間' : '');
   function targetInfo(act, g, F, hpOf) {   // hpOf：予測で、その時点のHP（祝福の回復・先の敵の攻撃のあと）で狙いを決める（v5.5.6）
     if (act.rule === 'bind') return { cols: [], desc: '縛られると、次のターンは隊列を回せない' };
-    if (act.rule === 'charge') { const n = nextActOf(F || enemy); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' }; }
+    if (act.rule === 'charge') { const n = nextActOf(F || enemy); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' + (aimOf(n) ? '・狙い ' + aimOf(n) : '') }; }
     if (act.rule === 'guard' || act.rule === 'mend' || act.rule === 'aid') return { cols: [], desc: '' };
     const fr = frontRow(g);
     if (fr < 0) return { cols: [], desc: '' };
@@ -4688,7 +4695,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (slim && chg && !bnd && nx && nx.dmg) {
       t.dataset.cd = '1';
       t.innerHTML = '<span class="t-ico disp t-cd" aria-hidden="true"><b>1</b><small>大技まで</small></span>' +
-        '<span class="t-main"><b class="disp">' + act.name + '</b></span>' +
+        '<span class="t-main"><b class="disp">' + act.name + '</b>' + (aimOf(nx) ? '<span class="t-aim">狙い ' + aimOf(nx) + '</span>' : '') + '</span>' +
         '<span class="t-dmg nx"><b class="disp">' + nx.dmg * (nx.hits || 1) + '</b><small>次に大技</small></span>';
     } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
@@ -5035,7 +5042,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const wait = cost - g;
     const sub = bound ? '縛られている' : low ? (wait <= 1 ? '次のターン回せる' : 'あと' + wait + 'ターン') : '気力' + cost + 'を使う';
     // ボタンには●だけを出す。回せない理由は、押したときの吹き出しで返す（v5.1.58：常に文字を並べない）
-    b.dataset.why = bound ? '縛られている。このターンは維持だけ' : low ? (wait <= 1 ? '次のターンに回せる' : 'あと' + wait + 'ターンで回せる') : '';
+    b.dataset.why = bound ? '縛られている。このターンは維持だけ' : low ? '気力が足りない・' + (wait <= 1 ? '次のターンに回せる' : 'あと' + wait + 'ターンで回せる') : '';   // 何が足りないかを先に言う（v5.6.4）
     // 回転コンボの目盛り（v5.4.5）：気力の下に◆×3。満タンは光る。「回す」の長押し（先読み）中は、回した後の目盛りを出す（満タンで回すと発動して0）
     let ch = '', cSay = '';
     if (comboOn() && on) {
@@ -5079,7 +5086,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const hurt = Object.keys(inc).map((k) => { const [r, c] = k.split(',').map(Number); return { n: src[r][c].name, u: src[r][c], d: inc[k].d, heal: inc[k].heal || 0, ko: inc[k].ko }; }).sort((a, b) => (b.ko - a.ko) || (b.d - a.d));
     /* 敵に与える量は、行動順どおりに数える（v5.5.6）：敵の攻撃で先に倒れる仲間の分は数えない（以前は数えていて、敵の残りHPが少なく見えた）。
        ランダムの技で、敵より後に動く仲間が倒れうるときは、敵の残りHPも「運しだい」（foeMaybe）。計算は表示だけ。戦闘の結果には触れない */
-    let dealt = 0, foeMaybe = false; const who = [], fr = frontRow(src), hp = new Map();
+    const T0 = enemy.party ? targetFoe() : enemy;
+    let dealt = 0, foeMaybe = false, foeHp = T0 ? T0.hp : 0, mended = 0; const who = [], fr = frontRow(src), hp = new Map();
     units(src).forEach(({ u }) => hp.set(u, inc.start ? inc.start.get(u) : u.hp));
     const per = inc.per || [];
     const AL = actorList(src, ent);   // 同じ並びを2回使う（ランダムの技の印 rnd を、下の「?」の判定で読む。v5.5.6）
@@ -5089,32 +5097,35 @@ body.fast #stampOk.on { animation-duration: .5s; }
         per.filter((x) => x.F === F).forEach((x) => { const u = fr >= 0 && src[fr][x.c]; if (u) hp.set(u, hp.get(u) - x.d); });
         const ac = enemy.party ? actOf(F) : curAct();
         if (ac && ac.rule === 'random' && ac.dmg && fr >= 0 && foeAlive(F)) { const most = ac.dmg * (fr > 0 ? 2 : 1) * (ac.hits || 1); a.rnd = most; }
+        // 祈り手の回復（v5.6.4）：攻撃している敵を、その順番で治す。倒しきったあとは治せない（実際の戦闘と同じ：最大HPまで）
+        if (enemy.party && ac && ac.rule === 'mend' && foeAlive(F) && T0 && mendTarget() === T0 && foeHp > 0) { const g = Math.min(ac.heal, T0.max - foeHp); if (g > 0) { foeHp += g; mended += g; } }
         continue;
       }
       if (hp.get(a.u) <= 0) continue;
       const d = expDmg(a.u, a.r, a.c, src, fresh, ent);
-      if (d && d.val > 0) { dealt += d.val; who.push(a.u.name + d.val); }
+      if (d && d.val > 0) { dealt += d.val; foeHp -= d.val; who.push(a.u.name + d.val); }
     }
     { const L = AL; L.forEach((a, i) => { if (a.kind !== 'e' || !a.rnd) return; if (L.slice(i + 1).some((b) => b.kind === 'p' && b.r === fr && hp.get(b.u) > 0 && hp.get(b.u) <= a.rnd)) foeMaybe = true; }); }
-    const T = enemy.party ? targetFoe() : enemy, left = T ? Math.max(0, T.hp - dealt) : 0;
+    const T = T0, left = T ? Math.max(0, foeHp) : 0;
     const acts = enemy.party ? enemy.party.filter(foeAlive).map((F) => actOf(F).name) : [actOf(enemy).name];
-    return { o, hurt, dealt, who, T, left, acts, foeMaybe };
+    return { o, hurt, dealt, who, T, left, acts, foeMaybe, mended };
   }
   const ocRow = (k, v, cls, x) => '<span class="oc-r' + (x ? ' x' : '') + '"><i>' + k + '</i><b' + (cls ? ' class="' + cls + '"' : '') + '>' + v + '</b></span>';
   /* 札は2行（v5.5.1）：「敵 HP いま → 次」と「いちばん危ない仲間 HP いま → 次」。顔のアイコンと数字だけで、左右の札を同じ場所で見比べる。
      誰が攻撃するか・敵の技は、盤（剣の数字・先読み）と上の帯に任せる。数字の計算は従来と同じ（盤の剣の合計・赤い数字） */
   const ocIco = (html, c) => '<span class="oc-ico uc-disc' + (c ? ' c-' + c : '') + '" aria-hidden="true">' + html + '</span>';
+  const OC_LUCK = '<span class="oc-luck" title="運しだい">' + ICON.dice + '<s>運</s></span>';   // 見込みが運しだい：小さなサイコロと「運」（v5.6.4）
   const ocNum = (a, b) => '<small>HP</small>' + a + '<em>→</em>' + b;
   function outlookHTML(L) {
     const T = L.T, kill = T && L.dealt > 0 && L.left <= 0;
     const fq = L.foeMaybe ? '?' : '';   // ランダムの技で、攻撃する仲間が先に倒れうる（v5.5.6）
-    const foe = !T ? '' : '<span class="oc-r oc-l" data-k="foe" data-say="敵 HP ' + T.hp + 'から' + L.left + (kill ? '、撃破' : '') + (fq ? '、運しだい' : '') + '">' + ocIco(foeMini(enemy.party ? T : null), 'enemy') + '<i>敵</i><b' + (kill ? ' class="good"' : '') + '>' + ocNum(T.hp, L.left) + fq + '</b></span>';
+    const foe = !T ? '' : '<span class="oc-r oc-l" data-k="foe" data-say="敵 HP ' + T.hp + 'から' + L.left + (L.mended ? '（祈り手の回復+' + L.mended + 'を含む）' : '') + (kill ? '、撃破' : '') + (fq ? '、運しだい' : '') + '">' + ocIco(foeMini(enemy.party ? T : null), 'enemy') + '<i>敵</i><b' + (kill ? ' class="good"' : '') + '>' + ocNum(T.hp, L.left) + (fq ? OC_LUCK : '') + '</b></span>';
     const h = L.hurt[0], more = L.hurt.length - 1;
     let ally;
-    if (!h) ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + (L.o.maybe ? '受ける 運しだい' : '受ける なし、無傷') + '">' + ocIco(L.o.maybe ? '<span class="oc-q">?</span>' : ICON.shield, L.o.maybe ? 'maybe' : 'safe') + '<i>' + (L.o.maybe ? '受ける' : '味方') + '</i><b class="' + (L.o.maybe ? 'bad' : 'good') + '">' + (L.o.maybe ? '運しだい' : '無傷') + '</b></span>';
+    if (!h) ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + (L.o.maybe ? '受ける 運しだい' : '受ける なし、無傷') + '">' + ocIco(L.o.maybe ? '<span class="oc-q">' + ICON.dice + '</span>' : ICON.shield, L.o.maybe ? 'maybe' : 'safe') + '<i>' + (L.o.maybe ? '受ける' : '味方') + '</i><b class="' + (L.o.maybe ? 'bad' : 'good') + '">' + (L.o.maybe ? '運しだい' : '無傷') + '</b></span>';
     else {
       const aft = Math.max(0, Math.min(h.u.max, h.u.hp + (h.heal || 0)) - h.d), cls = L.hurt.some((x) => x.ko) ? 'ko' : 'bad';
-      ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + h.n + ' HP ' + h.u.hp + 'から' + aft + (h.ko ? '、倒れる' : '') + (more ? '、ほか' + more + '人も受ける' : '') + (L.o.maybe ? '、運しだい' : '') + '">' + ocIco(face(h.u), h.u.cls) + '<i>' + h.n + '</i><b class="' + cls + '">' + ocNum(h.u.hp, aft) + (L.o.maybe ? '?' : '') + (more ? '<small class="oc-more" data-s="+' + more + '">ほか' + more + '人</small>' : '') + '</b></span>';
+      ally = '<span class="oc-r oc-l" data-k="hurt" data-say="' + h.n + ' HP ' + h.u.hp + 'から' + aft + (h.ko ? '、倒れる' : '') + (more ? '、ほか' + more + '人も受ける' : '') + (L.o.maybe ? '、運しだい' : '') + '">' + ocIco(face(h.u), h.u.cls) + '<i>' + h.n + '</i><b class="' + cls + '">' + ocNum(h.u.hp, aft) + (L.o.maybe ? OC_LUCK : '') + (more ? '<small class="oc-more" data-s="+' + more + '">ほか' + more + '人</small>' : '') + '</b></span>';
     }
     return foe + ally;
   }
@@ -5122,7 +5133,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let ocKey = '';
   // 見通しの札の数字が新しくなったら、その行だけ下から回して入れ替える（テキストロール。v5.4.1）。
   //   比べる相手は、同じ札・同じ行の直前の中身（演出中は札が空になるので、その前と比べる）。「倒れる」が新しく出たときは強めに知らせる
-  let ocPrev = {};
+  let ocPrev = {}, koWarnRun = null;
   function ocRollIn() {
     ['ocStay', 'ocRot', 'ocStart'].forEach((id) => {
       const rows = [...$(id).querySelectorAll('.oc-r')]; if (!rows.length) return;
@@ -5147,6 +5158,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const key = hs + '|' + hr + '|' + hp; if (key === ocKey) return; ocKey = key;
     $('ocStay').innerHTML = hs; $('ocRot').innerHTML = hr; $('ocStart').innerHTML = hp;
     ocRollIn();
+    // 遠征で初めて「倒れる」見込みが出たとき、一度だけ念を押す（v5.6.4：地点1で倒れやすいのに、戻らないことが伝わっていなかった）
+    if (EXPM() && !tut && run && koWarnRun !== run) { const kb = [[st, 'ocStart'], [sb, 'ocStay'], [rb, 'ocRot']].find(([b, id]) => !b.hidden && $(id).querySelector('b.ko')); if (kb) { koWarnRun = run; setTimeout(() => bubble('倒れた仲間は、この遠征のあいだ戻らない', kb[0], 3200, 'koWarn'), 350); } }
     if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。一巡りの灯で突入技強化' : '')); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
     requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); placeTip(); });   // 念のためもう一度。盤の大きさを合わせ直したら、案内も置き直す（v5.4.8：先に置いた案内が、後から伸びた予告の札に重なっていた。v537 が時々落ちる原因）
@@ -5272,8 +5285,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     p.className = 'pop ' + (cls || '');
     if (/sub/.test(cls || '')) p.textContent = text;
     else p.innerHTML = '<svg aria-hidden="true"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">' + text + '</text></svg>';
+    // ダメージ・回復の数字は顔に重ねない（v5.6.4）：位置の指定が無いときは、肖像（敵は絵）の上の縁から出して上へ昇らせる
+    let y = c.y + (dy || 0);
+    if (dy == null && /\b(dmg|heal)\b/.test(cls || '') && !/sub/.test(cls || '')) { const d = el.querySelector('.disc') || el, r = d.getBoundingClientRect(); y = r.top + Math.min(8, r.height * 0.06); }
     p.style.left = (c.x + (dx || 0)) + 'px';
-    p.style.top = (c.y + (dy || 0)) + 'px';
+    p.style.top = y + 'px';
     $('fx').appendChild(p);
     const hw = p.offsetWidth / 2, vw = document.documentElement.clientWidth;
     if (hw > 0) p.style.left = Math.min(Math.max(c.x + (dx || 0), hw + 8), vw - hw - 8) + 'px';
@@ -5495,6 +5511,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function flySeal(a, b, txt, cls) {
     if (!a || !b || RM) return Promise.resolve();
     const A = center(a), B = center(b);
+    // 印は顔の上を通らない（v5.6.4）：補助の頭の上から出て、受ける仲間のあご（肖像の下の縁）に止まる
+    { const da = a.querySelector('.disc'), db = b.querySelector('.disc'); if (da) A.y = da.getBoundingClientRect().top + 4; if (db) B.y = db.getBoundingClientRect().bottom - 6; }
     const s = document.createElement('i');
     s.className = 'fly ' + cls; s.textContent = txt;
     s.style.left = A.x + 'px'; s.style.top = A.y + 'px';
@@ -5788,7 +5806,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     SFX.attack(u.id, total >= 15); vib(12);
     weaponFX(u.id, tokEl(r, c)); shake(ea, 8); flashBright(ea.firstElementChild);
     const jx = (hitSeq++ % 2 ? 1 : -1) * (34 + Math.random() * 16);
-    popAt(ea, '-' + total, 'dmg big', -40, jx);
+    popAt(ea, '-' + total, 'dmg big', null, jx);
     popAt(ea, u.name + '　' + power + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
     const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
     if (!enemy.party) renderEnemy(false);
