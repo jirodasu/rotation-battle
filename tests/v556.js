@@ -4,7 +4,8 @@
 //  1. ランダムの技が無いターン：敵のHPの予測＝実際。札に出た仲間のHPの予測＝実際（祝福の回復を含む）。予測の無い仲間はHPが減らない
 //     （戦闘が終わったターンは、勝利後の回復が入るので仲間のHPは比べない。敵のHPは比べる）
 //  2. ランダムの技があるターン：敵のHPが予測とずれたときは、札の敵の行に「?」（運しだい）が出ていた
-//  3. ページのエラーなし。突き合わせたターンが30以上
+//  3. 倒しきるターン：被弾を見込んだ仲間は、実際にそのターン打たれている（v5.6.4・QA指摘2）
+//  4. ページのエラーなし。突き合わせたターンが30以上
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"trinity":1,"bench":1,"combo":1,"hmIntro":1}';
@@ -13,11 +14,11 @@ const SNAP = (rot) => { const R = window.__rb, g = rot ? R.previewGrid() : R.gri
   const foes = R.enemy.party ? R.enemy.party.filter((F) => F.hp > 0) : [R.enemy];
   return { rot, turn: R.turn, T: L.T ? (L.T.id || 'boss') : null, Thp: L.T ? L.T.hp : null, left: L.left, dealt: L.dealt, party: !!R.enemy.party,
     rules: foes.map((F) => { const a = R.actOf(F); return a ? a.rule + (a.pierce ? '+p' : '') : '-'; }), names: foes.map((F) => F.name),
-    hurt: L.hurt.map((h) => ({ uid: h.u.uid, n: h.n, hp: h.u.hp, max: h.u.max, heal: h.heal || 0, d: h.d, ko: h.ko })), foeMaybe: !!L.foeMaybe,
+    hurt: L.hurt.map((h) => ({ uid: h.u.uid, n: h.n, hp: h.u.hp, max: h.u.max, heal: h.heal || 0, d: h.d, ko: h.ko })), foeMaybe: !!L.foeMaybe, logN: R.log.length,
     all: R.grid.flat().filter(Boolean).map((u) => ({ uid: u.uid, hp: u.hp })) }; };
-const AFTER = (Tid) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.party : [R.enemy]; const T = foes.find((F) => (F.id || 'boss') === Tid);
+const AFTER = ([Tid, logN]) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.party : [R.enemy]; const T = foes.find((F) => (F.id || 'boss') === Tid);
   const hp = {}; R.run.members.forEach((m) => { hp[m.uid] = m.hp; }); R.grid.flat().filter(Boolean).forEach((u) => { hp[u.uid] = u.hp; });
-  return { Thp: T ? T.hp : null, hp, log: R.log.slice(-14) }; };
+  return { Thp: T ? T.hp : null, hp, log: R.log.slice(logN) }; };
 (async () => {
   const b = await launch(); const rows = [];
   for (const node of [0, 3, 5, 7, 9]) for (let rep = 0; rep < (+process.env.REP || 2); rep++) {
@@ -45,7 +46,7 @@ const AFTER = (Tid) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.p
       await p.click(rot ? '#btnRotate' : '#btnStay');
       await p.waitForTimeout(100);
       const st = await ch();
-      const a = await p.evaluate(AFTER, s.T);
+      const a = await p.evaluate(AFTER, [s.T, s.logN]);
       rows.push({ node, rep, s, a, st });
       if (st !== 'choose') break;
     }
@@ -59,6 +60,10 @@ const AFTER = (Tid) => { const R = window.__rb, foes = R.enemy.party ? R.enemy.p
     const rnd = s.rules.some((r) => r.startsWith('random')), end = st !== 'choose', issues = [];
     const foeOff = s.Thp != null && a.Thp != null && s.left !== Math.max(0, a.Thp);
     if (foeOff && !(rnd && s.foeMaybe)) issues.push('敵HP 予測' + s.left + ' 実際' + Math.max(0, a.Thp) + (rnd ? '（ランダムなのに「?」が無い）' : ''));
+    // v5.6.4：倒しきるターン（戦闘が終わる）も、被弾の見込みを確かめる。見込んだ仲間が実際に打たれていなければ、見込みが悲観的すぎる
+    if (!rnd && end && s.left === 0 && a.Thp != null && a.Thp <= 0) {
+      for (const h of s.hurt) { if (!a.log.some((l) => l.includes(h.n + 'に') && /ダメージ/.test(l))) issues.push('撃破のターン：' + h.n + 'の被弾 -' + h.d + ' を見込んだが、実際は受けていない'); }
+    }
     if (!rnd && !end) {
       for (const h of s.hurt) { const got = a.hp[h.uid], want = Math.max(0, Math.min(h.max, h.hp + h.heal) - h.d); if (got !== want && !(got === undefined && want === 0)) issues.push(h.n + ' 予測' + want + ' 実際' + got); }
       for (const u of s.all) { if (s.hurt.some((h) => h.uid === u.uid)) continue; const got = a.hp[u.uid]; if (got !== undefined && got < u.hp) issues.push('予測なしで被弾 ' + u.uid + ' ' + u.hp + '→' + got); }

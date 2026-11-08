@@ -296,8 +296,8 @@ async function open(b, w, h, kind, node) {
     const { ctx, p } = await open(b, 390, 844, 0, 2);
     await p.evaluate(() => { const R = window.__rb; R.enemy.pattern[1] = { name: 'ちからをためる', glyph: '溜', rule: 'charge' }; R.enemy.pattern[2] = Object.assign({}, R.enemy.pattern[0], { name: 'のしかかり' }); R.enemy.charged = false; R.setTurn(2); });
     await p.waitForTimeout(200);
-    const c1 = await p.evaluate(() => { const t = document.getElementById('ticket'), e = document.getElementById('dangerEdge'); return { cd: t.dataset.cd, dig: (t.querySelector('.t-cd b') || {}).textContent, sub: !!t.querySelector('.t-main span'), edge: !!e && e.classList.contains('on'), aria: t.getAttribute('aria-label') }; });
-    ok(c1.cd === '1' && c1.dig === '1' && !c1.sub && !c1.edge && /次に/.test(c1.aria), 'ためのターン：札の印は大きな「1」（大技まで）、説明の行はなく、赤い縁はまだ出ない ' + JSON.stringify(c1));
+    const c1 = await p.evaluate(() => { const t = document.getElementById('ticket'), e = document.getElementById('dangerEdge'); return { cd: t.dataset.cd, dig: (t.querySelector('.t-cd b') || {}).textContent, sub: !!t.querySelector('.t-main span:not(.t-aim)'), aim: (t.querySelector('.t-aim') || {}).textContent || '', edge: !!e && e.classList.contains('on'), aria: t.getAttribute('aria-label') }; });
+    ok(c1.cd === '1' && c1.dig === '1' && !c1.sub && /狙い/.test(c1.aim) && !c1.edge && /次に/.test(c1.aria), 'ためのターン：札の印は大きな「1」（大技まで）、説明の行はなく（v5.6.4 から大技の狙いだけは出す）、赤い縁はまだ出ない ' + JSON.stringify(c1));
     const tk = await p.$eval('#ticket', (e) => { const q = e.getBoundingClientRect(); return [q.x + q.width / 2, q.y + q.height / 2]; });
     await p.mouse.click(tk[0], tk[1]); await p.waitForTimeout(250);
     const t1 = await p.evaluate(() => { const d = document.getElementById('tkTip'); return { on: !!d && !d.hidden && d.classList.contains('on'), t: d ? d.textContent : '', sheet: !document.getElementById('foeSheet').hidden }; });
