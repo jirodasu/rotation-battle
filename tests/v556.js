@@ -68,7 +68,7 @@ const AFTER = ([Tid, logN]) => { const R = window.__rb, foes = R.enemy.party ? R
       for (const h of s.hurt) { const got = a.hp[h.uid], want = Math.max(0, Math.min(h.max, h.hp + h.heal) - h.d); if (got !== want && !(got === undefined && want === 0)) issues.push(h.n + ' 予測' + want + ' 実際' + got); }
       for (const u of s.all) { if (s.hurt.some((h) => h.uid === u.uid)) continue; const got = a.hp[u.uid]; if (got !== undefined && got < u.hp) issues.push('予測なしで被弾 ' + u.uid + ' ' + u.hp + '→' + got); }
     }
-    n++; if (issues.length && process.env.DBG) console.log('      ログ：' + a.log.join(' | ') + '\n      予測：' + JSON.stringify(s.hurt) + ' 前 ' + JSON.stringify(s.all));
+    if (issues.length && process.env.DBG) console.log('      ログ：' + a.log.join(' | ') + '\n      予測：' + JSON.stringify(s.hurt) + ' 前 ' + JSON.stringify(s.all));
     n++; if (issues.length) bad.push('地点' + (node + 1) + ' ' + s.turn + 'ターン目 ' + (s.rot ? '回す' : '維持') + ' ' + s.names.join('/') + '（' + s.rules.join('/') + '）：' + issues.join('；'));
   }
   bad.forEach((x) => console.log('    ' + x));
