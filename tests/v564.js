@@ -12,7 +12,7 @@ const ok = (cond, msg) => { console.log((cond ? '  OK  ' : '  NG  ') + msg); if 
     p.on('pageerror', (e) => errs.push(e.message));
     await p.goto(testPage() + '?qa&ch=3&loc=10');
     await p.waitForFunction(() => document.documentElement.dataset.qa === '3-10' &&
-      !!document.querySelector('#ticket .t-dmg b'), { timeout: 12000 });
+      !!document.querySelector('#ticket .t-dmg b'), null, { timeout: 12000 });
     const snap = () => {
       const R = window.__rb, a = R.actOf(R.enemy), intent = document.querySelector('#ticket .t-dmg');
       return { phase: R.phase, rule: a.rule, hits: a.hits || 1, dmg: a.dmg,
