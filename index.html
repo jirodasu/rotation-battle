@@ -2105,6 +2105,11 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   .tok .nm { padding: 1px 3px 2px; gap: 2px; }
   .tok .nm b, .tok .nm u { font-size: 11px; letter-spacing: -0.04em; }
 }
+/* v5.6.3 屋号の名（3〜4文字）が、横向きの小さい画面（568×320 の枠43px）で名札からはみ出した。名前とHPを2段に重ねる */
+@container (max-width: 48px) {
+  .tok .nm { flex-direction: column; align-items: center; gap: 0; padding: 1px 3px 1px; bottom: -14px; }
+  .tok .nm b, .tok .nm u { line-height: 1.12; }
+}
 @media (min-aspect-ratio: 6/5) and (min-width: 1200px) and (min-height: 900px) { .tok .nm b, .tok .nm u { font-size: 14px; } }
 /* v5.1.34 上の丸ボタン：押せる範囲を44×44に。隣と重ならないよう、中心の間隔を44px以上あける */
 .icon-btn::after { width: 44px; height: 44px; }
