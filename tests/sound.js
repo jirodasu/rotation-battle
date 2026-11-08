@@ -27,6 +27,11 @@ const page = path.join(OUT, 'snd.html'); fs.writeFileSync(page, s);
     const r = await p.evaluate((i) => window.__snd.sfx('story', [i], 2.6), i);
     ok(r.rms >= 0.005 && r.peak <= 0.95 && r.rms <= BASE.start * 1.2, '物語 ' + (i + 1) + '枚目の音 ' + r.rms.toFixed(4) + '（出発の基準 ' + BASE.start + '）ピーク ' + r.peak.toFixed(3));
   }
+  // 踏破の結末の音（v5.6.1）：4枚とも同じ基準
+  for (let i = 0; i < 4; i++) {
+    const r = await p.evaluate((i) => window.__snd.sfx('ending', [i], 3.2), i);
+    ok(r.rms >= 0.005 && r.peak <= 0.95 && r.rms <= BASE.start * 1.2, '結末 ' + (i + 1) + '枚目の音 ' + r.rms.toFixed(4) + '（出発の基準 ' + BASE.start + '）ピーク ' + r.peak.toFixed(3));
+  }
   ok(!errs.length, 'ページのエラーなし ' + JSON.stringify(errs));
   await b.close();
   console.log(fails ? '不合格 ' + fails : '全て合格'); process.exit(fails ? 1 : 0);

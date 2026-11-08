@@ -177,7 +177,7 @@ async function fight(p, seq) {
   // 最後の主（毒竜）に勝つと踏破
   const w10 = await goTo(10);
   const end10 = await p.evaluate(() => ({ t: document.getElementById('rvTitle').textContent, boss: document.body.classList.contains('boss-stage') }));
-  ok(/勝利/.test(w10) && /踏破/.test(end10.t), '地点10の毒竜に勝つと「環廊を踏破」になる（' + end10.t + '）');
+  ok(/勝利/.test(w10) && /最初の灯/.test(end10.t), '地点10の毒竜に勝つと踏破（見出し「最初の灯」）になる（' + end10.t + '）');
   const xm = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-exp') || '{}'));
   ok(xm.runs >= 3 && xm.clears >= 1, '遠征の回数と踏破が別の記録（rb-exp）に残る ' + JSON.stringify(xm));
   // チュートリアルは本番と同じ盤
