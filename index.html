@@ -6885,6 +6885,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const rnd = () => { rseed ^= rseed << 13; rseed >>>= 0; rseed ^= rseed >> 17; rseed ^= rseed << 5; rseed >>>= 0; return rseed / 4294967296; };
   const pick = (a) => a[Math.floor(rnd() * a.length)];
   const phaseOf = (age) => AGE_PH.find((p) => age <= p.max);
+  /* 修繕隊の7人（v5.6.3・キャラクター案で確定）：遠征では、その職業の最初の1人が屋号の名で出る。倒れたあとに来る同じ職業の仲間は、ふつうの名前（名は代わっても灯は受け継ぐ） */
+  const HOUSE = { warrior: 'トワ', samurai: 'サギリ', witch: 'ネムリ', cleric: 'オリ', archer: 'ツムギ', knight: 'カスガイ', monk: 'ニカワ' };
+  function houseName(jobId) {
+    if (!run || run.mode !== 'exp' || !HOUSE[jobId]) return null;
+    const n = HOUSE[jobId], used = run.members.concat(run.gone);
+    return used.some((m) => m.name === n || m.job === jobId) ? null : n;
+  }
   function pickName() {
     const used = new Set(run ? run.members.concat(run.gone).map((m) => m.name) : []);
     const free = NAMES.filter((n) => !used.has(n));
@@ -6935,7 +6942,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function newMember(jobId, age, trait) {
     const j = JOBS.find((x) => x.id === jobId);
     const m = Object.assign({}, j, {
-      uid: 'm' + (++uidSeq), job: jobId, jname: j.name, name: pickName(), age, joinYear: run ? run.year : 0, trait: trait || null,
+      uid: 'm' + (++uidSeq), job: jobId, jname: j.name, name: houseName(jobId) || pickName(), age, joinYear: run ? run.year : 0, trait: trait || null,
       base: { hp: j.hp, atk: j.atk, ranged: j.ranged, atkSup: j.atkSup, defSup: j.defSup, heal: j.heal, rest: j.rest },
       bonus: {}, equips: [], inherit: null, dealt: 0, atkReady: true, defReady: true, entered: false, r: null, c: null
     });
