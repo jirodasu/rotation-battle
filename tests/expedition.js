@@ -140,7 +140,7 @@ async function fight(p, seq) {
       far = Math.max(far, st.node + 1);
       if (await p.evaluate(() => !document.getElementById('hmIntro').hidden)) { await p.click('#hmGo').catch(() => {}); continue; }   // 第2章の扉（v5.5.2）
       if (/NaN|undefined/.test(st.txt)) { bad = (st.txt.match(/.{0,20}(NaN|undefined).{0,20}/) || [''])[0]; break; }
-      if (st.rv && /踏破|ここまで|途絶えた/.test(st.title)) { end = st.title; break; }
+      if (st.rv && /踏破|最初の灯|ここまで|途絶えた/.test(st.title)) { end = st.title; break; }
       if (st.rv) {
         await p.click('#rvCards .rv-card[data-i="' + Math.floor(Math.random() * st.n) + '"]').catch(() => {});
         if (await p.evaluate(() => !!document.getElementById('rvGo'))) await p.click('#rvGo').catch(() => {});
