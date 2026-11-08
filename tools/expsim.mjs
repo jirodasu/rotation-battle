@@ -226,7 +226,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
         if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
         if (cfg.swapKeep) { for (let k = 0; k < (out.ups || 0); k++) upgrade(nm, cfg.up); nm.ups = out.ups || 0; nm.max += (out.max - JOBS.find((j) => j.id === out.job).hp) ; nm.hp = nm.max; }   // 去る仲間の強化（突入技・最大HP）を引き継ぐ
       } else if (t === 'relic') relics.push(pick(free).id);
-      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; }
+      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; if (cfg.upHp) { m.max += cfg.upHp; m.hp += cfg.upHp; } }   // upHp：強化した仲間の最大HPも増やす（ゲームの EXP.upHp と同じ。v5.6.2）
       else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
       if (chief) { reinforce(members, cfg, cols, R, 's' + step); rests = 0; }   // 章を越えた
     }

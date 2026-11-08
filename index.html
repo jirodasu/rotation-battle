@@ -589,8 +589,8 @@ body.boss-stage .en-u b { color: var(--ink); }
 .ep-d b { font-size: 20px; color: var(--danger); }
 .ep-d small { display: block; font-size: 10.5px; color: var(--ink-soft); margin-top: 2px; }
 .ep-badge { display: inline-block; vertical-align: 2px; margin-right: 6px; font-style: normal; padding: 1px 7px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 700; box-shadow: 0 1.5px 0 var(--accent-deep); }
-.inc {
-  position: absolute; left: -6px; bottom: 30%; z-index: 3; display: inline-flex; align-items: center; gap: 3px; height: 21px; padding: 0 7px; border-radius: 11px;
+.inc {   /* 受けるダメージの札。顔に重ならないよう、肖像の左の縁から4割外に出し、首もとの高さに置く（v5.6.2。v562 で確かめる） */
+  position: absolute; left: -6px; bottom: 20%; translate: -40% 0; z-index: 3; display: inline-flex; align-items: center; gap: 3px; height: 21px; padding: 0 7px; border-radius: 11px;
   background: var(--danger-strong); color: var(--on-danger); font-style: normal; font-size: 12px; font-weight: 700; line-height: 1; box-shadow: 0 2px 0 rgba(35, 49, 74, 0.25);
 }
 .inc.ko { background: #c0281b; color: #fff; box-shadow: 0 0 0 2px #fff, 0 2px 0 rgba(35, 49, 74, 0.25); animation: kopulse 0.6s ease-in-out infinite; }   /* 倒＝このターンで倒れる。いちばん強く（明るい赤・白い縁・速い脈打ち）。v5.5.7：「あと2発」より弱く見えていた */
@@ -2808,7 +2808,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.6.1</p>
+    <p class="c-ver" id="cVer">ver 5.6.2</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3190,7 +3190,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.6.1';
+  const APP_VERSION = '5.6.2';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -6811,8 +6811,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
     hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
     healMax: 3,   // 報酬「手当て」：全快＋全員の最大HP+3
-    swap: true, swapBonus: { ups: 1, hp: 4 }, refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
-      // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回・最大HP+4
+    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7,   // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
+      refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
+      // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回（v5.6.2 から最大HP+はなし）
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
     // 回転コンボ（v5.4.5）：回すたびに+1。満タン（max）になる回転で、その回転で攻撃列に入った仲間の突入技が mul 倍になり、0に戻る。戦闘ごとに0から
@@ -7965,7 +7966,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: ({ shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
     // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
-    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。', hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }, { k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }], act: () => { const d = expUpDesc(m); expUpgrade(m); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(EXP.upHp ? [{ k: 'st', t: '最大HP+' + EXP.upHp }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (EXP.upHp ? '・最大HP+' + EXP.upHp : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）
     cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax + ((+run.tend || 0) ? '（合計+' + ((+run.tend || 0) + 1) * EXP.healMax + '）' : '') }], act: () => { run.tend = (+run.tend || 0) + 1; run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
