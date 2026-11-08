@@ -4688,7 +4688,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
-        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
+        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0, raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
           return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
     t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc);
     dangerEdge(!!enemy.charged && !chg && (phase === 'prep' || phase === 'choose'));
