@@ -7011,6 +7011,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 灯の祝福（v5.7.6・提案B）：2回目からの遠征の最初に、3つ（前の隊が第1章の主に届かなかったら4つ）から1つ選ぶ。Slay the Spire の Neow と同じ考え
     //   hp：全員の最大HP+。ward：灯の加護（第1章の敵のHPを0.75倍）。自動対戦400回の踏破率は CHANGELOG
     bless: { hp: 5, ward: 0.75 },
+    // 出来事（v5.8.1・提案E）：地点2から、休息の地点の一部（rate）が「出来事」になる。どれも「得るものと失うもの」の札と、安全な札（全員HP+safe割）の2択。章の主は強くならない
+    event: { rate: 0.4, safe: 0.3, cost: { ember: 0.2, cask: 0.15 }, shrineRests: 2, caskHp: 4 },
     swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, deepMul: { hp: 1.1, dmg: 1.08 },   // deepMul：深さ3の敵のHP・技（v5.6.7。自動対戦400回で標準の踏破率 9.5%・名人 61.7%）
         // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
       refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
@@ -7288,6 +7290,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function routeChoice(id) {
     const n = ROUTE.nodes[id], c = (run.map && run.map[id]) || {};
     if (isFightKind(n.kind)) return { type: 'battle', step: n.step, rid: id, variant: n.kind === 'boss' ? null : c.variant || null, boss: n.kind === 'boss' || undefined };
+    if (c.camp === 'event') return { type: 'event', ev: c.ev, step: n.step, rid: id };   // 出来事（v5.8.1）
     return { type: c.camp === 'inherit' && inheritPairs().length ? 'inherit' : 'rest', step: n.step, rid: id };
   }
   // いまの現在地から進める地点（戦闘を先に）
@@ -7397,7 +7400,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function rtInfo(id) {
     const n = ROUTE.nodes[id], c = (run.map && run.map[id]) || {};
     if (n.kind === 'start') return { g: '団', t: '出陣', s: '' };
-    if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : { g: '休', t: '休息', s: '' }; }
+    if (n.kind === 'camp') { const done = run.path && run.path.indexOf(id) >= 0, t = done ? run.hist[n.step - 1] : c.camp; return t === 'inherit' ? { g: '継', t: '継承', s: '' } : t === 'event' ? { g: '縁', t: '出来事', s: '' } : { g: '休', t: '休息', s: '' }; }
     const tier = n.step <= 3 ? 0 : n.step <= 6 ? 1 : 2;
     if (n.kind === 'boss') return { g: '災', t: '決戦', s: '★★★★' };
     // ★は「戦いの成績」だけに使う（v5.3.2）。遠征の地図では敵の強さを★で出さず、亜種かどうかだけを書く（強さは章で分かる）
@@ -8085,7 +8088,38 @@ body.fast #stampOk.on { animation-duration: .5s; }
       }
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
     });
+    // 出来事（v5.8.1）：戦闘の乱数の並びを変えないように、戦闘を決めたあとで休息の一部を置き換える。初めての遠征の地点1・2は休息のまま
+    if (EXP.event) Object.keys(ROUTE.nodes).forEach((id) => { const n = ROUTE.nodes[id]; if (n.kind !== 'camp' || n.step < 2 || (n.step <= 2 && firstRun())) return; if (rnd() < EXP.event.rate) m[id] = { camp: 'event', ev: pick(EV_KEYS) }; });
     return m;
+  }
+  const EV_KEYS = ['ember', 'shrine', 'cask'];
+  const EV_NAME = { ember: '倒れた者の灯', shrine: '道端の祠', cask: '灯油の樽' };
+  // 出来事の2枚。act() は結果の1行を返す
+  function evCards(key) {
+    const E = EXP.event, safe = { ico: ICON.heart, t: '先を急ぐ', d: '少し息を整えて進む。全員のHPが最大HPの' + Math.round(E.safe * 100) + '%回復する。', tags: [{ k: 'st', t: '全員 HP+' + Math.round(E.safe * 100) + '%' }],
+      act: () => { run.members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * E.safe)); }); SFX.heal(); return '息を整えて進んだ（全員HP+' + Math.round(E.safe * 100) + '%）。'; } };
+    const hurt = (k) => run.members.forEach((m) => { m.hp = Math.max(1, m.hp - Math.ceil(m.max * k)); });
+    if (key === 'ember') {
+      const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members), k = E.cost.ember;
+      return [{ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '灯を拾う', d: '倒れた者の灯を、' + m.name + 'が継ぐ。「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。ただし灯は熱く、全員のHPが最大HPの' + Math.round(k * 100) + '%減る（1は残る）。',
+        tags: [{ k: 'st', t: m.name + ' 突入技↑' }, { k: 'st', t: '全員 HP-' + Math.round(k * 100) + '%' }],
+        act: () => { const d = expUpDesc(m); expUpgrade(m); hurt(k); SFX.buff(); return m.name + 'が灯を継いだ（' + d + '）。灯の熱で、全員のHPが減った。'; } }, safe];
+    }
+    if (key === 'shrine') {
+      const free = relFree(), r = free.length ? pick(free) : null, n = E.shrineRests;
+      return [{ ico: ICON.rot, t: '祈る', d: (r ? '回転レリック「' + r.name + '」を授かる（' + r.desc + '）。' : '全員の最大HPが5増える。') + 'ただし祈りの声で、章の主の気配が強まる（休息' + n + '回ぶん）。',
+        tags: [{ k: 'st', t: r ? r.name : '全員 最大HP+5' }, { k: 'st', t: '章の主 HP+' + Math.round(EXP.restPen.hp * n * 100) + '%' }],
+        act: () => { const msg = r ? relGet(r.id) : (run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + 5; applyAge(x, true); }), '全員の最大HPが5増えた。'); run.chRests = (run.chRests || 0) + n; SFX.buff(); return '祠に祈った。' + msg + '章の主の気配が強まった。'; } }, safe];
+    }
+    const k = E.cost.cask, h = E.caskHp;
+    return [{ ico: ICON.heart, t: '樽を開ける', d: '古い灯油で、灯を太くする。全員の最大HPが' + h + '増える。ただし煙にむせて、全員のHPが最大HPの' + Math.round(k * 100) + '%減る（1は残る）。',
+      tags: [{ k: 'st', t: '全員 最大HP+' + h }, { k: 'st', t: '全員 HP-' + Math.round(k * 100) + '%' }],
+      act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + h; applyAge(x, false); }); hurt(k); SFX.buff(); return '灯油で灯が太くなった（全員の最大HP+' + h + '）。煙で、全員のHPが減った。'; } }, safe];
+  }
+  function expEvent(c) {
+    const key = EV_KEYS.includes(c.ev) ? c.ev : 'cask', cards = evCards(key);
+    rvShow({ small: '地点' + c.step + xTag() + '　·　出来事', title: EV_NAME[key], sub: { ember: '道の脇に、倒れた者の灯がまだ燃えている。', shrine: '苔むした祠がある。祈れば、何かが応えそうだ。', cask: '打ち捨てられた樽から、灯油の匂いがする。' }[key] + '　1つ選ぶ。', cards,
+      on: (i) => { const msg = cards[Math.max(0, Math.min(1, i))].act(); run.events.push('地点' + c.step + '　' + EV_NAME[key] + '：' + msg); expAdvance([msg]); } });
   }
   // rests：その章で休んだ回数（章の主は休むたびに強くなる）
   // 最初の戦闘（v5.7.4・提案A）：初めての遠征（遠征0回・深さ1）の地点1は、「読んで回してしのぐ」を必ず体験する専用の戦闘
@@ -8165,7 +8199,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     expSave();
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
-    const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + (relOn('chart') ? '。戦闘も報酬もない（古い地図：章の主は強くならない）。' : '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。'), k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', relOn('chart') ? 'そのまま' : 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
+    const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : c.type === 'event' ? { ico: ICON.rot, t: '出来事', d: '道の途中で、何かに出会う。得るものと失うものの2択（安全な札もある）。章の主は強くならない。', k: [['中身', '着いてから'], ['章の主', 'そのまま']] } : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + (relOn('chart') ? '。戦闘も報酬もない（古い地図：章の主は強くならない）。' : '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。'), k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', relOn('chart') ? 'そのまま' : 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
     const chN = expCh(Math.min(run.node + 1, EXP.nodes)), goal = run.node === 0 && !(+expMeta().runs);   // 地点選び A（v5.5.7）：上は「第N章 名前」だけ（地点は目盛りで）。目標は初めての遠征の最初だけ自動で開く
     rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN) + xTag(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒し、底に眠る「最初の灯」へ。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
@@ -8186,6 +8220,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       else setTimeout(() => { if (phase === 'prep') tipsCheck(curAct()); }, RM ? 50 : 1900);
       return;
     }
+    if (c.type === 'event') { run.hist[run.node] = 'event'; expEvent(c); return; }   // 出来事（v5.8.1）
     run.hist[run.node] = 'rest';
     run.rests = (run.rests || 0) + 1; run.chRests = (run.chRests || 0) + 1;
     run.members.forEach((m) => { m.hp = m.max; });
