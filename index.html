@@ -8277,7 +8277,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     if (!$('cover').hidden) closeCover();
     swappedOnce = false;
-    expShowMap([]);
+    expShowMap(legacyLine());
+  }
+  /* 前の隊の灯（v5.7.0）：2回目からの遠征は、最初の地図に「前の隊がどこで途絶えたか」を1行出す。死を次の挑戦へつなぐ（Hades の「どの周回にも意味がある」）。
+     読むのは遠征の記録（hist）にもともとある地点・倒れた人数・踏破だけ。保存の形は変えない */
+  function legacyLine() {
+    if (qaOn) return [];
+    const h = (expMeta().hist || [])[0]; if (!h || !(+h.node > 0)) return [];
+    if (h.clear) return ['前の隊は、環廊の底まで灯を届けた。灯は、また次の者へ。'];
+    const at = Math.min(+h.node, EXP.nodes), ch = expCh(at);
+    return ['前の隊の灯は、地点' + at + '（第' + (ch + 1) + '章 ' + chName(ch) + '）で途絶えた。' + (+h.fal > 0 ? '倒れた' + h.fal + '人の灯を継いで、ふたたび下る。' : 'その灯を継いで、ふたたび下る。')];
   }
   /* QAジャンプ（v5.5.5）：?qa&ch=章&loc=地点 で開くと、その地点の戦闘1つだけを陣立てから遊べる（検証用。画面には何も出さない）。
      loc は全10地点の通し番号（第1章 1〜3／第2章 4〜6／第3章 7〜10）。ch と loc が合わないとき・範囲外・?qa が無いときは 0（普通に起動）。
