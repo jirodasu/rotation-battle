@@ -162,7 +162,8 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
   /* ---- 6. 被ダメ予告と実際のダメージ ---- */
   {
     const CASES = [{ step: 2, k: 0, seed: 3 }, { step: 2, k: 'binder', v: 'armor', seed: 4 }, { step: 5, k: 'trinity', seed: 5 }, { step: 5, k: 'trinity', seed: 6, relics: ['shield'], up: 7 },
-      { step: 4, k: 1, v: 'poison', seed: 7, relics: ['shield'] }, { step: 8, k: 2, seed: 8, up: 7 }, { step: 3, k: 1, seed: 9 }, { step: 6, k: 'chief', seed: 10, up: 7, relics: ['shield'] }, { step: 2, k: 0, v: 'swarm', seed: 11 }];
+      { step: 4, k: 1, v: 'poison', seed: 7, relics: ['shield'] }, { step: 8, k: 2, seed: 8, up: 7 }, { step: 3, k: 1, seed: 9 }, { step: 6, k: 'chief', seed: 10, up: 7, relics: ['shield'] }, { step: 2, k: 0, v: 'swarm', seed: 11 },
+      { step: 2, k: 'binder', v: 'armor', seed: 12, relics: ['whet', 'cup', 'cloak', 'veil', 'lens', 'fang'] }, { step: 4, k: 1, seed: 13, relics: ['veil', 'cloak', 'cup', 'whet'] }];   // v5.8.0 の回転レリック
     let total = 0, bad = 0, tix = 0, tixBad = 0, cut = 0; const ex = [];
     for (const cs of CASES) {
       const { ctx, p } = await page(b, 844, 390);
