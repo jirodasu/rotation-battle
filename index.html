@@ -4109,7 +4109,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const relOn = (id) => EXPM() && (run.relics || []).includes(id);
   const relD = (id) => EXP.relics.find((x) => x.id === id);
   const stanceAtk = (n) => (relOn('stance') ? Math.min(relD('stance').stayMax, n * relD('stance').stayAtk) : 0);
-  let stats = null, order = [], orderIdx = -1;
+  let stats = null, order = [], orderIdx = -1, savedN = 0;
   let camp = { turns: 0, fallen: 0, stars: [], rec: [] };
   let tut = null;
   // 地点・ターン（v5.3.6）：戦闘画面の上の札から、敵の詳細（iを押す）へ移した。★の「Nターン以内」の目安も添える
@@ -5828,6 +5828,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     actx(); SFX.go();
     snapshot = units().map((x) => ({ u: x.u, r: x.r, c: x.c }));
     stats = { dealt: {}, who: {}, taken: 0, fallen: 0 };
+    savedN = 0;   // この戦闘の「しのいだ！」の回数（v5.7.3。保存しない：続きから再開すると数え直し）
     resetFlags();
     roster.forEach((u) => { u.entered = false; });   // 突入技は「回して攻撃列に入った」ときだけ
     sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = gaugeOn() ? EXP.rot.start : 0; combo = 0; comboFire = false;
@@ -6138,7 +6139,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (saveMark && saveMark.length) {
       const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
       live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } }, 120 + i * 160); });
-      if (live.length) say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。');
+      if (live.length) { savedN += 1; say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。'); }
     }
   }
 
@@ -6339,7 +6340,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       // 勝利と報酬を1枚に（v5.3.3）：遠征の途中の勝利は、勝利パネルを出さずに報酬の画面へ。★と「いちばん活躍」は報酬の画面の上に出す
       if (!tut && run && EXPM() && !last && !window.__rbKeepWinPanel && !qaOn) {   // QAでは報酬へ進まず、勝利パネルで止める   // __rbKeepWinPanel：テストの一部だけが使う（以前の勝利パネル）
         let mv = null; Object.keys(stats.dealt).forEach((id) => { if (!mv || stats.dealt[id] > stats.dealt[mv]) mv = id; });
-        expWin = { stars: gotStars, sub: turn + 'ターンで撃破' + (mv && stats.who[mv] ? '・いちばん活躍 ' + stats.who[mv].name : '') + '。' };
+        expWin = { stars: gotStars, sub: turn + 'ターンで撃破' + (savedN ? '・しのいだ' + savedN + '回' : '') + (mv && stats.who[mv] ? '・いちばん活躍 ' + stats.who[mv].name : '') + '。' };
         setTimeout(() => { if (phase !== 'over' || lastResult !== 'win' || !$('result').hidden || !$('runv').hidden) return; const ev = expAfterBattle(true); expReward(ev); }, RM ? 0 : 650);
         return;
       }
