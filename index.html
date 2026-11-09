@@ -3521,6 +3521,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   const SFX = {
     tap() { if (!can()) return; INST.wood(now(), 1900, 0.35, bus.sfx); },
+    // しのいだ！（v5.7.1）：回して仲間を救ったとき。灯の鐘で4度上がる2音（解決の響き）＋ごく小さな高い光。0.5秒で消え、曲を下げない
+    save() { if (!can()) return; const t = now(); INST.bell(t, 72, 0.09, bus.sfx, 0.6); INST.bell(t + 0.11, 77, 0.11, bus.sfx, 0.7); INST.bell(t + 0.115, 84, 0.04, bus.sfx, 0.5); },
     // 突入技：前に躍り出る短いファンファーレ（列ごとに主題の音から始まる）
     entry(c) { if (!can()) return; duck(0.6, 0.35); const t = now(), p = [0, 2, 4, 5][c] || 0; INST.swish(t, 0.18, 0.12, bus.sfx, 600, 4200); INST.brass(t + 0.04, 57 + p, 0.09, 0.08, bus.sfx, 0.3); INST.brass(t + 0.13, 62 + p, 0.22, 0.09, bus.sfx, 0.35); INST.snare(t + 0.13, 0.18, bus.sfx); INST.bell(t + 0.15, 86 + p, 0.08, bus.sfx, 0.5); },
     // 引退：主題の冒頭4音をオルゴールで
@@ -6121,7 +6123,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     tutOnChoose();
     if (saveMark && saveMark.length) {
       const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
-      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); try { SFX.tap(); } catch (e) { /* */ } }, 120 + i * 160); });
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } }, 120 + i * 160); });
       if (live.length) say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。');
     }
   }

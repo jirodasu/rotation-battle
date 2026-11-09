@@ -4,6 +4,7 @@
 //  2. 設定の注記に「Google Fonts から読み込みます」が無い（書体は同梱で、通信しない）
 //  3. ページのエラーなし
 //  4. 「しのいだ！」：維持なら倒れる見込みの仲間がいて、回した先では誰も倒れない見込みのとき、回すとターンの終わりにその仲間の上に「しのいだ！」が出る
+//     v5.7.1：そのとき専用の音（SFX.save）が1回鳴る
 //  5. 回した先で別の仲間が倒れる見込みのときは出さない（誰かの代わりに誰かが倒れるのは「しのいだ」ではない）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -39,10 +40,11 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
     await q.click('#btnStart'); await toChoose(); await q.click('#btnStay'); await toChoose();
     await q.evaluate((st) => { const R = window.__rb; R.enemy.hp = 999; R.enemy.max = 999; R.grid[0].forEach((u) => { if (u) u.hp = 1; }); if (st) R.grid[1].forEach((u) => { if (u) { u.max = 99; u.hp = 99; } }); R.render(); }, sturdy);
     const pre = await q.evaluate(() => { const R = window.__rb; return { stayKo: R.outlook(R.grid, false, false).hurt.some((h) => h.ko), rotKo: R.outlook(R.previewGrid(), true, true).hurt.some((h) => h.ko) }; });
+    await q.evaluate(() => { window.__snd = 0; const S = window.__rb.SFX, f = S.save; S.save = function () { window.__snd += 1; return f && f.apply(this, arguments); }; });   // v5.7.1：専用の音
     await q.evaluate(() => { window.__saves = []; new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('save')) window.__saves.push(n.textContent); }))).observe(document.getElementById('fx'), { childList: true }); });
     await q.click('#btnRotate'); await toChoose(); await q.waitForTimeout(500);
-    const got = await q.evaluate(() => window.__saves.slice());
-    ok(pre.stayKo && pre.rotKo === !sturdy && (got.length > 0) === want && (!want || got[0] === 'しのいだ！') && !qe.length, tag + ' ' + JSON.stringify({ pre, got, err: qe }));
+    const got = await q.evaluate(() => window.__saves.slice()), snd = await q.evaluate(() => window.__snd);
+    ok(pre.stayKo && pre.rotKo === !sturdy && (got.length > 0) === want && (!want || got[0] === 'しのいだ！') && snd === (want ? 1 : 0) && !qe.length, tag + '（音 ' + snd + '回）' + JSON.stringify({ pre, got, err: qe }));
     await q.close();
   }
   await b.close();
