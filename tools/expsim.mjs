@@ -34,12 +34,13 @@ export function battle(en, party, policy, o) {
   const frontRow = (g) => { for (let r = 0; r < 3; r++) if (g[r].some(Boolean)) return r; return -1; };
   let grid = empty();
   party.forEach((p) => { grid[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, entered: false }); });
-  const e = Object.assign({}, en, { hpNow: en.hp, charged: false });
+  const e = Object.assign({}, en, { hpNow: en.hp, charged: false, pattern: en.pattern.map((a) => Object.assign({}, a)) });
   let fallen = 0, stay = 0, bound = false;
   // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
   const RT = o.rot || null; let gauge = RT ? RT.start : 0;
   // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンになった回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
   const CB = o.combo || null; let combo = 0; const boosted = new Set(); if (CB) CSTAT.battles++;   /* 発動の平均は、コンボのある戦闘（第2章から）だけで数える */
+  const eaten = () => { if (e.eat && e.hpNow > 0) { e.hpNow = Math.min(e.hp, e.hpNow + Math.round(e.hp * e.eat.heal)); e.pattern.forEach((a) => { if (a.dmg) a.dmg += e.eat.dmg; }); } };   // 灯喰いの（v5.6.7）
   const hpMap = () => { const m = {}; unitsOf(grid).forEach(({ u }) => { m[u.uid] = u.hp; }); return m; };
   for (let turn = 1; turn <= 40; turn++) {
     if (turn > 1) {
@@ -53,7 +54,8 @@ export function battle(en, party, policy, o) {
     const actors = [{ kind: 'e', spd: e.spd }];
     unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) actors.push({ kind: 'p', u, r, c, spd: u.spd + ((ent.get(u) && ent.get(u).spd) || 0) }); });
     actors.sort((x, y) => y.spd - x.spd || (x.kind === 'p' ? -1 : 1));
-    const act = e.pattern[(turn - 1) % e.pattern.length];
+    let act = e.pattern[(turn - 1) % e.pattern.length];
+    if (e.starve && act.rule === 'charge' && e.hpNow * 2 < e.hp) { const b = e.pattern[turn % e.pattern.length]; if (b && b.dmg) act = Object.assign({}, b, { big: true }); }   // 飢えた（v5.6.7）
     const guardCol = {};
     unitsOf(grid).forEach(({ u, r, c }) => {
       if (r !== 0) return;
@@ -78,12 +80,12 @@ export function battle(en, party, policy, o) {
             d -= (guardCol[col] || 0) + teamGuard;
           }
           d = Math.max(1, d); v.hp = Math.max(0, v.hp - d);
-          if (v.hp === 0) { grid[fr][col] = null; fallen++; }
+          if (v.hp === 0) { grid[fr][col] = null; fallen++; eaten(); }
         };
         const fr = frontRow(grid); if (fr < 0) return { win: false, turns: turn, fallen, hp: hpMap() };
         if (act.rule === 'back') {   // 尾払い（v5.6.6）：回復列の全員。回復列が先頭の列なら、ふつうの全体攻撃（2倍）と同じ
           if (fr === 2) { unitsOf(grid).filter((x) => x.r === 2).map((x) => x.c).forEach(hit); }
-          else for (let c = 0; c < COLS; c++) { const v = grid[2][c]; if (!v) continue; v.hp = Math.max(0, v.hp - Math.max(1, act.dmg)); if (v.hp === 0) { grid[2][c] = null; fallen++; } }
+          else for (let c = 0; c < COLS; c++) { const v = grid[2][c]; if (!v) continue; v.hp = Math.max(0, v.hp - Math.max(1, act.dmg)); if (v.hp === 0) { grid[2][c] = null; fallen++; eaten(); } }
           if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
           continue;
         }
@@ -108,7 +110,8 @@ export function battle(en, party, policy, o) {
           if (x) power += (x.atk || 0) + (rel.has('bell') ? RD.bell.entryAtk : 0);
         } else power = u.ranged;
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
-        let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - e.def);
+        const dfn = e.layer && r === 0 && u.entered ? 0 : e.def;   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
+        let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - dfn);
         e.hpNow -= tot;
         if (e.hpNow <= 0) return { win: true, turns: turn, fallen, hp: hpMap() };
       }
@@ -156,13 +159,16 @@ export const chapterOf = (step, cfg) => cfg.chiefs.findIndex((c) => step <= c);
 export function enemyAt(step, k, cfg, vkey, rests = 0) {
   const ch = chapterOf(step, cfg), chief = cfg.chiefs.includes(step), key = chief ? cfg.chiefFoe[ch] : k;
   const base = key === 'boss' ? BOSS : typeof key === 'number' ? ENEMIES[key] : cfg[key];
-  const t = step - 1, v = vkey ? VARIANTS[vkey] : null, rp = chief && cfg.restPen ? cfg.restPen : null;
+  const vs = vkey ? String(vkey).split('+').filter((k) => VARIANTS[k]) : [];
+  const v = vs.length ? vs.reduce((o, k) => { const x = Object.assign({}, VARIANTS[k], (cfg.vtune || {})[k] || {}); return { hp: o.hp * (x.hp || 1), dmg: o.dmg * (x.dmg || 1), def: o.def + (x.def || 0), eat: o.eat || x.eat, starve: o.starve || x.starve, layer: o.layer || x.layer }; }, { hp: 1, dmg: 1, def: 0 }) : null;   // 深さ3は亜種を2つ。cfg.vtune で亜種の数値を試せる
+  const t = step - 1, rp = chief && cfg.restPen ? cfg.restPen : null;
+  const dm = (cfg.depth || 1) >= 3 && cfg.deepMul ? cfg.deepMul : { hp: 1, dmg: 1 };   // 深さ3の敵の底上げ（ゲームの EXP.deepMul と同じ）
   const kh = rp ? 1 + rp.hp * rests : 1, kd = rp ? 1 + rp.dmg * rests : 1;
   const pk = chief ? 'chief' + ch : String(key), pat = cfg.patch && cfg.patch[pk] ? cfg.patch[pk] : base.pattern;
-  return Object.assign({}, base, { def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1)), pattern: pat.map((a) => {
-    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * kd * ((v && v.dmg) || 1)) } : {});
-    if (v && vkey === 'swarm' && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
-    if (v && vkey === 'poison' && o.dmg) o.pierce = true;
+  return Object.assign({}, base, { eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer), def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1) * dm.hp), pattern: pat.map((a) => {
+    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg) } : {});
+    if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
+    if (vs.includes('poison') && o.dmg) o.pierce = true;
     return o;
   }) });
 }
@@ -193,7 +199,9 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     if (type === 'rest') { rests++; members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * (cfg.restHeal == null ? 1 : cfg.restHeal))); }); continue; }
     battles++;
     const fk = pick(cfg.foes[ch]), last = step === cfg.nodes;
-    const vk = (!chief || (cfg.chiefVariant && !last)) && R() < cfg.variantRate ? pick(Object.keys(VARIANTS)) : null;
+    const dp = cfg.depth || 1, VK = Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep), VKD = Object.keys(VARIANTS);
+    const pairV = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'].includes(a + '+' + b)) return a + '+' + b; } };
+    const vk = (!chief || (cfg.chiefVariant && !last)) && R() < (dp >= 2 ? 1 : cfg.variantRate) ? (dp >= 3 ? pairV() : pick(VK)) : null;   // 深さ（v5.6.7）：2＝かならず亜種、3＝亜種を2つ重ねる
     const en = enemyAt(step, fk, cfg, vk, rests), bseed = Math.floor(R() * 1e9);
     const party = () => members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
     let res;

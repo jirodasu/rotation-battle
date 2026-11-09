@@ -279,6 +279,8 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .stage.inspecting #ename::after { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
 #ename { white-space: nowrap; }
 #ename.long { font-size: 0.82em; }
+#ename { position: relative; }
+#ename .e-pre { position: absolute; left: 0; bottom: 100%; font-size: 0.48em; letter-spacing: .04em; color: var(--gold, #e9c46a); opacity: .95; line-height: 1.2; white-space: nowrap; }   /* 深さ3：重なった亜種の名前を、敵の名前の上に小さく */
 @media (max-width: 360px) { #ename.long { font-size: 0.74em; } }
 body.boss-stage #ename::after { color: #e4a8ff; box-shadow: inset 0 0 0 1px #e4a8ff; }
 /* 履歴は上の帯のボタンへ（v5.3.6） */
@@ -4098,7 +4100,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
     let t = 0;
     const T = F || targetFoe();
-    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T);
+    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && entering);
     return { val: t, buf: sup > 0, half: foeShare(T) < 1 };
   }
   /* 先制撃破（表示専用・v5.1.57）：行動順どおりに味方が先に攻撃して、攻撃対象の敵のHPが0になるなら、その敵は行動できない。
@@ -4331,7 +4333,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const t = L.reduce((a, b) => (HP(b.u) < HP(a.u) ? b : a));
     return { cols: [t.c], desc: (act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）') + (act.vsEntered ? '。入ったばかりなら×' + act.vsEntered : '') };
   }
-  const actOf = (F, t) => F.pattern[((t || turn) - 1) % F.pattern.length];
+  const actOf = (F, t) => {
+    const n = F.pattern.length, i = ((t || turn) - 1) % n, a = F.pattern[i];
+    if (F.starve && a && a.rule === 'charge' && (phase === 'resolve' ? F.hungry : F.hp * 2 < (F.max || F.hp))) { const b = F.pattern[(i + 1) % n]; if (b && b.dmg) return Object.assign({}, b, { big: true, starved: true }); }   // 飢えた（v5.6.7）：HPが半分を切ると、ためずに大技
+    return a;
+  };
   const curAct = () => (enemy.party ? actOf(leadFoe()) : actOf(enemy));
 
   /* ============ 敵の編成（三位一体）：敵が複数体のときだけ働く ============
@@ -4353,8 +4359,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 肩代わり：鎮守の像が生きている間、像以外が受けるダメージは share 倍
   const foeShare = (F) => (enemy.party && F.id !== 'statue' && statueUp() ? TRI.share : 1);
   // 1回の攻撃が F に与えるダメージ（防御を引いて、肩代わりで減らす。最低1）
-  function foeHit(raw, F) {
-    let d = Math.max(1, raw - foeDef(F));
+  function foeHit(raw, F, fresh) {
+    let d = Math.max(1, raw - (F && F.layer && fresh ? 0 : foeDef(F)));   // 重ね鎧の（v5.6.7）：回して入ったばかりの仲間の攻撃は防御を無視
     const sh = foeShare(F);
     if (sh < 1) d = Math.max(1, Math.floor(d * sh));
     return d;
@@ -4392,7 +4398,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('chap').innerHTML = chapLabel().split('　').map((x) => '<span class="nw">' + x + '</span>').join('　');
     $('ename').classList.toggle('long', enemy.name.length >= 8);   // 長い名前は少し小さく、i と1行に収める（v5.3.6）
     if (enemy.party) { $('ename').textContent = enemy.name; return; }
-    $('ename').textContent = enemy.name;
+    if (vkeys(enemy.variant).length > 1) {   // 深さ3（v5.6.7）：亜種が2つ重なると名前が長いので、前に付く亜種は小さく添える
+      const pre = vkeys(enemy.variant).map((k) => VARIANTS[k].pre).join('');
+      $('ename').innerHTML = '<span class="e-pre">' + pre + '</span>' + enemy.name.slice(pre.length); $('ename').classList.remove('long');
+    } else $('ename').textContent = enemy.name;
     $('espd').innerHTML = tut ? '素早さ ' + enemy.spd + '　防御 ' + enemy.def : '<span title="素早さ"><small>速</small>' + enemy.spd + '</span><span title="防御"><small>防</small>' + enemy.def + '</span>';
     $('espd').setAttribute('aria-label', '素早さ ' + enemy.spd + '　防御 ' + enemy.def);
     const pctNow = Math.round(enemy.hp / enemy.max * 100) + '%';
@@ -5575,7 +5584,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     entryNow = {};
     resetFlags();
     const edef = tut ? TUT_ENEMY : (run && run.enemy) || ENEMIES[battleIdx];
-    enemy = Object.assign({}, edef, { max: edef.hp });
+    enemy = Object.assign({}, edef, { max: edef.hp, pattern: (edef.pattern || []).map((a) => Object.assign({}, a)) });   // 技は戦闘ごとの写し（灯喰いので強くなっても、遠征の記録は変えない）
     tgtId = null;
     if (edef.party) {
       enemy.party = edef.party.map((m) => Object.assign({}, m, { pattern: m.pattern.map((a) => Object.assign({}, a)), max: m.hp, charged: false, defUp: 0, defNext: 0 }));
@@ -5795,7 +5804,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
     let total = 0;
-    for (let i = 0; i < hitsN; i++) total += foeHit(power + (i === 0 ? sup : 0), T);
+    for (let i = 0; i < hitsN; i++) total += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && !!u.entered);
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
     say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
@@ -5874,6 +5883,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
       await wait(320);
       grid[row][col] = null;
       renderBoard(); renderBook();
+      if (enemy.eat && !enemy.party && enemy.hp > 0) {   // 灯喰いの（v5.6.7）：倒れた仲間の灯を喰らって、回復して強くなる
+        const g = Math.min(enemy.max - enemy.hp, Math.round(enemy.max * enemy.eat.heal));
+        enemy.hp += g; enemy.pattern.forEach((a) => { if (a.dmg) a.dmg += enemy.eat.dmg; });
+        say(enemy.name + 'が' + v.name + 'の灯を喰らった。HP+' + g + '・技のダメージ+' + enemy.eat.dmg);
+        const fe = document.getElementById('eart'); if (fe && g > 0) popAt(fe, '+' + g, 'heal');
+        renderEnemy && renderEnemy();
+      }
     }
     if (!units().length) finish('lose');
   }
@@ -5982,6 +5998,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   async function runTurn() {
     previewOn = false; hitSeq = 0; SKIP = false;
+    foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });   // 飢えた：そのターンの技は、ターンの始まりのHPで決める（見込みと食い違わないように）
     phase = 'resolve';
     Music.set('resolve');
     sel = null; inspect = null;
@@ -6055,6 +6072,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   async function doRotate() {
     previewOn = false;
+    foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });
     phase = 'resolve';
     const old = {};
     $('board').querySelectorAll('.tok[data-id]').forEach((t) => { const b = t.getBoundingClientRect(); old[t.dataset.id] = { x: b.left, y: b.top }; });
@@ -6862,7 +6880,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
     hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
     healMax: 3,   // 報酬「手当て」：全快＋全員の最大HP+3
-    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7,   // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
+    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, deepMul: { hp: 1.1, dmg: 1.08 },   // deepMul：深さ3の敵のHP・技（v5.6.7。自動対戦400回で標準の踏破率 9.5%・名人 61.7%）
+        // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
       refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
       // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回（v5.6.2 から最大HP+はなし）
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
@@ -6925,8 +6944,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const VARIANTS = {
     swarm: { pre: '群れの', desc: '数で押す。ひとりを狙う攻撃が、2回のランダム攻撃になる。', hp: 0.9, f: 'hue-rotate(35deg) saturate(1.2)' },
     poison: { pre: '毒の', desc: '攻撃がすべて防無効。そのぶん威力は少し低い。', hp: 0.95, dmg: 0.85, f: 'hue-rotate(95deg) saturate(1.3)' },
-    armor: { pre: '鎧の', desc: '防御+3。そのぶんHPは少なめ。', hp: 0.82, def: 3, f: 'saturate(.45) brightness(.92)' }
+    armor: { pre: '鎧の', desc: '防御+3。そのぶんHPは少なめ。', hp: 0.82, def: 3, f: 'saturate(.45) brightness(.92)' },
+    // 深さ3だけの亜種（v5.6.7）。deep: true は深さ1・2と昔の遊び方には出さない
+    eater: { pre: '灯喰いの', desc: '仲間を倒すたび、最大HPの15%を回復し、技のダメージ+2。', deep: true, eat: { heal: 0.15, dmg: 2 }, f: 'sepia(.5) saturate(1.6) hue-rotate(-20deg)' },
+    starve: { pre: '飢えた', desc: 'HPが半分を切ると「ちからをためる」を飛ばし、すぐ大技を撃つ。', deep: true, starve: true, hp: 1.05, f: 'saturate(.7) contrast(1.15)' },
+    layer: { pre: '重ね鎧の', desc: '防御+4。ただし、回して入ったばかりの仲間の攻撃は防御を無視する。', deep: true, def: 4, layer: true, f: 'brightness(.85) saturate(.3)' }
   };
+  // 深さ3：亜種を2つ重ねる（同じ系統・大技がばらけすぎる組み合わせは重ねない）
+  const VPAIR_NG = ['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'];
+  const vkeys = (vkey) => (vkey ? String(vkey).split('+').filter((k) => VARIANTS[k]) : []);
   const LAST_WORDS = {
     young: ['まだ、何も……できてないのに', 'せんぱい……あとは……', '母さんに……伝えて……'],
     prime: ['あとは……頼んだ', '灯を、絶やすな', '楽しかったよ、みんな'],
@@ -7113,7 +7139,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const m = {};
     Object.keys(ROUTE.nodes).forEach((id) => {
       const n = ROUTE.nodes[id];
-      if (n.kind === 'battle' || n.kind === 'fort') m[id] = { variant: rnd() < RUN.variantRate ? pick(Object.keys(VARIANTS)) : null };
+      if (n.kind === 'battle' || n.kind === 'fort') m[id] = { variant: rnd() < RUN.variantRate ? pick(Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep)) : null };
       else if (n.kind === 'camp') m[id] = { camp: rnd() < 0.5 ? 'inherit' : 'rest' };
     });
     return m;
@@ -7792,7 +7818,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const XDEPTH = [
     { d: 1, name: '深さ1', desc: 'いつもの環廊。亜種は出ることも、出ないこともある。' },
-    { d: 2, name: '深さ2', desc: '戦闘の敵が、かならず「亜種」になる（三位一体と最後の戦いは除く）。同じ敵でも戦い方を変える必要がある。', hint: '実績「初めての突破」' }
+    { d: 2, name: '深さ2', desc: '戦闘の敵が、かならず「亜種」になる（三位一体と最後の戦いは除く）。同じ敵でも戦い方を変える必要がある。', hint: '実績「初めての突破」' },
+    { d: 3, name: '深さ3', desc: '戦闘の敵が、亜種を2つ重ねて出る。深さ3だけの亜種（灯喰いの・飢えた・重ね鎧の）もいる。', hint: 'どれかの隊で深さ2を踏破すると開く' },
   ];
   const XACH = [
     { id: 'mid', t: '中盤まで', d: '地点7に着く（負けてもよい）', un: 'fast', ok: (S) => S.reach >= 7 },
@@ -7808,10 +7835,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (+m.best >= 6) x.ach.mid = 1;         // 地点7（6地点を終えた）まで来たことがある
     return x;
   }
-  const xDepthOpen = (d, x) => d === 1 || (d === 2 && !!x.ach.first);
+  const xDepthOpen = (d, x) => d === 1 || (d === 2 && !!x.ach.first) || (d === 3 && Object.keys(x.won).some((k) => +k.split(':')[1] === 2 && x.won[k] > 0));   // 深さ3（v5.6.7）：どれかの隊で深さ2を踏破
   const xSqOpen = (id, x) => id === 'std' || !!x.bought[id] || XACH.some((a) => a.un === id && x.ach[a.id]);
   const xMedals = (x) => Math.max(0, XACH.filter((a) => x.ach[a.id]).length - x.spent);
-  const xState = (x) => ({ d2: xDepthOpen(2, x), sq: XSQ.filter((q) => xSqOpen(q.id, x)).map((q) => q.id) });
+  const xState = (x) => ({ d2: xDepthOpen(2, x), d3: xDepthOpen(3, x), sq: XSQ.filter((q) => xSqOpen(q.id, x)).map((q) => q.id) });
   const xHasChoice = (x) => xDepthOpen(2, x) || XSQ.some((q) => q.id !== 'std' && xSqOpen(q.id, x));
   const xDmax = (m) => { const x = xmeta(m); return Math.max(+m.clears > 0 ? 1 : 0, ...Object.keys(x.won).filter((k) => x.won[k] > 0).map((k) => +k.split(':')[1] || 0)); };
   const xVariantRate = () => (run && run.depth >= 2 ? 1 : EXP.variantRate);
@@ -7905,11 +7932,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function expClearSave() { try { localStorage.removeItem(EXP_KEY); } catch (e) { /* 保存できない環境 */ } }
   // 地図の中身：戦闘の敵（章ごとに EXP.foes から。章の主は EXP.chiefFoe）と亜種。休息系はすべて休息
   function expFill() {
-    const m = {}, VK = Object.keys(VARIANTS);
+    const m = {}, VK = Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep), VKD = Object.keys(VARIANTS), pair = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !VPAIR_NG.includes(a + '+' + b)) return a + '+' + b; } };
     Object.keys(ROUTE.nodes).forEach((id) => {
       const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
       if (isFightKind(n.kind)) {
-        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? pick(VK) : null };
+        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? (run && run.depth >= 3 ? pair() : pick(VK)) : null };
         if (!chief && !last && TRI.steps.includes(n.step)) { m[id].foe = 'trinity'; m[id].variant = null; }   // 三位一体：乱数の並びは変えずに、置き換えるだけ
       }
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
@@ -7921,15 +7948,17 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ch = expCh(step), chief = expIsChief(step), k = chief ? EXP.chiefFoe[ch] : foe, t = step - 1;
     const nr = chief ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
     const base = k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
-    const v = vkey ? VARIANTS[vkey] : null;
+    const vs = vkeys(vkey), v = vs.length ? vs.reduce((o, k) => { const x = VARIANTS[k]; return { pre: o.pre + x.pre, hp: o.hp * (x.hp || 1), dmg: o.dmg * (x.dmg || 1), def: o.def + (x.def || 0), f: [o.f, x.f].filter(Boolean).join(' '), eat: o.eat || x.eat, starve: o.starve || x.starve, layer: o.layer || x.layer }; }, { pre: '', hp: 1, dmg: 1, def: 0, f: '' }) : null;   // 亜種は1つか2つ（深さ3）。重ねるときは掛け合わせる
+    const dm = run && run.depth >= 3 && EXP.deepMul ? EXP.deepMul : { hp: 1, dmg: 1 };   // 深さ3の底上げ（v5.6.7）
     if (base.party) return { name: base.name, party: base.party, chief: false, ch, variant: null, vf: null, art: 0, boss: false, restUp: 0, par: base.par, allowFallen: base.allowFallen, hp: base.party.reduce((a, f) => a + f.hp, 0), spd: 0, def: 0, voice: 'club', pattern: [{ name: '三位一体', glyph: '三', rule: 'party' }] };
     return Object.assign({}, base, {
       name: (v ? v.pre : '') + (k === 'binder' ? BINDER_NAME : base.name), chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
-      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1)), boss: k === 'boss', restUp: nr,
+      eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer),
+      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * dm.hp), boss: k === 'boss', restUp: nr,
       pattern: base.pattern.map((a) => {
-        const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1)) } : {});
-        if (v && vkey === 'swarm' && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
-        if (v && vkey === 'poison' && o.dmg) o.pierce = true;
+        const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg) } : {});
+        if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
+        if (vs.includes('poison') && o.dmg) o.pierce = true;
         return o;
       })
     });
@@ -7961,7 +7990,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       d: '敵は3体（' + e.party.map((f) => f.name + ' HP' + f.hp + '・防御' + f.def + '・素早さ' + f.spd).join('／') + '）。倒す順番を考えるパズル戦。3体は毎ターン同じ技だけを使う。勝てば報酬を4つから1つ。',
       k: [['敵', '3体'], ['HP', e.party.reduce((a, f) => a + f.hp, 0)], ['報酬', '4択']] };   // 本文と同じ数字のピルは付けない（v5.1.57）。いつも見せるのは数字の1行だけ（v5.1.60）
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
-      d: (e.variant && VARIANTS[e.variant].def ? '防御は亜種で+' + VARIANTS[e.variant].def + '。' : '') + (e.variant ? '亜種「' + VARIANTS[e.variant].pre.replace(/の$/, '') + '」：' + VARIANTS[e.variant].desc.replace(/^防御\+\d+。/, '') : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
+      d: vkeys(e.variant).map((k) => { const V = VARIANTS[k]; return (V.def && !V.layer ? '防御は亜種で+' + V.def + '。' : '') + '亜種「' + V.pre.replace(/の$/, '') + '」：' + V.desc.replace(/^防御\+\d+。/, '') + (V.layer ? '（防御+' + V.def + '）' : ''); }).join('') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
       k: [['HP', e.hp], ['防', e.def], ['速', e.spd]].concat(chief ? [['', '章の主']] : last ? [] : [['報酬', '4択']]) };   // 本文・題と同じ内容のピルは付けない（v5.1.57）。数字の1行を常に、本文は選んだ札だけ（v5.1.60）
   }
   // 第2章の扉（v5.5.2）：一巡りの灯が始まる章に初めて着いたとき、一度だけ物語として知らせる
@@ -8112,7 +8141,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     XACH.forEach((a) => { if (!x.ach[a.id] && a.ok(S, x)) { x.ach[a.id] = 1; got.push(a); } });
     const after = xState(x), un = [];
     if (got.length) un.push('実績 ' + got.map((a) => '<b>「' + a.t + '」</b>').join('') + '　勲章+' + got.length);   // 1行にまとめる（結果の画面が長くならないように）
-    const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
+    const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
     if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
     xSave(mm, x);
     actTick();
@@ -8131,7 +8160,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
   }
   function beginExp(sqId, depth) {
-    sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 2 ? 2 : 1;
+    sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 3 && xDepthOpen(3, xmeta()) ? 3 : depth === 2 ? 2 : 1;
     enterRun();
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
     run = { mode: 'exp', node: 0, year: 1, act: 0, rests: 0, chRests: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], relics: [], squad: 'exp', sq: sqId, depth, gen: 0, fame: 0, spent: 0, region: [] };

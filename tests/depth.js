@@ -42,7 +42,7 @@ const title = (p) => p.evaluate(() => document.getElementById('rvTitle').textCon
     ok(await title(p) === 'どの隊で下る？', '3 未解禁の札を押しても進まない');
     await p.click('#rvCards .rv-card:nth-child(3)'); await sleep(p, 500);
     const c2 = await cards(p);
-    ok(await title(p) === 'どの深さへ？' && c2.length === 2 && !c2[0].off && !c2[1].off, '3 隊を選ぶと深さ（2枚・どちらも開いている）');
+    ok(await title(p) === 'どの深さへ？' && c2.length === 3 && !c2[0].off && !c2[1].off && c2[2].off, '3 隊を選ぶと深さ（3枚。1・2は開いていて、3は深さ2を踏破するまで閉じている。v5.6.7）');
     await p.click('.rv-skip[data-i="-1"]'); await sleep(p, 400);
     ok(await title(p) === 'どの隊で下る？', '3 「隊を選び直す」で戻れる');
     await p.click('#rvCards .rv-card:nth-child(3)'); await sleep(p, 400); await p.click('#rvCards .rv-card:nth-child(2)'); await sleep(p, 700);
