@@ -2141,6 +2141,23 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .settings { z-index: 47; }
 .set-card { max-width: 420px; text-align: left; align-items: stretch; }
 .set-card h2 { text-align: center; }
+/* 盤のちびキャラ（v5.6.9）：丸い札をやめ、全身で立たせる。HPは輪ではなく足もとのバー */
+.tok.cb .disc, :root[data-skin="goth"] .tok.cb .disc { inset: -8% 2% 10%; border-radius: 0; overflow: visible; background: none; box-shadow: none; }
+.tok.cb .disc svg { overflow: visible; filter: drop-shadow(0 2px 0 rgba(5, 7, 12, .35)); }
+.tok.cb .cb-sh { fill: rgba(5, 7, 12, .45); }
+.tok.cb .ring { display: none; }
+.hpb { display: none; }
+.tok.cb .hpb { display: block; position: absolute; left: 22%; right: 22%; bottom: 7%; height: 6px; border-radius: 3px; background: rgba(5, 7, 12, .7); box-shadow: 0 0 0 1px rgba(236, 230, 214, .35); overflow: hidden; z-index: 1; }
+.tok.cb .hpb b { display: block; height: 100%; background: var(--hp); border-radius: 3px; }
+.tok.cb .hpb.low b { background: var(--hp-low); }
+.slot.sel .tok.cb .hpb b { background: var(--accent); }
+.tok.cb .disc svg { transform-origin: 50% 96%; }
+.tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
+.slot.hover .tok.cb .disc { outline: none; filter: drop-shadow(0 0 6px var(--accent)); }
+@media (prefers-reduced-motion: no-preference) {
+  .tok.cb .disc svg { animation: cbIdle 2.4s ease-in-out infinite; animation-delay: calc(var(--cbd, 0) * -1s); }
+  @keyframes cbIdle { 50% { transform: translateY(-1.5%) scaleY(1.02); } }
+}
 /* 新しく始める確認（v5.1.41）：「続きから」があるときだけ出す。押し間違いを防ぐため、やめるが既定 */
 .confirm { z-index: 48; }
 .nc-card { max-width: 380px; }
@@ -3146,6 +3163,52 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return (faceMemo[k] = out);
   }
   const face = (u) => ageArt(u.job || u.id, u.phase);
+  /* 盤のちびキャラ（v5.6.9）：丸い顔の札をやめ、胸像（ART）を頭に使い、体・足・武器を描き足した全身で立たせる。
+     顔の絵は1つのまま（年齢の顔・ゴシック調もそのまま効く）。メニュー・行動順・報酬の札は、今まで通り丸い顔 */
+  const CB = (() => {
+    const K = '#0c1019', SW = 'stroke="' + K + '" stroke-width="2.2" stroke-linejoin="round"', SL = 'stroke="' + K + '" stroke-width="2" stroke-linecap="round"';
+    const blade = (x1, y1, x2, y2, col, w) => '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + K + '" stroke-width="' + (w + 2.4) + '" stroke-linecap="round"/><path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + col + '" stroke-width="' + w + '" stroke-linecap="round"/>';
+    const hand = (x, y, sk) => '<circle cx="' + x + '" cy="' + y + '" r="4.2" fill="' + sk + '" ' + SW + '/>';
+    // 体：上着（cloth）・帯（belt）・足（legs）・長衣（robe：足をほぼ隠す）。front：体の前（武器を持つ手など）、back：体の後ろ
+    const J = {
+      warrior: { cloth: '#3b332c', trim: '#5d6576', belt: '#d8b660', legs: '#2a241f',
+        back: blade(76, 98, 92, 46, '#c9d1dc', 4) + '<path d="M70 92h14" ' + SL + ' stroke-width="4"/><path d="M70 92h14" stroke="#d8b660" stroke-width="2" stroke-linecap="round"/>',
+        front: '<circle cx="24" cy="94" r="13" fill="#5d6576" ' + SW + '/><circle cx="24" cy="94" r="8.5" fill="none" stroke="#d8b660" stroke-width="1.6"/><circle cx="24" cy="94" r="2.6" fill="#d8b660"/>' + hand(77, 94, '#ece6d6') },
+      knight: { cloth: '#2c3a55', trim: '#7b869a', belt: '#7b869a', legs: '#1d2638',
+        back: blade(22, 118, 16, 30, '#8a6a45', 3.4) + '<path d="M16 30l-4-12 8 3z" fill="#c9d1dc" ' + SW + '/>',
+        front: hand(19, 90, '#ece6d6') + '<path d="M60 112V90q0-11 13-13 13 2 13 13v22l-13 6z" fill="#33405a" ' + SW + '/><path d="M66 108V92q0-7 7-8 7 1 7 8v16l-7 3z" fill="none" stroke="#d8b660" stroke-width="1.4"/>' },
+      samurai: { cloth: '#26304a', trim: '#ece6d6', belt: '#e2683f', legs: '#151c2a', hakama: '#3a2a3e',
+        back: blade(70, 100, 94, 54, '#ece6d6', 3.2) + '<path d="M70 96l8-4" ' + SL + ' stroke-width="5"/>',
+        front: hand(71, 98, '#ece6d6') },
+      witch: { cloth: '#3b2f55', trim: '#a58fd0', belt: '#a58fd0', legs: '#241a38', robe: '#3b2f55',
+        back: blade(82, 118, 82, 44, '#6b5232', 3.4) + '<path d="M82 46c-8-6-6-16 2-16 7 0 8 8 3 10-3 1-5-2-3-4" fill="none" stroke="#a58fd0" stroke-width="2.6" stroke-linecap="round"/><circle cx="82" cy="40" r="3.4" fill="#d6c4ff"/>',
+        front: hand(81, 88, '#ece6d6') },
+      archer: { cloth: '#26392f', trim: '#86b892', belt: '#6b5232', legs: '#1b2a22',
+        back: '<rect x="20" y="70" width="10" height="26" rx="3" fill="#6b5232" ' + SW + ' transform="rotate(-18 25 83)"/><path d="M19 70l-2-9M24 69l1-9M29 70l3-8" stroke="#ece6d6" stroke-width="1.6" stroke-linecap="round"/>',
+        front: hand(76, 92, '#ece6d6') },
+      cleric: { cloth: '#d9d2c0', trim: '#4f8a5e', belt: '#4f8a5e', legs: '#b9b19c', robe: '#ebe4d2',
+        back: blade(18, 118, 18, 46, '#b9a37a', 3.2) + '<circle cx="18" cy="40" r="6" fill="none" stroke="#d6ecff" stroke-width="2.2"/><path d="M18 34v12M12 40h12" stroke="#d6ecff" stroke-width="1.4"/>',
+        front: hand(19, 86, '#ece6d6') },
+      monk: { cloth: '#7a5a2c', trim: '#5c4220', belt: '#3b2a14', legs: '#4a3518', robe: '#7a5a2c',
+        back: blade(82, 118, 82, 40, '#6b5232', 3.2) + '<circle cx="82" cy="38" r="6.5" fill="none" stroke="#d8b660" stroke-width="2.4"/><circle cx="77" cy="44" r="2.2" fill="none" stroke="#d8b660" stroke-width="1.4"/><circle cx="87" cy="44" r="2.2" fill="none" stroke="#d8b660" stroke-width="1.4"/>',
+        front: hand(81, 88, '#ece6d6') }
+    };
+    const memo = {};
+    return (u) => {
+      const job = u.job || u.id, j = J[job]; if (!j) return face(u);
+      const f = face(u), k = job + ':' + (u.phase || '') + ':' + f.length; if (memo[k]) return memo[k];
+      const inner = f.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+      const legs = j.robe
+        ? '<path d="M31 76Q28 100 24 114Q50 120 76 114Q72 100 69 76Z" fill="' + j.robe + '" ' + SW + '/><path d="M38 115v4M62 115v4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>'
+        : (j.hakama ? '<path d="M33 96L27 116H48L50 104L52 116H73L67 96Z" fill="' + j.hakama + '" ' + SW + '/>'
+          : '<path d="M37 98v14M63 98v14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/><path d="M37 98v14M63 98v14" stroke="' + j.legs + '" stroke-width="6" stroke-linecap="round"/>') +
+          '<path d="M30 117q7-6 13 0zM57 117q6-6 13 0z" fill="' + K + '"/>';
+      const body = '<path d="M30 74Q28 90 32 100H68Q72 90 70 74Z" fill="' + j.cloth + '" ' + SW + '/>' +
+        '<path d="M31 90H69" stroke="' + j.belt + '" stroke-width="3"/><path d="M36 76q14 8 28 0" fill="none" stroke="' + j.trim + '" stroke-width="1.6"/>';
+      return (memo[k] = '<svg viewBox="0 0 100 124" aria-hidden="true"><ellipse class="cb-sh" cx="50" cy="119" rx="30" ry="5"/>' +
+        j.back + legs + body + '<g transform="translate(15 -2) scale(.7)">' + inner + '</g>' + j.front + '</svg>');
+    };
+  })();
   const E = (inner) => '<svg viewBox="0 0 240 180" aria-hidden="true"><ellipse cx="120" cy="168" rx="86" ry="11" fill="rgba(35,49,74,.2)"/>' + inner + '</svg>';
   const EART = [
     E('<path d="M196 138 Q238 130 222 98 Q214 84 226 72" stroke="#e8a5a0" stroke-width="8" fill="none" stroke-linecap="round"/>' +
@@ -4233,8 +4296,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const R = RX();
     const torch = comboOn() && (phase === 'prep' || phase === 'choose') && r === hmRow() ? '<i class="torch" title="一巡りの灯を掲げる">' + FLAME + '</i>' : '';
     const up = comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? '（一巡りの灯で強化）' : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
-    return '<span class="tok ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '"><span class="disc">' + face(u) + '</span>' + ent + torch +
-      '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' +
+    return '<span class="tok cb ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '" style="--cbd:' + ([...String(u.uid)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 7 * 0.34).toFixed(2) + '"><span class="disc">' + CB(u) + '</span>' + ent + torch +
+      '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' + '<i class="hpb' + (p <= 35 ? ' low' : '') + '"><b style="width:' + p + '%"></b></i>' +
       (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
@@ -4301,9 +4364,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
         const top = nb ? nb.bottom + 1 : sb.bottom - 6;
         const sc = Math.min(1, dr.width / 95), cx = (dr.left + dr.right) / 2;
         const X = (x) => ((x - br.left) / k).toFixed(1), Y = (y) => ((y - br.top) / k).toFixed(1);
-        const y0 = dr.top + 26 * sc, y1 = top, rr = Math.max(9, 10.5 * sc), w = Math.max(4, 7 * sc), hw = Math.max(6.5, 10 * sc), hh = Math.max(7, 11 * sc), fs = Math.max(10.5, 12 * sc);
+        const cbd = !!d1.closest('.tok.cb');   // ちびキャラ（v5.6.9）：札は体の横、胸の高さ（帽子・顔に重ねない）
+        const y0 = dr.top + (cbd ? 52 : 26) * sc, y1 = top, rr = Math.max(9, 10.5 * sc), w = Math.max(4, 7 * sc), hw = Math.max(6.5, 10 * sc), hh = Math.max(7, 11 * sc), fs = Math.max(10.5, 12 * sc);
         mine.forEach((a, i) => {
-          const x = cx + (mine.length === 1 ? 0 : (i === 0 ? -1 : 1) * Math.max(rr + 2, 21 * sc));
+          const x = cx + (cbd ? (mine.length === 1 ? -1 : (i === 0 ? -1 : 1)) * Math.max(rr + 2, 34 * sc) : (mine.length === 1 ? 0 : (i === 0 ? -1 : 1) * Math.max(rr + 2, 21 * sc)));
           const sy = Y(y0 - rr + 1), ey = Y(y1 + hh - 1);
           const key = a.uid + a.k, grow = a.live && !saLive[key] && !RM;
           if (a.live) nowLive[key] = 1;
@@ -5446,8 +5510,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function lunge(el, dist) {
     anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (-(dist || 24)) + 'px) scale(1.12)', offset: 0.38 }, { transform: 'translateY(0) scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,.7,.3,1)' });
+    // ちびキャラ（v5.6.9）：跳び出しに合わせて、振りかぶって振り下ろす
+    const sv = el && el.classList && el.classList.contains('cb') ? el.querySelector('.disc svg') : null;
+    if (sv) anim(sv, [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-12deg) translateX(-3%)', offset: 0.3 }, { transform: 'rotate(10deg) translateX(3%)', offset: 0.55 }, { transform: 'rotate(0deg)' }], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
   }
   function animRing(tok, from, to) {
+    const hb = tok && tok.querySelector('.hpb b');
+    if (hb) { hb.style.width = to + '%'; hb.parentNode.classList.toggle('low', to <= 35); anim(hb, [{ width: from + '%' }, { width: to + '%' }], { duration: 350, easing: 'cubic-bezier(.25, 1, .5, 1)' }); }
     const v = tok && tok.querySelector('.ring .val');
     if (!v) return;
     anim(v, [{ strokeDasharray: (from / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) }, { strokeDasharray: (to / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) }], { duration: 350, easing: 'cubic-bezier(.25, 1, .5, 1)' });   // 数字のカウントアップと同じ0.35秒（v5.4.2）
