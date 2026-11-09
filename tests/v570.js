@@ -3,6 +3,8 @@
 //  1. 戦闘に勝って報酬の画面が出たら、0.4秒後には戦闘の数字・吹き出し（#fx .pop）が1つも残っていない
 //  2. 設定の注記に「Google Fonts から読み込みます」が無い（書体は同梱で、通信しない）
 //  3. ページのエラーなし
+//  4. 「しのいだ！」：維持なら倒れる見込みの仲間がいて、回した先では誰も倒れない見込みのとき、回すとターンの終わりにその仲間の上に「しのいだ！」が出る
+//  5. 回した先で別の仲間が倒れる見込みのときは出さない（誰かの代わりに誰かが倒れるのは「しのいだ」ではない）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"combo":1,"hmIntro":1,"bench":1}';
@@ -29,6 +31,20 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
   ok(shown && peak > 0, '1 戦闘で数字が出て（最大 ' + peak + ' 個）、報酬の画面になった');
   ok(left === 0, '1 報酬の画面が出て0.4秒後、戦闘の数字は残っていない（' + left + ' 個）');
   ok(!errs.length, '3 ページのエラーなし ' + errs.join(' / '));
+  // 4・5：ヒュージラット（亜種なし）。2ターン目は「ためる」、3ターン目「のしかかり」（HPの低い前列に21）
+  for (const [sturdy, want, tag] of [[true, true, '4 回した先で誰も倒れない → 出る'], [false, false, '5 回した先でネムリが倒れる → 出ない']]) {
+    const q = await ctx.newPage(); const qe = []; q.on('pageerror', (e) => qe.push(e.message));
+    await q.goto(testPage() + '?qa&ch=1&loc=1&foe=0&v=none'); await q.waitForTimeout(900);
+    const toChoose = async () => { for (let k = 0; k < 150; k++) { await q.waitForTimeout(80); if (await q.evaluate(() => window.__rb.phase === 'choose' || window.__rb.phase === 'over')) break; } };
+    await q.click('#btnStart'); await toChoose(); await q.click('#btnStay'); await toChoose();
+    await q.evaluate((st) => { const R = window.__rb; R.enemy.hp = 999; R.enemy.max = 999; R.grid[0].forEach((u) => { if (u) u.hp = 1; }); if (st) R.grid[1].forEach((u) => { if (u) { u.max = 99; u.hp = 99; } }); R.render(); }, sturdy);
+    const pre = await q.evaluate(() => { const R = window.__rb; return { stayKo: R.outlook(R.grid, false, false).hurt.some((h) => h.ko), rotKo: R.outlook(R.previewGrid(), true, true).hurt.some((h) => h.ko) }; });
+    await q.evaluate(() => { window.__saves = []; new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('save')) window.__saves.push(n.textContent); }))).observe(document.getElementById('fx'), { childList: true }); });
+    await q.click('#btnRotate'); await toChoose(); await q.waitForTimeout(500);
+    const got = await q.evaluate(() => window.__saves.slice());
+    ok(pre.stayKo && pre.rotKo === !sturdy && (got.length > 0) === want && (!want || got[0] === 'しのいだ！') && !qe.length, tag + ' ' + JSON.stringify({ pre, got, err: qe }));
+    await q.close();
+  }
   await b.close();
   console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();

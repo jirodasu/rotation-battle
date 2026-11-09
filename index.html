@@ -644,6 +644,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .dock[hidden], .btn[hidden] { display: none; }
 .btn.skip { flex: 1; font-size: 14px; opacity: 0.9; }
 .fx .flash, .flash { position: fixed; inset: 0; background: #fff; pointer-events: none; opacity: 0; z-index: 60; }
+:root .pop.sub.save { font-weight: 900; font-size: 16px; color: #0f2a17; background: #bfe9c4; box-shadow: 0 2px 0 #4f8a5e; padding: 3px 12px; }   /* しのいだ！（v5.7.0）：回して倒れずにすんだ仲間の上 */
 :root .pop.sub.fin { font-weight: 900; font-size: 22px; color: #3a2400; background: #ffe9a8; box-shadow: 0 3px 0 #b8892a; padding: 4px 16px; animation: popbig 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
 .btn {
   --b: var(--paper); --bd: var(--paper-line);
@@ -6086,6 +6087,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     d.classList.remove('on');
   }
 
+  let saveMark = null, saveN = 0;   // 回して救った仲間と、回す前の盤の人数（v5.7.0）
   async function runTurn() {
     previewOn = false; hitSeq = 0; SKIP = false;
     foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });   // 飢えた：そのターンの技は、ターンの始まりのHPで決める（見込みと食い違わないように）
@@ -6117,6 +6119,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     battleSave('choose');
     render();
     tutOnChoose();
+    if (saveMark && saveMark.length) {
+      const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); try { SFX.tap(); } catch (e) { /* */ } }, 120 + i * 160); });
+      if (live.length) say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。');
+    }
   }
 
   // 突入技：回して攻撃列に入った仲間が、そのターンだけ出す技
@@ -6161,6 +6168,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
 
   async function doRotate() {
+    // 「しのいだ！」（v5.7.0）：維持なら倒れる見込みだった仲間が、回したことで倒れない見込みになったら、ターンの終わりに知らせる
+    //   回した先で誰かが倒れる見込みのときは出さない（誰かの代わりに別の誰かが倒れるのは「しのいだ」ではない）。ターンの終わりに倒れていないことも確かめる
+    try { const kr = outlook(previewGrid(), true, true).hurt.filter((h) => h.ko); saveMark = kr.length ? null : outlook(grid, false, false).hurt.filter((h) => h.ko).map((h) => h.u); saveN = units().length; } catch (e) { saveMark = null; }
     previewOn = false;
     foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });
     phase = 'resolve';
@@ -6246,7 +6256,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
     if (rot) doRotate();
-    else { stayN += 1; say('隊列を維持。' + (relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
+    else { stayN += 1; saveMark = null; say('隊列を維持。' + (relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
   }
 
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
