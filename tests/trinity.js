@@ -34,7 +34,9 @@ async function auto(p, order) {
       const want = await p.evaluate(() => { const R = window.__rb, g = R.grid, pg = R.previewGrid();
         const val = (src, fresh, ent) => { let dealt = 0; R.units(src).forEach(({ u, r, c }) => { const d = R.expDmg(u, r, c, src, fresh, ent); if (d) dealt += d.val; }); const inc = R.incoming(src, fresh, ent); let taken = 0, ko = 0; Object.keys(inc).forEach((k) => { taken += inc[k].d; if (inc[k].ko) ko++; }); return dealt / 10 - taken / 10 - 3 * ko; };
         return val(pg, true, true) > val(g, false, false) + 0.05; });
-      await p.click(want && !dis ? '#btnRotate' : '#btnStay'); await p.waitForTimeout(20); continue;
+      // 押す直前に出たヒントを閉じる（機械が混んでいると、ヒントが遅れて出てボタンを覆う。v5.7.0 の全テストで1回）。押せなければ次の周で見直す
+      await p.evaluate(() => { const t = document.getElementById('tip'); if (t && !t.hidden) document.getElementById('tipOk').click(); });
+      await p.click(want && !dis ? '#btnRotate' : '#btnStay', { timeout: 3000 }).catch(() => {}); await p.waitForTimeout(20); continue;
     }
     await p.waitForTimeout(30);
   }
@@ -114,6 +116,7 @@ async function auto(p, order) {
     ok(st.turn === 2 && !st.def && +st.def2.replace(/\D/g, '') === st.base, '防御構えはないので、2ターン目も像の「防」は元のまま（' + st.def2 + '）。「防+4」の札はない');
     ok(st.hp > 50 - 40, '1ターン目：祈り手の回復（+10まで）で、像のHPが戻る可能性あり（像HP ' + st.hp + '）');
     // 守りの祈り（防御補助）もないので、3ターン目もどの敵の防御も上がらない（v5.6.5）
+    await p.evaluate(() => { const t = document.getElementById('tip'); if (t && !t.hidden) document.getElementById('tipOk').click(); });
     await p.click('#btnStay');
     for (let i = 0; i < 400; i++) { if (await p.evaluate(() => window.__rb.turn === 3 && !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
     const t3 = await p.evaluate(() => { const R = window.__rb; return R.TRI.foes.map((f) => R.foeById(f.id).id + ':' + R.foeById(f.id).defUp).join(' '); });

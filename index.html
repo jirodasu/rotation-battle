@@ -644,6 +644,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .dock[hidden], .btn[hidden] { display: none; }
 .btn.skip { flex: 1; font-size: 14px; opacity: 0.9; }
 .fx .flash, .flash { position: fixed; inset: 0; background: #fff; pointer-events: none; opacity: 0; z-index: 60; }
+:root .pop.sub.save { font-weight: 900; font-size: 16px; color: #0f2a17; background: #bfe9c4; box-shadow: 0 2px 0 #4f8a5e; padding: 3px 12px; }   /* しのいだ！（v5.7.0）：回して倒れずにすんだ仲間の上 */
 :root .pop.sub.fin { font-weight: 900; font-size: 22px; color: #3a2400; background: #ffe9a8; box-shadow: 0 3px 0 #b8892a; padding: 4px 16px; animation: popbig 1.3s cubic-bezier(.2,.8,.3,1) forwards; }
 .btn {
   --b: var(--paper); --bd: var(--paper-line);
@@ -2152,6 +2153,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .tok.cb .hpb.low b { background: var(--hp-low); }
 .slot.sel .tok.cb .hpb b { background: var(--accent); }
 .tok.cb .disc svg { transform-origin: 50% 96%; }
+.tok.cb .inc-n { bottom: auto; top: 50%; left: calc(100% + 3px); transform: translateY(-50%); }   /* ちびキャラ：「あとN発」は札の右（上だと帽子・頭、下だと名札に重なる。v5.7.1） */
 .tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
 .slot.hover .tok.cb .disc { outline: none; filter: drop-shadow(0 0 6px var(--accent)); }
 @media (prefers-reduced-motion: no-preference) {
@@ -2845,7 +2847,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.6.9</p>
+    <p class="c-ver" id="cVer">ver 5.7.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2917,7 +2919,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         <dt>書体</dt><dd>Shippori Mincho B1／Zen Kaku Gothic New（Google Fonts・SIL Open Font License）</dd>
         <dt>絵と音</dt><dd>すべてこのゲームのために、コードで描き、その場で合成しています。</dd>
       </dl>
-      <p class="set-note">進行の記録は、この端末のブラウザの中にだけ保存され、サーバーには送られません。（文字は Google Fonts から読み込みます）</p>
+      <p class="set-note">進行の記録は、この端末のブラウザの中にだけ保存され、サーバーには送られません。</p>
       <p class="set-contact"><b>不具合・ご意見</b><a href="https://github.com/jirodasu/rotation-battle/issues" target="_blank" rel="noopener noreferrer">GitHub の Issues へ</a></p>
     </div>
     <div class="h-foot"><button class="btn primary big" id="setClose" type="button">閉じる</button></div>
@@ -3286,7 +3288,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.6.9';
+  const APP_VERSION = '5.7.0';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -3520,6 +3522,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   const SFX = {
     tap() { if (!can()) return; INST.wood(now(), 1900, 0.35, bus.sfx); },
+    // しのいだ！（v5.7.1）：回して仲間を救ったとき。灯の鐘で4度上がる2音（解決の響き）＋ごく小さな高い光。0.5秒で消え、曲を下げない
+    save() { if (!can()) return; const t = now(); INST.bell(t, 72, 0.09, bus.sfx, 0.6); INST.bell(t + 0.11, 77, 0.11, bus.sfx, 0.7); INST.bell(t + 0.115, 84, 0.04, bus.sfx, 0.5); },
     // 突入技：前に躍り出る短いファンファーレ（列ごとに主題の音から始まる）
     entry(c) { if (!can()) return; duck(0.6, 0.35); const t = now(), p = [0, 2, 4, 5][c] || 0; INST.swish(t, 0.18, 0.12, bus.sfx, 600, 4200); INST.brass(t + 0.04, 57 + p, 0.09, 0.08, bus.sfx, 0.3); INST.brass(t + 0.13, 62 + p, 0.22, 0.09, bus.sfx, 0.35); INST.snare(t + 0.13, 0.18, bus.sfx); INST.bell(t + 0.15, 86 + p, 0.08, bus.sfx, 0.5); },
     // 引退：主題の冒頭4音をオルゴールで
@@ -6086,6 +6090,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     d.classList.remove('on');
   }
 
+  let saveMark = null, saveN = 0;   // 回して救った仲間と、回す前の盤の人数（v5.7.0）
   async function runTurn() {
     previewOn = false; hitSeq = 0; SKIP = false;
     foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });   // 飢えた：そのターンの技は、ターンの始まりのHPで決める（見込みと食い違わないように）
@@ -6117,6 +6122,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     battleSave('choose');
     render();
     tutOnChoose();
+    if (saveMark && saveMark.length) {
+      const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } }, 120 + i * 160); });
+      if (live.length) say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。');
+    }
   }
 
   // 突入技：回して攻撃列に入った仲間が、そのターンだけ出す技
@@ -6161,6 +6171,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
 
   async function doRotate() {
+    // 「しのいだ！」（v5.7.0）：維持なら倒れる見込みだった仲間が、回したことで倒れない見込みになったら、ターンの終わりに知らせる
+    //   回した先で誰かが倒れる見込みのときは出さない（誰かの代わりに別の誰かが倒れるのは「しのいだ」ではない）。ターンの終わりに倒れていないことも確かめる
+    try { const kr = outlook(previewGrid(), true, true).hurt.filter((h) => h.ko); saveMark = kr.length ? null : outlook(grid, false, false).hurt.filter((h) => h.ko).map((h) => h.u); saveN = units().length; } catch (e) { saveMark = null; }
     previewOn = false;
     foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });
     phase = 'resolve';
@@ -6246,7 +6259,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
     if (rot) doRotate();
-    else { stayN += 1; say('隊列を維持。' + (relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
+    else { stayN += 1; saveMark = null; say('隊列を維持。' + (relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
   }
 
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
@@ -7405,6 +7418,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return '<details class="rv-log"><summary>' + list[0] + '　<em>ほか' + (list.length - 1) + '件 ▸</em></summary><div>' + list.slice(1).map((e) => '<p>' + e + '</p>').join('') + '</div></details>';
   }
   function rvShow(o) {
+    // 戦闘の数字・吹き出し（「-11」「とどめ！」「サギリ 12 − 防御1」）が報酬の画面に残って文字に重ならないよう、さっと消す（v5.7.0）
+    $('fx').querySelectorAll('.pop').forEach((e) => { e.style.transition = 'opacity .15s'; e.style.opacity = '0'; setTimeout(() => e.remove(), 160); });
     // 区切り（·）ごとに折り返さないまとまりにする（「地点 10 /」で割れないように）
     $('rvSmall').innerHTML = (o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)))).split('　·　').map((x) => '<span class="nw">' + x.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>').join('　·　');
     sceneCh();
@@ -8265,7 +8280,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     if (!$('cover').hidden) closeCover();
     swappedOnce = false;
-    expShowMap([]);
+    expShowMap(legacyLine());
+  }
+  /* 前の隊の灯（v5.7.0）：2回目からの遠征は、最初の地図に「前の隊がどこで途絶えたか」を1行出す。死を次の挑戦へつなぐ（Hades の「どの周回にも意味がある」）。
+     読むのは遠征の記録（hist）にもともとある地点・倒れた人数・踏破だけ。保存の形は変えない */
+  function legacyLine() {
+    if (qaOn) return [];
+    const h = (expMeta().hist || [])[0]; if (!h || !(+h.node > 0)) return [];
+    if (h.clear) return ['前の隊は、環廊の底まで灯を届けた。灯は、また次の者へ。'];
+    const at = Math.min(+h.node, EXP.nodes), ch = expCh(at);
+    return ['前の隊の灯は、地点' + at + '（第' + (ch + 1) + '章 ' + chName(ch) + '）で途絶えた。' + (+h.fal > 0 ? '倒れた' + h.fal + '人の灯を継いで、ふたたび下る。' : 'その灯を継いで、ふたたび下る。')];
   }
   /* QAジャンプ（v5.5.5）：?qa&ch=章&loc=地点 で開くと、その地点の戦闘1つだけを陣立てから遊べる（検証用。画面には何も出さない）。
      loc は全10地点の通し番号（第1章 1〜3／第2章 4〜6／第3章 7〜10）。ch と loc が合わないとき・範囲外・?qa が無いときは 0（普通に起動）。
