@@ -2917,7 +2917,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         <dt>書体</dt><dd>Shippori Mincho B1／Zen Kaku Gothic New（Google Fonts・SIL Open Font License）</dd>
         <dt>絵と音</dt><dd>すべてこのゲームのために、コードで描き、その場で合成しています。</dd>
       </dl>
-      <p class="set-note">進行の記録は、この端末のブラウザの中にだけ保存され、サーバーには送られません。（文字は Google Fonts から読み込みます）</p>
+      <p class="set-note">進行の記録は、この端末のブラウザの中にだけ保存され、サーバーには送られません。</p>
       <p class="set-contact"><b>不具合・ご意見</b><a href="https://github.com/jirodasu/rotation-battle/issues" target="_blank" rel="noopener noreferrer">GitHub の Issues へ</a></p>
     </div>
     <div class="h-foot"><button class="btn primary big" id="setClose" type="button">閉じる</button></div>
@@ -7405,6 +7405,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return '<details class="rv-log"><summary>' + list[0] + '　<em>ほか' + (list.length - 1) + '件 ▸</em></summary><div>' + list.slice(1).map((e) => '<p>' + e + '</p>').join('') + '</div></details>';
   }
   function rvShow(o) {
+    // 戦闘の数字・吹き出し（「-11」「とどめ！」「サギリ 12 − 防御1」）が報酬の画面に残って文字に重ならないよう、さっと消す（v5.7.0）
+    $('fx').querySelectorAll('.pop').forEach((e) => { e.style.transition = 'opacity .15s'; e.style.opacity = '0'; setTimeout(() => e.remove(), 160); });
     // 区切り（·）ごとに折り返さないまとまりにする（「地点 10 /」で割れないように）
     $('rvSmall').innerHTML = (o.small || ('騎士団 ' + run.year + '年目　·　' + placeLabel(Math.min(run.node + 1, RUN.nodes)))).split('　·　').map((x) => '<span class="nw">' + x.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</span>').join('　·　');
     sceneCh();
