@@ -2150,6 +2150,15 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .nc-foot .btn { flex: 1 1 140px; }
 #ncGo { color: #5a1209; }   /* 進む＝金（全体の規則）。消える操作なので、文字は暗い赤 */
 #ncGo[disabled] { opacity: .5; }
+/* 記録のリセット（v5.6.8）：設定の中、「このゲームについて」の上。押し間違えないよう、設定の中では目立たせず、確認の画面で消えるものをはっきり書く */
+.set-rst { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule-a); display: grid; gap: 8px; }
+.set-rst h3 { margin: 0; font-size: 16px; color: var(--ink); }
+.set-rst-b { min-height: 44px; padding: 0 16px; color: var(--danger); border-color: currentColor; background: transparent; }
+.set-rst-b[disabled] { opacity: .45; }
+#rcGo { color: #5a1209; }
+#rcGo[disabled] { opacity: .5; }
+.rc-body ul { margin: 8px 0 6px; padding: 0; list-style: none; display: grid; gap: 2px; }
+.rc-body .rc-keep { font-size: 13px; color: var(--ink-soft); }
 .set-list { display: grid; gap: 14px; margin: 6px 0 4px; }
 .set-row { display: grid; gap: 6px; }
 .set-row label { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; color: var(--ink); }
@@ -2819,7 +2828,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.6.7</p>
+    <p class="c-ver" id="cVer">ver 5.6.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2878,6 +2887,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="set-row inline"><span><b>振動</b><small id="setVibNote">攻撃を受けたときなど</small></span><button class="set-sw" id="setVib" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>文字の大きさ</b><small>説明・報酬・練習の文</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
     </div>
+    <div class="set-rst">
+      <h3 class="disp">記録</h3>
+      <div class="set-row inline"><span><b>記録をリセット</b><small id="rstNote">遠征の続き・踏破・星・解放したものを消して、初めて遊ぶ状態に戻す</small></span><button class="btn set-rst-b" id="setReset" type="button">リセット</button></div>
+    </div>
     <div class="set-about">
       <h3 class="disp">このゲームについて</h3>
       <p class="set-ver" id="setVer"></p>
@@ -2899,6 +2912,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <h2 class="disp" id="ncTitle">新しく始めますか？</h2>
     <p class="nc-body" id="ncBody"></p>
     <div class="h-foot nc-foot"><button class="btn primary big" id="ncGo" type="button">記録を消して始める</button><button class="btn big" id="ncNo" type="button">やめる</button></div>
+  </div>
+</div>
+
+<div class="result help settings confirm" id="rstConf" role="alertdialog" aria-modal="true" aria-labelledby="rcTitle" aria-describedby="rcBody" hidden>
+  <div class="r-card h-card set-card nc-card">
+    <h2 class="disp" id="rcTitle">記録を消しますか？</h2>
+    <div class="nc-body rc-body" id="rcBody"></div>
+    <div class="h-foot nc-foot"><button class="btn primary big" id="rcGo" type="button">すべて消す</button><button class="btn big" id="rcNo" type="button">やめる</button></div>
   </div>
 </div>
 
@@ -3202,7 +3223,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.6.7';
+  const APP_VERSION = '5.6.8';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -6498,7 +6519,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('helpSet').addEventListener('click', () => { SFX.tap(); openSet(); });
   $('setClose').addEventListener('click', closeSet);
   $('settings').addEventListener('click', (ev) => { if (ev.target === $('settings')) closeSet(); });
-  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('settings').hidden) { ev.stopPropagation(); closeSet(); } }, true);
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('settings').hidden && $('rstConf').hidden) { ev.stopPropagation(); closeSet(); } }, true);
   $('setBgm').addEventListener('input', () => { SET.bgm = $('setBgm').value / 100; $('setBgmV').textContent = $('setBgm').value; applySet(); setSave(); });
   $('setSfx').addEventListener('input', () => { SET.sfx = $('setSfx').value / 100; $('setSfxV').textContent = $('setSfx').value; applySet(); setSave(); });
   $('setSfx').addEventListener('change', () => { SFX.page(); });
@@ -8187,6 +8208,33 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const a = ch === 1 ? 1 : EXP.chiefs[ch - 2] + 1, b = EXP.chiefs[ch - 1];
     return loc >= a && loc <= b ? loc : 0;
   }
+  /* QAジャンプの追加の指定（v5.6.8）。どれも省略できる。正しくない指定はその項目だけ無視して（console に [QA] で出す）、ジャンプ自体は続ける
+       depth=1〜3   深さ（解放していなくてよい）
+       sq=std|fast|guard|twin   隊
+       foe=0|1|2|binder|lizard|chorus|trinity   敵（章の主・最後の主の地点では効かない。章の主は rests で強さを変える）
+       v=亜種（swarm|poison|armor|eater|starve|layer、深さ3の重ねは eater+starve のように + でつなぐ）／v=none で亜種なし
+       rests=0〜9   その章で休んだ回数（章の主のHP・威力が上がる）
+       hp=1〜100    仲間全員のHPを最大の何%で始めるか
+     例：?qa&ch=3&loc=8&depth=3&foe=lizard&v=eater+starve&hp=60 */
+  function qaOpts(q, step) {
+    const get = (k) => { const m = q.match(new RegExp('[?&]' + k + '=([^&]*)')); return m ? decodeURIComponent(m[1]) : null; };
+    const o = { list: [], bad: [] }, ok = (k, v) => o.list.push(k + '=' + v), ng = (k, v) => o.bad.push(k + '=' + v);
+    const d = get('depth'); if (d != null) { if (/^[123]$/.test(d)) { o.depth = +d; ok('depth', d); } else ng('depth', d); }
+    const sq = get('sq'); if (sq != null) { if (XSQ.some((x) => x.id === sq)) { o.sq = sq; ok('sq', sq); } else ng('sq', sq); }
+    const f = get('foe'); if (f != null) {
+      const all = EXP.foes.flat().map(String).concat(TRI.steps.length ? ['trinity'] : []);
+      if (!all.includes(f)) ng('foe', f); else if (expIsChief(step) || step === EXP.nodes) ng('foe', f + '（主の地点）'); else { o.foe = /^\d+$/.test(f) ? +f : f; ok('foe', f); }
+    }
+    const v = get('v'); if (v != null) {
+      const ks = v.split('+');
+      if (v === 'none') { o.v = null; ok('v', v); }
+      else if (ks.length <= 2 && ks.every((k) => VARIANTS[k]) && (ks.length < 2 || (ks[0] !== ks[1] && !VPAIR_NG.includes(v)))) { o.v = v; ok('v', v); }
+      else ng('v', v);
+    }
+    const r = get('rests'); if (r != null) { if (/^\d$/.test(r)) { o.rests = +r; ok('rests', r); } else ng('rests', r); }
+    const h = get('hp'); if (h != null) { if (/^\d{1,3}$/.test(h) && +h >= 1 && +h <= 100) { o.hp = +h; ok('hp', h); } else ng('hp', h); }
+    return o;
+  }
   let qaOn = 0;
   function qaBoot(step) {
     // 出発点からその地点の戦闘までの道をたどる。通った地点は「通った」だけ（戦闘・報酬・星は無し）
@@ -8196,10 +8244,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     for (let st = step - 1; st >= 1; st--) { const pr = at(st).find((id) => ROUTE.nodes[id].next.includes(cur)); if (!pr) return false; path.unshift(pr); cur = pr; }
     if (!ROUTE.nodes.start.next.includes(cur)) return false;
     qaOn = step;
-    const ch = expCh(step) + 1;
+    const ch = expCh(step) + 1, opt = qaOpts(location.search, step), node = ROUTE.nodes[tgt];
     document.documentElement.dataset.qa = ch + '-' + step;   // 開発者向け：<html data-qa="章-地点">（例 3-7）と console の [QA] で分かる（画面には出さない）
-    try { console.info('[QA] 第' + ch + '章 地点' + step + 'の戦闘から開始（保存・星・実績・記録は書き換えない）'); } catch (e) { /* */ }
-    beginExp('std', 1);   // 普通の新しい遠征と同じ初期編成・全員全快
+    try { console.info('[QA] 第' + ch + '章 地点' + step + 'の戦闘から開始（保存・星・実績・記録は書き換えない）' + (opt.list.length ? '　指定：' + opt.list.join(' ') : '')); opt.bad.forEach((b) => console.warn('[QA] 使えない指定（無視）：' + b)); } catch (e) { /* */ }
+    beginExp(opt.sq || 'std', 1);   // 普通の新しい遠征と同じ初期編成・全員全快
+    if (opt.depth) { run.depth = opt.depth; run.map = expFill(); }   // 深さは解放の有無を問わない（QAの保存はメモリだけ）。亜種の出方も、その深さのものに引き直す
+    if (opt.foe != null && node.kind !== 'boss' && !expIsChief(step)) run.map[tgt].foe = opt.foe;
+    if (opt.v !== undefined && node.kind !== 'boss') run.map[tgt].variant = opt.v;
+    if (opt.rests != null) run.chRests = run.rests = opt.rests;
+    if (opt.hp) run.members.forEach((m) => { m.hp = Math.max(1, Math.round(m.max * opt.hp / 100)); });
     run.path = path; run.node = step - 1; run.choices = routeChoices();
     const c = run.choices.find((x) => x.rid === tgt);
     if (c) expEnter(c);
@@ -8351,6 +8404,52 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('ncGo').addEventListener('click', () => { if ($('ncGo').disabled) return; clearTimeout(ncTimer); $('newConf').hidden = true; expClearSave(); startExpFlow(); });
   $('newConf').addEventListener('click', (ev) => { if (ev.target === $('newConf')) closeNc(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('newConf').hidden) closeNc(); });
+
+  /* 記録のリセット（v5.6.8）：設定の「記録をリセット」→ 確認（消えるもの・残るものを書く。「やめる」が既定、「すべて消す」は少し待ってから押せる）。
+     消すのは rb- で始まるキーのうち、設定（音・振動・文字・速さ・見た目・調整モード）以外のすべて：遠征の続き・30年の続き・踏破と実績・星・記録・物語と説明の既読。
+     消したら、それ以降の書き込み（タイマーで遅れて来る保存など）を止めて、?qa などを外して開き直す。初めて遊ぶ人と同じ流れ（物語から）になる。
+     QAジャンプ（?qa）の中では保存がメモリに振り向けられていて本物を消せないので、押せない */
+  const RST_KEEP = /^rb-(set|snd|fast|skin|tune|tune-css)$/;
+  let rcTimer = 0, rcFrom = null;
+  function rstBody() {
+    const mm = expMeta(), x = xmeta(mm), sv = expSaved();
+    const won = Object.keys(x.won).reduce((a, k) => a + (+x.won[k] || 0), 0), runs = +mm.runs || 0;
+    const li = [];
+    if (sv) li.push('いまの遠征の続き（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '）');
+    li.push('これまでの遠征 ' + runs + '回・踏破 ' + won + '回の記録');
+    li.push('解放した隊・深さ、実績、星');
+    li.push('物語と操作の説明の既読（もう一度はじめから出ます）');
+    return 'つぎの記録が<b>消えて、元に戻せません</b>。<ul>' + li.map((t) => '<li>' + t + '</li>').join('') + '</ul><span class="rc-keep">音・振動・文字の大きさなどの設定は、そのまま残ります。</span>';
+  }
+  function openRst() {
+    if (QA_REQ) return;
+    SFX.tap(); rcFrom = document.activeElement;
+    $('rcBody').innerHTML = rstBody();
+    $('rcGo').disabled = true; clearTimeout(rcTimer); rcTimer = setTimeout(() => { $('rcGo').disabled = false; }, 600);
+    $('rstConf').hidden = false; $('rcNo').focus();
+  }
+  const closeRst = () => { clearTimeout(rcTimer); $('rstConf').hidden = true; try { if (rcFrom && rcFrom.focus) rcFrom.focus(); } catch (e) { /* 戻せない */ } };
+  function doReset() {
+    if (QA_REQ) return false;
+    let ls; try { ls = window.localStorage; } catch (e) { return false; }
+    const ks = []; for (let i = 0; i < ls.length; i++) { const k = ls.key(i); if (/^rb-/.test(k) && !RST_KEEP.test(k)) ks.push(k); }
+    ks.forEach((k) => { try { ls.removeItem(k); } catch (e) { /* */ } });
+    const S = Storage.prototype, st = S.setItem;
+    S.setItem = function (k, v) { if (this === ls && /^rb-/.test(k) && !RST_KEEP.test(k)) return; return st.call(this, k, v); };   // 開き直すまで、消した記録を書き戻させない
+    return ks;
+  }
+  if (QA_REQ) { $('setReset').disabled = true; $('rstNote').textContent = 'いまの開き方では使えません'; }
+  $('setReset').addEventListener('click', openRst);
+  $('rcNo').addEventListener('click', () => { SFX.tap(); closeRst(); });
+  $('rcGo').addEventListener('click', () => {
+    if ($('rcGo').disabled) return; clearTimeout(rcTimer);
+    const ks = doReset(); if (!ks) { closeRst(); return; }
+    $('rcGo').disabled = true; $('rcNo').disabled = true;
+    try { console.info('[記録] リセット：' + ks.join(',')); } catch (e) { /* */ }
+    location.replace(location.pathname);
+  });
+  $('rstConf').addEventListener('click', (ev) => { if (ev.target === $('rstConf')) closeRst(); });
+  document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && !$('rstConf').hidden) { ev.stopPropagation(); closeRst(); } }, true);
   $('begin').addEventListener('click', askNewRun);
   // セーブがあるときはスプラッシュを省く（v5.1.48）。スプラッシュは「最初のタップで音を使えるようにする」ためのもの。
   //   「続きから」「本番モード」などのタップが同じ役目をするので、ここで音の準備（actx・warm）も済ませる
