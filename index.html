@@ -6997,6 +6997,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
     hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
     healMax: 3,   // 報酬「手当て」：全快＋全員の最大HP+3
+    // 灯の祝福（v5.7.6・提案B）：2回目からの遠征の最初に、3つ（前の隊が第1章の主に届かなかったら4つ）から1つ選ぶ。Slay the Spire の Neow と同じ考え
+    //   hp：全員の最大HP+。ward：灯の加護（第1章の敵のHPを0.75倍）。自動対戦400回の踏破率は CHANGELOG
+    bless: { hp: 5, ward: 0.75 },
     swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, deepMul: { hp: 1.1, dmg: 1.08 },   // deepMul：深さ3の敵のHP・技（v5.6.7。自動対戦400回で標準の踏破率 9.5%・名人 61.7%）
         // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
       refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
@@ -8085,7 +8088,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return Object.assign({}, base, {
       name: (v ? v.pre : '') + (k === 'binder' ? BINDER_NAME : base.name), chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
       eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer),
-      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * dm.hp), boss: k === 'boss', restUp: nr,
+      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * dm.hp * (run && run.ward && ch === 0 ? EXP.bless.ward : 1)), boss: k === 'boss', restUp: nr,
       pattern: base.pattern.map((a) => {
         const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg) } : {});
         if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
@@ -8308,7 +8311,25 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     if (!$('cover').hidden) closeCover();
     swappedOnce = false;
-    expShowMap(legacyLine());
+    if (!blessing(() => expShowMap(legacyLine()))) expShowMap(legacyLine());
+  }
+  /* 灯の祝福（v5.7.6・提案B）：2回目からの遠征の最初に、1つ選ぶ。初めての遠征には出さない（最初の戦闘の「しのいだ！」の数値が崩れるため）。QAジャンプにも出さない
+     ・回転レリック（まだ持っていないものから1つ）・灯の油（全員の最大HP+5）・突入技の強化（1人。報酬と同じ）
+     ・前の隊が第1章の主に届かなかったとき（途絶えた地点が3以下）だけ：灯の加護（第1章の敵のHPが0.75倍） */
+  function blessing(then) {
+    if (qaOn || !EXP.bless) return false;
+    const mm = expMeta(); if (!(+mm.runs)) return false;
+    const h = (mm.hist || [])[0], weak = !!h && !h.clear && +h.node > 0 && +h.node <= 3;
+    const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id)), B = EXP.bless;
+    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, act: () => { run.relics.push(r.id); return r.name + 'を手に入れた。'; } }); }
+    cards.push({ ico: ICON.heart, t: '灯の油', d: '全員の最大HP+' + B.hp + '（HPも同じだけ増える）。', act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + B.hp; applyAge(x, true); }); return '灯の油で、全員の最大HP+' + B.hp + '。'; } });
+    const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''),
+      act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
+    if (weak) cards.push({ ico: ICON.heart, t: '灯の加護', d: '第1章の敵のHPが' + Math.round((1 - B.ward) * 100) + '%少なくなる（章の主も）。前の隊の灯が、道を照らす。', act: () => { run.ward = 1; return '灯の加護。第1章の敵が弱まった。'; } });
+    rvShow({ small: '環廊' + xTag() + '　·　出発の前に', title: '灯の祝福', sub: '前の隊の灯が、ひとつだけ応える。1つ選ぶ（この遠征のあいだ続く）。', cards,
+      on: (i) => { const msg = cards[i].act(); try { SFX.buff(); } catch (e) { /* */ } run.events.push('出発　' + msg); grid = runGrid(); run.enemy = expEnemy(1, null, 0); toPrep(false); expSave(); then(); } });
+    return true;
   }
   /* 前の隊の灯（v5.7.0）：2回目からの遠征は、最初の地図に「前の隊がどこで途絶えたか」を1行出す。死を次の挑戦へつなぐ（Hades の「どの周回にも意味がある」）。
      読むのは遠征の記録（hist）にもともとある地点・倒れた人数・踏破だけ。保存の形は変えない */
