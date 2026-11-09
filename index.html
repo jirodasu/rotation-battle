@@ -2155,7 +2155,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
 .slot.hover .tok.cb .disc { outline: none; filter: drop-shadow(0 0 6px var(--accent)); }
 @media (prefers-reduced-motion: no-preference) {
-  .tok.cb .disc svg { animation: cbIdle 2.4s ease-in-out infinite; animation-delay: calc(var(--cbd, 0) * -1s); }
+  .tok.cb .disc svg { animation: cbIdle 2.4s ease-in-out infinite; animation-delay: calc(var(--cbd, 0) * -1s); will-change: transform; }   /* 揺れは合成だけで（描き直さない） */
   @keyframes cbIdle { 50% { transform: translateY(-1.5%) scaleY(1.02); } }
 }
 /* 新しく始める確認（v5.1.41）：「続きから」があるときだけ出す。押し間違いを防ぐため、やめるが既定 */
