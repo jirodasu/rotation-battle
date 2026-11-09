@@ -8137,7 +8137,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expShowMap(events) {
     phase = 'map';
-    hmIntro();
+    if (!storyCont(hmIntro)) hmIntro();   // 第2章へ入るとき：物語の続き（初めてだけ）→ 一巡りの灯の説明
     bsave = null;
     expSave();
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
@@ -8438,16 +8438,22 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 「続きから」がある状態で新しく始めるときは確認する（誤タップで途中の記録を消さない）。押してすぐは「始める」を受け付けない
   let ncFrom = null, ncTimer = 0;
   /* ===== 冒頭の物語（v5.5.8）：なぜ環廊に潜るのか。初めて「環廊へ」を押したときだけ自動で流し、2回目からはタイトルの「物語」から見返せる ===== */
-  const STORY = [
+  /* 冒頭の物語（v5.7.5・提案C）：初めは4枚だけ（最初の地図まで約55秒→30秒）。残りの3枚は「物語の続き」として、第1章の主を倒して第2章へ入るときに1回だけ流す。
+     タイトルの「物語」は、続きを見たあとなら7枚を通して流す */
+  const STORY_OPEN = [
     { a: 'far', t: '地の底に、輪のかたちをした<br>大聖堂がある。<br>人はそれを<em>「環廊」</em>と呼ぶ。' },
     { a: 'bright', t: 'その最も深い場所に、<br><em>「最初の灯」</em>が眠るという。<br>手にした者には、<br>尽きぬ富を――と。' },
-    { a: 'descend', t: '金を求める者、名を求める者、<br>ただ明日を求める者。<br>あまたの冒険者が灯を掲げ、<br>環廊へ降りていった。' },
-    { a: 'beast', t: '戻った者は、ひとりもいない。<br>散らばった灯を喰らった獣が、<br>いまも<em>「十二の門」</em>を守っている。' },
-    { a: 'pass', t: 'それでも、灯は消えきらなかった。<br>倒れた者の灯を拾い、<br>次の者がそれを掲げる。<br>ほつれた道を繕いながら、深くへ。' },
-    { a: 'party', t: '人は彼らを<br><em>「修繕隊」</em>と呼んだ。' },
+    { a: 'party', t: '倒れた者の灯を拾い、<br>次の者がそれを掲げる。<br>ほつれた道を繕いながら深くへ。<br>人は彼らを<em>「修繕隊」</em>と呼んだ。' },
     { a: 'party2', t: '灯は、<em>受け渡す</em>もの。<br>前に立つ者が掲げ、<br>疲れたら後ろへ渡す。<br>――さあ、灯を手に取れ。' }
   ];
+  const STORY_CONT = [
+    { a: 'descend', t: '金を求める者、名を求める者、<br>ただ明日を求める者。<br>あまたの冒険者が灯を掲げ、<br>環廊へ降りていった。' },
+    { a: 'beast', t: '戻った者は、ひとりもいない。<br>散らばった灯を喰らった獣が、<br>いまも<em>「十二の門」</em>を守っている。' },
+    { a: 'pass', t: 'それでも、灯は消えきらなかった。<br>門をひとつ越えた灯が、<br>次の門を照らしている。' }
+  ];
+  const STORY = STORY_OPEN;
   const ST_NUM = ['一', '二', '三', '四', '五', '六', '七'];
+  let stOff = 0;   // ページ番号のずれ（続きの3枚は「五」から）
   const stLamp = (x, y, s, a) => '<g class="st-lamp" transform="translate(' + x + ' ' + y + ') scale(' + s + ')" opacity="' + a + '"><circle r="70" fill="url(#stGlow)"/><path d="M-14 -20h28l6 10v26q0 10-10 10h-20q-10 0-10-10v-26z" fill="#ffd27a" stroke="#2a1d14" stroke-width="3"/><path d="M-9 -28h18v8h-18z" fill="#2a1d14"/><path d="M0 -28v-10" stroke="#2a1d14" stroke-width="3"/></g>';
   const stParty = '<g fill="#050508"><rect x="-120" y="-30" width="44" height="40" rx="6"/><path d="M-130 95 L-126 10 H-70 L-66 95Z"/><ellipse cx="-36" cy="-36" rx="9" ry="12"/><circle cx="-36" cy="-14" r="16"/><path d="M-52 95 L-50 6 H-22 L-20 95Z"/><path d="M8 -6 L36 -70 L52 -6Z"/><path d="M-4 -6 H64 L60 2 H0Z"/><path d="M10 95 Q12 20 30 6 Q48 20 50 95Z"/><path d="M80 10 Q80 -36 108 -38 Q136 -36 136 10Z"/><path d="M76 95 Q76 20 108 10 Q140 20 140 95Z"/></g>';
   const STORY_ART = {
@@ -8482,27 +8488,34 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function openEnding(fallen, then) { stPages = endingPages(fallen); stEnd = true; $('story').setAttribute('aria-label', '環廊の結末'); openStory(then); }
   let stI = 0, stThen = null;
   const storySeen = () => { try { return !!localStorage.getItem('rb-story'); } catch (e) { return true; } };
+  const story2Seen = () => { try { return !!localStorage.getItem('rb-story2'); } catch (e) { return true; } };
+  let stCont = false;   // いま流しているのが「物語の続き」か
+  // 物語の続き：第1章の主を倒して第2章の地図に入るとき、まだ見ていなければ流す（QAジャンプ・物語をとばした人にも1回だけ）。流したら true
+  function storyCont(then) {
+    if (qaOn || story2Seen() || !run || expCh(Math.min(run.node + 1, EXP.nodes)) < 1) return false;
+    stPages = STORY_CONT; stOff = STORY_OPEN.length; stCont = true; $('story').setAttribute('aria-label', '環廊の物語（続き）'); openStory(then); return true;
+  }
   function storyShow(i) {
     stI = i; const pg = stPages[i], last = i === stPages.length - 1;
     $('stArt').innerHTML = '<svg viewBox="-160 -110 320 220"><defs><radialGradient id="stGlow"><stop offset="0" stop-color="#ffe3a3" stop-opacity=".95"/><stop offset=".35" stop-color="#f5b04a" stop-opacity=".45"/><stop offset="1" stop-color="#f5b04a" stop-opacity="0"/></radialGradient></defs>' + STORY_ART[pg.a] + '</svg>';
-    $('stNum').textContent = ST_NUM[i];
+    $('stNum').textContent = ST_NUM[i + stOff] || '';
     const t = $('stTxt'); t.innerHTML = pg.t; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
     $('stDots').innerHTML = stPages.map((_, k) => '<i class="' + (k === i ? 'on' : '') + '"></i>').join('');
-    $('stGo').hidden = !last; $('stGo').textContent = stEnd ? '結果へ' : stThen ? '遠征へ' : 'タイトルへ';
+    $('stGo').hidden = !last; $('stGo').textContent = stEnd ? '結果へ' : stCont ? '第2章へ' : stThen ? '遠征へ' : 'タイトルへ';
     $('stTap').textContent = last ? '' : 'タップで次へ';
     if (last) $('stGo').focus();
   }
   function openStory(then) { stThen = then || null; $('story').hidden = false; storyShow(0); stSfx(0); try { $('story').focus(); } catch (e) { /* */ } }
   function closeStory(go) {
-    $('story').hidden = true; try { localStorage.setItem(stEnd ? 'rb-ending' : 'rb-story', '1'); } catch (e) { /* 保存できない */ }
+    $('story').hidden = true; try { localStorage.setItem(stEnd ? 'rb-ending' : stCont ? 'rb-story2' : 'rb-story', '1'); } catch (e) { /* 保存できない */ }
     $('storyBtn').hidden = false;
-    const wasEnd = stEnd; stPages = STORY; stEnd = false; $('story').setAttribute('aria-label', '環廊の物語');
+    const wasEnd = stEnd || stCont; stPages = STORY; stEnd = false; stCont = false; stOff = 0; $('story').setAttribute('aria-label', '環廊の物語');
     const f = stThen; stThen = null; if (wasEnd) { if (f) f(); return; } if (go && f) f(); else { try { $('storyBtn').focus(); } catch (e) { /* */ } }
   }
   $('story').addEventListener('click', (ev) => { if (ev.target.closest('#stSkip, #stGo')) return; if (stI < stPages.length - 1) { storyShow(stI + 1); stSfx(stI); } });   // ページごとの音（v5.6.0）
   $('stSkip').addEventListener('click', () => { SFX.tap(); closeStory(true); });
   $('stGo').addEventListener('click', () => { if (stThen && !stEnd) SFX.start(); else SFX.tap(); closeStory(true); });   // 「遠征へ」は出発の音
-  $('storyBtn').addEventListener('click', () => { SFX.tap(); openStory(null); });
+  $('storyBtn').addEventListener('click', () => { SFX.tap(); stPages = story2Seen() ? STORY_OPEN.concat(STORY_CONT) : STORY_OPEN; openStory(null); });
   document.addEventListener('keydown', (ev) => { if ($('story').hidden) return;
     if (ev.key === 'Escape') { ev.preventDefault(); closeStory(true); return; }
     if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < stPages.length - 1) { storyShow(stI + 1); stSfx(stI); } }

@@ -26,7 +26,7 @@ const clearRun = (fallen) => { const R = window.__rb; R.beginExp('std', 1); cons
     const tag = w + '×' + h;
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-story', '1'); sessionStorage.setItem('s', '1'); } } catch (e) { /* */ } }, TIPS);
+    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-story', '1'); localStorage.setItem('rb-story2', '1'); sessionStorage.setItem('s', '1'); } } catch (e) { /* */ } }, TIPS);
     await p.addInitScript('window.__st = ' + ST.toString());
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300);
     // 2（冒頭）：タイトルの「物語」から3枚目

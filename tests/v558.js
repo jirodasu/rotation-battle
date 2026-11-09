@@ -1,6 +1,6 @@
 // v5.5.8 冒頭の物語（なぜ環廊に潜るのか）
 // 合格の基準（測る前に決めたもの）：
-//  1. 初めて「環廊へ」を押すと物語が出る（7枚）。1枚目の文は「環廊」を含む。タップで1枚ずつ進み、点の位置が進む。最後の1枚だけ「遠征へ」が出る
+//  1. 初めて「環廊へ」を押すと物語が出る（v5.7.5 から4枚。残り3枚は第2章へ入るときの「物語の続き」＝v576）。1枚目の文は「環廊」を含む。タップで1枚ずつ進み、点の位置が進む。最後の1枚だけ「遠征へ」が出る
 //  2. 「遠征へ」で物語が閉じ、遠征が始まる（地図か隊の選択が出る）。2回目に「環廊へ」を押しても物語は出ない
 //  3. 「とばす」でいつでも抜け、そのまま遠征が始まる
 //  4. タイトルの「物語」ボタン：まだ見ていない人には出ない。見たあとは出て、押すと最初から見返せる。最後のボタンは「タイトルへ」で、押すとタイトルに戻る（遠征は始まらない）
@@ -27,14 +27,14 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     await p.click('#begin'); await p.waitForTimeout(300);
     const pages = []; let s = await p.evaluate(() => window.__st());
     pages.push(s);
-    for (let k = 0; k < 6; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(120); pages.push(await p.evaluate(() => window.__st())); }
-    ok(pages[0].open && /環廊/.test(pages[0].text) && pages[0].n === 7, tag + ' 1 初めての「環廊へ」で物語が出る（7枚） ' + pages[0].text.slice(0, 16));
+    for (let k = 0; k < 3; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(120); pages.push(await p.evaluate(() => window.__st())); }
+    ok(pages[0].open && /環廊/.test(pages[0].text) && pages[0].n === 4, tag + ' 1 初めての「環廊へ」で物語が出る（4枚） ' + pages[0].text.slice(0, 16));
     ok(pages.every((x, i) => x.on === i), tag + ' 1 タップで1枚ずつ進む（点 ' + pages.map((x) => x.on).join('') + '）');
-    ok(pages.slice(0, 6).every((x) => !x.go) && pages[6].go && pages[6].goText === '遠征へ', tag + ' 1 最後の1枚だけ「遠征へ」');
+    ok(pages.slice(0, 3).every((x) => !x.go) && pages[3].go && pages[3].goText === '遠征へ', tag + ' 1 最後の1枚だけ「遠征へ」');
     ok(pages.every((x) => x.fit && x.noOverlap && x.skipIn && x.goIn), tag + ' 5 どの文もはみ出さず、絵と重ならず、「とばす」「遠征へ」が画面の中 ' + JSON.stringify(pages.map((x) => (x.fit ? '' : 'はみ出し') + (x.noOverlap ? '' : '絵と重なる') + (x.skipIn ? '' : 'とばす外') + (x.goIn ? '' : '遠征へ外')).filter(Boolean)));
     // もう1回タップしても最後のまま（勝手に始まらない）
     await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(120);
-    ok((await p.evaluate(() => window.__st())).on === 6, tag + ' 1 最後の1枚でタップしても進まない（「遠征へ」で始める）');
+    ok((await p.evaluate(() => window.__st())).on === 3, tag + ' 1 最後の1枚でタップしても進まない（「遠征へ」で始める）');
     await p.click('#stGo'); await p.waitForTimeout(800);
     const a = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden, seen: localStorage.getItem('rb-story') }));
     ok(!a.story && a.runv && a.seen === '1', tag + ' 2 「遠征へ」で物語が閉じ、遠征が始まる ' + JSON.stringify(a));
@@ -44,9 +44,9 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     ok(await p.evaluate(() => !document.getElementById('storyBtn').hidden), tag + ' 4 見たあとは、タイトルに「物語」が出る');
     await p.click('#storyBtn'); await p.waitForTimeout(200);
     const r0 = await p.evaluate(() => window.__st());
-    for (let k = 0; k < 6; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(80); }
+    for (let k = 0; k < 3; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(80); }
     const r6 = await p.evaluate(() => window.__st());
-    ok(r0.open && r0.on === 0 && r6.on === 6 && r6.goText === 'タイトルへ', tag + ' 4 「物語」で最初から見返せて、最後は「タイトルへ」');
+    ok(r0.open && r0.on === 0 && r0.n === 4 && r6.on === 3 && r6.goText === 'タイトルへ', tag + ' 4 「物語」で最初から見返せて、最後は「タイトルへ」');
     await p.click('#stGo'); await p.waitForTimeout(300);
     const b4 = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden, cover: !document.getElementById('cover').hidden }));
     ok(!b4.story && !b4.runv && b4.cover, tag + ' 4 「タイトルへ」でタイトルに戻り、遠征は始まらない ' + JSON.stringify(b4));
