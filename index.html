@@ -2817,7 +2817,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.6.5</p>
+    <p class="c-ver" id="cVer">ver 5.6.6</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3200,7 +3200,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.6.5';
+  const APP_VERSION = '5.6.6';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4124,10 +4124,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   /* 敵が動き始める時点の仲間のHP（予測専用・v5.5.6）。ターンの始まりの順は、回す（休息の香）→ 回復列で休む・列回復（2ターン目から）→ 突入技（祝福）→ 行動。
      狙われる列（fr）の仲間にだけ効けばよい（ほかの列は狙われない）。戦闘の結果には一切触れない */
-  function startHp(src, fr, entering) {
+  function startHp(src, fr, entering, backHit) {
     const m = new Map(); units(src).forEach(({ u }) => m.set(u, u.hp));
     const add = (u, g) => m.set(u, Math.min(u.max, m.get(u) + Math.max(0, g)));
-    if (fr === 2) {
+    if (fr === 2 || backHit) {   // 回復列の回復は、敵が動く前（v5.6.6：尾払いで回復列が打たれるので、前列がいるときも数える）
       const back = units(src).filter((x) => x.r === 2);
       if (entering && relOn('incense')) back.forEach((x) => add(x.u, relD('incense').backHeal));
       if (phase === 'choose' || turn > 1) { back.forEach((x) => add(x.u, x.u.rest || 0)); const hs = back.filter((x) => x.u.heal > 0); back.forEach((x) => add(x.u, hs.reduce((a, h) => a + (h.u !== x.u ? h.u.heal : 0), 0))); }
@@ -4142,17 +4142,20 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const pre = preKilled(src, fresh, entering);
     const acts = (enemy.party ? enemy.party.filter(foeAlive).sort((a, b) => b.spd - a.spd).map((F) => ({ F, act: actOf(F) })) : [{ F: enemy, act: curAct() }]).filter((x) => !pre.has(x.F));
     // 狙いは、敵が動くその時点のHPで決まる（祝福の回復はどの攻撃より先。先に動いた敵の攻撃も引く）。実際の戦闘と同じ順で数える（v5.5.6）
-    const start = startHp(src, fr, entering), hpNow = new Map(start);
+    const start = startHp(src, fr, entering, acts.some(({ act }) => act && act.rule === 'back')), hpNow = new Map(start);
     Object.defineProperty(out, 'start', { value: start });   // 敵が動き始める時点の仲間のHP（見通しの札が使う）
     const hpOf = (u) => hpNow.get(u);
     acts.forEach(({ F, act }) => {
     if (!act || !act.dmg || act.rule === 'charge' || act.rule === 'random' || act.rule === 'bind') return;
     const info = targetInfo(act, src, F, hpOf);
     if (!info.cols || !info.cols.length) return;
-    const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
+    const cols = act.rule === 'all' || act.rule === 'back' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
+    const row = info.row != null ? info.row : fr;
     cols.forEach((c) => {
-      const u = src[fr][c]; if (!u) return;
+      const u = src[row][c]; if (!u) return;
       let d = act.dmg, why = '';
+      if (row !== fr) { const k = row + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d); hpNow.set(u, hpNow.get(u) - Math.max(1, d)); per.push({ F, act, c, r: row, d: Math.max(1, d), why: '' }); return; }   // 尾払い：回復列にそのまま
+      if (act.vsEntered && fr === 0 && entering) { d = Math.round(d * act.vsEntered); why = '×' + act.vsEntered; }   // 呼び寄せ：回して入ったばかりの仲間に大きく
       if (fr > 0) { d *= 2; why = '×2'; }
       else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup; used[c] = 1; why = '防'; }  }
       if (fr === 0 && entering && RX().entry) { src[0].forEach((x) => { const xe = entryFor(x, true); if (xe && xe.teamGuard) d -= xe.teamGuard; }); const ue = entryFor(u, true); if (ue && ue.guard) d -= ue.guard; }
@@ -4308,11 +4311,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const nextActOf = (F) => F.pattern[turn % F.pattern.length];
   const nextAct = () => nextActOf(enemy);
   // 大技の狙い方（v5.6.4）：ためているターンから出す。だれに当たるかは、次のターンの並びで決まるので、決まり方を言う
-  const aimOf = (n) => (!n || !n.dmg ? '' : n.rule === 'all' ? '一番前の列の全員' : n.rule === 'random' ? '一番前の列からランダム' : n.rule === 'job' ? n.job + '（いなければHP最低）' : n.rule === 'lowhp' ? 'HPがいちばん低い仲間' : '');
+  const aimOf = (n) => (!n || !n.dmg ? '' : n.rule === 'all' ? '一番前の列の全員' : n.rule === 'random' ? '一番前の列からランダム' : n.rule === 'job' ? n.job + '（いなければHP最低）' : n.rule === 'lowhp' ? 'HPがいちばん低い仲間' + (n.vsEntered ? '（入ったばかりなら×' + n.vsEntered + '）' : '') : n.rule === 'back' ? '回復列の全員' : '');
   function targetInfo(act, g, F, hpOf) {   // hpOf：予測で、その時点のHP（祝福の回復・先の敵の攻撃のあと）で狙いを決める（v5.5.6）
     if (act.rule === 'bind') return { cols: [], desc: '縛られると、次のターンは隊列を回せない' };
     if (act.rule === 'charge') { const n = nextActOf(F || enemy); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' + (aimOf(n) ? '・狙い ' + aimOf(n) : '') }; }
     if (act.rule === 'guard' || act.rule === 'mend' || act.rule === 'aid') return { cols: [], desc: '' };
+    if (act.rule === 'back') { const B = units(g).filter((x) => x.r === 2 && (!hpOf || (hpOf(x.u) > 0))); return { cols: B.map((x) => x.c).sort(), row: 2, desc: B.length ? '狙い　回復列の全員' : '狙い　回復列（だれもいない）' }; }   // 尾払い（v5.6.6）：いちばん後ろの列。攻撃列が空の2倍・防御補助・突入技の軽減は効かない
     const fr = frontRow(g);
     if (fr < 0) return { cols: [], desc: '' };
     const HP = (u) => (hpOf ? hpOf(u) : u.hp);
@@ -4325,7 +4329,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + colN(t.c) + '）' };
     }
     const t = L.reduce((a, b) => (HP(b.u) < HP(a.u) ? b : a));
-    return { cols: [t.c], desc: act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）' };
+    return { cols: [t.c], desc: (act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）') + (act.vsEntered ? '。入ったばかりなら×' + act.vsEntered : '') };
   }
   const actOf = (F, t) => F.pattern[((t || turn) - 1) % F.pattern.length];
   const curAct = () => (enemy.party ? actOf(leadFoe()) : actOf(enemy));
@@ -4566,7 +4570,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 敵のパネルを押したときの一言：いまの技と数字、狙う列（パネルからは技の名前を外したので、押した反応で返す。v5.1.59）
   function foeSay(F, a) {
     const tg = targetInfo(a, showGhost() ? previewGrid() : grid, F);
-    const to = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? colN(tg.cols[0]) + '側' : a.rule === 'random' ? '一番前の列のだれか' : '';
+    const to = a.rule === 'all' ? '一番前の列の全員' : a.rule === 'back' ? '回復列の全員' : tg.cols && tg.cols.length ? colN(tg.cols[0]) + '側' : a.rule === 'random' ? '一番前の列のだれか' : '';
     const n = a.dmg ? a.dmg + (a.hits > 1 ? '×' + a.hits : '') : a.rule === 'mend' ? '+' + a.heal : '';
     return '狙う：' + F.name + '　' + a.name + (n ? ' ' + n : '') + (to ? ' → ' + to : '');
   }
@@ -4582,7 +4586,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       let foeTxt = '';
       if (!tut && !dead) {
         const live2 = phase === 'prep' || phase === 'choose', h = live2 && a.dmg ? actHit(F, a) : null;
-        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? '?' : '';
+        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : a.rule === 'back' ? '後' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? '?' : '';
         if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : (h && h.lo !== h.hi ? '' : '<small>受ける</small>') + '<b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>'   /* 幅が「1〜5」で足りなくなるので、幅のある数字のときは「受ける」を省く（v5.6.5：像が毎ターンなぎはらいになり、375幅ではみ出した） */ + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
         else if (a.rule === 'mend') foeTxt = '<small>回復</small><b>+' + a.heal + '</b>';
         else if (a.rule === 'guard' || a.rule === 'aid') foeTxt = '<small>防御</small><b>+' + a.def + '</b>';
@@ -4592,7 +4596,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const brief = a.name;   // パネルの技名は、ログ・行動パターンと同じ名前（v5.1.41）
       const dl = live && !dead ? foeDealt(F) : 0, kill = dl >= F.hp && dl > 0;
       if (dead) return '<button type="button" class="fc dead" data-f="' + F.id + '" disabled aria-label="' + F.name + '（倒れた）"><b class="fc-nm disp">' + F.name + '</b><span class="fc-gone">倒れた</span></button>';   // 倒れた敵は、名前と「倒れた」だけに折りたたむ（v5.1.57）
-      const sel = F === tgt, tg = targetInfo(a, showGhost() ? previewGrid() : grid, F), tgt2 = a.rule === 'all' ? '一番前の列の全員' : tg.cols && tg.cols.length ? colN(tg.cols[0]) + '側' : a.rule === 'random' ? '一番前の列からランダム' : '';
+      const sel = F === tgt, tg = targetInfo(a, showGhost() ? previewGrid() : grid, F), tgt2 = a.rule === 'all' ? '一番前の列の全員' : a.rule === 'back' ? '回復列の全員' : tg.cols && tg.cols.length ? colN(tg.cols[0]) + '側' : a.rule === 'random' ? '一番前の列からランダム' : '';
       return '<button type="button" class="fc' + (sel ? ' sel' : '') + (half ? ' half' : '') + (F.charged ? ' charged' : '') + (F.hp / F.max <= 0.35 ? ' low' : '') + '" data-f="' + F.id + '" aria-pressed="' + sel + '" aria-label="' + F.name + ' HP' + F.hp + '/' + F.max + (sel ? '（攻撃対象）' : '（タップで攻撃対象にする）') + (tgt2 ? '　今ターン：' + a.name + '→' + tgt2 : '') + '">' +
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
@@ -4627,7 +4631,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const a = actOf(F); if (!a.dmg) return;
       const info = targetInfo(a, src, F);
       if (!info.cols) { maybe = true; return; }
-      if (a.rule === 'all') info.cols.forEach((c) => cols.add(c)); else if (info.cols.length) cols.add(info.cols[0]);
+      if (a.rule === 'all') info.cols.forEach((c) => cols.add(c)); else if (a.rule !== 'back' && info.cols.length) cols.add(info.cols[0]);   // 尾払いは回復列なので、列の帯は出さない
     });
     const jinfo = Ja ? targetInfo(Ja, src, J) : null, lead = targetInfo(La, src, L);
     const verb = (d) => (phase === 'choose' ? d.replace('狙い　', gh ? '回すと　' : '維持だと　') : d);
@@ -4766,7 +4770,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const FOE = { foe: true };
   function ruleShort(a) {
     if (a.rule === 'job') return a.job + 'を狙う（前列にいなければHP最低）';
-    if (a.rule === 'lowhp') return '前列でHPが最も低い仲間' + (a.pierce ? '・防無効' : '');
+    if (a.rule === 'lowhp') return '前列でHPが最も低い仲間' + (a.vsEntered ? '（回して入ったばかりなら×' + a.vsEntered + '）' : '') + (a.pierce ? '・防無効' : '');
+    if (a.rule === 'back') return '回復列（いちばん後ろ）の全員に当たる';
     if (a.rule === 'all') return '前列の全員に当たる' + (a.pierce ? '・防無効' : '');
     if (a.rule === 'random') return '前列からランダムに' + a.hits + '回' + (a.pierce ? '・防無効' : '');
     if (a.rule === 'charge') return '力をためる（次は大技）';
@@ -5821,12 +5826,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
   }
 
-  async function hitColumn(col, dmg, pierce, big) {
-    const row = frontRow();
+  async function hitColumn(col, dmg, pierce, big, rowAt, act) {
+    const fr0 = frontRow(), row = rowAt != null ? rowAt : fr0;
     if (row < 0 || !grid[row][col]) return;
     const v = grid[row][col], before = pct(v);
     let d = dmg, note = '', guard = false;
-    if (row > 0) { d *= 2; note = '（攻撃列が空で2倍）'; }
+    if (act && act.vsEntered && row === 0 && v.entered) { d = Math.round(d * act.vsEntered); note = '（入ったばかりで×' + act.vsEntered + '）'; }   // 呼び寄せ（v5.6.6）
+    if (rowAt != null && row !== fr0) { /* 尾払い：回復列にそのまま当たる */ }
+    else if (row > 0) { d *= 2; note = '（攻撃列が空で2倍）'; }
     else {
       const m = grid[1][col];
       if (pierce) { if (m && m.defReady && m.defSup > 0) note = '（防御補助が効かない）'; }
@@ -5948,10 +5955,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (wasCharged || act.big) await bigSurvived(fallen0);
       return;
     }
+    if (act.rule === 'back') {   // 尾払い（v5.6.6）：回復列の全員
+      for (const col of info.cols) { if (phase === 'over') return; await hitColumn(col, act.dmg, act.pierce, wasCharged || act.big, 2, act); }
+      if (wasCharged || act.big) await bigSurvived(fallen0);
+      return;
+    }
     const cols = act.rule === 'all' ? info.cols : Array(act.hits || 1).fill(info.cols[0]);
     for (const col of cols) {
       if (phase === 'over') return;
-      await hitColumn(col, act.dmg, act.pierce, wasCharged || act.big);
+      await hitColumn(col, act.dmg, act.pierce, wasCharged || act.big, null, act);
     }
     if (wasCharged || act.big) await bigSurvived(fallen0);
   }
@@ -6671,7 +6683,28 @@ body.fast #stampOk.on { animation-duration: .5s; }
       '<circle cx="46" cy="56" r="22" fill="url(#gE3)"/><ellipse cx="46" cy="56" rx="5" ry="4" fill="#c8ff8a"/><circle cx="46" cy="56" r="2" fill="#f4ffe8"/>' +
       '<path d="M22 68q8 6 22 4" fill="none" stroke="' + K + '" stroke-width="2.4"/><path d="M26 72l3 7 4-6M36 73l3 7 4-6" fill="' + BONE + '" stroke="' + K + '" stroke-width="1.6"/>' +
       '<path d="M16 76q-8 8-4 18q6-6 10-4q-2-8 4-12" fill="#9be36a" opacity=".55"/>' +
-      '<path d="M96 168v-16M150 168v-14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/>')
+      '<path d="M96 168v-16M150 168v-14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/>')    ,
+    // 4 火呑みの大蜥蜴（v5.6.6・第3章）：地を這う長い胴、背に祈りの燭台、炎色の尾の先
+    E('<defs>' + halo('gE4', '#ff8a3a') + '<radialGradient id="gE4f"><stop offset="0" stop-color="#ffe0a0"/><stop offset=".55" stop-color="#ff8a3a" stop-opacity=".7"/><stop offset="1" stop-color="#ff5a1a" stop-opacity="0"/></radialGradient></defs>' +
+      '<path d="M176 132c30 2 46-12 50-30 3-14-6-26-16-26" fill="none" stroke="' + K + '" stroke-width="12" stroke-linecap="round"/>' +
+      '<path d="M176 132c30 2 46-12 50-30 3-14-6-26-16-26" fill="none" stroke="#4a3a34" stroke-width="7" stroke-linecap="round"/>' +
+      '<circle cx="210" cy="76" r="16" fill="url(#gE4f)"/><path d="M206 80q4-14 10-6q-2-8 4-10q0 12-6 18z" fill="#ffb15a" stroke="' + K + '" stroke-width="1.6"/>' +
+      '<path d="M24 136q-2-26 22-34q40-14 92-12q46 2 52 26q4 22-22 26H44q-18 0-20-6z" fill="#3e3036" ' + ES + '/>' +
+      '<path d="M40 110q50-12 120-6" fill="none" stroke="#c98a5a" stroke-width="1.4" stroke-dasharray="2 7" opacity=".7"/>' +
+      '<path d="M44 140l-6 18h14l4-16M88 142l-4 16h14l2-16M132 142l2 16h14l-4-16M164 138l8 16h12l-8-18" fill="#2c2228" ' + ES + '/>' +
+      '<path d="M18 116q-14-2-16 8q6 10 22 8" fill="#3e3036" ' + ES + '/>' +
+      eye(30, 112, 'gE4') +
+      '<path d="M96 92v-22M86 70h20M90 70v-8h12v8" fill="#d8b660" stroke="' + K + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<circle cx="96" cy="50" r="14" fill="url(#gE4f)"/><path d="M96 60q-6-8 0-18q6 10 0 18z" fill="#ffd27a" stroke="' + K + '" stroke-width="1.6"/>'),
+    // 5 聖歌の亡霊（v5.6.6・第3章）：顔のない聖歌隊の衣、青白く光る口元、すそは霧になって消える
+    E('<defs><radialGradient id="gE5"><stop offset="0" stop-color="#bfe6ff" stop-opacity=".85"/><stop offset=".5" stop-color="#7fb8e6" stop-opacity=".25"/><stop offset="1" stop-color="#7fb8e6" stop-opacity="0"/></radialGradient></defs>' +
+      '<path d="M70 160q-6-70 12-104q14-30 38-30q24 0 38 30q18 34 12 104q-10-8-20 0q-10-8-20 0q-10-8-20 0q-10-8-20 0q-10-8-20 0z" fill="#2e3448" ' + ES + '/>' +
+      '<path d="M86 62q34-14 68 0" fill="none" stroke="#8ea6c8" stroke-width="1.2" opacity=".45"/>' +
+      '<path d="M96 84q24-30 48 0q2 26-24 30q-26-4-24-30z" fill="#11141f" ' + ES + '/>' +
+      '<ellipse cx="120" cy="100" rx="22" ry="16" fill="url(#gE5)"/><ellipse cx="120" cy="100" rx="7" ry="4.5" fill="#d9f0ff"/>' +
+      '<path d="M84 120q-18 10-12 30l22-4q-4-14 4-22zM156 120q18 10 12 30l-22-4q4-14-4-22z" fill="#262b3c" ' + ES + '/>' +
+      '<path d="M98 136h44l-4 18h-36z" fill="#5a4a34" ' + ES + '/><path d="M120 136v18" stroke="' + K + '" stroke-width="1.6"/>' +
+      '<path d="M60 168q30-8 60 0q30-8 60 0" fill="none" stroke="#9fb6d6" stroke-width="1.4" opacity=".35"/>')
   ];
   // 三位一体の3体（v5.1.39）：石の像・祈り手・断罪者。大きさは敵と同じ 240×180
   const party = {
@@ -6851,7 +6884,20 @@ body.fast #stampOk.on { animation-duration: .5s; }
       { name: 'のしかかり', glyph: '圧', rule: 'lowhp', dmg: 28 },
       { name: 'ひっかき', glyph: '爪', rule: 'all', dmg: 9 }
     ] },
-    foes: [[0, 'binder'], [1, 'binder'], [1, 2]]
+    // 第3章「竜の眠る祭壇」だけの敵（v5.6.6）：数値は自動対戦400回で、標準の踏破率が前と±3ポイント以内（45.8%→46.8%、第3章の突破 75.9%→77.6%）になるよう決めた。今までの敵が狙わなかった所を狙う。尾払い＝回復列（いちばん後ろ）の全員、呼び寄せ＝入ったばかりの仲間に2倍
+    lizard: { name: '火呑みの大蜥蜴', art: 4, voice: 'horn', hp: 310, spd: 4, def: 2, par: 12, allowFallen: 1, pattern: [
+      { name: '尾払い', glyph: '尾', rule: 'back', dmg: 15 },
+      { name: 'かみつき', glyph: '牙', rule: 'lowhp', dmg: 21 },
+      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+      { name: '火の息', glyph: '炎', rule: 'all', dmg: 25, pierce: true }
+    ] },
+    chorus: { name: '聖歌の亡霊', art: 5, voice: 'bite', hp: 260, spd: 6, def: 1, par: 12, allowFallen: 1, pattern: [
+      { name: '魂の声', glyph: '声', rule: 'all', dmg: 10 },
+      { name: '呼び寄せ', glyph: '呼', rule: 'lowhp', dmg: 18, vsEntered: 2 },
+      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+      { name: '嘆きの合唱', glyph: '嘆', rule: 'all', dmg: 27 }
+    ] },
+    foes: [[0, 'binder'], [1, 'binder'], ['lizard', 'chorus']]
   };
   EXP.trinity = { name: TRI.name, party: TRI.foes, par: TRI.par, allowFallen: TRI.allowFallen };   // 三位一体（定数は TRI）。tools/expsim.mjs が EXP を取り出すので、リテラルの外に置く
   const AGE_PH = [

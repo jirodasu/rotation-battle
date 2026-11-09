@@ -81,6 +81,12 @@ export function battle(en, party, policy, o) {
           if (v.hp === 0) { grid[fr][col] = null; fallen++; }
         };
         const fr = frontRow(grid); if (fr < 0) return { win: false, turns: turn, fallen, hp: hpMap() };
+        if (act.rule === 'back') {   // 尾払い（v5.6.6）：回復列の全員。回復列が先頭の列なら、ふつうの全体攻撃（2倍）と同じ
+          if (fr === 2) { unitsOf(grid).filter((x) => x.r === 2).map((x) => x.c).forEach(hit); }
+          else for (let c = 0; c < COLS; c++) { const v = grid[2][c]; if (!v) continue; v.hp = Math.max(0, v.hp - Math.max(1, act.dmg)); if (v.hp === 0) { grid[2][c] = null; fallen++; } }
+          if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
+          continue;
+        }
         const L = unitsOf(grid).filter((x) => x.r === fr);
         if (act.rule === 'random') { for (let i = 0; i < act.hits; i++) { const f2 = frontRow(grid); if (f2 < 0) break; const L2 = unitsOf(grid).filter((x) => x.r === f2); hit(L2[Math.floor(rand() * L2.length)].c); } }
         else if (act.rule === 'all') L.map((x) => x.c).forEach(hit);
