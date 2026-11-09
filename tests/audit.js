@@ -59,13 +59,13 @@ async function open(b, w, h, kind, node) {
       // 断罪者に大技（ダメージあり）が来る手番まで進める
       let guard = 0; while (!(R.actOf(judge).dmg) && guard++ < 8) R.setTurn(R.turn + 1);
       const per = (src) => R.incoming(src, true, false).per;
-      R.setTgt('judge'); judge.spd = 0; const base = per(g).filter((x) => x.F === judge).length;
+      R.setTgt('judge'); judge.spd = 0; const jmax = judge.max; judge.max = 999; judge.hp = 999; const base = per(g).filter((x) => x.F === judge).length; judge.max = jmax;   /* v5.6.5：肩代わりが無くなり、満タンの断罪者でも先に倒せることがあるので、倒せないHPで基準を取る */
       const keep = per(g).filter((x) => x.F !== judge).length;
       judge.hp = 1; const killed = per(g).filter((x) => x.F === judge).length;
       const others = per(g).filter((x) => x.F !== judge).length;
       judge.hp = judge.max; judge.spd = 99; judge.hp = 1; const fast = per(g).filter((x) => x.F === judge).length;
       // 攻撃対象でない敵の予測は、味方が先に倒せる見込みでも従来どおり
-      judge.spd = 5; judge.hp = judge.max; R.setTgt('statue'); statue.hp = 1; statue.spd = 0;
+      judge.spd = 5; judge.hp = judge.max; R.setTgt('statue'); statue.hp = 1; statue.spd = 0; judge.hp = 999;
       const stat = per(g).filter((x) => x.F === judge).length;
       return { base, keep, killed, others, fast, stat };
     });
@@ -88,7 +88,7 @@ async function open(b, w, h, kind, node) {
     }
     ok(rows.every((r) => r.tshow === r.seen), 'C1 下の予告の札は、大技の予告があるときだけ出る（' + rows.map((r) => r.seen ? '○' : '−').join('') + '）');
     ok(rows.filter((r) => r.seen).every((r) => /断罪者/.test(r.head) && r.sub.length > 3), 'C1 予告を出すときは、敵名（断罪者）と理由がある（v5.1.59〜 読み上げと押したときの吹き出し）（' + (rows.find((r) => r.seen) || {}).head + ' / ' + (rows.find((r) => r.seen) || {}).sub + '）');
-    ok(rows.filter((r) => !r.seen).every((r) => r.more) && rows.some((r) => r.seen), 'C1 札がないターンは「敵の詳細」への入り口が出る');
+    ok(rows.filter((r) => !r.seen).every((r) => r.more), 'C1 札がないターンは「敵の詳細」への入り口が出る');
     ok(rows.every((r) => !r.nx && !r.rng), 'C7 常時表示に「その次」の行も、範囲表記（rng）もない');
     // C2 倒れた敵
     await p.evaluate(() => { const R = window.__rb; R.foeList().find((f) => f.id === 'priest').hp = 0; R.render(); });
@@ -96,7 +96,7 @@ async function open(b, w, h, kind, node) {
     // 祈り手が倒れると予告は早まらない → 大技が来ない手番は札が出ない
     const rows2 = [];
     for (let tn = 1; tn <= 9; tn++) { await p.evaluate((n) => { window.__rb.setTurn(n); }, tn); rows2.push(await p.evaluate(() => { const w = window.__rb.foeWarn(); return { seen: !!(w && w.seen), tshow: getComputedStyle(document.getElementById('ticket')).display !== 'none', more: !document.getElementById('foeMore').hidden }; })); }
-    ok(rows2.every((r) => r.tshow === r.seen && r.more === !r.seen) && rows2.some((r) => !r.seen) && rows2.some((r) => r.seen), 'C1 祈り手がいないとき：札は大技の直前（ため・当日）だけ出て、ほかは出ない（' + rows2.map((r) => r.seen ? '○' : '−').join('') + '）');
+    ok(rows2.every((r) => r.tshow === r.seen && r.more === !r.seen) && rows2.some((r) => !r.seen), 'C1 祈り手がいないとき：札は大技の予告があるときだけ（v5.6.5 から三位一体に大技はない）（' + rows2.map((r) => r.seen ? '○' : '−').join('') + '）');
     ok(/祈り手/.test(dead.t) && /倒れた/.test(dead.t) && dead.parts.length === 0 && dead.h < dead.lh * 0.6, 'C2 倒れた敵は「名前＋倒れた」だけに折りたたまれる（高さ ' + Math.round(dead.h) + ' < 生きている ' + Math.round(dead.lh) + '、残った部品 ' + dead.parts.join(',') + '）');
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
@@ -119,14 +119,14 @@ async function open(b, w, h, kind, node) {
     ok(dom.length === 0 || dom.filter((x) => x.bd).every((x) => /\d+\+\d+/.test(x.t)), 'C3 画面の札には内訳（12+5 のような形）が添えられる ' + JSON.stringify(dom.slice(0, 3)));
     // C6
     const c6 = await p.evaluate(() => { const q = (id, s) => document.querySelector('#party .fc[data-f="' + id + '"] ' + s); return { sh: [!!q('statue', '.fc-chip.sh'), !!q('priest', '.fc-chip.sh'), !!q('judge', '.fc-chip.sh')], df: document.querySelectorAll('#party .fc-chip.df').length, txt: document.getElementById('party').textContent }; });
-    ok(c6.sh[0] && !c6.sh[1] && !c6.sh[2] && c6.df === 0 && !/×½/.test(c6.txt), 'C6 ×½の札は像の「肩代わり」だけ。防御アップ・次の防の札は出ない');
+    ok(!c6.sh[0] && !c6.sh[1] && !c6.sh[2] && c6.df === 0 && !/×½/.test(c6.txt), 'C6 肩代わり・×½・防御アップ・次の防の札は出ない（v5.6.5 で肩代わりをやめた）');
     // C7：敵の詳細に「その次」
     await p.evaluate(() => { window.__rb.setTurn(2); });
     { const sel = await p.evaluate(() => (document.getElementById('foeMore').hidden ? '#ticket' : '#foeMore'));
       await p.click(sel); await p.waitForTimeout(200);
       if (sel === '#ticket') { await p.click(sel); await p.waitForTimeout(200); } }   // v5.1.59：札は1回目が吹き出し、2回目で詳細
     const det = await p.evaluate(() => document.getElementById('foeSheet').textContent);
-    ok(/その次/.test(det), 'C7 敵の詳細に「その次」の行動がある');
+    ok(/その次/.test(det) || /毎ターン同じ技/.test(det), 'C7 敵の詳細に「その次」の行動がある（三位一体は「毎ターン同じ技」）');
     await p.keyboard.press('Escape'); await p.waitForTimeout(150);
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
