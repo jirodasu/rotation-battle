@@ -2153,6 +2153,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .tok.cb .hpb.low b { background: var(--hp-low); }
 .slot.sel .tok.cb .hpb b { background: var(--accent); }
 .tok.cb .disc svg { transform-origin: 50% 96%; }
+.tok.cb .inc-n { bottom: auto; top: 50%; left: calc(100% + 3px); transform: translateY(-50%); }   /* ちびキャラ：「あとN発」は札の右（上だと帽子・頭、下だと名札に重なる。v5.7.1） */
 .tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
 .slot.hover .tok.cb .disc { outline: none; filter: drop-shadow(0 0 6px var(--accent)); }
 @media (prefers-reduced-motion: no-preference) {
@@ -3521,6 +3522,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   const SFX = {
     tap() { if (!can()) return; INST.wood(now(), 1900, 0.35, bus.sfx); },
+    // しのいだ！（v5.7.1）：回して仲間を救ったとき。灯の鐘で4度上がる2音（解決の響き）＋ごく小さな高い光。0.5秒で消え、曲を下げない
+    save() { if (!can()) return; const t = now(); INST.bell(t, 72, 0.09, bus.sfx, 0.6); INST.bell(t + 0.11, 77, 0.11, bus.sfx, 0.7); INST.bell(t + 0.115, 84, 0.04, bus.sfx, 0.5); },
     // 突入技：前に躍り出る短いファンファーレ（列ごとに主題の音から始まる）
     entry(c) { if (!can()) return; duck(0.6, 0.35); const t = now(), p = [0, 2, 4, 5][c] || 0; INST.swish(t, 0.18, 0.12, bus.sfx, 600, 4200); INST.brass(t + 0.04, 57 + p, 0.09, 0.08, bus.sfx, 0.3); INST.brass(t + 0.13, 62 + p, 0.22, 0.09, bus.sfx, 0.35); INST.snare(t + 0.13, 0.18, bus.sfx); INST.bell(t + 0.15, 86 + p, 0.08, bus.sfx, 0.5); },
     // 引退：主題の冒頭4音をオルゴールで
@@ -6121,7 +6124,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     tutOnChoose();
     if (saveMark && saveMark.length) {
       const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
-      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); try { SFX.tap(); } catch (e) { /* */ } }, 120 + i * 160); });
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } }, 120 + i * 160); });
       if (live.length) say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。');
     }
   }
@@ -8277,7 +8280,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     if (!$('cover').hidden) closeCover();
     swappedOnce = false;
-    expShowMap([]);
+    expShowMap(legacyLine());
+  }
+  /* 前の隊の灯（v5.7.0）：2回目からの遠征は、最初の地図に「前の隊がどこで途絶えたか」を1行出す。死を次の挑戦へつなぐ（Hades の「どの周回にも意味がある」）。
+     読むのは遠征の記録（hist）にもともとある地点・倒れた人数・踏破だけ。保存の形は変えない */
+  function legacyLine() {
+    if (qaOn) return [];
+    const h = (expMeta().hist || [])[0]; if (!h || !(+h.node > 0)) return [];
+    if (h.clear) return ['前の隊は、環廊の底まで灯を届けた。灯は、また次の者へ。'];
+    const at = Math.min(+h.node, EXP.nodes), ch = expCh(at);
+    return ['前の隊の灯は、地点' + at + '（第' + (ch + 1) + '章 ' + chName(ch) + '）で途絶えた。' + (+h.fal > 0 ? '倒れた' + h.fal + '人の灯を継いで、ふたたび下る。' : 'その灯を継いで、ふたたび下る。')];
   }
   /* QAジャンプ（v5.5.5）：?qa&ch=章&loc=地点 で開くと、その地点の戦闘1つだけを陣立てから遊べる（検証用。画面には何も出さない）。
      loc は全10地点の通し番号（第1章 1〜3／第2章 4〜6／第3章 7〜10）。ch と loc が合わないとき・範囲外・?qa が無いときは 0（普通に起動）。

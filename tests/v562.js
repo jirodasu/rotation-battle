@@ -3,6 +3,7 @@
 //  1. 320×568・375×667・393×852・844×390 で、QAジャンプ（第1章 地点3）の戦闘の準備画面：見えている札（.inc）がある
 //  2. どの札も、その仲間の顔（肖像の円の中心から、半径の35%の円。v5.6.9 のちびキャラは頭の絵の顔）に重ならない
 //  3. 札は画面の外にはみ出さない。ページのエラーなし
+//  4. v5.7.1：「あとN発」の札（.inc-n）も、ちびキャラの顔・名札に重ならない
 const { launch } = require('./_env');
 const path = require('path');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -22,6 +23,12 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
       return { t: i.textContent, face: Math.hypot(nx - cx, ny - cy) >= rad, inView: a.left >= 0 && a.right <= innerWidth };
     })); }
     const tag = w + '×' + h;
+    // v5.7.1：「あとN発」の札も、ちびキャラの顔と名札に重ならない（HPを減らして出す）
+    await p.goto('file://' + path.join(__dirname, '..', 'index.html') + '?qa&ch=1&loc=3&hp=40'); await p.waitForTimeout(1200);
+    const nn = await p.evaluate(() => [...document.querySelectorAll('#board .inc-n')].filter((n) => n.getBoundingClientRect().width > 0).map((n) => { const a = n.getBoundingClientRect(), t = n.closest('.tok'), nm = t.querySelector('.nm').getBoundingClientRect(), sv = t.querySelector('.disc svg').getBoundingClientRect(), u = sv.height / 124;
+      const fy = sv.top + 40 * u, fx = sv.left + sv.width / 2, rad = 12 * u, nx = Math.max(a.left, Math.min(fx, a.right)), ny = Math.max(a.top, Math.min(fy, a.bottom));
+      return { t: n.textContent, face: Math.hypot(nx - fx, ny - fy) < rad, plate: !(a.right <= nm.left || a.left >= nm.right || a.bottom <= nm.top || a.top >= nm.bottom), view: a.left >= 0 && a.right <= innerWidth }; }));
+    ok(nn.length > 0 && nn.every((x) => !x.face && !x.plate && x.view), tag + ' 4 「あとN発」が顔・名札に重ならず画面の中 ' + JSON.stringify(nn));
     ok(r && r.length > 0, tag + ' 1 札が出ている（' + (r ? r.length : 0) + '枚）');
     ok(r && r.every((x) => x.face), tag + ' 2 札が顔に重ならない ' + JSON.stringify(r));
     ok(r && r.every((x) => x.inView) && !errs.length, tag + ' 3 画面の中・エラーなし ' + errs.join(' / '));
