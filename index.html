@@ -8240,6 +8240,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const mm = expMeta(), fal = run.gone.filter((m) => m.fate === 'fallen').length;
     const x = xmeta(mm), before = xState(x), sq = run.sq || 'std', depth = run.depth || 1;   // 今回の分を入れる前の状態（新しく開いたものを知るため）
     mm.runs = (+mm.runs || 0) + 1; if (clear) mm.clears = (+mm.clears || 0) + 1;
+    // 最深記録（v5.7.2）：2回目からの遠征で、これまでより深く進んで途絶えたら「もう一度」の札で知らせる（負けても前に進んだ手応え）
+    const deeper = !clear && (+mm.runs || 0) > 1 && run.node > (+mm.best || 0) ? run.node + 1 : 0;
     mm.best = Math.max(+mm.best || 0, clear ? EXP.nodes : run.node);
     if (clear) x.won[sq + ':' + depth] = (x.won[sq + ':' + depth] || 0) + 1;
     const S = { clear: !!clear, fal, reach: clear ? EXP.nodes : run.node + 1, tri: !!run.triWon, sq, depth }, got = [];
@@ -8260,7 +8262,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
-      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
+      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
   }
