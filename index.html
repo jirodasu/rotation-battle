@@ -8043,6 +8043,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
       if (isFightKind(n.kind)) {
         m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? (run && run.depth >= 3 ? pair() : pick(VK)) : null };
+        if (n.step === 1 && firstRun()) { m[id].foe = 'first'; m[id].variant = null; }   // 試作（提案A）：初めての遠征の地点1は「しのいだ！」を体験する専用の戦闘
         if (!chief && !last && TRI.steps.includes(n.step)) { m[id].foe = 'trinity'; m[id].variant = null; }   // 三位一体：乱数の並びは変えずに、置き換えるだけ
       }
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
@@ -8050,10 +8051,21 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return m;
   }
   // rests：その章で休んだ回数（章の主は休むたびに強くなる）
+  // 試作（提案A）：初めての遠征（遠征0回・深さ1）
+  let FIRST_HP = 180;   // 試作：3ターン目の大技まで生き残るHP（地点1の倍率0.45で 81）
+  window.__setFirstHp = (v) => { FIRST_HP = v; };
+  const firstRun = () => !(+expMeta().runs) && (!run || (run.depth || 1) === 1);
+  // 灯喰いネズミと同じ姿・HP。かみつきはサムライを狙い、のしかかりは 30→23（地点1の倍率0.7で 16）。
+  //   1ターン目にサムライが 26→14、2ターン目にためる、3ターン目に「維持なら倒れる・回すと魔女（20）が受けて助かる」
+  const firstFoe = () => Object.assign({}, ENEMIES[0], { hp: FIRST_HP, pattern: [
+    { name: 'かみつき', glyph: '牙', rule: 'job', job: 'サムライ', dmg: 17 },
+    { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+    { name: 'のしかかり', glyph: '圧', rule: 'lowhp', dmg: 23 },
+    { name: 'ひっかき', glyph: '爪', rule: 'lowhp', dmg: 13 }] });
   function expEnemy(step, vkey, foe, rests) {
     const ch = expCh(step), chief = expIsChief(step), k = chief ? EXP.chiefFoe[ch] : foe, t = step - 1;
     const nr = chief ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
-    const base = k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
+    const base = k === 'first' ? firstFoe() : k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'first' ? 0 : k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
     const vs = vkeys(vkey), v = vs.length ? vs.reduce((o, k) => { const x = VARIANTS[k]; return { pre: o.pre + x.pre, hp: o.hp * (x.hp || 1), dmg: o.dmg * (x.dmg || 1), def: o.def + (x.def || 0), f: [o.f, x.f].filter(Boolean).join(' '), eat: o.eat || x.eat, starve: o.starve || x.starve, layer: o.layer || x.layer }; }, { pre: '', hp: 1, dmg: 1, def: 0, f: '' }) : null;   // 亜種は1つか2つ（深さ3）。重ねるときは掛け合わせる
     const dm = run && run.depth >= 3 && EXP.deepMul ? EXP.deepMul : { hp: 1, dmg: 1 };   // 深さ3の底上げ（v5.6.7）
     if (base.party) return { name: base.name, party: base.party, chief: false, ch, variant: null, vf: null, art: 0, boss: false, restUp: 0, par: base.par, allowFallen: base.allowFallen, hp: base.party.reduce((a, f) => a + f.hp, 0), spd: 0, def: 0, voice: 'club', pattern: [{ name: '三位一体', glyph: '三', rule: 'party' }] };
