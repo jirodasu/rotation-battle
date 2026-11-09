@@ -2817,7 +2817,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.6.4</p>
+    <p class="c-ver" id="cVer">ver 5.6.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3200,7 +3200,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.6.4';
+  const APP_VERSION = '5.6.5';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -3239,20 +3239,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
   //   warnAhead：断罪者の大技が、何ターン前から予告に見えるか（祈り手が生きている間／倒れたあと）。周期は3ターンなので最大2
   //   foes の順番が、ターゲットを選ばなかったときの狙う順（上から生きている最初の1体）
   const TRI = {
-    name: '三位一体', par: 9, allowFallen: 1, steps: [5], share: 0.5, warnAhead: { withPriest: 2, noPriest: 1 },
+    // v5.6.5：3体とも「毎ターン同じ1つの技」に（三位一体が分かりにくい、の声）。肩代わり（半分）・防御構え・守りの祈り・ため/大技はやめた
+    name: '三位一体', par: 9, allowFallen: 1, steps: [5], share: 1, warnAhead: { withPriest: 1, noPriest: 1 },
     foes: [
       { id: 'statue', name: '鎮守の像', short: '像', art: 'statue', voice: 'club', hp: 30, def: 4, spd: 3, pattern: [
-        { name: '防御構え', glyph: '守', rule: 'guard', def: 4 },
-        { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5 },
         { name: 'なぎはらい', glyph: '腕', rule: 'all', dmg: 5 }] },
       { id: 'priest', name: '祈り手', short: '祈', art: 'priest', voice: 'bite', hp: 14, def: 0, spd: 6, pattern: [
-        { name: '癒しの祈り', glyph: '癒', rule: 'mend', heal: 5 },
-        { name: '守りの祈り', glyph: '護', rule: 'aid', def: 3 },
         { name: '癒しの祈り', glyph: '癒', rule: 'mend', heal: 5 }] },
       { id: 'judge', name: '断罪者', short: '断', art: 'judge', voice: 'horn', hp: 22, def: 0, spd: 5, pattern: [
-        { name: '断罪の一閃', glyph: '断', rule: 'lowhp', dmg: 8 },
-        { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
-        { name: '断罪の大技', glyph: '罪', rule: 'lowhp', dmg: 12, big: true }] }
+        { name: '断罪の一閃', glyph: '断', rule: 'lowhp', dmg: 8 }] }
     ]
   };
 
@@ -4480,7 +4475,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
-    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。<em>鎮守の像が生きている間</em>、祈り手と断罪者が受けるダメージは<em>半分</em>。パネルの「与」が、いまの並びで与えられるダメージ。像を先に倒すか、祈り手を先に落とすかで戦いが変わる。']
+    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。3体は<em>毎ターン同じ技</em>だけを使う。像は一番前の列の全員に' + foeById('statue').pattern[0].dmg + '、祈り手は傷ついた敵を' + foeById('priest').pattern[0].heal + '回復、断罪者はHPのいちばん低い仲間に' + foeById('judge').pattern[0].dmg + '。パネルの「与」が、いまの並びで与えられるダメージ。どれから倒すかで戦いが変わる。']
   };
   let tipKey = null;
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
@@ -4549,7 +4544,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 状態：肩代わり・防御・ため。アイコンと数値で
     const c = [];
     if (F.hp > 0) {
-      if (F.id === 'statue') c.push('<i class="fc-chip sh" title="肩代わり：ほかの2体が受けるダメージを半分にする">' + ICON.shield + (tut ? '<b>肩代わり</b>' : '') + '</i>');
+      if (F.id === 'statue' && TRI.share < 1) c.push('<i class="fc-chip sh" title="肩代わり：ほかの2体が受けるダメージを半分にする">' + ICON.shield + (tut ? '<b>肩代わり</b>' : '') + '</i>');
       if (F.charged) c.push('<i class="fc-chip ch" title="ためている：このターンは大技">溜' + (tut ? '<b>大技</b>' : '') + '</i>');
       if (phase === 'choose' || phase === 'prep') {
         const a = actOf(F);
@@ -4588,7 +4583,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (!tut && !dead) {
         const live2 = phase === 'prep' || phase === 'choose', h = live2 && a.dmg ? actHit(F, a) : null;
         const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? '?' : '';
-        if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : '<small>受ける</small><b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>' + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
+        if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : (h && h.lo !== h.hi ? '' : '<small>受ける</small>') + '<b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>'   /* 幅が「1〜5」で足りなくなるので、幅のある数字のときは「受ける」を省く（v5.6.5：像が毎ターンなぎはらいになり、375幅ではみ出した） */ + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
         else if (a.rule === 'mend') foeTxt = '<small>回復</small><b>+' + a.heal + '</b>';
         else if (a.rule === 'guard' || a.rule === 'aid') foeTxt = '<small>防御</small><b>+' + a.def + '</b>';
         else if (a.rule === 'charge') foeTxt = '<small>ためる</small>';
@@ -4792,7 +4787,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }).join('');
     return '<button type="button" class="ucard" id="cardClose" aria-label="閉じる">' +
       '<span class="uc-head"><span class="uc-id"><b class="uc-name disp">' + enemy.name + '</b><span class="uc-tags"><span class="uc-tag foe">敵</span><span class="uc-tag">' + chapLabel() + '</span></span></span><span class="uc-x">' + ICON.x + '</span></span>' +
-      '<span class="uc-role" style="display:block">鎮守の像が生きている間、祈り手と断罪者が受けるダメージは<b>半分</b>。断罪者は3ターンごとに大技（' + foeById('judge').pattern.find((a) => a.big).dmg + '）。祈り手が生きている間は、大技の予告が1ターン早く見える。パネルをタップすると攻撃対象を選べる。</span>' +
+      '<span class="uc-role" style="display:block">3体は毎ターン同じ技だけ：像は一番前の列の全員に<b>' + foeById('statue').pattern[0].dmg + '</b>、祈り手は傷ついた敵を<b>' + foeById('priest').pattern[0].heal + '</b>回復、断罪者はHPのいちばん低い仲間に<b>' + foeById('judge').pattern[0].dmg + '</b>。パネルをタップすると攻撃対象を選べる。</span>' +
       rows + '</button>';
   }
   const ruleShort2 = (a) => (a.rule === 'guard' ? '自分の防御が上がる（次のターンに働く）' : a.rule === 'mend' ? '鎮守の像のHPを回復' : a.rule === 'aid' ? '像か断罪者に防御を付ける（次のターンに働く）' : ruleShort(a));
@@ -5817,7 +5812,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (T.hp <= 0) {
       if (!enemy.party) { say(u.name + 'がとどめを刺した。'); finish('win'); return; }
       burstAt(ea);
-      say(u.name + 'が' + T.name + 'を倒した。' + (T.id === 'statue' ? '肩代わりが消えた。' : T.id === 'priest' ? '回復と大技の早期予告が止まる。' : ''));
+      say(u.name + 'が' + T.name + 'を倒した。' + (T.id === 'statue' ? (TRI.share < 1 ? '肩代わりが消えた。' : 'なぎはらいが止まる。') : T.id === 'priest' ? '回復が止まる。' : ''));
       anim(ea, [{ opacity: 1, transform: 'scale(1)' }, { opacity: 0.35, transform: 'scale(.94)' }], { duration: 260, fill: 'forwards' });
       await wait(300);
       if (tgtId === T.id) tgtId = null;
@@ -7917,7 +7912,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function expCard(c) {
     const e = expEnemy(c.step, c.variant, expFoeOf(c)), chief = expIsChief(c.step), last = c.step === EXP.nodes, binds = e.pattern.some((a) => a.rule === 'bind');
     if (e.party) return { ico: '<span class="ev-var" style="--vf:none">' + PARTY_ART.statue + '</span>', t: '戦闘　' + e.name,
-      d: '敵は3体（' + e.party.map((f) => f.name + ' HP' + f.hp + '・防御' + f.def + '・素早さ' + f.spd).join('／') + '）。倒す順番を考えるパズル戦。鎮守の像が生きている間、ほかの2体へのダメージは半分。勝てば報酬を4つから1つ。',
+      d: '敵は3体（' + e.party.map((f) => f.name + ' HP' + f.hp + '・防御' + f.def + '・素早さ' + f.spd).join('／') + '）。倒す順番を考えるパズル戦。3体は毎ターン同じ技だけを使う。勝てば報酬を4つから1つ。',
       k: [['敵', '3体'], ['HP', e.party.reduce((a, f) => a + f.hp, 0)], ['報酬', '4択']] };   // 本文と同じ数字のピルは付けない（v5.1.57）。いつも見せるのは数字の1行だけ（v5.1.60）
     return { ico: '<span class="ev-var" style="--vf:' + (e.vf || 'none') + '">' + EART[e.art] + '</span>', t: (chief ? '章の主　' : '戦闘　') + e.name,
       d: (e.variant && VARIANTS[e.variant].def ? '防御は亜種で+' + VARIANTS[e.variant].def + '。' : '') + (e.variant ? '亜種「' + VARIANTS[e.variant].pre.replace(/の$/, '') + '」：' + VARIANTS[e.variant].desc.replace(/^防御\+\d+。/, '') : '') + (binds ? '「縛る」と、次のターンは隊列を回せない。' : '') + (chief ? (e.restUp ? '休んだぶん強くなっている（HP+' + Math.round(EXP.restPen.hp * e.restUp * 100) + '%）。' : '') + (last ? '最後の戦い。勝てば遠征を踏破。' : '勝てば報酬のあと第' + (e.ch + 2) + '章「' + chName(e.ch + 1) + '」へ（全員全快・欠けた仲間の代わりが合流）。') : '勝てば報酬を4つから1つ。'),
