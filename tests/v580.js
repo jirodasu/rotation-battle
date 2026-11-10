@@ -19,6 +19,7 @@ const OLD = ['shield', 'incense', 'bell', 'stance'], MID = ['whet', 'cup', 'cloa
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.addInitScript(([t, m]) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '9'); if (m) localStorage.setItem('rb-exp', m); } catch (e) { /* */ } }, [TIPS, meta && JSON.stringify(meta)]);
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);
+    for (let k = 0; k < 3 && await p.evaluate(() => !window.__rb.run); k++) { await p.evaluate(() => { const c = document.querySelector('#rvCards .rv-card'); if (c) c.click(); }); await p.waitForTimeout(200); await p.evaluate(() => { const g = document.getElementById('rvGo'); if (g && !g.hidden && !g.disabled) g.click(); }); await p.waitForTimeout(700); }   // 記録が進むと、先に隊・深さを選ぶ画面が出る
     return { ctx, p, errs };
   };
   const pool = (p) => p.evaluate(() => window.__rb.relFree().map((x) => x.id).sort().join(','));
@@ -46,7 +47,8 @@ const OLD = ['shield', 'incense', 'bell', 'stance'], MID = ['whet', 'cup', 'cloa
   { const { ctx, p, errs } = await open({ runs: 1, best: 4, hist: [{ clear: false, node: 5, fal: 4 }] });
     ok(await pool(p) === S(OLD.concat(MID)), '2 遠征1回・最深4：8つ ' + await pool(p));
     ok(!errs.length, '6 ページのエラーなし ' + errs.join(' / ')); await ctx.close(); }
-  { const { ctx, p, errs } = await open({ runs: 3, best: 10, clears: 1, hist: [{ clear: true, node: 10, fal: 1 }] });
+  { const { ctx, p, errs } = await open({ runs: 3, best: 10, hist: [{ clear: false, node: 10, fal: 1 }] });
+    await p.evaluate(() => { const m = JSON.parse(localStorage.getItem('rb-exp')); m.clears = 1; localStorage.setItem('rb-exp', JSON.stringify(m)); });   // 踏破済みだと「環廊へ」で深さを選ぶ画面になるので、遠征を始めてから踏破1回にする
     ok(await pool(p) === S(OLD.concat(MID, LATE)), '2 踏破1回：12すべて ' + await pool(p));
     ok(!errs.length, '6 ページのエラーなし ' + errs.join(' / ')); await ctx.close(); }
   await b.close();
