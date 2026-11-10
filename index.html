@@ -2848,7 +2848,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.7.5</p>
+    <p class="c-ver" id="cVer">ver 5.7.6</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3289,7 +3289,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.7.5';
+  const APP_VERSION = '5.7.6';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8446,7 +8446,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 「続きから」がある状態で新しく始めるときは確認する（誤タップで途中の記録を消さない）。押してすぐは「始める」を受け付けない
   let ncFrom = null, ncTimer = 0;
   /* ===== 冒頭の物語（v5.5.8）：なぜ環廊に潜るのか。初めて「環廊へ」を押したときだけ自動で流し、2回目からはタイトルの「物語」から見返せる ===== */
-  /* 冒頭の物語（v5.7.5・提案C）：初めは4枚だけ（最初の地図まで約55秒→30秒）。残りの3枚は「物語の続き」として、第1章の主を倒して第2章へ入るときに1回だけ流す。
+  /* 冒頭の物語（v5.7.6・提案C）：初めは4枚だけ（最初の地図まで約55秒→30秒）。残りの3枚は「物語の続き」として、第1章の主を倒して第2章へ入るときに1回だけ流す。
      タイトルの「物語」は、続きを見たあとなら7枚を通して流す */
   const STORY_OPEN = [
     { a: 'far', t: '地の底に、輪のかたちをした<br>大聖堂がある。<br>人はそれを<em>「環廊」</em>と呼ぶ。' },

@@ -1,4 +1,4 @@
-// v5.7.5 物語の続き（提案C）：冒頭は4枚、残り3枚は第1章の主を倒して第2章の地図に入るとき
+// v5.7.6 物語の続き（提案C）：冒頭は4枚、残り3枚は第1章の主を倒して第2章の地図に入るとき
 // 合格の基準（測る前に決めたもの）：
 //  1. 第2章の地図（地点4）に入ると、まだ見ていなければ「物語の続き」3枚が出る。番号は「五」から、1枚目は「冒険者」を含む、最後のボタンは「第2章へ」
 //  2. 「第2章へ」で閉じると、一巡りの灯の説明（hmIntro）が続けて出る（まだ見ていなければ）。rb-story2 が記録される
@@ -12,7 +12,8 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.addInitScript((t) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '9'); } catch (e) { /* */ } }, TIPS);
-  await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);
+  // 続きは未読から（_env は goto のあと既読にする）
+  await p.goto(testPage()); await p.evaluate(() => localStorage.removeItem('rb-story2')); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);
   const st = () => p.evaluate(() => ({ open: !document.getElementById('story').hidden, num: document.getElementById('stNum').textContent, text: document.getElementById('stTxt').textContent, n: document.querySelectorAll('#stDots i').length, go: document.getElementById('stGo').hidden ? '' : document.getElementById('stGo').textContent, hm: !document.getElementById('hmIntro').hidden }));
   // 4：第1章（地点2）の地図
   await p.evaluate(() => { const R = window.__rb; R.run.node = 1; R.run.choices = R.routeChoices(); R.expShowMap([]); }); await p.waitForTimeout(300);
