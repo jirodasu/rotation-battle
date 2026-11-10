@@ -21,7 +21,7 @@ function testPage() {
 const indexURL = 'file://' + path.join(ROOT, 'index.html');
 // 冒頭の物語（v5.5.8）は、初めて「環廊へ」を押したときに出る。ほかのテストは「もう見た」から始める（物語は tests/v558.js が確かめる）。
 //   RB_STORY=1 のときだけ、まだ見ていない状態のまま開く
-const SEEN_STORY = () => { try { for (const k of ['rb-story', 'rb-ending']) if (!localStorage.getItem(k)) localStorage.setItem(k, '1'); } catch (e) { /* 保存できない */ } };   // 冒頭の物語と踏破の結末は見たことにする
+const SEEN_STORY = () => { try { for (const k of ['rb-story', 'rb-ending', 'rb-story2']) if (!localStorage.getItem(k)) localStorage.setItem(k, '1'); } catch (e) { /* 保存できない */ } };   // 冒頭の物語と踏破の結末は見たことにする
 /* 読み込みの最初に保存へ書く addInitScript は、同じタブでは最初の1回だけ流す（v5.5.9）。
    file:// では、すでに保存があるページの読み込みの最初に localStorage へ書くと、保存が消えることがあった（v5.5.8 の調べ）。
    テストの種まき（ヒントの既読など）は1回入れれば残るので、読み込み直しのたびに書き直さない。読み込みのたびに要る関数の定義など（保存に書かないもの）はそのまま毎回流す。

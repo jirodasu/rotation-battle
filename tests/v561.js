@@ -26,14 +26,14 @@ const clearRun = (fallen) => { const R = window.__rb; R.beginExp('std', 1); cons
     const tag = w + '×' + h;
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-story', '1'); sessionStorage.setItem('s', '1'); } } catch (e) { /* */ } }, TIPS);
+    await p.addInitScript((t) => { try { if (!sessionStorage.getItem('s')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); localStorage.setItem('rb-story', '1'); localStorage.setItem('rb-story2', '1'); sessionStorage.setItem('s', '1'); } } catch (e) { /* */ } }, TIPS);
     await p.addInitScript('window.__st = ' + ST.toString());
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300);
-    // 2（冒頭）：タイトルの「物語」から3枚目
+    // 2（冒頭）：タイトルの「物語」から降りていく灯の絵（v5.7.6：冒頭を4枚に詰めて、続きの1枚目＝5枚目に移った）
     await p.click('#storyBtn'); await p.waitForTimeout(200);
-    for (let k = 0; k < 2; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.2)); await p.waitForTimeout(120); }
+    for (let k = 0; k < 4; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.2)); await p.waitForTimeout(120); }
     const op = await p.evaluate(() => window.__st());
-    ok(op.on === 2 && op.lampN >= 5 && op.lampDx <= 6, tag + ' 2 冒頭の3枚目：灯が絵のまんなかに並ぶ（ずれ ' + op.lampDx + 'px・' + op.lampN + '個）');
+    ok(op.on === 4 && op.lampN >= 5 && op.lampDx <= 6, tag + ' 2 物語の5枚目（降りていく灯）：灯が絵のまんなかに並ぶ（ずれ ' + op.lampDx + 'px・' + op.lampN + '個）');
     await p.keyboard.press('Escape'); await p.waitForTimeout(300);
     // 1 初めての踏破（1人倒れた）
     const names = await p.evaluate(clearRun, 1); await p.waitForTimeout(400);
