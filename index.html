@@ -2848,7 +2848,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.7.4</p>
+    <p class="c-ver" id="cVer">ver 5.7.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3289,7 +3289,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.7.4';
+  const APP_VERSION = '5.7.5';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4584,6 +4584,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
   function tipMark(k) { const o = tipSeen(); o[k] = 1; try { localStorage.setItem('rb-tips', JSON.stringify(o)); } catch (e) { /* 保存できない環境 */ } }
   const tipSession = {};
+  // 画面上端の安全域（iPhone の時計・ノッチ）。CSS の env() を、見えない要素で px に直して読む
+  let satEl = null;
+  function safeTop() {
+    try { if (!satEl) { satEl = document.createElement('div'); satEl.setAttribute('aria-hidden', 'true'); satEl.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none'; document.body.appendChild(satEl); } return satEl.getBoundingClientRect().height || 0; } catch (e) { return 0; }
+  }
   function placeTip(tight) {
     const el = $('tip'); if (el.hidden) return;
     el.classList.toggle('tight', !!tight);
@@ -4597,13 +4602,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cands = [{ top: tk.top - h - 4, left: null }, { top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ⓪予告の札のすぐ上（敵の絵の下の方）を先に試す   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
     if (land) cands.push({ top: Math.max(8, bd.top), left: Math.max(8, Math.min(innerWidth - w - 8, bd.left + (bd.width - w) / 2)) });
     // 重なりの重み（v5.3.7）：盤・予告の札（回す/維持を決めるのに要る）を隠すのがいちばん悪い。敵の名前・HPは、ほかに場所が無いときだけ
-    const TOP0 = innerHeight < 620 ? 2 : 8;   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）
+    const TOP0 = safeTop() + (innerHeight < 620 ? 2 : 8);   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）。時計・ノッチの安全域より下に置く（v5.7.5：iPhone で時計に重なっていた）
     const wt = [10, 10, 1, 1].concat(enemy && enemy.party ? [10] : []);
     // 見通しの札（v5.3.8）は、盤・予告より先に隠してよい（案内は「わかった」ですぐ閉じるため）。いちばん下を候補に足す
     { const dk = $('dock').getBoundingClientRect(); if (dk.height > 0) { avoid.push(dk); wt.push(3); cands.push({ top: innerHeight - h - 4, left: null }); } }
     const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
+    // 詰めても予告の札・盤に重なるときは、それに重ならない候補の中から選ぶ（v5.7.5：時計の安全域のぶん上が狭くなった 320×568 で、札に重なった）
+    if (tight) { const hardAt = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0); };
+      if (hardAt(best)) { const okC = cands.filter((c) => !hardAt(c)); if (okC.length) { best = okC.reduce((x, y) => (ov(y) < ov(x) ? y : x)); bv = ov(best); } } }
     // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
     if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
       if (hard || bv > 0) { placeTip(true); return; } }   // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
