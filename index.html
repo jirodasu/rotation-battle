@@ -4584,6 +4584,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
   function tipMark(k) { const o = tipSeen(); o[k] = 1; try { localStorage.setItem('rb-tips', JSON.stringify(o)); } catch (e) { /* 保存できない環境 */ } }
   const tipSession = {};
+  // 画面上端の安全域（iPhone の時計・ノッチ）。CSS の env() を、見えない要素で px に直して読む
+  let satEl = null;
+  function safeTop() {
+    try { if (!satEl) { satEl = document.createElement('div'); satEl.setAttribute('aria-hidden', 'true'); satEl.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none'; document.body.appendChild(satEl); } return satEl.getBoundingClientRect().height || 0; } catch (e) { return 0; }
+  }
   function placeTip(tight) {
     const el = $('tip'); if (el.hidden) return;
     el.classList.toggle('tight', !!tight);
@@ -4597,7 +4602,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cands = [{ top: tk.top - h - 4, left: null }, { top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ⓪予告の札のすぐ上（敵の絵の下の方）を先に試す   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
     if (land) cands.push({ top: Math.max(8, bd.top), left: Math.max(8, Math.min(innerWidth - w - 8, bd.left + (bd.width - w) / 2)) });
     // 重なりの重み（v5.3.7）：盤・予告の札（回す/維持を決めるのに要る）を隠すのがいちばん悪い。敵の名前・HPは、ほかに場所が無いときだけ
-    const TOP0 = innerHeight < 620 ? 2 : 8;   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）
+    const TOP0 = safeTop() + (innerHeight < 620 ? 2 : 8);   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）。時計・ノッチの安全域より下に置く（v5.7.5：iPhone で時計に重なっていた）
     const wt = [10, 10, 1, 1].concat(enemy && enemy.party ? [10] : []);
     // 見通しの札（v5.3.8）は、盤・予告より先に隠してよい（案内は「わかった」ですぐ閉じるため）。いちばん下を候補に足す
     { const dk = $('dock').getBoundingClientRect(); if (dk.height > 0) { avoid.push(dk); wt.push(3); cands.push({ top: innerHeight - h - 4, left: null }); } }
