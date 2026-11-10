@@ -13,6 +13,7 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.addInitScript(([t, m]) => { try { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '9'); localStorage.setItem('rb-teach-inc', '1'); localStorage.setItem('rb-teach-hold', '1'); if (m) localStorage.setItem('rb-exp', m); } catch (e) { /* */ } }, [TIPS, meta && JSON.stringify(meta)]);
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(900);
+    if (await p.evaluate(() => document.getElementById('rvTitle').textContent === '灯の祝福')) { await p.click('#rvCards .rv-card[data-i="1"]'); await p.waitForTimeout(600); }   // v5.7.7：2回目からの遠征は灯の祝福から（灯の油で抜ける）
     const fight = async (win) => {
       const i = await p.evaluate(() => window.__rb.run.choices.findIndex((x) => x.type === 'battle'));
       await p.click('#rvCards .rv-card[data-i="' + i + '"]'); await p.click('#rvGo'); await p.waitForTimeout(800);
