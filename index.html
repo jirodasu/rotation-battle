@@ -2848,7 +2848,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.7.4</p>
+    <p class="c-ver" id="cVer">ver 5.7.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3289,7 +3289,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.7.4';
+  const APP_VERSION = '5.7.5';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4609,6 +4609,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
+    // 詰めても予告の札・盤に重なるときは、それに重ならない候補の中から選ぶ（v5.7.5：時計の安全域のぶん上が狭くなった 320×568 で、札に重なった）
+    if (tight) { const hardAt = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0); };
+      if (hardAt(best)) { const okC = cands.filter((c) => !hardAt(c)); if (okC.length) { best = okC.reduce((x, y) => (ov(y) < ov(x) ? y : x)); bv = ov(best); } } }
     // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
     if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
       if (hard || bv > 0) { placeTip(true); return; } }   // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
