@@ -8309,7 +8309,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
     if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
     const relNew = EXP.relics.filter((r) => rel0.indexOf(r.id) < 0 && relOpen(r, mm));
-    if (relNew.length) un.push('見つかるようになった回転レリック：<b>' + relNew.map((r) => '「' + r.name + '」').join('') + '</b>');
+    const opI = un.findIndex((t) => /^開いた：/.test(t));
+    if (relNew.length && opI >= 0) un[opI] = un[opI].replace(/<\/b>$/, '・回転レリック' + relNew.length + 'つ</b>');   // 隊・深さも開いたときは、同じ行にまとめる（横長の小さい画面に収める）
+    const relLn = relNew.length && opI < 0 ? ['新しい回転レリックが見つかる：<b>' + (relNew.length <= 2 ? relNew.map((r) => '「' + r.name + '」').join('') : '「' + relNew[0].name + '」ほか' + (relNew.length - 1) + 'つ') + '</b>'] : [];   // 一度に多く開くとき（踏破など）は短く。横長の小さい画面でボタンが押し出された   // 解禁の行（un）とは分ける：「次に開く」は消さない
     xSave(mm, x);
     actTick();
     mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now(), sq, depth });
@@ -8321,7 +8323,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
-      events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
+      events: un.concat(relLn, ((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length || relLn.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
       cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪

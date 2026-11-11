@@ -41,7 +41,7 @@ const OLD = ['shield', 'incense', 'bell', 'stance'], MID = ['whet', 'cup', 'cloa
     // 5：遠征の終わり
     await p.evaluate(() => window.__rb.expEnd(false)); await p.waitForTimeout(500);
     const end = await p.evaluate(() => document.getElementById('runv').innerText.replace(/\s+/g, ' '));
-    ok(/見つかるようになった回転レリック/.test(end) && /研ぎ石/.test(end) && /癒しの杯/.test(end) && !/守りの外套/.test(end), '5 遠征の終わりに新しいレリックの名前 ' + (end.match(/見つかるようになった[^。]*?」(?!「)/) || [''])[0]);
+    ok(/新しい回転レリックが見つかる/.test(end) && /研ぎ石/.test(end) && /癒しの杯/.test(end) && !/守りの外套/.test(end), '5 遠征の終わりに新しいレリックの名前 ' + (end.match(/新しい回転レリック[^。]*?」(?!「)/) || [''])[0]);
     ok(!errs.length, '6 ページのエラーなし ' + errs.join(' / ')); await ctx.close(); }
   // 2
   { const { ctx, p, errs } = await open({ runs: 1, best: 4, hist: [{ clear: false, node: 5, fal: 4 }] });
