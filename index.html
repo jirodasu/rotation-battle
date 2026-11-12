@@ -2154,6 +2154,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .tok.cb .hpb.low b { background: var(--hp-low); }
 .slot.sel .tok.cb .hpb b { background: var(--accent); }
 .tok.cb .disc svg { transform-origin: 50% 96%; }
+.tok.cb .disc svg [data-p] { transform-box: view-box; }   /* 戦士トワの骨組み（v5.8.3）：回す中心は絵の座標で決める */
+.cb-slash { fill: none; stroke: #fff; stroke-linecap: round; opacity: 0; }
 .tok.cb .inc-n { bottom: auto; top: 50%; left: calc(100% + 3px); transform: translateY(-50%); }   /* ちびキャラ：「あとN発」は札の右（上だと帽子・頭、下だと名札に重なる。v5.7.1） */
 .tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
 .slot.hover .tok.cb .disc { outline: none; filter: drop-shadow(0 0 6px var(--accent)); }
@@ -2848,7 +2850,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.2</p>
+    <p class="c-ver" id="cVer">ver 5.8.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3196,11 +3198,33 @@ body.fast #stampOk.on { animation-duration: .5s; }
         back: blade(82, 118, 82, 40, '#6b5232', 3.2) + '<circle cx="82" cy="38" r="6.5" fill="none" stroke="#d8b660" stroke-width="2.4"/><circle cx="77" cy="44" r="2.2" fill="none" stroke="#d8b660" stroke-width="1.4"/><circle cx="87" cy="44" r="2.2" fill="none" stroke="#d8b660" stroke-width="1.4"/>',
         front: hand(81, 88, '#ece6d6') }
     };
+    // 戦士トワの骨組み（v5.8.3）：部品（足・胴・頭・両腕・剣）を上下につなぎ、攻撃のときだけ部品ごとに動かす（lunge の WARRIOR_RIG）。
+    //   待機の見た目は今までと同じ正面。両腕を描き足し、剣を体の後ろから手前の層へ移した。回す中心は data-p の要素の transform-origin（view-box 基準）
+    function rigWarrior(j, inner) {
+      const P = (id, ox, oy, body) => '<g data-p="' + id + '" style="transform-origin:' + ox + 'px ' + oy + 'px">' + body + '</g>';
+      const limb = (x1, y1, x2, y2, col, w) => '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + K + '" stroke-width="' + w + '" stroke-linecap="round"/><path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + col + '" stroke-width="' + (w - 3.4) + '" stroke-linecap="round"/>';
+      // 顔だけ少し右へ寄せられるように、ゴシック調の顔（骨色の楕円と目）を g でくるむ。見つからない絵（通常の見た目）は頭ごと動くだけ
+      const head = inner.replace(/(<ellipse cx="50" cy="62" rx="17" ry="13"[^>]*\/><path d="M44 60v5M56 60v5"[^>]*\/>)/, '<g data-p="face">$1</g>');
+      const leg = (id, x, foot) => P(id, x, 98, '<path d="M' + x + ' 98v14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/><path d="M' + x + ' 98v14" stroke="' + j.legs + '" stroke-width="6" stroke-linecap="round"/><path data-p="' + id.replace('leg', 'foot') + '" d="' + foot + '" fill="' + K + '"/>');
+      const shield = '<circle cx="24" cy="94" r="13" fill="#5d6576" ' + SW + '/><circle cx="24" cy="94" r="8.5" fill="none" stroke="#d8b660" stroke-width="1.6"/><circle cx="24" cy="94" r="2.6" fill="#d8b660"/>';
+      const sword = blade(76, 98, 92, 46, '#c9d1dc', 4) + '<path d="M71 91l13 4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/><path d="M71 91l13 4" stroke="#d8b660" stroke-width="2.4" stroke-linecap="round"/>' + hand(77, 94, '#ece6d6');
+      return '<svg viewBox="0 0 100 124" aria-hidden="true"><ellipse class="cb-sh" data-p="shadow" style="transform-origin:50px 119px" cx="50" cy="119" rx="30" ry="5"/>' +
+        P('root', 50, 118,
+          leg('legL', 37, 'M30 117q7-6 13 0z') + leg('legR', 63, 'M57 117q6-6 13 0z') +
+          P('torso', 50, 100,
+            '<path d="M30 74Q28 90 32 100H68Q72 90 70 74Z" fill="' + j.cloth + '" ' + SW + '/><path d="M31 90H69" stroke="' + j.belt + '" stroke-width="3"/><path d="M36 76q14 8 28 0" fill="none" stroke="' + j.trim + '" stroke-width="1.6"/>' +
+            P('head', 50, 66, '<g transform="translate(15 -2) scale(.7)">' + head + '</g>') +
+            P('shU', 27, 64, limb(27, 64, 21, 79, j.cloth, 8.4) + P('shL', 21, 79, limb(21, 79, 24, 93, '#5d6576', 8) + shield)) +
+            P('swU', 73, 64, limb(73, 64, 80, 79, j.cloth, 8.4) + P('swL', 80, 79, limb(80, 79, 77, 93, '#5d6576', 8) + P('sword', 77, 94, sword))))) +
+        '<path class="cb-slash" data-p="slashA" d="M54 2A62 62 0 0 1 126 98" stroke-width="5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>' +
+        '<path class="cb-slash" data-p="slashB" d="M54 2A62 62 0 0 1 126 98" stroke="#9fb2c8" stroke-width="2" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="translate(4 3)"/></svg>';
+    }
     const memo = {};
     return (u) => {
       const job = u.job || u.id, j = J[job]; if (!j) return face(u);
       const f = face(u), k = job + ':' + (u.phase || '') + ':' + f.length; if (memo[k]) return memo[k];
       const inner = f.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
+      if (job === 'warrior') return (memo[k] = rigWarrior(j, inner));
       const legs = j.robe
         ? '<path d="M31 76Q28 100 24 114Q50 120 76 114Q72 100 69 76Z" fill="' + j.robe + '" ' + SW + '/><path d="M38 115v4M62 115v4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>'
         : (j.hakama ? '<path d="M33 96L27 116H48L50 104L52 116H73L67 96Z" fill="' + j.hakama + '" ' + SW + '/>'
@@ -3289,7 +3313,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.2';
+  const APP_VERSION = '5.8.3';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5551,7 +5575,37 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await hitStop(90);
     await wait(430);
   }
+  // 戦士トワの攻撃（v5.8.3。動きの見本「トワの攻撃モーション試作」から）：0.42秒＝ため（〜0.10秒）→振り（〜0.17秒。ここで敵に剣の光と「ズバッ」）→戻り
+  const WARRIOR_RIG = (() => {
+    const IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
+    const rot = (...a) => a.map(([o, d, e]) => ({ offset: o, transform: 'rotate(' + d + 'deg)', easing: e || 'linear' }));
+    const tx = (px) => [{ offset: 0, transform: 'translateX(0)', easing: IN }, { offset: 0.2, transform: 'translateX(' + px + 'px)' }, { offset: 0.6, transform: 'translateX(' + px + 'px)', easing: OUT }, { offset: 1, transform: 'translateX(0)' }];
+    return {
+      root: [{ offset: 0, transform: 'scale(1,1)', easing: IN }, { offset: 0.24, transform: 'scale(1.04,.93)', easing: HIT }, { offset: 0.4, transform: 'scale(.97,1.05)', easing: OUT }, { offset: 1, transform: 'scale(1,1)' }],
+      shadow: [{ offset: 0, transform: 'scale(1)', opacity: 1, easing: IN }, { offset: 0.24, transform: 'scale(1.06)', opacity: 1, easing: HIT }, { offset: 0.4, transform: 'scale(.72)', opacity: 0.55, easing: 'linear' }, { offset: 0.52, transform: 'scale(.76)', opacity: 0.58, easing: OUT }, { offset: 1, transform: 'scale(1)', opacity: 1 }],
+      torso: rot([0, 0, IN], [0.24, -9, HIT], [0.4, 13, 'linear'], [0.52, 11, OUT], [1, 0]),
+      head: rot([0, 0, IN], [0.24, 5, HIT], [0.4, -6, 'linear'], [0.52, -5, OUT], [1, 0]),
+      swU: rot([0, 0, IN], [0.24, -145, HIT], [0.4, -45, 'linear'], [0.52, -32, OUT], [1, 0]),
+      swL: rot([0, 0, IN], [0.24, -57, HIT], [0.4, -32, 'linear'], [0.52, -26, OUT], [1, 0]),
+      sword: rot([0, 0, IN], [0.24, 160, HIT], [0.4, 185, 'linear'], [0.52, 196, OUT], [1, 0]),
+      shU: rot([0, 0, IN], [0.24, -28, HIT], [0.4, 30, 'linear'], [0.52, 26, OUT], [1, 0]),
+      shL: rot([0, 0, IN], [0.24, -20, HIT], [0.4, 12, 'linear'], [0.52, 10, OUT], [1, 0]),
+      legL: rot([0, 0, IN], [0.24, 5, HIT], [0.4, 12, OUT], [1, 0]),
+      legR: rot([0, 0, IN], [0.24, 3, HIT], [0.4, -22, OUT], [1, 0]),
+      face: tx(6), footL: tx(3), footR: tx(3),
+      slashA: [{ offset: 0, opacity: 0, strokeDashoffset: 100 }, { offset: 0.25, opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' }, { offset: 0.28, opacity: 0.95, strokeDashoffset: 96 }, { offset: 0.42, opacity: 0.95, strokeDashoffset: 0 }, { offset: 0.62, opacity: 0, strokeDashoffset: 0 }, { offset: 1, opacity: 0, strokeDashoffset: 0 }],
+      slashB: [{ offset: 0, opacity: 0, strokeDashoffset: 100 }, { offset: 0.28, opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' }, { offset: 0.31, opacity: 0.8, strokeDashoffset: 94 }, { offset: 0.46, opacity: 0.8, strokeDashoffset: 0 }, { offset: 0.68, opacity: 0, strokeDashoffset: 0 }, { offset: 1, opacity: 0, strokeDashoffset: 0 }]
+    };
+  })();
   function lunge(el, dist) {
+    const rig = el && el.querySelector ? el.querySelector('.disc svg [data-p="root"]') : null;
+    if (rig) {
+      // 札ごとの跳び出しも見本どおり（少し引いてから、右上へ）。見本の％は今の跳び出し（24px＝17％）に合わせて px に直す。間接攻撃（14px）は小さく
+      const d = dist || 24, px = (v) => (v / 17 * d).toFixed(1) + 'px', IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
+      anim(el, [{ offset: 0, transform: 'translate(0,0) scale(1)', easing: IN }, { offset: 0.24, transform: 'translate(' + px(-2) + ',' + px(2) + ') scale(1)', easing: HIT }, { offset: 0.4, transform: 'translate(' + px(5) + ',' + px(-16) + ') scale(1.12)', easing: 'linear' }, { offset: 0.52, transform: 'translate(' + px(5) + ',' + px(-14) + ') scale(1.1)', easing: OUT }, { offset: 1, transform: 'translate(0,0) scale(1)' }], { duration: 420 });
+      el.querySelectorAll('.disc svg [data-p]').forEach((g) => { const kf = WARRIOR_RIG[g.dataset.p]; if (kf) anim(g, kf, { duration: 420 }); });
+      return;
+    }
     anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (-(dist || 24)) + 'px) scale(1.12)', offset: 0.38 }, { transform: 'translateY(0) scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,.7,.3,1)' });
     // ちびキャラ（v5.6.9）：跳び出しに合わせて、振りかぶって振り下ろす
     const sv = el && el.classList && el.classList.contains('cb') ? el.querySelector('.disc svg') : null;
@@ -5586,7 +5640,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   // 武器ごとの命中演出（攻撃音と対になる）
   const WFX = {
-    warrior: { k: 'sword', rot: -18, w: 15, ono: 'ズバッ' },
+    warrior: { k: 'sword', rot: 50, w: 15, ono: 'ズバッ' },   // v5.8.3：振り下ろしに合わせて、左上から右下へ
     knight: { k: 'sword', rot: 22, w: 11, ono: 'ズバッ' },
     samurai: { k: 'sword', rot: -26, w: 7, ono: 'ズバッ', twin: true },
     witch: { k: 'staff', ono: 'ボカッ', col: '#ffe89a' },
@@ -6245,7 +6299,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // v5.8.2：1回の待ちを約半分に（移動780→420ms、回転アイコン900→480ms、待ち900→440ms）。待ち中にタップすると残りを飛ばして先へ進む
     const anims = [];
     const icA = anim(ic, [{ transform: 'rotate(-120deg) scale(.4)', opacity: 0 }, { transform: 'rotate(0deg) scale(1.1)', opacity: 1, offset: 0.35 }, { transform: 'rotate(260deg) scale(1)', opacity: 0 }], { duration: 480, easing: 'ease-out' });
-    if (icA) anims.push(icA);
+    if (icA) { anims.push(icA); icA.finished.then(() => ic.remove()).catch(() => ic.remove()); }   // 動きが終わったら消す（決め打ちの時間だと、終わってから消すまでの間にアイコンが一瞬見えた）
     setTimeout(() => ic.remove(), 500 / SPD);
     const jobs = [];
     board.querySelectorAll('.tok[data-id]').forEach((t) => {
@@ -6278,6 +6332,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await Promise.race([wait(RM ? 80 : 440), tapP]);
     await Promise.all(jobs);
     if (tapOn) { document.removeEventListener('pointerdown', onTap, true); if (tapped) setTimeout(() => document.removeEventListener('click', onTap, true), 400); else document.removeEventListener('click', onTap, true); }
+    if (!RM) ic.remove();
     await tutNote('rotated', '回った', '隊列が回った。補助の「攻」「防」が、すべて復活している。', () => $('board'), 'top');
     runTurn();
   }
