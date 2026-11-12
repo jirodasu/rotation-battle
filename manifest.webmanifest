@@ -1,19 +1,39 @@
 {
-  "name": "ローグライク・ローテーションバトル",
-  "short_name": "ローテバトル",
-  "description": "地の底の大聖堂「環廊」を4人で下る。隊列を回して灯を受け渡す、ローグライク戦術バトル。",
+  "name": "灯を継ぐ隊列 -LAST ROTATION-",
+  "short_name": "灯を継ぐ隊列",
+  "description": "地の底の大聖堂「環廊」を4人で下る。隊列を回して敵の大技をしのぎ、灯を受け渡すローグライクRPG。",
   "lang": "ja",
   "start_url": "./",
   "scope": "./",
   "display": "fullscreen",
-  "display_override": ["fullscreen", "standalone"],
+  "display_override": [
+    "fullscreen",
+    "standalone"
+  ],
   "orientation": "any",
   "background_color": "#2e1c10",
   "theme_color": "#2e1c10",
-  "categories": ["games"],
+  "categories": [
+    "games"
+  ],
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
