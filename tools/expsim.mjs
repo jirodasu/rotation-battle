@@ -41,11 +41,12 @@ export function battle(en, party, policy, o) {
   // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンになった回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
   const CB = o.combo || null; let combo = 0; const boosted = new Set(); if (CB) CSTAT.battles++;   /* 発動の平均は、コンボのある戦闘（第2章から）だけで数える */
   const eaten = () => { if (e.eat && e.hpNow > 0) { e.hpNow = Math.min(e.hp, e.hpNow + Math.round(e.hp * e.eat.heal)); e.pattern.forEach((a) => { if (a.dmg) a.dmg += e.eat.dmg; }); } };   // 灯喰いの（v5.6.7）
+  const RN = (id, k) => (rel.has(id) && RD[id] ? RD[id][k] || 0 : 0);   // v5.8.0 の回転レリック（研ぎ石・癒しの杯・守りの外套・静けさの衣・見抜きの眼鏡・狩人の牙）
   const hpMap = () => { const m = {}; unitsOf(grid).forEach(({ u }) => { m[u.uid] = u.hp; }); return m; };
   for (let turn = 1; turn <= 40; turn++) {
     if (turn > 1) {
       const back = []; for (let c = 0; c < COLS; c++) if (grid[2][c]) back.push(grid[2][c]);
-      back.forEach((u) => { u.hp = Math.min(u.max, u.hp + (u.rest || 0)); });
+      back.forEach((u) => { u.hp = Math.min(u.max, u.hp + (u.rest || 0) + RN('cup', 'rest')); });
       back.filter((h) => h.heal > 0).forEach((h) => back.forEach((u) => { if (u !== h) u.hp = Math.min(u.max, u.hp + h.heal); }));
     }
     const ent = new Map();
@@ -61,6 +62,7 @@ export function battle(en, party, policy, o) {
       if (r !== 0) return;
       if (ent.get(u) && ent.get(u).guard) guardCol[c] = (guardCol[c] || 0) + ent.get(u).guard;
       if (u.entered && rel.has('shield')) guardCol[c] = (guardCol[c] || 0) + RD.shield.guard;
+      if (!u.entered && rel.has('veil')) guardCol[c] = (guardCol[c] || 0) + RD.veil.guard;
     });
     const teamGuard = [...ent.values()].reduce((s, x) => s + (x.teamGuard || 0), 0);
     const stayAtk = rel.has('stance') ? Math.min(RD.stance.stayMax, stay * RD.stance.stayAtk) : 0;
@@ -76,7 +78,7 @@ export function battle(en, party, policy, o) {
           else {
             if (act.vsEntered && v.entered) d = Math.round(d * act.vsEntered);   // 実験用：入ったばかりの仲間に大きく当たる
             const m = grid[1][col];
-            if (!act.pierce && m && m.defReady && m.defSup > 0) { d -= m.defSup; m.defReady = false; }
+            if (!act.pierce && m && m.defReady && m.defSup > 0) { d -= m.defSup + RN('cloak', 'def'); m.defReady = false; }
             d -= (guardCol[col] || 0) + teamGuard;
           }
           d = Math.max(1, d); v.hp = Math.max(0, v.hp - d);
@@ -103,14 +105,15 @@ export function battle(en, party, policy, o) {
         if (grid[r][c] !== u) continue;
         let power, sup = 0;
         if (r === 0) {
-          power = u.atk + stayAtk;
+          power = u.atk + stayAtk + RN('whet', 'atk');
           const m = grid[1][c];
           if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
           const x = ent.get(u);
           if (x) power += (x.atk || 0) + (rel.has('bell') ? RD.bell.entryAtk : 0);
         } else power = u.ranged;
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
-        const dfn = e.layer && r === 0 && u.entered ? 0 : e.def;   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
+        const dfn = e.layer && r === 0 && u.entered ? 0 : Math.max(0, e.def - RN('lens', 'def'));   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
+        if (e.variant) power += RN('fang', 'atk');   // 狩人の牙（v5.8.0）：亜種への攻撃は1回ごとに+
         let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - dfn);
         e.hpNow -= tot;
         if (e.hpNow <= 0) return { win: true, turns: turn, fallen, hp: hpMap() };
@@ -165,7 +168,7 @@ export function enemyAt(step, k, cfg, vkey, rests = 0) {
   const dm = (cfg.depth || 1) >= 3 && cfg.deepMul ? cfg.deepMul : { hp: 1, dmg: 1 };   // 深さ3の敵の底上げ（ゲームの EXP.deepMul と同じ）
   const kh = rp ? 1 + rp.hp * rests : 1, kd = rp ? 1 + rp.dmg * rests : 1;
   const pk = chief ? 'chief' + ch : String(key), pat = cfg.patch && cfg.patch[pk] ? cfg.patch[pk] : base.pattern;
-  return Object.assign({}, base, { eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer), def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1) * dm.hp), pattern: pat.map((a) => {
+  return Object.assign({}, base, { variant: vs.length ? vs.join('+') : null, eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer), def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1) * dm.hp), pattern: pat.map((a) => {
     const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg) } : {});
     if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
     if (vs.includes('poison') && o.dmg) o.pierce = true;
@@ -202,7 +205,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     const dp = cfg.depth || 1, VK = Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep), VKD = Object.keys(VARIANTS);
     const pairV = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'].includes(a + '+' + b)) return a + '+' + b; } };
     const vk = (!chief || (cfg.chiefVariant && !last)) && R() < (dp >= 2 ? 1 : cfg.variantRate) ? (dp >= 3 ? pairV() : pick(VK)) : null;   // 深さ（v5.6.7）：2＝かならず亜種、3＝亜種を2つ重ねる
-    const en = enemyAt(step, fk, cfg, vk, rests), bseed = Math.floor(R() * 1e9);
+    const en = enemyAt(step, fk, cfg, vk, relics.includes('chart') ? 0 : rests), bseed = Math.floor(R() * 1e9);
     const party = () => members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
     let res;
     if (policy === 'plan') {
@@ -220,7 +223,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     if (!res.win || !members.length) return { clear: false, reached: step, fallen, battles, relics };
     members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * cfg.afterHeal)); });
     if (!last) {
-      const free = cfg.relics.filter((x) => !relics.includes(x.id));
+      const free = cfg.relics.filter((x) => !relics.includes(x.id) && (cfg.relicAll || !x.unlock));   // v5.8.0：解放のいる回転レリックは relicAll のときだけ（既定は初めから出る4つ＝これまでの数字と同じ）
       const tags = (free.length ? ['relic'] : []).concat(['up', 'heal'], cfg.swap ? ['swap'] : []);
       let t = strat.reward ? strat.reward(tags) : pick(tags); if (!tags.includes(t)) t = pick(tags);
       // 入れ替え候補：いまの隊にいない職業から（全職業がいれば全体から）
@@ -239,7 +242,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
         const nm = member(job, out.r, out.c, 'w' + step, cfg); members[members.indexOf(out)] = nm;
         if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
         if (cfg.swapKeep) { for (let k = 0; k < (out.ups || 0); k++) upgrade(nm, cfg.up); nm.ups = out.ups || 0; nm.max += (out.max - JOBS.find((j) => j.id === out.job).hp) ; nm.hp = nm.max; }   // 去る仲間の強化（突入技・最大HP）を引き継ぐ
-      } else if (t === 'relic') relics.push(pick(free).id);
+      } else if (t === 'relic') { const r = pick(free); relics.push(r.id); if (r.hp) members.forEach((m) => { m.max += r.hp; m.hp += r.hp; }); }   // 灯の石：手に入れたとき全員の最大HP+
       else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; if (cfg.upHp) { m.max += cfg.upHp; m.hp += cfg.upHp; } }   // upHp：強化した仲間の最大HPも増やす（ゲームの EXP.upHp と同じ。v5.6.2）
       else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
       if (chief) { reinforce(members, cfg, cols, R, 's' + step); rests = 0; }   // 章を越えた

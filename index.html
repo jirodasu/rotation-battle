@@ -2848,7 +2848,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.7.7</p>
+    <p class="c-ver" id="cVer">ver 5.8.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3289,7 +3289,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.7.7';
+  const APP_VERSION = '5.8.0';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4108,6 +4108,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const EXPM = () => !!(run && run.mode === 'exp' && !tut);
   const relOn = (id) => EXPM() && (run.relics || []).includes(id);
   const relD = (id) => EXP.relics.find((x) => x.id === id);
+  // 回転レリックの解放（v5.8.0）：遠征の記録が unlock に届いたものだけ、報酬・祝福に出る
+  const relOpen = (x, mm) => { const u = x.unlock; if (!u) return true; mm = mm || expMeta(); return (u.runs && (+mm.runs || 0) >= u.runs) || (u.best && (+mm.best || 0) >= u.best) || (u.clears && (+mm.clears || 0) >= u.clears) || false; };
+  const relFree = () => EXP.relics.filter((x) => !run.relics.includes(x.id) && relOpen(x));
+  const relN = (id, k) => (relOn(id) ? relD(id)[k] || 0 : 0);
+  function relGet(id) {
+    run.relics.push(id); const r = relD(id);
+    if (r.hp) run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + r.hp; applyAge(x, true); });   // 灯の石：手に入れたときだけ
+    return r.name + 'を手に入れた。' + r.desc + '。';
+  }
   const stanceAtk = (n) => (relOn('stance') ? Math.min(relD('stance').stayMax, n * relD('stance').stayAtk) : 0);
   let stats = null, order = [], orderIdx = -1, savedN = 0;
   let camp = { turns: 0, fallen: 0, stars: [], rec: [] };
@@ -4183,7 +4192,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ue = entryFor(u, entering);
     if (r === 0 && entering && R.entry && ue && ue.atk) power += ue.atk;
     if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
-    if (r === 0) power += stanceAtk(entering ? 0 : phase === 'choose' ? stayN + 1 : stayN);
+    if (r === 0) power += stanceAtk(entering ? 0 : phase === 'choose' ? stayN + 1 : stayN) + relN('whet', 'atk');
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
     let sup = 0;
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
@@ -4221,7 +4230,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (fr === 2 || backHit) {   // 回復列の回復は、敵が動く前（v5.6.6：尾払いで回復列が打たれるので、前列がいるときも数える）
       const back = units(src).filter((x) => x.r === 2);
       if (entering && relOn('incense')) back.forEach((x) => add(x.u, relD('incense').backHeal));
-      if (phase === 'choose' || turn > 1) { back.forEach((x) => add(x.u, x.u.rest || 0)); const hs = back.filter((x) => x.u.heal > 0); back.forEach((x) => add(x.u, hs.reduce((a, h) => a + (h.u !== x.u ? h.u.heal : 0), 0))); }
+      if (phase === 'choose' || turn > 1) { back.forEach((x) => add(x.u, (x.u.rest || 0) + relN('cup', 'rest'))); const hs = back.filter((x) => x.u.heal > 0); back.forEach((x) => add(x.u, hs.reduce((a, h) => a + (h.u !== x.u ? h.u.heal : 0), 0))); }
     }
     if (fr === 0 && entering && RX().entry) { const n = src[0].reduce((a, x) => { const xe = x && entryFor(x, true); return a + ((xe && xe.heal) || 0); }, 0); src[0].forEach((u) => { if (u) add(u, n); }); }
     return m;
@@ -4248,9 +4257,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (row !== fr) { const k = row + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d); hpNow.set(u, hpNow.get(u) - Math.max(1, d)); per.push({ F, act, c, r: row, d: Math.max(1, d), why: '' }); return; }   // 尾払い：回復列にそのまま
       if (act.vsEntered && fr === 0 && entering) { d = Math.round(d * act.vsEntered); why = '×' + act.vsEntered; }   // 呼び寄せ：回して入ったばかりの仲間に大きく
       if (fr > 0) { d *= 2; why = '×2'; }
-      else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup; used[c] = 1; why = '防'; }  }
+      else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup + relN('cloak', 'def'); used[c] = 1; why = '防'; }  }
       if (fr === 0 && entering && RX().entry) { src[0].forEach((x) => { const xe = entryFor(x, true); if (xe && xe.teamGuard) d -= xe.teamGuard; }); const ue = entryFor(u, true); if (ue && ue.guard) d -= ue.guard; }
       if (fr === 0 && entering && relOn('shield')) d -= relD('shield').guard;
+      if (fr === 0 && !entering && relOn('veil')) d -= relD('veil').guard;   // 静けさの衣（v5.8.0）：回さなかったターン
       const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d); hpNow.set(u, hpNow.get(u) - Math.max(1, d));
       per.push({ F, act, c, d: Math.max(1, d), why });
     });
@@ -4445,12 +4455,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const P = enemy.party, t = P.find((f) => f.id === tgtId && f.hp > 0);
     return t || P.find((f) => f.hp > 0) || P[0];
   }
-  const foeDef = (F) => (F.party ? 0 : F.def + (F.defUp || 0));
+  const foeDef = (F) => (F.party ? 0 : Math.max(0, F.def + (F.defUp || 0) - relN('lens', 'def')));
   // 肩代わり：鎮守の像が生きている間、像以外が受けるダメージは share 倍
   const foeShare = (F) => (enemy.party && F.id !== 'statue' && statueUp() ? TRI.share : 1);
   // 1回の攻撃が F に与えるダメージ（防御を引いて、肩代わりで減らす。最低1）
   function foeHit(raw, F, fresh) {
-    let d = Math.max(1, raw - (F && F.layer && fresh ? 0 : foeDef(F)));   // 重ね鎧の（v5.6.7）：回して入ったばかりの仲間の攻撃は防御を無視
+    let d = Math.max(1, raw + (F && F.variant ? relN('fang', 'atk') : 0) - (F && F.layer && fresh ? 0 : foeDef(F)));   // 重ね鎧の（v5.6.7）：回して入ったばかりの仲間の攻撃は防御を無視
     const sh = foeShare(F);
     if (sh < 1) d = Math.max(1, Math.floor(d * sh));
     return d;
@@ -4806,8 +4816,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
-        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
-          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
+        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.hi < raw;   // 味方ごとに違うときは範囲を出さない（味方カードの個別の予測に一本化）。全員が軽くなるとき（静けさの衣など。v5.8.0）は、いちばん大きい数字を「軽減後」で出す
+          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? String(h.hi) : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
     t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc);
     dangerEdge(!!enemy.charged && !chg && (phase === 'prep' || phase === 'choose'));
     tipsCheck(act);
@@ -5862,7 +5872,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     };
     let any = false;
     // ① 休む：回復列の全員が、それぞれ自分のHPを回復
-    const rests = back.map((x) => ({ u: x.u, c: x.c, from: pct(x.u), g: Math.min(x.u.rest || 0, x.u.max - x.u.hp) })).filter((t) => t.g > 0);
+    const rests = back.map((x) => ({ u: x.u, c: x.c, from: pct(x.u), g: Math.min((x.u.rest || 0) + relN('cup', 'rest'), x.u.max - x.u.hp) })).filter((t) => t.g > 0);
     if (rests.length) {
       any = true;
       SFX.heal();
@@ -5897,7 +5907,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   async function playerAttack(u, r, c) {
     let power, sup = 0;
     if (r === 0) {
-      power = u.atk + stanceAtk(stayN);
+      power = u.atk + stanceAtk(stayN) + relN('whet', 'atk');
       const m = grid[1][c];
       if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
     } else power = u.ranged;
@@ -5962,7 +5972,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     else {
       const m = grid[1][col];
       if (pierce) { if (m && m.defReady && m.defSup > 0) note = '（防御補助が効かない）'; }
-      else if (m && m.defReady && m.defSup > 0) { d -= m.defSup; m.defReady = false; note = '（' + m.name + 'の防御補助-' + m.defSup + '）'; guard = true; }
+      else if (m && m.defReady && m.defSup > 0) { const dv = m.defSup + relN('cloak', 'def'); d -= dv; m.defReady = false; note = '（' + m.name + 'の防御補助-' + dv + '）'; guard = true; }
       const eg = entryGuard(col);
       if (eg) { d -= eg; note += '（突入技-' + eg + '）'; }
     }
@@ -6182,6 +6192,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     let g = 0;
     Object.keys(entryNow).forEach((id) => { const en = entryNow[id]; if (en.teamGuard) g += en.teamGuard; if (en.guard && grid[0][col] && grid[0][col].uid === id) g += en.guard; });
     if (relOn('shield') && grid[0][col] && grid[0][col].entered) g += relD('shield').guard;
+    if (relOn('veil') && grid[0][col] && !grid[0][col].entered) g += relD('veil').guard;
     return g;
   }
   function rotateGrid() {
@@ -7022,7 +7033,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
       { id: 'shield', name: '先陣の盾', desc: '回すたび、攻撃列に入った仲間はそのターン受けるダメージ-2', guard: 2 },
       { id: 'incense', name: '休息の香', desc: '回すたび、回復列に下がった仲間のHP+6', backHeal: 6 },
       { id: 'bell', name: '勢いの鐘', desc: '突入技の攻撃+4', entryAtk: 4 },
-      { id: 'stance', name: '不動の構え', desc: '維持するたび、攻撃列の攻撃+2（最大+6。回すと消える）', stayAtk: 2, stayMax: 6 }
+      { id: 'stance', name: '不動の構え', desc: '維持するたび、攻撃列の攻撃+2（最大+6。回すと消える）', stayAtk: 2, stayMax: 6 },
+      // v5.8.0（提案F）：遠征を重ねるほど、見つかる回転レリックが増える（unlock：遠征の回数 runs・最深 best・踏破 clears のどれかに届けば出る）
+      { id: 'whet', name: '研ぎ石', desc: '攻撃列の攻撃+2', atk: 2, tag: ['攻撃列 攻+2'], unlock: { runs: 1 } },
+      { id: 'cup', name: '癒しの杯', desc: '回復列で休むとき、回復+3', rest: 3, tag: ['休む 回復+3'], unlock: { runs: 1 } },
+      { id: 'cloak', name: '守りの外套', desc: '防御補助が、さらに2減らす', def: 2, tag: ['防御補助+2'], unlock: { best: 4 } },
+      { id: 'veil', name: '静けさの衣', desc: '維持したターン、攻撃列が受けるダメージ-2', guard: 2, tag: ['維持で 被ダメ-2'], unlock: { best: 4 } },
+      { id: 'lens', name: '見抜きの眼鏡', desc: '敵の防御-2（0より下にはならない）', def: 2, tag: ['敵の防御-2'], unlock: { best: 7 } },
+      { id: 'chart', name: '古い地図', desc: '休んでも、章の主が強くならない', tag: ['休んでも 主はそのまま'], unlock: { best: 7 } },
+      { id: 'stone', name: '灯の石', desc: '手に入れたとき、全員の最大HP+6（HPも増える）', hp: 6, tag: ['全員 最大HP+6'], unlock: { clears: 1 } },
+      { id: 'fang', name: '狩人の牙', desc: '亜種の敵への攻撃+3（1回ごと）', atk: 3, tag: ['亜種へ 攻+3'], unlock: { clears: 1 } }
     ],
     up: { atk: 7, guard: 7, heal: 8, teamGuard: 2 },
     binder: { name: 'しばりネズミ', art: 0, voice: 'bite', hp: 150, spd: 6, def: 1, par: 10, allowFallen: 0, f: 'hue-rotate(200deg) saturate(1.1)', pattern: [
@@ -8088,7 +8108,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     { name: 'ひっかき', glyph: '爪', rule: 'lowhp', dmg: 13 }] });
   function expEnemy(step, vkey, foe, rests) {
     const ch = expCh(step), chief = expIsChief(step), k = chief ? EXP.chiefFoe[ch] : foe, t = step - 1;
-    const nr = chief ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
+    const nr = chief && !(run && (run.relics || []).includes('chart')) ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
     const base = k === 'first' ? firstFoe() : k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'first' ? 0 : k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
     const vs = vkeys(vkey), v = vs.length ? vs.reduce((o, k) => { const x = VARIANTS[k]; return { pre: o.pre + x.pre, hp: o.hp * (x.hp || 1), dmg: o.dmg * (x.dmg || 1), def: o.def + (x.def || 0), f: [o.f, x.f].filter(Boolean).join(' '), eat: o.eat || x.eat, starve: o.starve || x.starve, layer: o.layer || x.layer }; }, { pre: '', hp: 1, dmg: 1, def: 0, f: '' }) : null;   // 亜種は1つか2つ（深さ3）。重ねるときは掛け合わせる
     const dm = run && run.depth >= 3 && EXP.deepMul ? EXP.deepMul : { hp: 1, dmg: 1 };   // 深さ3の底上げ（v5.6.7）
@@ -8153,7 +8173,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     expSave();
     try { actTick(); const mm = expMeta(); mm.last = { node: run.node, at: Date.now() }; localStorage.setItem(EXP_META, JSON.stringify(mm)); } catch (e) { /* 記録できなくても進行は止めない */ }
     const step = run.node + 1;
-    const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。', k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
+    const cards = run.choices.map((c) => (c.type === 'battle' ? expCard(c) : { ico: ICON.heart, t: '休息', d: '灯のそばで休む。全員のHPが全快する' + (hpAvg() >= 100 ? '' : '（いまの平均HP ' + hpAvg() + '%）') + (relOn('chart') ? '。戦闘も報酬もない（古い地図：章の主は強くならない）。' : '。戦闘も報酬もなく、章の主が少し強くなる（HP+' + Math.round(EXP.restPen.hp * 100) + '%）。'), k: [['全員', hpAvg() >= 100 ? '全快' : hpAvg() + '%→全快'], ['章の主', relOn('chart') ? 'そのまま' : 'HP+' + Math.round(EXP.restPen.hp * 100) + '%']] }));
     const chN = expCh(Math.min(run.node + 1, EXP.nodes)), goal = run.node === 0 && !(+expMeta().runs);   // 地点選び A（v5.5.7）：上は「第N章 名前」だけ（地点は目盛りで）。目標は初めての遠征の最初だけ自動で開く
     rvShow({ map: true, goal, small: '第' + (chN + 1) + '章　' + chName(chN) + xTag(), title: run.choices.length > 1 ? 'どちらへ進む？' : step === EXP.nodes ? '最後の戦い' : '第' + (expCh(step) + 1) + '章の主', sub: expIsChief(step) ? '章の主が待つ。　' + growLine() : run.node === 0 && !run.relics.length ? '目標：地点' + EXP.nodes + 'の主を倒し、底に眠る「最初の灯」へ。倒れた仲間は戻らない。' + growLine() : growLine(), events, cards,   // 隊の育ちを毎回見せる（v5.3.1）   // 遠征の目標は最初の地図で伝える（v5.2.2。以前は戦闘中の「★3を目指そう」）
       on: (i) => { if (expEnter(run.choices[i]) === false) expShowMap(['その道へは進めない。']); } });
@@ -8178,7 +8198,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     run.rests = (run.rests || 0) + 1; run.chRests = (run.chRests || 0) + 1;
     run.members.forEach((m) => { m.hp = m.max; });
     SFX.heal();
-    expAdvance(['灯のそばで休んだ。全員のHPが全快した。章の主の気配が強まった（HP+' + Math.round(EXP.restPen.hp * run.chRests * 100) + '%）。']);
+    expAdvance(['灯のそばで休んだ。全員のHPが全快した。' + (relOn('chart') ? '古い地図のおかげで、章の主には気づかれていない。' : '章の主の気配が強まった（HP+' + Math.round(EXP.restPen.hp * run.chRests * 100) + '%）。')]);
   }
   let lastHeal = null;
   function expAfterBattle(win) {
@@ -8204,8 +8224,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     applyAge(m, false);
   }
   function expReward(pre) {
-    const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id));
-    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: ({ shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { run.relics.push(r.id); SFX.buff(); return r.name + 'を手に入れた。' + r.desc + '。'; } }); }
+    const cards = [], free = relFree();
+    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
     // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(EXP.upHp ? [{ k: 'st', t: '最大HP+' + EXP.upHp }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (EXP.upHp ? '・最大HP+' + EXP.upHp : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）
@@ -8276,6 +8296,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     expClearSave();
     const mm = expMeta(), fal = run.gone.filter((m) => m.fate === 'fallen').length;
     const x = xmeta(mm), before = xState(x), sq = run.sq || 'std', depth = run.depth || 1;   // 今回の分を入れる前の状態（新しく開いたものを知るため）
+    const rel0 = EXP.relics.filter((r) => relOpen(r, mm)).map((r) => r.id);   // 新しく見つかるようになった回転レリック（v5.8.0）
     mm.runs = (+mm.runs || 0) + 1; if (clear) mm.clears = (+mm.clears || 0) + 1;
     // 最深記録（v5.7.2）：2回目からの遠征で、これまでより深く進んで途絶えたら「もう一度」の札で知らせる（負けても前に進んだ手応え）
     const deeper = !clear && (+mm.runs || 0) > 1 && run.node > (+mm.best || 0) ? run.node + 1 : 0;
@@ -8287,6 +8308,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (got.length) un.push('実績 ' + got.map((a) => '<b>「' + a.t + '」</b>').join('') + '　勲章+' + got.length);   // 1行にまとめる（結果の画面が長くならないように）
     const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
     if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
+    const relNew = EXP.relics.filter((r) => rel0.indexOf(r.id) < 0 && relOpen(r, mm));
+    const opI = un.findIndex((t) => /^開いた：/.test(t));
+    if (relNew.length && opI >= 0) un[opI] = un[opI].replace(/<\/b>$/, '・回転レリック' + relNew.length + 'つ</b>');   // 隊・深さも開いたときは、同じ行にまとめる（横長の小さい画面に収める）
+    const relLn = relNew.length && opI < 0 ? ['新しい回転レリックが見つかる：<b>' + (relNew.length <= 2 ? relNew.map((r) => '「' + r.name + '」').join('') : '「' + relNew[0].name + '」ほか' + (relNew.length - 1) + 'つ') + '</b>'] : [];   // 一度に多く開くとき（踏破など）は短く。横長の小さい画面でボタンが押し出された   // 解禁の行（un）とは分ける：「次に開く」は消さない
     xSave(mm, x);
     actTick();
     mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now(), sq, depth });
@@ -8298,7 +8323,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
-      events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
+      events: un.concat(relLn, ((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length || relLn.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
       cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
@@ -8328,8 +8353,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (qaOn || !EXP.bless) return false;
     const mm = expMeta(); if (!(+mm.runs)) return false;
     const h = (mm.hist || [])[0], weak = !!h && !h.clear && +h.node > 0 && +h.node <= 3;
-    const cards = [], free = EXP.relics.filter((x) => !run.relics.includes(x.id)), B = EXP.bless;
-    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, act: () => { run.relics.push(r.id); return r.name + 'を手に入れた。'; } }); }
+    const cards = [], free = relFree(), B = EXP.bless;
+    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, act: () => relGet(r.id) }); }
     cards.push({ ico: ICON.heart, t: '灯の油', d: '全員の最大HP+' + B.hp + '（HPも同じだけ増える）。', act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + B.hp; applyAge(x, true); }); return '灯の油で、全員の最大HP+' + B.hp + '。'; } });
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''),

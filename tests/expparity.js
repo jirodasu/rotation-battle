@@ -1,4 +1,4 @@
-// 遠征の戦闘が、自動対戦 tools/expsim.mjs と同じ結果になること（回転レリック4種・突入技の強化・縛り・気力を含む）。
+// 遠征の戦闘が、自動対戦 tools/expsim.mjs と同じ結果になること（回転レリック（v5.8.0 で12種）・突入技の強化・縛り・気力を含む）。
 // 同じ4人・同じ敵・同じ「回す／維持」の順で、ゲーム本体と自動対戦を戦わせ、勝敗・ターン数・全員の残りHP・敵の残りHPを比べる。
 // 乱数を使う攻撃（ランダム）を含まない敵だけで比べる（乱数の並びはゲームと自動対戦で違うため）。
 process.env.RB_KEEP_WIN = '1';   // 戦闘そのものを測る。勝敗は以前の勝利パネルで待つ（v5.3.3）
@@ -10,7 +10,10 @@ const CASES = [
   { foe: 'binder', step: 1, relics: ['shield', 'incense'], seq: [true] },
   { foe: 'binder', step: 2, relics: ['bell', 'stance'], seq: [false, false, true] },
   { foe: 0, step: 2, relics: ['shield', 'incense', 'bell', 'stance'], seq: [true, false], up: true },
-  { foe: 'chief', step: 3, relics: ['stance', 'bell'], seq: [false, true, true], up: true }
+  { foe: 'chief', step: 3, relics: ['stance', 'bell'], seq: [false, true, true], up: true },
+  // v5.8.0 の回転レリック（研ぎ石・癒しの杯・守りの外套・静けさの衣／見抜きの眼鏡・狩人の牙は亜種の敵で）
+  { foe: 'binder', step: 2, relics: ['whet', 'cup', 'cloak', 'veil'], seq: [false, true, false] },
+  { foe: 0, step: 2, v: 'armor', relics: ['lens', 'fang', 'whet'], seq: [true, false] }
 ];
 async function fight(p, seq) {
   for (let i = 0; i < 800; i++) {
@@ -50,7 +53,7 @@ async function fight(p, seq) {
     const setup = await p.evaluate((k) => {
       const R = window.__rb, run = R.run;
       if (k.up) run.members.forEach((m) => { if (m.up) R.applyAge(m, false); });
-      const e = R.expEnemy(k.step, null, k.foe === 'chief' ? 0 : k.foe);
+      const e = R.expEnemy(k.step, k.v || null, k.foe === 'chief' ? 0 : k.foe);
       run.enemy = e;
       return { e, members: run.members.map((m) => ({ uid: m.uid, name: m.name, jname: m.jname, r: m.r, c: m.c, hp: m.hp, max: m.max, atk: m.atk, ranged: m.ranged, atkSup: m.atkSup, defSup: m.defSup, heal: m.heal, rest: m.rest, spd: m.spd, hits: m.hits, entry: m.entry })) };
     }, k);
