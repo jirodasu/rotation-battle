@@ -2154,7 +2154,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .tok.cb .hpb.low b { background: var(--hp-low); }
 .slot.sel .tok.cb .hpb b { background: var(--accent); }
 .tok.cb .disc svg { transform-origin: 50% 96%; }
-.tok.cb .disc svg [data-p] { transform-box: view-box; }   /* 戦士トワの骨組み（v5.8.3）：軸は絵の座標で決める */
+.tok.cb .disc svg [data-p] { transform-box: view-box; }   /* 戦士トワの骨組み（v5.8.3）：回す中心は絵の座標で決める */
 .cb-slash { fill: none; stroke: #fff; stroke-linecap: round; opacity: 0; }
 .tok.cb .inc-n { bottom: auto; top: 50%; left: calc(100% + 3px); transform: translateY(-50%); }   /* ちびキャラ：「あとN発」は札の右（上だと帽子・頭、下だと名札に重なる。v5.7.1） */
 .tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
@@ -3198,12 +3198,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
         back: blade(82, 118, 82, 40, '#6b5232', 3.2) + '<circle cx="82" cy="38" r="6.5" fill="none" stroke="#d8b660" stroke-width="2.4"/><circle cx="77" cy="44" r="2.2" fill="none" stroke="#d8b660" stroke-width="1.4"/><circle cx="87" cy="44" r="2.2" fill="none" stroke="#d8b660" stroke-width="1.4"/>',
         front: hand(81, 88, '#ece6d6') }
     };
-    // 戦士トワの骨組み（v5.8.3）：部品（脚・胴・頭・両腕・剣）を親子につなぎ、攻撃のときだけ部品ごとに動かす（lunge の WARRIOR_RIG）。
-    //   待機の見た目は今までと同じ正面。両腕を描き足し、剣を体の後ろから手前の層へ移した。軸は data-p の要素の transform-origin（view-box 基準）
+    // 戦士トワの骨組み（v5.8.3）：部品（足・胴・頭・両腕・剣）を上下につなぎ、攻撃のときだけ部品ごとに動かす（lunge の WARRIOR_RIG）。
+    //   待機の見た目は今までと同じ正面。両腕を描き足し、剣を体の後ろから手前の層へ移した。回す中心は data-p の要素の transform-origin（view-box 基準）
     function rigWarrior(j, inner) {
       const P = (id, ox, oy, body) => '<g data-p="' + id + '" style="transform-origin:' + ox + 'px ' + oy + 'px">' + body + '</g>';
       const limb = (x1, y1, x2, y2, col, w) => '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + K + '" stroke-width="' + w + '" stroke-linecap="round"/><path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + col + '" stroke-width="' + (w - 3.4) + '" stroke-linecap="round"/>';
-      // 顔だけ少し右へ寄せられるように、ゴシック調の顔（骨色の楕円と目）を包む。見つからない絵（通常の見た目）は頭ごと動くだけ
+      // 顔だけ少し右へ寄せられるように、ゴシック調の顔（骨色の楕円と目）を g でくるむ。見つからない絵（通常の見た目）は頭ごと動くだけ
       const head = inner.replace(/(<ellipse cx="50" cy="62" rx="17" ry="13"[^>]*\/><path d="M44 60v5M56 60v5"[^>]*\/>)/, '<g data-p="face">$1</g>');
       const leg = (id, x, foot) => P(id, x, 98, '<path d="M' + x + ' 98v14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/><path d="M' + x + ' 98v14" stroke="' + j.legs + '" stroke-width="6" stroke-linecap="round"/><path data-p="' + id.replace('leg', 'foot') + '" d="' + foot + '" fill="' + K + '"/>');
       const shield = '<circle cx="24" cy="94" r="13" fill="#5d6576" ' + SW + '/><circle cx="24" cy="94" r="8.5" fill="none" stroke="#d8b660" stroke-width="1.6"/><circle cx="24" cy="94" r="2.6" fill="#d8b660"/>';
@@ -5575,7 +5575,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await hitStop(90);
     await wait(430);
   }
-  // 戦士トワの攻撃（v5.8.3。動きの見本「トワの攻撃モーション試作」から）：0.42秒＝ため（〜0.10秒）→振り（〜0.17秒。ここで敵に斬撃と「ズバッ」）→戻り
+  // 戦士トワの攻撃（v5.8.3。動きの見本「トワの攻撃モーション試作」から）：0.42秒＝ため（〜0.10秒）→振り（〜0.17秒。ここで敵に剣の光と「ズバッ」）→戻り
   const WARRIOR_RIG = (() => {
     const IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
     const rot = (...a) => a.map(([o, d, e]) => ({ offset: o, transform: 'rotate(' + d + 'deg)', easing: e || 'linear' }));
@@ -6299,7 +6299,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // v5.8.2：1回の待ちを約半分に（移動780→420ms、回転アイコン900→480ms、待ち900→440ms）。待ち中にタップすると残りを飛ばして先へ進む
     const anims = [];
     const icA = anim(ic, [{ transform: 'rotate(-120deg) scale(.4)', opacity: 0 }, { transform: 'rotate(0deg) scale(1.1)', opacity: 1, offset: 0.35 }, { transform: 'rotate(260deg) scale(1)', opacity: 0 }], { duration: 480, easing: 'ease-out' });
-    if (icA) anims.push(icA);
+    if (icA) { anims.push(icA); icA.finished.then(() => ic.remove()).catch(() => ic.remove()); }   // 動きが終わったら消す（決め打ちの時間だと、終わってから消すまでの間にアイコンが一瞬見えた）
     setTimeout(() => ic.remove(), 500 / SPD);
     const jobs = [];
     board.querySelectorAll('.tok[data-id]').forEach((t) => {
@@ -6332,6 +6332,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await Promise.race([wait(RM ? 80 : 440), tapP]);
     await Promise.all(jobs);
     if (tapOn) { document.removeEventListener('pointerdown', onTap, true); if (tapped) setTimeout(() => document.removeEventListener('click', onTap, true), 400); else document.removeEventListener('click', onTap, true); }
+    if (!RM) ic.remove();
     await tutNote('rotated', '回った', '隊列が回った。補助の「攻」「防」が、すべて復活している。', () => $('board'), 'top');
     runTurn();
   }

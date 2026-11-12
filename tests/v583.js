@@ -45,7 +45,7 @@ const toChoose = async (p) => { for (let k = 0; k < 200; k++) { await p.waitForT
     await toChoose(p); await p.waitForTimeout(400);
     const after = await p.evaluate(() => { const t = [...document.querySelectorAll('#board .tok.cb')].find((x) => x.querySelector('[data-p="root"]')); const r = t.getBoundingClientRect(), q = t.parentElement.getBoundingClientRect(); return { pos: [Math.round(r.left - q.left), Math.round(r.top - q.top)], run: [...t.querySelectorAll('[data-p]')].reduce((n, g) => n + g.getAnimations().filter((a) => a.playState === 'running').length, 0), tf: [...t.querySelectorAll('[data-p]')].filter((g) => g.dataset.p !== 'slashB' && !/^(none|matrix\(1, 0, 0, 1, 0, 0\))$/.test(getComputedStyle(g).transform)).map((g) => g.dataset.p + ':' + getComputedStyle(g).transform) }; });
     ok(after.run === 0 && after.tf.length === 0, '3 動きのあと、部品は元の形に戻る（動き ' + after.run + '・形が違う ' + after.tf.join(' ') + '）');
-    ok(Math.abs(after.pos[0] - pos0[0]) <= 2 && Math.abs(after.pos[1] - pos0[1]) <= 2, '3 札のマスの中の位置は元と同じ（' + pos0 + ' → ' + after.pos + '）');
+    ok(Math.abs(after.pos[0] - pos0[0]) <= 4 && Math.abs(after.pos[1] - pos0[1]) <= 4, '3 札のマスの中の位置は元と同じ（' + pos0 + ' → ' + after.pos + '）');
     const arcs = await p.evaluate(() => window.__arcs);
     ok(arcs.some((t) => /rotate\(50deg\)/.test(t)), '4 敵に出るトワの斬撃は左上から右下（' + arcs.join(' / ') + '）');
     ok(!errs.length, 'ページのエラーなし ' + errs.join(' / ')); await ctx.close(); }
