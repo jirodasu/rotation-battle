@@ -2848,7 +2848,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.7.4</p>
+    <p class="c-ver" id="cVer">ver 5.8.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3289,7 +3289,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.7.4';
+  const APP_VERSION = '5.8.0';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4594,6 +4594,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
   function tipMark(k) { const o = tipSeen(); o[k] = 1; try { localStorage.setItem('rb-tips', JSON.stringify(o)); } catch (e) { /* 保存できない環境 */ } }
   const tipSession = {};
+  // 画面上端の安全域（iPhone の時計・ノッチ）。CSS の env() を、見えない要素で px に直して読む
+  let satEl = null;
+  function safeTop() {
+    try { if (!satEl) { satEl = document.createElement('div'); satEl.setAttribute('aria-hidden', 'true'); satEl.style.cssText = 'position:fixed;top:0;left:0;width:0;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none'; document.body.appendChild(satEl); } return satEl.getBoundingClientRect().height || 0; } catch (e) { return 0; }
+  }
   function placeTip(tight) {
     const el = $('tip'); if (el.hidden) return;
     el.classList.toggle('tight', !!tight);
@@ -4607,13 +4612,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cands = [{ top: tk.top - h - 4, left: null }, { top: innerWidth <= 360 ? 4 : 8, left: null }, { top: bk.bottom - h, left: null }, { top: st.top + 8, left: null }];   // ⓪予告の札のすぐ上（敵の絵の下の方）を先に試す   // ①上の帯と敵の絵の上（予告札のすぐ上）②下の行動順 ③敵の絵の上
     if (land) cands.push({ top: Math.max(8, bd.top), left: Math.max(8, Math.min(innerWidth - w - 8, bd.left + (bd.width - w) / 2)) });
     // 重なりの重み（v5.3.7）：盤・予告の札（回す/維持を決めるのに要る）を隠すのがいちばん悪い。敵の名前・HPは、ほかに場所が無いときだけ
-    const TOP0 = innerHeight < 620 ? 2 : 8;   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）
+    const TOP0 = safeTop() + (innerHeight < 620 ? 2 : 8);   // 背の低い画面では上の余白を詰め、予告の札から離す（v5.3.7）。時計・ノッチの安全域より下に置く（v5.7.5：iPhone で時計に重なっていた）
     const wt = [10, 10, 1, 1].concat(enemy && enemy.party ? [10] : []);
     // 見通しの札（v5.3.8）は、盤・予告より先に隠してよい（案内は「わかった」ですぐ閉じるため）。いちばん下を候補に足す
     { const dk = $('dock').getBoundingClientRect(); if (dk.height > 0) { avoid.push(dk); wt.push(3); cands.push({ top: innerHeight - h - 4, left: null }); } }
     const ov = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.reduce((a, r, i) => a + (wt[i] || 1) * Math.max(0, Math.min(L + w, r.right) - Math.max(L, r.left)) * Math.max(0, Math.min(T + h, r.bottom) - Math.max(T, r.top)), 0) + (T + h > innerHeight ? 1e6 : 0); };
     let best = cands[0], bv = ov(best);
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
+    // 詰めても予告の札・盤に重なるときは、それに重ならない候補の中から選ぶ（v5.7.5：時計の安全域のぶん上が狭くなった 320×568 で、札に重なった）
+    if (tight) { const hardAt = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0); };
+      if (hardAt(best)) { const okC = cands.filter((c) => !hardAt(c)); if (okC.length) { best = okC.reduce((x, y) => (ov(y) < ov(x) ? y : x)); bv = ov(best); } } }
     // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
     if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.slice(0, 2).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
       if (hard || bv > 0) { placeTip(true); return; } }   // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
@@ -4808,8 +4816,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
-        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.lo === h.hi && h.lo < raw;   // 味方ごとに違うときは範囲を出さず、元の数字のまま（味方カードの個別の予測に一本化）
-          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? h.txt : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
+        : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.hi < raw;   // 味方ごとに違うときは範囲を出さない（味方カードの個別の予測に一本化）。全員が軽くなるとき（静けさの衣など。v5.8.0）は、いちばん大きい数字を「軽減後」で出す
+          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? String(h.hi) : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
     t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc);
     dangerEdge(!!enemy.charged && !chg && (phase === 'prep' || phase === 'choose'));
     tipsCheck(act);
@@ -7008,7 +7016,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 地点ごとの敵の強さ（HP・威力の倍率）。第1章 地点1〜3／第2章 4〜6／第3章 7〜10
     hp: [0.45, 0.45, 0.4, 0.42, 0.42, 0.378, 0.42, 0.42, 0.42, 0.441], dmg: [0.7, 0.7, 0.67, 0.7, 0.7, 0.66, 0.7, 0.7, 0.7, 0.66],
     healMax: 3,   // 報酬「手当て」：全快＋全員の最大HP+3
-    // 灯の祝福（v5.7.6・提案B）：2回目からの遠征の最初に、3つ（前の隊が第1章の主に届かなかったら4つ）から1つ選ぶ。Slay the Spire の Neow と同じ考え
+    // 灯の祝福（v5.7.7・提案B）：2回目からの遠征の最初に、3つ（前の隊が第1章の主に届かなかったら4つ）から1つ選ぶ。Slay the Spire の Neow と同じ考え
     //   hp：全員の最大HP+。ward：灯の加護（第1章の敵のHPを0.75倍）。自動対戦400回の踏破率は CHANGELOG
     bless: { hp: 5, ward: 0.75 },
     // 出来事（v5.8.1・提案E）：地点2から、休息の地点の一部（rate）が「出来事」になる。どれも「得るものと失うもの」の札と、安全な札（全員HP+safe割）の2択。章の主は強くならない
@@ -8336,7 +8344,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
     if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
     const relNew = EXP.relics.filter((r) => rel0.indexOf(r.id) < 0 && relOpen(r, mm));
-    if (relNew.length) un.push('見つかるようになった回転レリック：<b>' + relNew.map((r) => '「' + r.name + '」').join('') + '</b>');
+    const opI = un.findIndex((t) => /^開いた：/.test(t));
+    if (relNew.length && opI >= 0) un[opI] = un[opI].replace(/<\/b>$/, '・回転レリック' + relNew.length + 'つ</b>');   // 隊・深さも開いたときは、同じ行にまとめる（横長の小さい画面に収める）
+    const relLn = relNew.length && opI < 0 ? ['新しい回転レリックが見つかる：<b>' + (relNew.length <= 2 ? relNew.map((r) => '「' + r.name + '」').join('') : '「' + relNew[0].name + '」ほか' + (relNew.length - 1) + 'つ') + '</b>'] : [];   // 一度に多く開くとき（踏破など）は短く。横長の小さい画面でボタンが押し出された   // 解禁の行（un）とは分ける：「次に開く」は消さない
     xSave(mm, x);
     actTick();
     mm.hist = (Array.isArray(mm.hist) ? mm.hist : []).slice(0, 19); mm.hist.unshift({ clear: !!clear, node: clear ? EXP.nodes : run.node + 1, fal, relics: run.relics.slice(), ms: Math.round(+run.act || 0), at: Date.now(), sq, depth });
@@ -8348,7 +8358,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
-      events: un.concat(((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
+      events: un.concat(relLn, ((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length || relLn.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
       cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
@@ -8371,7 +8381,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     swappedOnce = false;
     if (!blessing(() => expShowMap(legacyLine()))) expShowMap(legacyLine());
   }
-  /* 灯の祝福（v5.7.6・提案B）：2回目からの遠征の最初に、1つ選ぶ。初めての遠征には出さない（最初の戦闘の「しのいだ！」の数値が崩れるため）。QAジャンプにも出さない
+  /* 灯の祝福（v5.7.7・提案B）：2回目からの遠征の最初に、1つ選ぶ。初めての遠征には出さない（最初の戦闘の「しのいだ！」の数値が崩れるため）。QAジャンプにも出さない
      ・回転レリック（まだ持っていないものから1つ）・灯の油（全員の最大HP+5）・突入技の強化（1人。報酬と同じ）
      ・前の隊が第1章の主に届かなかったとき（途絶えた地点が3以下）だけ：灯の加護（第1章の敵のHPが0.75倍） */
   function blessing(then) {
@@ -8517,7 +8527,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 「続きから」がある状態で新しく始めるときは確認する（誤タップで途中の記録を消さない）。押してすぐは「始める」を受け付けない
   let ncFrom = null, ncTimer = 0;
   /* ===== 冒頭の物語（v5.5.8）：なぜ環廊に潜るのか。初めて「環廊へ」を押したときだけ自動で流し、2回目からはタイトルの「物語」から見返せる ===== */
-  /* 冒頭の物語（v5.7.5・提案C）：初めは4枚だけ（最初の地図まで約55秒→30秒）。残りの3枚は「物語の続き」として、第1章の主を倒して第2章へ入るときに1回だけ流す。
+  /* 冒頭の物語（v5.7.6・提案C）：初めは4枚だけ（最初の地図まで約55秒→30秒）。残りの3枚は「物語の続き」として、第1章の主を倒して第2章へ入るときに1回だけ流す。
      タイトルの「物語」は、続きを見たあとなら7枚を通して流す */
   const STORY_OPEN = [
     { a: 'far', t: '地の底に、輪のかたちをした<br>大聖堂がある。<br>人はそれを<em>「環廊」</em>と呼ぶ。' },
