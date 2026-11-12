@@ -16,6 +16,8 @@ function testPage() {
   // 並べて流す（run-all の1段目）ときに、ほかのテストが書きかけのページを読まないよう、別名に書いてから置き換える（v5.5.6）。中身はどのテストでも同じ
   const p = path.join(OUT, process.env.RB_KEEP_WIN ? 'tk.html' : 't.html'), tmp = p + '.' + process.pid; fs.writeFileSync(tmp, s); fs.renameSync(tmp, p);
   try { const tj = path.join(OUT, 'tune.js'), tt = tj + '.' + process.pid; fs.copyFileSync(path.join(ROOT, 'tune.js'), tt); fs.renameSync(tt, tj); } catch (e) { /* 調整モードの道具（v5.3.4）。無ければ読まない */ }
+  // 表紙の絵とボタンの板（v5.8.4）：ページは tests/out/ に書くので、img/ も横に置く（無いと背景が読めない）
+  try { const di = path.join(OUT, 'img'); fs.mkdirSync(di, { recursive: true }); for (const f of fs.readdirSync(path.join(ROOT, 'img'))) { const src = path.join(ROOT, 'img', f), dst = path.join(di, f); if (!fs.existsSync(dst) || fs.statSync(dst).size !== fs.statSync(src).size) { const t = dst + '.' + process.pid; fs.copyFileSync(src, t); fs.renameSync(t, dst); } } } catch (e) { /* 絵が無くても他のテストは動く */ }
   return 'file://' + p;
 }
 const indexURL = 'file://' + path.join(ROOT, 'index.html');
