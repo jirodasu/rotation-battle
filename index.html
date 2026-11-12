@@ -2848,7 +2848,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.1</p>
+    <p class="c-ver" id="cVer">ver 5.8.2</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3289,7 +3289,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.1';
+  const APP_VERSION = '5.8.2';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5507,6 +5507,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const a = amp || 7;
     anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(' + (-a) + 'px)' }, { transform: 'translateX(' + a + 'px)' }, { transform: 'translateX(' + (-a * 0.6) + 'px)' }, { transform: 'translateX(0)' }], { duration: 340, easing: 'ease-out' });
   }
+  // 盤を沈ませる（v5.8.2）：振動できない端末（iPhone）で、触覚の代わりに「押した手応え」を目で返す。振動できる端末・動きを減らす設定・演出を飛ばす間は出さない。
+  //   transform ではなく個別の translate / scale を使うので、shake や他の動きと重なっても位置はずれない（終わるとちょうど元に戻る）
+  function boardPress(px, tokEl2) {
+    if (vibOk || RM || SKIP) return;
+    const b = $('board'); if (!b || !b.animate) return;
+    b.animate([{ translate: '0 0' }, { translate: '0 ' + px + 'px', offset: 0.38 }, { translate: '0 0' }], { duration: 140, easing: 'ease-out' });
+    if (tokEl2 && tokEl2.animate) tokEl2.animate([{ scale: 1 }, { scale: 0.96, offset: 0.38 }, { scale: 1 }], { duration: 140, easing: 'ease-out' });
+  }
   function flashBright(el) { anim(el, [{ filter: 'brightness(1.9) saturate(.6)' }, { filter: 'none' }], { duration: 260 }); }
   /* ---- 大技・とどめの演出（v5.1.51）：通常 < 大技 < とどめ の順に、重さを付ける ----
      ヒットストップ（着弾の瞬間に動きを止める）・画面の揺れ・白いフラッシュ・のけぞり・音と振動。
@@ -6156,7 +6164,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     tutOnChoose();
     if (saveMark && saveMark.length) {
       const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
-      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } }, 120 + i * 160); });
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } boardPress(3, el); }, 120 + i * 160); });
       if (live.length) { savedN += 1; say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。'); }
     }
   }
@@ -6227,15 +6235,18 @@ body.fast #stampOk.on { animation-duration: .5s; }
       units().filter((x) => x.r === 2).forEach((x) => { const g = Math.min(hv, x.u.max - x.u.hp); if (g > 0) { x.u.hp += g; got.push(x); } });
       if (got.length) { say('休息の香　回復列に下がった' + got.map((x) => x.u.name).join('・') + 'のHP+' + hv); setTimeout(() => got.forEach((x) => { const el = tokEl(2, x.c); if (el) popAt(el, '+' + hv, 'heal'); }), 120); }
     }
-    SFX.rotate(); vib(18);
+    SFX.rotate(); vib(18); boardPress(2);
     $('dock').style.visibility = 'hidden';
     renderBoard(); renderBook(); renderTicket();
     const board = $('board');
     const ic = document.createElement('span');
     ic.className = 'spinicon'; ic.innerHTML = ICON.rot;
     board.appendChild(ic);
-    anim(ic, [{ transform: 'rotate(-120deg) scale(.4)', opacity: 0 }, { transform: 'rotate(0deg) scale(1.1)', opacity: 1, offset: 0.35 }, { transform: 'rotate(260deg) scale(1)', opacity: 0 }], { duration: 900, easing: 'ease-out' });
-    setTimeout(() => ic.remove(), 950 / SPD);
+    // v5.8.2：1回の待ちを約半分に（移動780→420ms、回転アイコン900→480ms、待ち900→440ms）。待ち中にタップすると残りを飛ばして先へ進む
+    const anims = [];
+    const icA = anim(ic, [{ transform: 'rotate(-120deg) scale(.4)', opacity: 0 }, { transform: 'rotate(0deg) scale(1.1)', opacity: 1, offset: 0.35 }, { transform: 'rotate(260deg) scale(1)', opacity: 0 }], { duration: 480, easing: 'ease-out' });
+    if (icA) anims.push(icA);
+    setTimeout(() => ic.remove(), 500 / SPD);
     const jobs = [];
     board.querySelectorAll('.tok[data-id]').forEach((t) => {
       const o = old[t.dataset.id];
@@ -6248,11 +6259,25 @@ body.fast #stampOk.on { animation-duration: .5s; }
         { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(0deg) scale(1)' },
         { transform: 'translate(' + (dx * 0.5 + side) + 'px,' + (dy * 0.5) + 'px) rotate(' + (down ? 10 : -9) + 'deg) scale(1.12)', offset: 0.5 },
         { transform: 'translate(0,0) rotate(0deg) scale(1)' }
-      ], { duration: 780, easing: 'cubic-bezier(.55,0,.2,1)', delay: down ? 0 : 50 });
+      ], { duration: 420, easing: 'cubic-bezier(.55,0,.2,1)', delay: down ? 0 : 30 });
+      anims.push(an);
       jobs.push(an.finished.then(() => { slot.style.zIndex = ''; }).catch(() => { slot.style.zIndex = ''; }));
     });
-    await wait(RM ? 80 : 900);
+    // 待ち中のタップ：回す／維持などの押下としては扱わず、飛ばすことだけに使う（押した指が離れたときの click も、少しのあいだ止める）
+    let tapped = false, tapRes = null;
+    const tapP = new Promise((r) => { tapRes = r; });
+    const onTap = (e) => {
+      if (e.target && e.target.closest && e.target.closest('#spdBtn,#btnSkip')) return;   // 速さ・演出を飛ばすボタンは、そのまま働く
+      e.stopPropagation(); e.preventDefault();
+      if (tapped) return; tapped = true;
+      anims.forEach((a) => { try { a.finish(); } catch (er) { /* 対象外 */ } });
+      ic.remove(); tapRes();
+    };
+    const tapOn = !RM && !SKIP;
+    if (tapOn) { document.addEventListener('pointerdown', onTap, true); document.addEventListener('click', onTap, true); }
+    await Promise.race([wait(RM ? 80 : 440), tapP]);
     await Promise.all(jobs);
+    if (tapOn) { document.removeEventListener('pointerdown', onTap, true); if (tapped) setTimeout(() => document.removeEventListener('click', onTap, true), 400); else document.removeEventListener('click', onTap, true); }
     await tutNote('rotated', '回った', '隊列が回った。補助の「攻」「防」が、すべて復活している。', () => $('board'), 'top');
     runTurn();
   }
