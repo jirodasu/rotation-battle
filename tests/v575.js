@@ -37,6 +37,7 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
         if (st.t === 3 && !t3) { await p.waitForTimeout(600); t3 = Object.assign(o, { badge: await p.evaluate(() => !!document.querySelector('#ocStay b.ko')) }); }
         const rot = pol === 'smart' && o.sk && !o.rk && !o.dis; await p.click(rot ? '#btnRotate' : '#btnStay').catch(() => {}); await p.waitForTimeout(120); }
       await p.waitForTimeout(50); }
+    await p.waitForFunction(() => !document.getElementById('runv').hidden, null, { timeout: 4000 }).catch(() => {});   // 決着の直後は勝利の画面が出る前のことがある（機械が遅いと不安定だった）
     const r = await p.evaluate(() => ({ fell: window.__rb.log.filter((l) => /が倒れた/.test(l)).length, ev: window.__ev, win: !document.getElementById('runv').hidden && /勝利/.test(document.getElementById('runv').innerText) }));
     if (pol === 'smart') ok(r.win && r.fell === 0 && r.ev.includes('hint') && r.ev.filter((x) => x === 'save').length >= 1, '2 「倒」を見て回す：勝利・倒れた ' + r.fell + '・演出 ' + JSON.stringify(r.ev));
     else ok(t3 && t3.sk && t3.badge && !t3.rk, '3 回さない：3ターン目の判断で維持に「倒」、回せば助かる ' + JSON.stringify(t3) + '（倒れた ' + r.fell + '）');

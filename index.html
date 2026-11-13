@@ -2886,7 +2886,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.4</p>
+    <p class="c-ver" id="cVer">ver 5.8.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2908,14 +2908,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     <div class="h-tabs" role="tablist" aria-label="説明の深さ"><button type="button" role="tab" id="hTab0" data-tier="0" aria-selected="true" aria-controls="hTier0">はじめに</button><button type="button" role="tab" id="hTab1" data-tier="1" aria-selected="false" aria-controls="hTier1">しくみ</button><button type="button" role="tab" id="hTab2" data-tier="2" aria-selected="false" aria-controls="hTier2">くわしく</button></div>
     <ul class="steps" id="hTier0" role="tabpanel" aria-labelledby="hTab0">
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>やること</b>4人の並びを回して、敵の大技をしのぎ、倒す。毎ターン「回す」か「維持」を選ぶ。</div></li>
-      <li><span class="ico rs disp" style="font-size:14px">札</span><div><b>下の札を見比べる</b>「回す」「維持」のボタンに、受けるダメージと与えるダメージが出る。見比べて押すだけ。</div></li>
+      <li><span class="ico rs disp" style="font-size:14px">比</span><div><b>「回す」「維持」の結果を比べる</b>ボタンに出る、敵と仲間のHPの変わり方を比べて選ぼう。</div></li>
       <li><span class="ico rd" style="font-size:13px">-9</span><div><b>赤い数字</b>次に受けるダメージの見込み。「倒」が付いたら、そのままだと倒れる。</div></li>
       <li><span class="ico rr" style="font:italic 700 18px/1 Georgia,serif">i</span><div><b>敵をタップ</b>敵の能力と、この先の行動パターンが見られる。</div></li>
       <li class="h-more"><button type="button" class="h-next" data-tier="1">慣れたら「しくみ」へ →</button></li>
     </ul>
     <ul class="steps" id="hTier1" role="tabpanel" aria-labelledby="hTab1" hidden>
       <li><span class="ico r0"><svg viewBox="0 0 24 24"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></span><div><b>攻撃列</b>敵を攻撃する。素早い順に動く。剣マークの数字は次に与えるダメージの見込み（金色は攻撃補助込み）。</div></li>
-      <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>すぐ上の、同じ側（左・右）の攻撃列の仲間を支える（右の補助は、左には届かない）。金の矢印が攻撃補助、青の矢印が防御補助。点線はこのターンは効かない（1回で使い切り・狙われていない）。</div></li>
+      <li><span class="ico r1"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>補助列</b>すぐ上の、同じ側（左・右）の攻撃列の仲間を支える（右の補助は、左には届かない）。金の矢印が攻撃補助、青の矢印が防御補助。点線の矢印は、このターンは効果が出ない。1回で使い切ったとき、真上が空いているとき、防御補助で真上の仲間が狙われていないとき（防無効の攻撃も含む）に出る。</div></li>
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr disp" style="font-size:14px">気</span><div><b>気力</b>回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
@@ -2927,9 +2927,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li><span class="ico r0 disp" style="font-size:14px">突</span><div><b>突入技</b>回して攻撃列に入った仲間は、そのターンだけ職業ごとの技を出す。「回す」を長押しした先読みで「突」が付いた仲間が対象。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">次</span><div><b>予兆</b>敵の予告には、このターンの攻撃が出る。敵をタップすると「その次」の行動も見える。2手先を見て回すかどうかを決めよう。</div></li>
       <li><span class="ico rd disp" style="font-size:14px">溜</span><div><b>ちからをためる</b>そのターンは攻撃してこない。次のターンに「大技」が来る合図。今のうちに回して、元気な仲間を前へ。</div></li>
-      <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
+      <li><span class="ico rd disp" style="font-size:12px">防無</span><div><b>防無効（防御補助を無視）</b>防御補助で軽くできない攻撃。HPの多い仲間で受けよう。</div></li>
       <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 1.8 15 8.4 22.2 9.2 16.8 14 18.3 21.2 12 17.5 5.7 21.2 7.2 14 1.8 9.2 9 8.4Z" fill="currentColor"/></svg></span><div><b>★の条件</b>勝利・倒れた仲間の数・ターン数で最大★3。くわしい条件は敵をタップすると見られる。</div></li>
-      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。目指すのは、底に眠る「最初の灯」。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。</div></li>
+      <li><span class="ico rs"><svg viewBox="0 0 24 24"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg></span><div><b>遠征</b>地の底の大聖堂「環廊」を、4人で下っていく。目指すのは、底に眠る「最初の灯」。回すことは、灯を受け渡すこと。祈りの間・貝殻の書庫・竜の眠る祭壇の三つの章を進む。道は「戦闘」か「休息」。戦闘に勝つと、回転レリック（遠征を助ける遺物）・突入技の強化・手当て・仲間の入れ替えから1つを選べる。休むと全快するが、その章の主が強くなる。倒れた仲間は戻らない。地点3・6の章の主を倒すと次の章へ（全員全快、欠けた仲間の代わりが合流）。地点10の祭壇の毒竜を倒せば踏破。</div></li>
     </ul>
     <div class="h-foot"><button class="btn set-open" id="helpSet" type="button">設定</button><button class="btn primary big" id="helpClose" type="button">わかった</button></div>
   </div>
@@ -2947,7 +2947,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     </div>
     <div class="set-rst">
       <h3 class="disp">記録</h3>
-      <div class="set-row inline"><span><b>記録をリセット</b><small id="rstNote">遠征の続き・踏破・星・解放したものを消して、初めて遊ぶ状態に戻す</small></span><button class="btn set-rst-b" id="setReset" type="button">リセット</button></div>
+      <div class="set-row inline"><span><b>記録をリセット</b><small id="rstNote">遠征の続き・踏破記録・集めた星・解放した隊などを削除して、初めて遊ぶ状態に戻す</small></span><button class="btn set-rst-b" id="setReset" type="button">リセット</button></div>
     </div>
     <div class="set-about">
       <h3 class="disp">このゲームについて</h3>
@@ -3349,7 +3349,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.4';
+  const APP_VERSION = '5.8.5';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4491,7 +4491,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + colN(t.c) + '）' };
     }
     const t = L.reduce((a, b) => (HP(b.u) < HP(a.u) ? b : a));
-    return { cols: [t.c], desc: (act.rule === 'job' ? '狙い　前列に' + act.job + 'なし→HP最低の' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）') + (act.vsEntered ? '。入ったばかりなら×' + act.vsEntered : '') };
+    return { cols: [t.c], desc: (act.rule === 'job' ? '狙い　前列に' + act.job + 'がいないため、HPが最も少ない' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）') + (act.vsEntered ? '。入ったばかりなら×' + act.vsEntered : '') };
   }
   const actOf = (F, t) => {
     const n = F.pattern.length, i = ((t || turn) - 1) % n, a = F.pattern[i];
@@ -4646,7 +4646,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     bind: () => ['縛り', '縛られると、<em>次のターンは回せない</em>。縛りの次に大技が来るなら、縛られる前に元気な仲間を前へ。'],
     bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
-    pierce: () => ['防無効の攻撃', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
+    pierce: () => ['防無効の攻撃（防御補助を無視）', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
     trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。3体は<em>毎ターン同じ技</em>だけを使う。像は一番前の列の全員に' + foeById('statue').pattern[0].dmg + '、祈り手は傷ついた敵を' + foeById('priest').pattern[0].heal + '回復、断罪者はHPのいちばん低い仲間に' + foeById('judge').pattern[0].dmg + '。パネルの「与」が、いまの並びで与えられるダメージ。どれから倒すかで戦いが変わる。']
   };
@@ -6460,7 +6460,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       $('rSmall').textContent = run && EXPM() && !enemy.chief ? chapLabel() + '　地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes : chapLabel() + '　完';
       $('rTitle').textContent = tut ? '完了' : (last && !EXPM() ? '大団円' : '勝利');
       $('rTitle').className = 'disp';
-      $('rSub').textContent = tut ? '基本はこれで完了。環廊に挑もう。' : turn + 'ターンで' + enemy.name + 'を撃破';
+      $('rSub').textContent = tut ? '基本操作はこれで完了。環廊へ向かおう。' : turn + 'ターンで' + enemy.name + 'を撃破';
       { const hl = $('rHeal'), more = !tut && run && EXPM() && run.node + 1 < NODES; hl.hidden = !more; if (more) hl.textContent = 'このあと、生き残った仲間は最大HPの' + Math.round(EXP.afterHeal * 100) + '％（切り上げ）ぶん回復する（最大HPまで）。'; }
       const gotStars = tut ? 3 : showStats(true);
       if (tut) $('rStats').innerHTML = '';
@@ -7111,7 +7111,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   /* 騎士団（最初の編成）。標準は DEFAULT_FORM＋RUN.start のまま変えない。ここは追加分で、解禁すると選べる。
      form は [職業, 行, 列, 年齢]。出撃枠（前3・中2・後2）に合わせた7人。値は tools/runsim.mjs で測って決める */
   const SQUADS = [
-    { id: 'vanguard', name: '攻めの騎士団', tag: '速攻', desc: '騎士がサムライに。速く重いが、脆い。', form: [['samurai', 0, 0, 24], ['warrior', 0, 1, 38], ['samurai', 0, 2, 29], ['archer', 1, 0, 19], ['witch', 1, 1, 33], ['cleric', 2, 0, 44], ['monk', 2, 1, 27]] },
+    { id: 'vanguard', name: '攻めの騎士団', tag: '速攻', desc: '騎士がサムライに。素早く攻撃力も高いが、打たれ弱い。', form: [['samurai', 0, 0, 24], ['warrior', 0, 1, 38], ['samurai', 0, 2, 29], ['archer', 1, 0, 19], ['witch', 1, 1, 33], ['cleric', 2, 0, 44], ['monk', 2, 1, 27]] },
     { id: 'bulwark', name: '護りの騎士団', tag: '堅守', desc: '騎士が2人。堅いが、引退が早い。', form: [['warrior', 0, 0, 38], ['knight', 0, 1, 30], ['knight', 0, 2, 40], ['witch', 1, 0, 33], ['monk', 1, 1, 29], ['cleric', 2, 0, 44], ['monk', 2, 1, 31]] },
     { id: 'veterans', name: '老練の騎士団', tag: '高難度', desc: '全員ベテラン。強いが、引退が続く。', form: [['warrior', 0, 0, 41], ['knight', 0, 1, 38], ['samurai', 0, 2, 36], ['witch', 1, 0, 40], ['archer', 1, 1, 35], ['cleric', 2, 0, 44], ['monk', 2, 1, 39]] }
   ];
@@ -7921,7 +7921,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     cards.push({ ico: ICON.heart, t: '手当てと稽古', d: '全員のHPが全快。若手は攻撃+' + RUN.restAtk + '。', act: () => { run.members.forEach((m) => { m.hp = m.max; }); SFX.heal(); return '手当てをした。全員のHPが全快した。' + (RUN.healTrain ? trainYoung() : ''); } });
     const bonus = RUN.bonusPick && run.lastStars >= 3;
     if (bonus) { const alt = eqs.find((x) => !eqs[0] || x[0] !== eqs[0][0] || x[1] !== eqs[0][1]); if (alt) cards.push(equipCard(alt, true)); }
-    rvShow({ title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。' + (bonus ? '戦果★3で、選べる報酬が1つ増えた。' : ''), events: pre || [], cards, on: (i) => runAdvance([cards[i].act()]) });
+    rvShow({ title: '報酬を1つ選ぶ', sub: enemy.name + 'を倒した。' + (bonus ? '★3を達成したため、報酬の候補が1つ増えた。' : ''), events: pre || [], cards, on: (i) => runAdvance([cards[i].act()]) });
   }
   // 戦闘のあと：倒れた仲間は戦死。戦った仲間は少し回復し、留守番は全快
   function runAfterBattle(win) {
@@ -8081,7 +8081,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
      ・これまでの踏破・到達は、実績「初めての突破」「中盤まで」に数える（古い保存でも引き継ぐ） */
   const XSQ = [
     { id: 'std', name: '標準の隊', tag: '標準', desc: '戦士・サムライ・魔女・神官。基本の4人。', party: EXP.party },
-    { id: 'fast', name: '速攻の隊', tag: '速攻', desc: 'サムライ2人とアーチャー・魔女。速く重いが、脆い。', party: [['samurai', 0, 0], ['samurai', 0, 1], ['archer', 1, 0], ['witch', 1, 1]], hint: '実績「中盤まで」' },
+    { id: 'fast', name: '速攻の隊', tag: '速攻', desc: 'サムライ2人とアーチャー・魔女。素早く攻撃力も高いが、打たれ弱い。', party: [['samurai', 0, 0], ['samurai', 0, 1], ['archer', 1, 0], ['witch', 1, 1]], hint: '実績「中盤まで」' },
     { id: 'guard', name: '堅守の隊', tag: '堅守', desc: '騎士2人と魔女・僧侶。堅いが、攻めは遅い。', party: [['knight', 0, 0], ['knight', 0, 1], ['witch', 1, 0], ['monk', 2, 1]], hint: '実績「初めての突破」' },
     { id: 'twin', name: '双魔の隊', tag: '双魔', desc: '魔女が2人。火力は高いが、前が薄い。', party: [['warrior', 0, 0], ['samurai', 0, 1], ['witch', 1, 0], ['witch', 1, 1]], hint: '実績「隊の誉れ」', price: 3 }
   ];
