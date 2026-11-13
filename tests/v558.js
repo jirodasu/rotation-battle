@@ -1,3 +1,4 @@
+// v5.8.7：初めての遠征は物語のあとすぐ初戦の隊列に入る（地図は出ない）ので、「遠征が始まる」は地図か初戦の隊列のどちらかで見る
 // v5.5.8 冒頭の物語（なぜ環廊に潜るのか）
 // 合格の基準（測る前に決めたもの）：
 //  1. 初めて「環廊へ」を押すと物語が出る（v5.7.5 から4枚。残り3枚は第2章へ入るときの「物語の続き」＝v576）。1枚目の文は「環廊」を含む。タップで1枚ずつ進み、点の位置が進む。最後の1枚だけ「遠征へ」が出る
@@ -36,7 +37,7 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(120);
     ok((await p.evaluate(() => window.__st())).on === 3, tag + ' 1 最後の1枚でタップしても進まない（「遠征へ」で始める）');
     await p.click('#stGo'); await p.waitForTimeout(800);
-    const a = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden, seen: localStorage.getItem('rb-story') }));
+    const a = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden || (window.__rb.phase === 'prep' && !!window.__rb.run), seen: localStorage.getItem('rb-story') }));
     ok(!a.story && a.runv && a.seen === '1', tag + ' 2 「遠征へ」で物語が閉じ、遠征が始まる ' + JSON.stringify(a));
     // 2回目：遠征をやめてタイトルへ → 「物語」が出る。「環廊へ」では物語は出ない
     await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); }); await p.reload(); await p.waitForTimeout(400);
@@ -51,7 +52,7 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     const b4 = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden, cover: !document.getElementById('cover').hidden }));
     ok(!b4.story && !b4.runv && b4.cover, tag + ' 4 「タイトルへ」でタイトルに戻り、遠征は始まらない ' + JSON.stringify(b4));
     await p.click('#begin'); await p.waitForTimeout(600);
-    const c2 = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden }));
+    const c2 = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden || (window.__rb.phase === 'prep' && !!window.__rb.run) }));
     ok(!c2.story && c2.runv, tag + ' 2 2回目の「環廊へ」では物語は出ず、そのまま遠征へ ' + JSON.stringify(c2));
     ok(!errs.length, tag + ' 5 ページのエラーなし ' + errs.join('/'));
     await ctx.close();
@@ -62,7 +63,7 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(300);
     await p.mouse.click(196, 200); await p.waitForTimeout(100);
     await p.click('#stSkip'); await p.waitForTimeout(800);
-    const s = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden, seen: localStorage.getItem('rb-story') }));
+    const s = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden || (window.__rb.phase === 'prep' && !!window.__rb.run), seen: localStorage.getItem('rb-story') }));
     ok(!s.story && s.runv && s.seen === '1', '3 「とばす」で抜けて、そのまま遠征が始まる ' + JSON.stringify(s));
     await ctx.close(); }
   // 6 キーボード（v5.6.0）：開いた直後の Enter で「とばす」が押されず、1枚進む。← で1枚戻る。Esc で抜ける
@@ -75,7 +76,7 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     await p.keyboard.press('ArrowLeft'); await p.waitForTimeout(120); const k3 = await p.evaluate(() => window.__st());
     ok(k1.open && k1.on === 1 && k2.on === 2 && k3.open && k3.on === 1, '6 開いた直後の Enter・Space で1枚ずつ進み（とばさない）、← で戻る ' + [k1.on, k2.on, k3.on].join(','));
     await p.keyboard.press('Escape'); await p.waitForTimeout(800);
-    const e = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden }));
+    const e = await p.evaluate(() => ({ story: !document.getElementById('story').hidden, runv: !document.getElementById('runv').hidden || (window.__rb.phase === 'prep' && !!window.__rb.run) }));
     ok(!e.story && e.runv, '6 Esc で抜けて遠征が始まる ' + JSON.stringify(e));
     await ctx.close(); }
   await b.close();
