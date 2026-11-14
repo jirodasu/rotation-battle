@@ -2887,7 +2887,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.8</p>
+    <p class="c-ver" id="cVer">ver 5.8.9</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3281,6 +3281,27 @@ body.fast #stampOk.on { animation-duration: .5s; }
             P('shU', 73, 64, limb(73, 64, 80, 79, j.cloth, 8.4) + P('shL', 80, 79, limb(80, 79, 73, 94, j.trim, 8) + P('shield', 73, 94, shield))))) +
         '<g data-p="thrust" stroke-dashoffset="100" style="transform-origin:50px 70px;opacity:0"><path d="M65 64L139 39" style="stroke-dashoffset:inherit" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" pathLength="100" stroke-dasharray="100"/></g></svg>';
     }
+    // 魔女ネムリの骨組み（v5.8.9。指示書「魔女（witch）攻撃アニメーション」から）：左腕（袖）を描き足し、杖を体の後ろから手前の層へ。待機の見た目は今までと同じ。
+    //   右肩→ひじ→手首（杖）、左肩→ひじ→手。杖の玉の後ろに光（glow。待機は透明）、杖先の軌跡 arcA・arcB は枠の外（右上）まで伸びる。顔はトワと同じく縮小の内側で寄せる
+    function rigWitch(j, inner) {
+      const P = (id, ox, oy, body) => '<g data-p="' + id + '"' + (ox == null ? '' : ' style="transform-origin:' + ox + 'px ' + oy + 'px"') + '>' + body + '</g>';
+      const limb = (x1, y1, x2, y2, col, w) => '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + K + '" stroke-width="' + w + '" stroke-linecap="round"/><path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + col + '" stroke-width="' + (w - 3.4) + '" stroke-linecap="round"/>';
+      const head = inner.replace(/(<ellipse cx="50" cy="62" rx="15" ry="12"[^>]*\/><path d="M42 63[^>]*\/>)/, '<g data-p="face">$1</g>');
+      const leg = (id, x) => P(id, x === 38 ? 37 : 63, 98, '<path d="M' + x + ' 115v4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>' + P(id.replace('leg', 'foot'), null, null, '<circle cx="' + x + '" cy="118.5" r="2.8" fill="' + K + '"/>'));
+      const staff = blade(82, 118, 82, 44, '#6b5232', 3.4) + '<path d="M82 46c-8-6-6-16 2-16 7 0 8 8 3 10-3 1-5-2-3-4" fill="none" stroke="' + j.trim + '" stroke-width="2.6" stroke-linecap="round"/>' +
+        '<circle data-p="glow" cx="82" cy="40" r="8" fill="#ffe89a" opacity="0"/><circle cx="82" cy="40" r="3.4" fill="#d6c4ff"/>' + hand(81, 88, '#ece6d6');
+      const arc = (id, col, w, extra) => '<path class="cb-slash" data-p="' + id + '" d="M44 0A60 60 0 0 1 114 80" stroke="' + col + '" stroke-width="' + w + '" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"' + extra + '/>';
+      return '<svg viewBox="0 0 100 124" aria-hidden="true"><ellipse class="cb-sh" data-p="shadow" style="transform-origin:50px 119px" cx="50" cy="119" rx="30" ry="5"/>' +
+        P('root', 50, 118,
+          leg('legL', 38) + leg('legR', 62) +
+          P('torso', 50, 100,
+            '<path d="M31 76Q28 100 24 114Q50 120 76 114Q72 100 69 76Z" fill="' + j.robe + '" ' + SW + '/>' +
+            '<path d="M30 74Q28 90 32 100H68Q72 90 70 74Z" fill="' + j.cloth + '" ' + SW + '/><path d="M31 90H69" stroke="' + j.belt + '" stroke-width="3"/><path d="M36 76q14 8 28 0" fill="none" stroke="' + j.trim + '" stroke-width="1.6"/>' +
+            P('head', 50, 66, '<g transform="translate(15 -2) scale(.7)">' + head + '</g>') +
+            P('shU', 27, 64, limb(27, 64, 22, 79, j.cloth, 8.4) + P('shL', 22, 79, limb(22, 79, 26, 92, j.cloth, 8) + hand(26, 93, '#ece6d6'))) +
+            P('stU', 73, 64, limb(73, 64, 80, 78, j.cloth, 8.4) + P('stL', 80, 78, limb(80, 78, 81, 87, j.cloth, 8) + P('staff', 81, 88, staff))))) +
+        arc('arcA', '#fff', 4, '') + arc('arcB', '#9fb2c8', 1.6, ' transform="translate(3 3)"') + '</svg>';
+    }
     const memo = {};
     return (u) => {
       const job = u.job || u.id, j = J[job]; if (!j) return face(u);
@@ -3288,6 +3309,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const inner = f.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
       if (job === 'warrior') return (memo[k] = rigWarrior(j, inner));
       if (job === 'knight') return (memo[k] = rigKnight(j, inner));
+      if (job === 'witch') return (memo[k] = rigWitch(j, inner));
       const legs = j.robe
         ? '<path d="M31 76Q28 100 24 114Q50 120 76 114Q72 100 69 76Z" fill="' + j.robe + '" ' + SW + '/><path d="M38 115v4M62 115v4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>'
         : (j.hakama ? '<path d="M33 96L27 116H48L50 104L52 116H73L67 96Z" fill="' + j.hakama + '" ' + SW + '/>'
@@ -3376,7 +3398,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.8';
+  const APP_VERSION = '5.8.9';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5759,13 +5781,37 @@ body.fast #stampOk.on { animation-duration: .5s; }
       ]
     };
   })();
+  // 魔女ネムリの攻撃（v5.8.9。指示書「魔女（witch）攻撃アニメーション」から）：0.42秒＝ため（〜0.10秒。体を反らせ、杖を頭上へ。玉が光る）→約200度の大きな弧で振り下ろす（〜0.17秒。ここで敵に星）→戻り
+  const WITCH_RIG = (() => {
+    const IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
+    const rot = (...a) => a.map(([o, d, e]) => ({ offset: o, transform: 'rotate(' + d + 'deg)', easing: e || 'linear' }));
+    const tx = (px) => [{ offset: 0, transform: 'translateX(0)', easing: IN }, { offset: 0.2, transform: 'translateX(' + px + 'px)' }, { offset: 0.6, transform: 'translateX(' + px + 'px)', easing: OUT }, { offset: 1, transform: 'translateX(0)' }];
+    return {
+      root: [{ offset: 0, transform: 'scale(1,1)', easing: IN }, { offset: 0.24, transform: 'scale(1.03,.94)', easing: HIT }, { offset: 0.4, transform: 'scale(.98,1.04)', easing: OUT }, { offset: 1, transform: 'scale(1,1)' }],
+      shadow: [{ offset: 0, transform: 'scale(1)', opacity: 1, easing: IN }, { offset: 0.24, transform: 'scale(1.05)', opacity: 1, easing: HIT }, { offset: 0.4, transform: 'scale(.8)', opacity: 0.65, easing: 'linear' }, { offset: 0.52, transform: 'scale(.84)', opacity: 0.68, easing: OUT }, { offset: 1, transform: 'scale(1)', opacity: 1 }],
+      torso: rot([0, 0, IN], [0.24, -7, HIT], [0.4, 11, 'linear'], [0.52, 9, OUT], [1, 0]),
+      head: rot([0, 0, IN], [0.24, -5, HIT], [0.4, 5, 'linear'], [0.52, 4, OUT], [1, 0]),
+      stU: rot([0, 0, IN], [0.24, -100, HIT], [0.4, -15, 'linear'], [0.52, -10, OUT], [1, 0]),
+      stL: rot([0, 0, IN], [0.24, -15, HIT], [0.4, 18, 'linear'], [0.52, 14, OUT], [1, 0]),
+      staff: rot([0, 0, IN], [0.24, 30, HIT], [0.4, 95, 'linear'], [0.52, 86, OUT], [1, 0]),
+      glow: [{ offset: 0, opacity: 0, easing: IN }, { offset: 0.24, opacity: 0.85, easing: HIT }, { offset: 0.4, opacity: 0.2, easing: 'linear' }, { offset: 0.52, opacity: 0, easing: OUT }, { offset: 1, opacity: 0 }],
+      shU: rot([0, 0, IN], [0.24, 18, HIT], [0.4, -14, 'linear'], [0.52, -10, OUT], [1, 0]),
+      shL: rot([0, 0, IN], [0.24, 10, HIT], [0.4, -8, 'linear'], [0.52, -6, OUT], [1, 0]),
+      legL: rot([0, 0, IN], [0.24, -3, HIT], [0.4, 5, OUT], [1, 0]),
+      legR: rot([0, 0, IN], [0.24, 2, HIT], [0.4, -6, OUT], [1, 0]),
+      face: tx(6), footL: tx(2), footR: tx(2),
+      arcA: [{ offset: 0, opacity: 0, strokeDashoffset: 100 }, { offset: 0.26, opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' }, { offset: 0.29, opacity: 0.9, strokeDashoffset: 92 }, { offset: 0.44, opacity: 0.9, strokeDashoffset: 0 }, { offset: 0.64, opacity: 0, strokeDashoffset: 0 }, { offset: 1, opacity: 0, strokeDashoffset: 0 }],
+      arcB: [{ offset: 0, opacity: 0, strokeDashoffset: 100 }, { offset: 0.29, opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' }, { offset: 0.32, opacity: 0.75, strokeDashoffset: 94 }, { offset: 0.47, opacity: 0.75, strokeDashoffset: 0 }, { offset: 0.68, opacity: 0, strokeDashoffset: 0 }, { offset: 1, opacity: 0, strokeDashoffset: 0 }]
+    };
+  })();
   function lunge(el, dist) {
     const rig = el && el.querySelector ? el.querySelector('.disc svg [data-p="root"]') : null;
     if (rig) {
       // 札ごとの跳び出しも見本どおり（少し引いてから、右上へ）。見本の％は今の跳び出し（24px＝17％）に合わせて px に直す。間接攻撃（14px）は小さく
       const d = dist || 24, px = (v) => (v / 17 * d).toFixed(1) + 'px', IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
       anim(el, [{ offset: 0, transform: 'translate(0,0) scale(1)', easing: IN }, { offset: 0.24, transform: 'translate(' + px(-2) + ',' + px(2) + ') scale(1)', easing: HIT }, { offset: 0.4, transform: 'translate(' + px(5) + ',' + px(-16) + ') scale(1.12)', easing: 'linear' }, { offset: 0.52, transform: 'translate(' + px(5) + ',' + px(-14) + ') scale(1.1)', easing: OUT }, { offset: 1, transform: 'translate(0,0) scale(1)' }], { duration: 420 });
-      const RIG = el.querySelector('.disc svg [data-p="spear"]') ? KNIGHT_RIG : WARRIOR_RIG;   // 槍を持つ骨組みは騎士、剣は戦士
+      const has = (p) => !!el.querySelector('.disc svg [data-p="' + p + '"]');
+      const RIG = has('spear') ? KNIGHT_RIG : has('staff') ? WITCH_RIG : WARRIOR_RIG;   // 槍を持つ骨組みは騎士、杖は魔女、剣は戦士
       el.querySelectorAll('.disc svg [data-p]').forEach((g) => { const kf = RIG[g.dataset.p]; if (kf) anim(g, kf, { duration: 420 }); });
       return;
     }
