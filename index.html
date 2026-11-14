@@ -2887,7 +2887,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.7</p>
+    <p class="c-ver" id="cVer">ver 5.8.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3256,12 +3256,38 @@ body.fast #stampOk.on { animation-duration: .5s; }
         '<path class="cb-slash" data-p="slashA" d="M54 2A62 62 0 0 1 126 98" stroke-width="5" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>' +
         '<path class="cb-slash" data-p="slashB" d="M54 2A62 62 0 0 1 126 98" stroke="#9fb2c8" stroke-width="2" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100" transform="translate(4 3)"/></svg>';
     }
+    // 騎士カスガイの骨組み（v5.8.8。見本「騎士 — 盾越しの直線突き」から）：腕を描き足し、槍を体の後ろから手前の層へ。待機の見た目は今までと同じ。
+    //   左肩→ひじ→手首（槍）、右肩→ひじ→盾の握り。顔は枠と同じ座標で 6px 寄るよう、縮小（scale .7）の外に置く。突きの軌跡 thrust は枠の外（右上）まで伸びる
+    function rigKnight(j, inner) {
+      const P = (id, ox, oy, body) => '<g data-p="' + id + '" style="transform-origin:' + ox + 'px ' + oy + 'px">' + body + '</g>';
+      const limb = (x1, y1, x2, y2, col, w) => '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + K + '" stroke-width="' + w + '" stroke-linecap="round"/><path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + col + '" stroke-width="' + (w - 3.4) + '" stroke-linecap="round"/>';
+      const S7 = (x) => (x ? '<g transform="translate(15 -2) scale(.7)">' + x + '</g>' : '');
+      // 胸像を「肩の布（胴と動く）・兜（頭と動く）・顔・胸像の盾（胴と動く）」に分ける。分けられない絵（通常の見た目）は、頭ごと動かす
+      let cape = '', bust = '', rest = inner;
+      const mc = rest.match(/^<path d="M8 100Q10 74 50 70Q90 74 92 100Z"[^>]*\/>/); if (mc) { cape = mc[0]; rest = rest.slice(cape.length); }
+      const mb = rest.match(/<path d="M66 100V82[^>]*\/><path d="M72 100V86[^>]*\/>$/); if (mb) { bust = mb[0]; rest = rest.slice(0, rest.length - bust.length); }
+      const mf = rest.match(/<ellipse cx="50" cy="58" rx="15" ry="12"[^>]*\/><path d="M44 56v5M56 56v5"[^>]*\/>/);
+      const head = mf ? S7(rest.slice(0, mf.index)) + P('face', 50, 38.6, S7(mf[0])) + S7(rest.slice(mf.index + mf[0].length)) : S7(rest);
+      const leg = (id, x, foot) => P(id, x, 98, '<path d="M' + x + ' 98v14" stroke="' + K + '" stroke-width="10" stroke-linecap="round"/><path d="M' + x + ' 98v14" stroke="' + j.legs + '" stroke-width="6" stroke-linecap="round"/><path data-p="' + id.replace('leg', 'foot') + '" d="' + foot + '" fill="' + K + '"/>');
+      const spear = blade(22, 118, 16, 30, '#8a6a45', 3.4) + '<path d="M16 30l-4-12 8 3z" fill="#c9d1dc" ' + SW + '/>' + hand(19, 90, '#ece6d6');
+      const shield = '<path d="M60 112V90q0-11 13-13 13 2 13 13v22l-13 6z" fill="#33405a" ' + SW + '/><path d="M66 108V92q0-7 7-8 7 1 7 8v16l-7 3z" fill="none" stroke="#d8b660" stroke-width="1.4"/>';
+      return '<svg viewBox="0 0 100 124" aria-hidden="true"><ellipse class="cb-sh" data-p="shadow" style="transform-origin:50px 119px" cx="50" cy="119" rx="30" ry="5"/>' +
+        P('root', 50, 118,
+          leg('legL', 37, 'M30 117q7-6 13 0z') + leg('legR', 63, 'M57 117q6-6 13 0z') +
+          P('torso', 50, 100,
+            '<path d="M30 74Q28 90 32 100H68Q72 90 70 74Z" fill="' + j.cloth + '" ' + SW + '/><path d="M31 90H69" stroke="' + j.belt + '" stroke-width="3"/><path d="M36 76q14 8 28 0" fill="none" stroke="' + j.trim + '" stroke-width="1.6"/>' +
+            S7(cape) + P('head', 50, 66, head) + S7(bust) +
+            P('spU', 27, 64, limb(27, 64, 21, 79, j.cloth, 8.4) + P('spL', 21, 79, limb(21, 79, 19, 90, j.trim, 8) + P('spear', 19, 90, spear))) +
+            P('shU', 73, 64, limb(73, 64, 80, 79, j.cloth, 8.4) + P('shL', 80, 79, limb(80, 79, 73, 94, j.trim, 8) + P('shield', 73, 94, shield))))) +
+        '<g data-p="thrust" stroke-dashoffset="100" style="transform-origin:50px 70px;opacity:0"><path d="M65 64L139 39" style="stroke-dashoffset:inherit" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round" pathLength="100" stroke-dasharray="100"/></g></svg>';
+    }
     const memo = {};
     return (u) => {
       const job = u.job || u.id, j = J[job]; if (!j) return face(u);
       const f = face(u), k = job + ':' + (u.phase || '') + ':' + f.length; if (memo[k]) return memo[k];
       const inner = f.replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '');
       if (job === 'warrior') return (memo[k] = rigWarrior(j, inner));
+      if (job === 'knight') return (memo[k] = rigKnight(j, inner));
       const legs = j.robe
         ? '<path d="M31 76Q28 100 24 114Q50 120 76 114Q72 100 69 76Z" fill="' + j.robe + '" ' + SW + '/><path d="M38 115v4M62 115v4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>'
         : (j.hakama ? '<path d="M33 96L27 116H48L50 104L52 116H73L67 96Z" fill="' + j.hakama + '" ' + SW + '/>'
@@ -3350,7 +3376,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.7';
+  const APP_VERSION = '5.8.8';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5651,13 +5677,96 @@ body.fast #stampOk.on { animation-duration: .5s; }
       slashB: [{ offset: 0, opacity: 0, strokeDashoffset: 100 }, { offset: 0.28, opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' }, { offset: 0.31, opacity: 0.8, strokeDashoffset: 94 }, { offset: 0.46, opacity: 0.8, strokeDashoffset: 0 }, { offset: 0.68, opacity: 0, strokeDashoffset: 0 }, { offset: 1, opacity: 0, strokeDashoffset: 0 }]
     };
   })();
+  // 騎士カスガイの攻撃（v5.8.8。動きの見本「騎士 — 盾越しの直線突き」から）：0.42秒＝構え（〜0.08秒）→少し保つ→盾越しにまっすぐ突く（〜0.17秒。ここで敵に突きの光）→命中の姿勢を保つ→戻り
+  //   突きのあいだ、槍の手が直線の上を進むように、肩とひじの角度を先に計算して 64 コマに刻んである。全体に別の緩急を掛けない（命中の時刻がずれる）
+  const KNIGHT_RIG = (() => {
+    const IN = 'cubic-bezier(.2,.7,.3,1)';
+    const HIT = 'cubic-bezier(.6,0,.9,.5)';
+    const OUT = 'cubic-bezier(.25,1,.5,1)';
+    const rot = (...a) => a.map(([offset, d, easing = 'linear']) => ({
+      offset, transform: `rotate(${d}deg)`, easing
+    }));
+    const tx = px => [
+      { offset: 0, transform: 'translateX(0)', easing: IN },
+      { offset: .20, transform: `translateX(${px}px)` },
+      { offset: .56, transform: `translateX(${px}px)`, easing: OUT },
+      { offset: 1, transform: 'translateX(0)' }
+    ];
+    // Sample the SAME HIT easing. Linear segments approximate a straight thrust;
+    // no runtime IK, extra animation properties, or extra easing is required.
+    const bez = (t, a, b) => 3*(1-t)*(1-t)*t*a + 3*(1-t)*t*t*b + t*t*t;
+    const hitProgress = x => {
+      let lo = 0, hi = 1;
+      for (let i = 0; i < 32; i++) {
+        const t = (lo + hi) / 2;
+        if (bez(t, .6, .9) < x) lo = t; else hi = t;
+      }
+      return bez((lo + hi) / 2, 0, .5);
+    };
+    const deg = r => r * 180 / Math.PI;
+    const upper = Math.hypot(-6, 15), lower = Math.hypot(-2, 11);
+    const baseU = Math.atan2(15, -6), baseL = Math.atan2(11, -2);
+    // Original shaft vector = (-6,-88); desired thrust vector = (33,-17).
+    const weaponAngle = Math.atan2(-17, 33) - Math.atan2(-88, -6);
+    const pose = q => {
+      const dx = 16 + 33*q - 27, dy = 83 - 17*q - 64;
+      const d2 = dx*dx + dy*dy;
+      const bend = -Math.acos(Math.max(-1, Math.min(1,
+        (d2 - upper*upper - lower*lower) / (2*upper*lower))));
+      const a = Math.atan2(dy, dx) - Math.atan2(lower*Math.sin(bend), upper + lower*Math.cos(bend));
+      const u = a - baseU, l = a + bend - baseL - u;
+      return [deg(u), deg(l), deg(weaponAngle - u - l)];
+    };
+    const start = pose(0), end = pose(1);
+    const arms = [0, 1, 2].map(i => {
+      const keys = [[0, 0, IN], [.20, start[i], 'linear'], [.24, start[i], 'linear']];
+      for (let n = 1; n <= 64; n++) {
+        const f = n / 64;
+        keys.push([.24 + .16*f, pose(hitProgress(f))[i], 'linear']);
+      }
+      keys.push([.54, end[i], OUT], [1, 0, 'linear']);
+      return rot(...keys);
+    });
+    return {
+      root: [
+        { offset: 0, transform: 'scale(1,1)', easing: IN },
+        { offset: .20, transform: 'scale(1.04,.94)' },
+        { offset: .54, transform: 'scale(1.04,.94)', easing: OUT },
+        { offset: 1, transform: 'scale(1,1)' }
+      ],
+      shadow: [
+        { offset: 0, transform: 'scale(1)', opacity: 1, easing: IN },
+        { offset: .20, transform: 'scale(1.08,.96)', opacity: 1 },
+        { offset: .54, transform: 'scale(1.08,.96)', opacity: 1, easing: OUT },
+        { offset: 1, transform: 'scale(1)', opacity: 1 }
+      ],
+      torso: rot([0,0,IN], [.20,8], [.54,8,OUT], [1,0]),
+      head: rot([0,0,IN], [.20,-8], [.54,-8,OUT], [1,0]),
+      spU: arms[0], spL: arms[1], spear: arms[2],
+      shU: rot([0,0,IN], [.24,15,HIT], [.4,-5], [.54,-5,OUT], [1,0]),
+      shL: rot([0,0,IN], [.24,25,HIT], [.4,65], [.54,65,OUT], [1,0]),
+      shield: rot([0,0,IN], [.24,-48,HIT], [.4,-68], [.54,-68,OUT], [1,0]),
+      legL: rot([0,0,IN], [.20,9], [.54,9,OUT], [1,0]),
+      legR: rot([0,0,IN], [.20,-11], [.54,-11,OUT], [1,0]),
+      face: tx(6), footL: tx(3), footR: tx(3),
+      thrust: [
+        { offset: 0, opacity: 0, strokeDashoffset: 100 },
+        { offset: .29, opacity: 0, strokeDashoffset: 100, easing: HIT },
+        { offset: .40, opacity: .9, strokeDashoffset: 0 },
+        { offset: .44, opacity: .9, strokeDashoffset: 0, easing: OUT },
+        { offset: .58, opacity: 0, strokeDashoffset: 0 },
+        { offset: 1, opacity: 0, strokeDashoffset: 100 }
+      ]
+    };
+  })();
   function lunge(el, dist) {
     const rig = el && el.querySelector ? el.querySelector('.disc svg [data-p="root"]') : null;
     if (rig) {
       // 札ごとの跳び出しも見本どおり（少し引いてから、右上へ）。見本の％は今の跳び出し（24px＝17％）に合わせて px に直す。間接攻撃（14px）は小さく
       const d = dist || 24, px = (v) => (v / 17 * d).toFixed(1) + 'px', IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
       anim(el, [{ offset: 0, transform: 'translate(0,0) scale(1)', easing: IN }, { offset: 0.24, transform: 'translate(' + px(-2) + ',' + px(2) + ') scale(1)', easing: HIT }, { offset: 0.4, transform: 'translate(' + px(5) + ',' + px(-16) + ') scale(1.12)', easing: 'linear' }, { offset: 0.52, transform: 'translate(' + px(5) + ',' + px(-14) + ') scale(1.1)', easing: OUT }, { offset: 1, transform: 'translate(0,0) scale(1)' }], { duration: 420 });
-      el.querySelectorAll('.disc svg [data-p]').forEach((g) => { const kf = WARRIOR_RIG[g.dataset.p]; if (kf) anim(g, kf, { duration: 420 }); });
+      const RIG = el.querySelector('.disc svg [data-p="spear"]') ? KNIGHT_RIG : WARRIOR_RIG;   // 槍を持つ骨組みは騎士、剣は戦士
+      el.querySelectorAll('.disc svg [data-p]').forEach((g) => { const kf = RIG[g.dataset.p]; if (kf) anim(g, kf, { duration: 420 }); });
       return;
     }
     anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (-(dist || 24)) + 'px) scale(1.12)', offset: 0.38 }, { transform: 'translateY(0) scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,.7,.3,1)' });
@@ -5695,7 +5804,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 武器ごとの命中演出（攻撃音と対になる）
   const WFX = {
     warrior: { k: 'sword', rot: 50, w: 15, ono: 'ズバッ' },   // v5.8.3：振り下ろしに合わせて、左上から右下へ
-    knight: { k: 'sword', rot: 22, w: 11, ono: 'ズバッ' },
+    knight: { k: 'sword', rot: -18, w: 11, ono: 'ズバッ', thrust: true },   // v5.8.8：突きに合わせて、右上がりの細い白い線
     samurai: { k: 'sword', rot: -26, w: 7, ono: 'ズバッ', twin: true },
     witch: { k: 'staff', ono: 'ボカッ', col: '#ffe89a' },
     cleric: { k: 'staff', ono: 'ボカッ', col: '#fff2b3' },
@@ -5726,7 +5835,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const arcs = w.twin ? [w.rot, w.rot + 62] : [w.rot];
       arcs.forEach((rot, i) => {
         const th = w.w;
-        const e = fxEl('<svg viewBox="0 0 200 120" aria-hidden="true"><path d="M8 104 Q92 ' + (8 - th) + ' 192 30 Q96 ' + (14 + th * 2.4) + ' 8 104Z" fill="#fffaf0" stroke="var(--ink)" stroke-width="3.5" stroke-linejoin="round"/></svg>', 'arc', c.x, c.y + 6);
+        const e = fxEl('<svg viewBox="0 0 200 120" aria-hidden="true"><path d="' + (w.thrust ? 'M6 60 Q110 53 196 60 Q110 67 6 60Z' : 'M8 104 Q92 ' + (8 - th) + ' 192 30 Q96 ' + (14 + th * 2.4) + ' 8 104Z') + '" fill="' + (w.thrust ? '#ffffff' : '#fffaf0') + '" stroke="var(--ink)" stroke-width="' + (w.thrust ? 2.5 : 3.5) + '" stroke-linejoin="round"/></svg>', 'arc', c.x, c.y + 6);
         done(e.animate([
           { transform: 'translate(-50%,-50%) rotate(' + rot + 'deg)', clipPath: 'inset(0 100% 0 0)', opacity: 1 },
           { transform: 'translate(-50%,-50%) rotate(' + rot + 'deg)', clipPath: 'inset(0 0% 0 0)', opacity: 1, offset: 0.4 },
