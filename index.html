@@ -2887,7 +2887,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.10</p>
+    <p class="c-ver" id="cVer">ver 5.8.11</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3406,7 +3406,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.10';
+  const APP_VERSION = '5.8.11';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5854,6 +5854,27 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     return o;
   })();
+  // アーチャーが放つ瞬間を、動きそのものの時計で待つ（v5.8.11）。動きが無い（動きを減らす設定など）ときは、今までどおりタイマーで待つ
+  function archerRelease(tok, ms) {
+    const g = tok && tok.querySelector('.disc svg [data-p="root"]'), a = g && g.getAnimations ? g.getAnimations()[0] : null;
+    if (!a || SKIP) return wait(ms);
+    return new Promise((res) => {
+      const lim = performance.now() + ms / SPD + 250;   // 念のための上限（動きが止められた・消されたとき）
+      const tick = () => { const t = a.currentTime; if (a.playState !== 'running' || t == null || t >= ms - 1 || performance.now() > lim) res(); else requestAnimationFrame(tick); };
+      tick();
+    });
+  }
+  // 速射の2発目から：放った姿のまま、弓と体が小さく跳ねる（部品の動きには触れず、絵全体を一瞬だけ）
+  function archerKick(tok) { const sv = tok && tok.querySelector('.disc svg'); if (sv) anim(sv, [{ transform: 'translate(0,0)' }, { transform: 'translate(-2px,1px) rotate(-2deg)', offset: 0.35 }, { transform: 'translate(0,0)' }], { duration: 110, easing: 'cubic-bezier(.2,.8,.3,1)' }); }
+  // 攻撃の内訳（v5.8.11）：2発以上は、1発ずつの計算が分かるように括弧で書く。計算そのものは foeHit のまま
+  function hitText(u, power, sup, dfn, half, hs, total) {
+    const n = hs.length;
+    if (n < 2) return u.name + '　' + power + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '');
+    const one = power - dfn;
+    if (!half && hs.every((d) => d === hs[0])) return u.name + '　' + (hs[0] === one && !sup ? '（' + power + ' － 防御' + dfn + '）' : hs[0]) + ' × ' + n + ' ＝ ' + total;
+    if (!half && sup && hs[0] === one + sup && hs.slice(1).every((d) => d === one)) return u.name + '　（' + power + ' ＋補助' + sup + ' － 防御' + dfn + '）＋（' + power + ' － 防御' + dfn + '）' + (n > 2 ? '×' + (n - 1) : '') + ' ＝ ' + total;
+    return u.name + '　' + hs.join(' ＋ ') + ' ＝ ' + total;
+  }
   function lunge(el, dist) {
     const rig = el && el.querySelector ? el.querySelector('.disc svg [data-p="root"]') : null;
     if (rig && el.querySelector('.disc svg [data-p="bowU"]')) {
@@ -5964,7 +5985,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const an = e.animate([
       { transform: 'translate(-50%,-50%) rotate(' + ang + 'deg)', left: a.x + 'px', top: a.y + 'px', opacity: 1 },
       { transform: 'translate(-50%,-50%) rotate(' + ang + 'deg)', left: c.x + 'px', top: c.y + 'px', opacity: 1 }
-    ], { duration: 170, easing: 'cubic-bezier(.4,0,.9,.6)' });
+    ], { duration: 60, easing: 'cubic-bezier(.4,0,.9,.6)' });   // v5.8.11：0.17秒→0.06秒。放った瞬間に数字が出るので、矢が後から着くずれを無くす（4コマほどで届く）
     done(an, e);
     ono(w.ono, c.x + 78, c.y + 34, -8);
     return an.finished.catch(() => {});
@@ -6256,23 +6277,37 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
-    let total = 0;
-    for (let i = 0; i < hitsN; i++) total += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && !!u.entered);
+    let total = 0; const hs = [];   // hs：1発ごとのダメージ（表示の内訳だけに使う。合計の計算は今までどおり）
+    for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
     say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
     renderBook();
-    await wait(lunge(tokEl(r, c), r === 1 ? 14 : 24));   // 命中の演出（音・光・数字）は動きの命中に合わせる。ふつうは0.17秒、アーチャーは0.50秒（v5.8.10）
+    const tok = tokEl(r, c), arc = !!(tok && tok.querySelector('.disc svg [data-p="bowU"]'));
+    const t0 = performance.now(), lw = lunge(tok, r === 1 ? 14 : 24);
+    // 命中の演出（音・光・数字）は動きの命中に合わせる。ふつうは0.17秒。アーチャーは放つ瞬間（動きの0.50秒）を、
+    //   タイマーではなく動きそのものの時計で待つ（v5.8.11。タイマーだと描画のすき間で16〜25ms遅れて見えた）
+    if (arc) await archerRelease(tok, lw); else await wait(lw);
+    const late = arc && !SKIP && !RM ? Math.max(0, performance.now() - t0 - lw / SPD) * SPD : 0;   // 動きの始まりが1〜2コマ遅れた分。あとの待ちから引いて、行動の長さを今までと同じにする
     const ea = foeEl(T);
+    // 速射（v5.8.11）：アーチャーの2発以上は、放つたびに矢と音と火花を出す。2発目からは終わりの姿を保つ時間の中で、弓が小さく跳ねて放つ。
+    //   数字とHPは最後の1発のとき1回だけ（計算は今までどおり合計を1回。途中の1発ごとの数字は、前の仲間の数字とまぎれるので出さない）。行動の長さは変えない（2発目からの分だけ、あとの待ちを短くする）
+    const shots = arc && hitsN > 1 ? Math.min(hitsN, 3) : 1, gap = 90;
+    if (shots > 1) popAt(tok, '速射 ×' + hitsN, 'sub skill', -48);
+    for (let k = 1; k < shots; k++) {
+      SFX.attack(u.id, false); weaponFX(u.id, tok); shake(ea, 4);
+      const e0 = center(ea); sparks(e0.x, e0.y, '#fff3d6', 5);
+      await wait(gap); archerKick(tok);
+    }
     SFX.attack(u.id, total >= 15); vib(12);
-    weaponFX(u.id, tokEl(r, c)); shake(ea, 8); flashBright(ea.firstElementChild);
+    weaponFX(u.id, tok); shake(ea, 8); flashBright(ea.firstElementChild);
     const jx = (hitSeq++ % 2 ? 1 : -1) * (34 + Math.random() * 16);
     popAt(ea, '-' + total, 'dmg big', null, jx);
-    popAt(ea, u.name + '　' + power + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '') + (hitsN > 1 ? ' ×' + hitsN : ''), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
+    popAt(ea, hitText(u, power, sup, dfn, half, hs, total), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
     const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
     if (!enemy.party) renderEnemy(false);
     const fin = T.hp <= 0 && foeList().every((f) => f === T || f.hp <= 0);   // これが最後の一撃（とどめ）
-    await wait(fin ? 200 : 460);
+    await wait(Math.max(0, (fin ? 200 : 460) - (shots - 1) * gap - Math.min(late, 120)));
     if (fin) { say(u.name + 'がとどめを刺した。'); burstAt(foeEl(T)); await finisherFX(foeEl(T)); finish('win'); return; }
     if (enemy.party) renderEnemy(false);   // 3体のパネルは、ゆれの演出が終わってから数字を更新する（作り直すと演出が消えるため）
     if (T.hp <= 0) {
