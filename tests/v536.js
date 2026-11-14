@@ -43,8 +43,9 @@ const vis = (p, sel) => p.evaluate((s) => { const e = document.querySelector(s);
       const warn = await p.evaluate(() => { const d = document.getElementById('prepWarn'); return d && !d.hidden ? d.textContent : ''; });
       ok(/攻撃列が空/.test(warn), tag + ' 5 攻撃列が空のときは警告の吹き出し：' + warn);
       await p.evaluate(() => { const R = window.__rb, g = R.grid; window.__keep.forEach((row, r) => row.forEach((u, c) => { g[r][c] = u; })); R.render(); });
-      await p.waitForTimeout(300);
-      ok(await p.evaluate(() => { const d = document.getElementById('prepWarn'); return !d || d.hidden; }), tag + ' 5 元に戻すと警告は消える');
+      // 消えるまで最大2秒待つ（v5.8.9。決め打ちの0.3秒では、並べて流したときに1回間に合わなかった）
+      let gone = false; for (let k = 0; k < 20 && !gone; k++) { await p.waitForTimeout(100); gone = await p.evaluate(() => { const d = document.getElementById('prepWarn'); return !d || d.hidden; }); }
+      ok(gone, tag + ' 5 元に戻すと警告は消える');
     }
     // 6 はみ出し
     ok(await p.evaluate(() => document.getElementById('btnStart').getBoundingClientRect().bottom <= innerHeight + 1), tag + ' 6 戦闘開始が画面内');
