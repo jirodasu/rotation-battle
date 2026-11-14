@@ -2887,7 +2887,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.9</p>
+    <p class="c-ver" id="cVer">ver 5.8.10</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3302,6 +3302,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
             P('stU', 73, 64, limb(73, 64, 80, 78, j.cloth, 8.4) + P('stL', 80, 78, limb(80, 78, 81, 87, j.cloth, 8) + P('staff', 81, 88, staff))))) +
         arc('arcA', '#fff', 4, '') + arc('arcB', '#9fb2c8', 1.6, ' transform="translate(3 3)"') + '</svg>';
     }
+    // アーチャー ツムギの骨組み（v5.8.10。指示書「アーチャー攻撃アニメーション実装（v8）」の部品分けSVGをそのまま使う）：両腕を描き足し、弓を頭の絵から切り離して手前へ。
+    //   弓の弧は上下2つ（bowU・bowD）、弦は各半分の子（stringU・stringD）。矢 arrow は待機では透明（指示書の文のとおり。SVG全文には透明の指定が無かったので opacity:0 を足した）。頭の絵だけは見た目ごとの絵（inner）から弓を除いて差し込む
+    function rigArcher(inner) {
+      const head = inner.replace(/<path d="M8[24] 1[04][ QVL][^"]*"[^>]*\/>/g, '')
+        .replace(/(<ellipse cx="50" cy="56" rx="15" ry="12"[^>]*\/><path d="M44 54v5M56 54v5"[^>]*\/>)/, '<g data-p="face">$1</g>');
+      return '<svg viewBox="0 0 100 124" aria-hidden="true"><ellipse class="cb-sh" data-p="shadow" style="transform-origin:50px 119px" cx="50" cy="119" rx="30" ry="5"></ellipse><g data-p="root" style="transform-origin:50px 118px"><g data-p="legL" style="transform-origin:37px 98px"><path d="M37 98v14" stroke="#0c1019" stroke-width="10" stroke-linecap="round"></path><path d="M37 98v14" stroke="#1b2a22" stroke-width="6" stroke-linecap="round"></path><path data-p="footL" d="M30 117q7-6 13 0z" fill="#0c1019"></path></g><g data-p="legR" style="transform-origin:63px 98px"><path d="M63 98v14" stroke="#0c1019" stroke-width="10" stroke-linecap="round"></path><path d="M63 98v14" stroke="#1b2a22" stroke-width="6" stroke-linecap="round"></path><path data-p="footR" d="M57 117q6-6 13 0z" fill="#0c1019"></path></g><g data-p="torso" style="transform-origin:50px 100px"><rect x="20" y="70" width="10" height="26" rx="3" fill="#6b5232" stroke="#0c1019" stroke-width="2.2" stroke-linejoin="round" transform="rotate(-18 25 83)"></rect><path d="M19 70l-2-9M24 69l1-9M29 70l3-8" stroke="#ece6d6" stroke-width="1.6" stroke-linecap="round" fill="none"></path><path d="M30 74Q28 90 32 100H68Q72 90 70 74Z" fill="#26392f" stroke="#0c1019" stroke-width="2.2" stroke-linejoin="round"></path><path d="M31 90H69" stroke="#6b5232" stroke-width="3"></path><path d="M36 76q14 8 28 0" fill="none" stroke="#86b892" stroke-width="1.6"></path><g data-p="head" style="transform-origin:50px 66px"><g transform="translate(15 -2) scale(.7)">' + head + '</g></g><g data-p="drU" style="transform-origin:27px 64px"><path d="M27 64L23 79" stroke="#0c1019" stroke-width="8.4" stroke-linecap="round"></path><path d="M27 64L23 79" stroke="#26392f" stroke-width="5" stroke-linecap="round"></path><g data-p="drL" style="transform-origin:23px 79px"><path d="M23 79L29 94" stroke="#0c1019" stroke-width="8" stroke-linecap="round"></path><path d="M23 79L29 94" stroke="#26392f" stroke-width="4.6" stroke-linecap="round"></path><circle cx="30" cy="95" r="4.2" fill="#ece6d6" stroke="#0c1019" stroke-width="2.2" stroke-linejoin="round"></circle></g></g><g data-p="bwU" style="transform-origin:73px 64px"><path d="M73 64L78 47" stroke="#0c1019" stroke-width="8.4" stroke-linecap="round"></path><path d="M73 64L78 47" stroke="#26392f" stroke-width="5" stroke-linecap="round"></path><g data-p="bwL" style="transform-origin:78px 47px"><path d="M78 47L74 32" stroke="#0c1019" stroke-width="8" stroke-linecap="round"></path><path d="M78 47L74 32" stroke="#26392f" stroke-width="4.6" stroke-linecap="round"></path><g data-p="bow" style="transform-origin:73px 33px"><g data-p="bowU" style="transform-origin:79px 33.25px"><path d="M72 5Q79 19 79 33.25" fill="none" stroke="#6b5232" stroke-width="2.8" stroke-linecap="round"></path><path data-p="stringU" style="transform-origin:72px 5px" d="M72 5L72 40.5" stroke="#d6ecff" stroke-width="1.4" opacity=".9"></path></g><g data-p="bowD" style="transform-origin:79px 33.25px"><path d="M79 33.25Q79 47.5 72 62" fill="none" stroke="#6b5232" stroke-width="2.8" stroke-linecap="round"></path><path data-p="stringD" style="transform-origin:72px 62px" d="M72 62L72 26.5" stroke="#d6ecff" stroke-width="1.4" opacity=".9"></path></g></g><circle cx="74" cy="32" r="4.2" fill="#ece6d6" stroke="#0c1019" stroke-width="2.2" stroke-linejoin="round"></circle></g></g></g><g data-p="arrow" style="transform-origin:72px 33.5px;opacity:0"><path d="M73 33.5L106 33.5" stroke="#8a6a45" stroke-width="2.2" stroke-linecap="round"></path><path d="M106 33.5l8-2.8v5.6z" fill="#c9d1dc"></path><path d="M78 33.5L71.5 30.6M78 33.5L71.5 36.4" stroke="#86b892" stroke-width="1.7" stroke-linecap="round" fill="none"></path></g></g></svg>';
+    }
     const memo = {};
     return (u) => {
       const job = u.job || u.id, j = J[job]; if (!j) return face(u);
@@ -3310,6 +3317,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       if (job === 'warrior') return (memo[k] = rigWarrior(j, inner));
       if (job === 'knight') return (memo[k] = rigKnight(j, inner));
       if (job === 'witch') return (memo[k] = rigWitch(j, inner));
+      if (job === 'archer') return (memo[k] = rigArcher(inner));
       const legs = j.robe
         ? '<path d="M31 76Q28 100 24 114Q50 120 76 114Q72 100 69 76Z" fill="' + j.robe + '" ' + SW + '/><path d="M38 115v4M62 115v4" stroke="' + K + '" stroke-width="5" stroke-linecap="round"/>'
         : (j.hakama ? '<path d="M33 96L27 116H48L50 104L52 116H73L67 96Z" fill="' + j.hakama + '" ' + SW + '/>'
@@ -3398,7 +3406,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.9';
+  const APP_VERSION = '5.8.10';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5804,8 +5812,55 @@ body.fast #stampOk.on { animation-duration: .5s; }
       arcB: [{ offset: 0, opacity: 0, strokeDashoffset: 100 }, { offset: 0.29, opacity: 0, strokeDashoffset: 100, easing: 'cubic-bezier(.3,0,.2,1)' }, { offset: 0.32, opacity: 0.75, strokeDashoffset: 94 }, { offset: 0.47, opacity: 0.75, strokeDashoffset: 0 }, { offset: 0.68, opacity: 0, strokeDashoffset: 0 }, { offset: 1, opacity: 0, strokeDashoffset: 0 }]
     };
   })();
+  // アーチャー ツムギの攻撃（v5.8.10。指示書 v8 の数値をそのまま）：0.50秒＝矢筒から矢を取る→弦へ運ぶ→引き切る→リリース（1.00＝0.50秒ちょうど。ここで敵に矢）
+  //   ほかの職業（0.42秒・命中0.17秒）と違い、長さ0.50秒・命中は動きの終わり
+  const ARCHER_RIG = (() => {
+    const IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
+    const rot = (...a) => a.map(([o, d, e]) => ({ offset: o, transform: 'rotate(' + d + 'deg)', easing: e || 'linear' }));
+    const tx = (px) => [{ offset: 0, transform: 'translateX(0)', easing: IN }, { offset: 0.2, transform: 'translateX(' + px + 'px)' }, { offset: 0.6, transform: 'translateX(' + px + 'px)', easing: OUT }, { offset: 1, transform: 'translateX(0)' }];
+    const tr = (...a) => a.map(([o, x, y, d, e]) => ({ offset: o, transform: 'translate(' + x + 'px,' + y + 'px) rotate(' + d + 'deg)', easing: e || 'linear' }));
+    return {
+      root: [{ offset: 0, transform: 'translate(0px,0px) scale(1,1)', easing: IN }, { offset: 0.2, transform: 'translate(-.5px,0px) scale(1.01,.98)', easing: 'linear' }, { offset: 0.44, transform: 'translate(-2px,0px) scale(1.02,.96)', easing: HIT }, { offset: 0.92, transform: 'translate(-2px,0px) scale(1.025,.955)', easing: 'linear' }, { offset: 1, transform: 'translate(1px,0px) scale(.99,1.02)' }],
+      shadow: [{ offset: 0, transform: 'scale(1)', opacity: 1, easing: IN }, { offset: 0.44, transform: 'scale(1.04)', opacity: 1, easing: HIT }, { offset: 0.92, transform: 'scale(1.04)', opacity: 1, easing: 'linear' }, { offset: 1, transform: 'scale(.9)', opacity: 0.8 }],
+      torso: rot([0, 0, IN], [0.2, -2, 'linear'], [0.44, 3, HIT], [0.84, 3, 'linear'], [0.88, 3.6, 'linear'], [0.92, 3, 'linear'], [0.96, 3, 'linear'], [1, 1]),
+      head: rot([0, 0, IN], [0.2, -1, 'linear'], [0.44, -6, HIT], [0.92, -6, 'linear'], [1, -3]),
+      bwU: rot([0, 0, IN], [0.2, -2, 'linear'], [0.44, -6, HIT], [0.66, -7, 'linear'], [0.92, -7, 'linear'], [1, -3]),
+      bwL: rot([0, 0, IN], [0.2, 6, 'linear'], [0.44, 16, HIT], [0.84, 16, 'linear'], [0.88, 16.4, 'linear'], [0.92, 15.7, 'linear'], [0.96, 16.2, HIT], [1, 10]),
+      bow: [{ offset: 0, transform: 'rotate(0deg) scale(1,1)', easing: IN }, { offset: 0.44, transform: 'rotate(-32deg) scale(1.05,.945)', easing: 'cubic-bezier(.25,.7,.35,1)' }, { offset: 0.66, transform: 'rotate(-32.3deg) scale(1.06,.94)', easing: 'cubic-bezier(.45,.65,.55,1)' }, { offset: 0.84, transform: 'rotate(-32.5deg) scale(1.07,.93)', easing: 'linear' }, { offset: 0.96, transform: 'rotate(-32.5deg) scale(1.07,.93)', easing: HIT }, { offset: 1, transform: 'rotate(-29deg) scale(.98,1.03)' }],
+      bowU: rot([0, 0, IN], [0.44, -5, 'cubic-bezier(.25,.7,.35,1)'], [0.66, -5.5, 'cubic-bezier(.45,.65,.55,1)'], [0.84, -6, 'linear'], [0.96, -6, HIT], [1, 2]),
+      bowD: rot([0, 0, IN], [0.44, 5, 'cubic-bezier(.25,.7,.35,1)'], [0.66, 5.5, 'cubic-bezier(.45,.65,.55,1)'], [0.84, 6, 'linear'], [0.96, 6, HIT], [1, -2]),
+      stringU: rot([0, 0, IN], [0.44, 29, 'cubic-bezier(.25,.7,.35,1)'], [0.66, 34, 'cubic-bezier(.45,.65,.55,1)'], [0.84, 35.5, 'linear'], [0.92, 36, 'linear'], [0.96, 36, HIT], [1, 0]),
+      stringD: rot([0, 0, IN], [0.44, -29, 'cubic-bezier(.25,.7,.35,1)'], [0.66, -34, 'cubic-bezier(.45,.65,.55,1)'], [0.84, -35.5, 'linear'], [0.92, -36, 'linear'], [0.96, -36, HIT], [1, 0]),
+      drU: tr([0, 0, 0, 0, IN], [0.2, 0, 0, 20, 'linear'], [0.36, 0, 0, -78, 'linear'], [0.44, 1, -1, -136, 'cubic-bezier(.25,.7,.35,1)'], [0.66, 0, 0, -133, 'cubic-bezier(.45,.65,.55,1)'], [0.84, 0, 0, -130, 'linear'], [0.88, 0, 0, -129.2, 'linear'], [0.92, 0, 0, -130.6, 'linear'], [0.96, 0, 0, -130, HIT], [1, 0, 0, -121]),
+      drL: tr([0, 0, 0, 0, IN], [0.2, 0, 0, -117, 'linear'], [0.36, 0, 1, -30, 'linear'], [0.44, 0, 3, 22, 'cubic-bezier(.25,.7,.35,1)'], [0.66, -1, 2, 12, 'cubic-bezier(.45,.65,.55,1)'], [0.84, -1, 2, 3, 'linear'], [0.92, -1, 2, 3, 'linear'], [0.96, -1, 2, 3, HIT], [1, -1, 2, 0]),
+      arrow: [{ offset: 0, opacity: 0, transform: 'translate(0px,0px) rotate(0deg)', easing: IN }, { offset: 0.16, opacity: 0, transform: 'translate(-38.7px,31.9px) rotate(-80deg)' }, { offset: 0.2, opacity: 1, transform: 'translate(-38.7px,31.9px) rotate(-80deg)', easing: 'linear' }, { offset: 0.3, opacity: 1, transform: 'translate(-23.3px,18.4px) rotate(-56deg)', easing: 'linear' }, { offset: 0.36, opacity: 1, transform: 'translate(-9px,4.5px) rotate(-33deg)', easing: 'linear' }, { offset: 0.44, opacity: 1, transform: 'translate(-13.7px,6.8px) rotate(-32deg)', easing: HIT }, { offset: 0.66, opacity: 1, transform: 'translate(-15.5px,7.6px) rotate(-32.3deg)', easing: 'linear' }, { offset: 0.84, opacity: 1, transform: 'translate(-16.9px,8.3px) rotate(-32.5deg)', easing: 'linear' }, { offset: 0.92, opacity: 1, transform: 'translate(-17.2px,8.4px) rotate(-32.5deg)', easing: 'linear' }, { offset: 0.96, opacity: 1, transform: 'translate(-17.2px,8.4px) rotate(-32.5deg)', easing: HIT }, { offset: 1, opacity: 0, transform: 'translate(-7.9px,2.6px) rotate(-32deg)' }],
+      legL: rot([0, 0, IN], [0.44, 5, HIT], [0.92, 5, 'linear'], [1, 7]),
+      legR: rot([0, 0, IN], [0.44, -5, HIT], [0.92, -5, 'linear'], [1, -9]),
+      face: [{ offset: 0, transform: 'translate(0px,0px)', easing: IN }, { offset: 0.44, transform: 'translate(5px,-1px)', easing: 'linear' }, { offset: 0.66, transform: 'translate(6px,-1.5px)', easing: 'linear' }, { offset: 1, transform: 'translate(6px,-1.5px)' }], footL: tx(3), footR: tx(3)
+    };
+  })();
+  // 再生用（指示書 B2・B3）：この動きには待機へ戻る区間がないので、終わりの姿を0.10秒保ち（その間、弦が±2度で2往復ふるえる）、0.12秒で待機へ戻す。
+  //   全体 0.72秒のうち、0〜0.50秒は指示書の動きそのまま。命中のあと次の行動まで0.46秒あるので、戻りはその中に収まる
+  const ARCHER_PLAY = (() => {
+    const T = 720, k = 500 / T, h = 600 / T, OUT = 'cubic-bezier(.25,1,.5,1)', o = {};
+    const bare = (fr) => { const c = Object.assign({}, fr); delete c.offset; delete c.easing; return c; };
+    for (const p of Object.keys(ARCHER_RIG)) {
+      const kf = ARCHER_RIG[p], a = kf.map((fr) => Object.assign({}, fr, { offset: fr.offset * k }));
+      a[a.length - 1].easing = 'linear';
+      if (p === 'stringU' || p === 'stringD') [2, -2, 2, -2].forEach((d, i) => a.push({ offset: k + (h - k) * (i + 1) / 5, transform: 'rotate(' + (p === 'stringU' ? d : -d) + 'deg)', easing: 'linear' }));
+      a.push(Object.assign(bare(kf[kf.length - 1]), { offset: h, easing: OUT }));
+      a.push(Object.assign(bare(kf[0]), { offset: 1 }));
+      o[p] = a;
+    }
+    return o;
+  })();
   function lunge(el, dist) {
     const rig = el && el.querySelector ? el.querySelector('.disc svg [data-p="root"]') : null;
+    if (rig && el.querySelector('.disc svg [data-p="bowU"]')) {
+      // アーチャーは札ごと跳び出さず、その場で引いて放つ（体の小さな沈みは root の動きに入っている）。命中は 0.50秒
+      el.querySelectorAll('.disc svg [data-p]').forEach((g) => { const kf = ARCHER_PLAY[g.dataset.p]; if (kf) anim(g, kf, { duration: 720 }); });
+      return 500;
+    }
     if (rig) {
       // 札ごとの跳び出しも見本どおり（少し引いてから、右上へ）。見本の％は今の跳び出し（24px＝17％）に合わせて px に直す。間接攻撃（14px）は小さく
       const d = dist || 24, px = (v) => (v / 17 * d).toFixed(1) + 'px', IN = 'cubic-bezier(.2,.7,.3,1)', HIT = 'cubic-bezier(.6,0,.9,.5)', OUT = 'cubic-bezier(.25,1,.5,1)';
@@ -5813,12 +5868,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const has = (p) => !!el.querySelector('.disc svg [data-p="' + p + '"]');
       const RIG = has('spear') ? KNIGHT_RIG : has('staff') ? WITCH_RIG : WARRIOR_RIG;   // 槍を持つ骨組みは騎士、杖は魔女、剣は戦士
       el.querySelectorAll('.disc svg [data-p]').forEach((g) => { const kf = RIG[g.dataset.p]; if (kf) anim(g, kf, { duration: 420 }); });
-      return;
+      return 170;
     }
     anim(el, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(' + (-(dist || 24)) + 'px) scale(1.12)', offset: 0.38 }, { transform: 'translateY(0) scale(1)' }], { duration: 400, easing: 'cubic-bezier(.3,.7,.3,1)' });
     // ちびキャラ（v5.6.9）：跳び出しに合わせて、振りかぶって振り下ろす
     const sv = el && el.classList && el.classList.contains('cb') ? el.querySelector('.disc svg') : null;
     if (sv) anim(sv, [{ transform: 'rotate(0deg)' }, { transform: 'rotate(-12deg) translateX(-3%)', offset: 0.3 }, { transform: 'rotate(10deg) translateX(3%)', offset: 0.55 }, { transform: 'rotate(0deg)' }], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
+    return 170;
   }
   function animRing(tok, from, to) {
     const hb = tok && tok.querySelector('.hpb b');
@@ -6206,8 +6262,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
     say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
     renderBook();
-    lunge(tokEl(r, c), r === 1 ? 14 : 24);
-    await wait(170);
+    await wait(lunge(tokEl(r, c), r === 1 ? 14 : 24));   // 命中の演出（音・光・数字）は動きの命中に合わせる。ふつうは0.17秒、アーチャーは0.50秒（v5.8.10）
     const ea = foeEl(T);
     SFX.attack(u.id, total >= 15); vib(12);
     weaponFX(u.id, tokEl(r, c)); shake(ea, 8); flashBright(ea.firstElementChild);
