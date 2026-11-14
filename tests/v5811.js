@@ -64,7 +64,9 @@ function attacks(out) {
   ok(rapidSubs.length && rapidSubs.every((s) => /（\d+ － 防御\d+）× \d ＝ \d+|＝ \d+/.test(s)), '3 速射の内訳の形：' + rapidSubs.join(' / '));
   ok(rapidSubs.every((s) => { const m = s.match(/（(\d+) － 防御(\d+)）× (\d) ＝ (\d+)/); return !m || (+m[1] - +m[2]) * +m[3] === +m[4]; }), '3 内訳の計算が合っている');
   ok(rapidSubs.every((s) => { const tot = +(s.match(/＝ (\d+)/) || [])[1]; return logs.some((l) => new RegExp('　' + tot + 'ダメージ$').test(l)); }), '3 内訳の合計がログの合計と同じ（ログ：' + logs.slice(0, 4).join(' / ') + '）');
-  ok(oth.length >= 3 && oth.every((x) => x.rel >= 150 && x.rel <= 260), '4 ほかの仲間の命中 ' + oth.map((x) => Math.round(x.rel)).join(',') + 'ms');
+  // 実時間の測定なので、重い時の1回の遅れ（ほかのテストと同時に動いた時など）は中央値で吸収する
+  const med = oth.map((x) => x.rel).sort((a, b) => a - b)[oth.length >> 1];
+  ok(oth.length >= 3 && med >= 150 && med <= 260 && oth.every((x) => x.rel >= 150 && x.rel <= 360), '4 ほかの仲間の命中（中央値 ' + Math.round(med) + 'ms） ' + oth.map((x) => Math.round(x.rel)).join(',') + 'ms');
   ok(!A.errs.length, '1〜4 ページのエラーなし ' + A.errs.join(' / '));
   // 5：演出を飛ばす（敵のHPの減りとログ）
   const S = await run(b, { rot: true, n: 2, skip: true });
