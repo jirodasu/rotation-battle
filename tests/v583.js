@@ -31,7 +31,7 @@ const toChoose = async (p) => { for (let k = 0; k < 200; k++) { await p.waitForT
   const b = await launch();
   { const { ctx, p, errs } = await open(b, false);
     const rig = await p.evaluate(() => [...document.querySelectorAll('#board .tok.cb')].map((t) => ({ id: (t.dataset.id || ''), job: (window.__rb.units().find((x) => x.u.uid === t.dataset.id) || { u: {} }).u.id, parts: [...t.querySelectorAll('[data-p]')].map((g) => g.dataset.p) })));
-    const w = rig.find((x) => x.job === 'warrior'), others = rig.filter((x) => x.job !== 'warrior');
+    const w = rig.find((x) => x.job === 'warrior'), others = rig.filter((x) => !['warrior', 'witch', 'knight'].includes(x.job));   // 骨組みは戦士（v5.8.3）・騎士（v5.8.8）・魔女（v5.8.9）
     const need = ['root', 'torso', 'head', 'shU', 'shL', 'swU', 'swL', 'sword', 'legL', 'legR', 'shadow', 'slashA', 'slashB'];
     ok(w && need.every((n) => w.parts.includes(n)), '1 盤のトワは骨組みを持つ（' + (w ? w.parts.join(',') : 'トワがいない') + '）');
     ok(others.length > 0 && others.every((x) => x.parts.length === 0), '1 ほかの職業は骨組みを持たない（' + others.map((x) => x.job + ':' + x.parts.length).join(' ') + '）');
