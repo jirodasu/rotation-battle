@@ -16,7 +16,8 @@ const DUMP = () => { const o = {}; for (let i = 0; i < localStorage.length; i++)
   const base = testPage();
   const ctx = await b.newContext({ viewport: { width: 320, height: 568 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
-  await p.addInitScript((t) => { try { if (!localStorage.getItem('rb-tips')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); } } catch (e) { /* */ } }, TIPS);
+  await p.addInitScript((t) => { try { if (!localStorage.getItem('v568-seeded')) { localStorage.setItem('v568-seeded', '1'); localStorage.setItem('rb-tips', t);   // 種まきは1回だけ（v5.8.8）。以前は「rb-tips が無ければ入れる」で、リセットのあとの開き直しでまた入ることがあった（5回に1回ほど基準4が落ちた。リセットで消えない印で見分ける）
+    localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-order-n', '5'); } } catch (e) { /* */ } }, TIPS);
   await p.goto(base); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300); await p.click('#begin'); await p.waitForTimeout(800);
   await p.evaluate(() => { localStorage.setItem('rb-stars', '[3,2,1]'); localStorage.setItem('rb-run-best', '4'); localStorage.setItem('rb-set', '{"bgm":0.5,"sfx":0.4,"vib":true,"text":1}'); localStorage.setItem('rb-snd', '0'); localStorage.setItem('rb-fast', '1'); localStorage.setItem('other-key', 'keep');
     const m = JSON.parse(localStorage.getItem('rb-exp') || '{}'); m.runs = 3; m.won = { 'std:1': 2 }; localStorage.setItem('rb-exp', JSON.stringify(m)); });
