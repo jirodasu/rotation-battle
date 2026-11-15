@@ -2588,6 +2588,29 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 .board.hm-flare .strip.r0 .lamp { animation: hmFlare 1.3s cubic-bezier(.2, .9, .3, 1) both; }
 @keyframes hmFlare { 0% { transform: scale(1); filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 190, 80, 1)); } 25% { transform: scale(1.6); filter: brightness(2) drop-shadow(0 0 22px rgba(255, 170, 60, 1)); } 100% { transform: scale(1); filter: brightness(1.15) drop-shadow(0 0 8px rgba(255, 190, 80, 0.95)); } }
 @media (prefers-reduced-motion: reduce) { .board[data-hm] .strip .lamp { animation: none !important; transition: none; } }
+/* 灯（試作 ?lamp）：攻撃列の提灯の場所に炎を置く。段が上がるほど大きく明るく、下の点で段を示す。ほかの列の提灯はただの飾り */
+.board[data-lp] .strip.r0 .lamp { display: none !important; }
+.strip .lampf { display: none; position: absolute; left: calc(var(--bleed, 0px) * 0.5 + 9px); top: 1px; width: 24px; z-index: 2; pointer-events: none; flex-direction: column; align-items: center; gap: 2px; }
+.board[data-lp] .strip.r0 .lampf { display: flex; }
+.lampf .lf { display: block; width: 18px; height: 23px; color: #ffae3d; transform-origin: 50% 90%; transform: scale(var(--ls, 1)); filter: drop-shadow(0 0 var(--lg, 4px) rgba(255, 170, 60, 0.95)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)); transition: transform 0.3s cubic-bezier(.3, 1.6, .5, 1), filter 0.3s ease; animation: lampFlick 2.4s ease-in-out infinite; }
+.lampf .lf svg { width: 100%; height: 100%; display: block; }
+.lampf .ld { display: flex; gap: 2px; margin-top: -1px; }
+.lampf .ld i { width: 5px; height: 5px; border-radius: 50%; background: rgba(40, 14, 6, 0.55); box-shadow: inset 0 0 0 1px rgba(255, 200, 120, 0.55); }
+.lampf .ld i.on { background: #ffb347; box-shadow: 0 0 4px rgba(255, 170, 60, 0.9); }
+.board[data-lp="0"] .lampf .lf { --ls: .55; --lg: 0px; opacity: .45; filter: grayscale(.8); }
+.board[data-lp="1"] .lampf .lf { --ls: .7; --lg: 3px; }
+.board[data-lp="2"] .lampf .lf { --ls: .95; --lg: 6px; }
+.board[data-lp="3"] .lampf .lf { --ls: 1.2; --lg: 10px; }
+.board[data-lp="4"] .lampf .lf { --ls: 1.4; --lg: 14px; color: #ffc65a; }
+.board.lp-max .lampf .lf { animation: lampMax 1.1s ease-in-out infinite; }
+@keyframes lampMax { 0%, 100% { filter: drop-shadow(0 0 var(--lg) rgba(255, 170, 60, 0.95)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)); } 50% { filter: brightness(1.35) drop-shadow(0 0 calc(var(--lg) + 8px) rgba(255, 190, 80, 1)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)); } }
+#tip .nw { white-space: nowrap; }
+.board[data-lp].hm-flare .strip.r0 .lampf .lf { animation: hmFlare 1.3s cubic-bezier(.2, .9, .3, 1) both; }   /* 3段以上の受け渡し：元の炎が一度燃え上がる */
+/* 受け渡しで飛ぶ炎 */
+.lampfly { position: fixed; left: 0; top: 0; width: 26px; height: 33px; margin: -16px 0 0 -13px; z-index: 60; pointer-events: none; color: #ffae3d; filter: drop-shadow(0 0 8px rgba(255, 170, 60, 1)); }
+.lampfly.big { color: #ffc65a; filter: drop-shadow(0 0 14px rgba(255, 190, 80, 1)) brightness(1.2); }
+.lampfly svg { width: 100%; height: 100%; display: block; }
+@media (prefers-reduced-motion: reduce) { .lampf .lf { animation: none !important; transition: none; } }
 /* 灯を掲げる仲間の印（炎）。円の左下 */
 .tok .torch { position: absolute; left: -3px; bottom: 14px; width: 18px; height: 22px; z-index: 3; color: #ffae3d; pointer-events: none; filter: drop-shadow(0 0 4px rgba(255, 170, 60, 0.9)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.6)); }
 .tok .torch svg { width: 100%; height: 100%; display: block; }
@@ -2888,7 +2911,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.12</p>
+    <p class="c-ver" id="cVer">ver 5.8.13</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -2921,7 +2944,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <li><span class="ico r2"><svg viewBox="0 0 24 24"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg></span><div><b>回復列</b>休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復（本人は含まない）。攻撃列で傷ついたら、回して休ませよう。</div></li>
       <li><span class="ico rr"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><b>回す（ローテーション）</b>ターンの終わりに選ぶ。攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。補助も使えるように戻る。</div></li>
       <li><span class="ico rr disp" style="font-size:14px">気</span><div><b>気力</b>回すには気力2が要る。気力は毎ターン1たまる（最大3）。いつ回すかを考えよう。</div></li>
-      <li><span class="ico rs disp" style="font-size:14px">◆</span><div><b>一巡りの灯</b>第2章から。灯を掲げるのは、戦闘開始のとき攻撃列にいた2人（炎の印）。回すたびに灯は回復列・補助列と巡り、列のランタンが1つ灯る（維持では消えない。戦闘ごとに消えてから始まる）。3つ目が灯る回転で2人が攻撃列に戻り、突入技が2倍になる。誰を最初に攻撃列へ置くかが作戦になる。</div></li>
+      <li id="hCombo"><span class="ico rs disp" style="font-size:14px">◆</span><div><b>一巡りの灯</b>第2章から。灯を掲げるのは、戦闘開始のとき攻撃列にいた2人（炎の印）。回すたびに灯は回復列・補助列と巡り、列のランタンが1つ灯る（維持では消えない。戦闘ごとに消えてから始まる）。3つ目が灯る回転で2人が攻撃列に戻り、突入技が2倍になる。誰を最初に攻撃列へ置くかが作戦になる。</div></li>
       <li><span class="ico rd">!</span><div><b>赤く光る仲間</b>敵が次に狙う仲間。敵は一番前の列の仲間だけを狙う。攻撃列が空だと、次の列が狙われて被害は2倍。</div></li>
       <li class="h-more"><button type="button" class="h-next" data-tier="2">もっと「くわしく」 →</button></li>
     </ul>
@@ -3407,7 +3430,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.12';
+  const APP_VERSION = '5.8.13';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -3711,10 +3734,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 回転コンボ（v5.4.9）：回した後に、灯がひとつ点る小さな鐘。段ごとに半音ずつ上がる（C→C#→D）。
     //   3段目（発動）は、突入技の瞬間に同じ鐘を5度上と重ねて鳴らす。回すの音（マリンバと鐘）の後ろに置いて、ぶつけない
     combo(step, fire) {
-      if (!can()) return; const t = now() + (fire ? 0 : 0.5), m = 84 + Math.max(0, Math.min(2, step - 1));
+      if (!can()) return; const t = now() + (fire ? 0 : 0.5), m = 84 + Math.max(0, Math.min(3, step - 1));   // 灯芯の4段目は D#
       INST.bell(t, m, fire ? 0.2 : 0.12, bus.sfx, 0.8);
       if (fire) { INST.bell(t + 0.012, m + 7, 0.12, bus.sfx, 0.8); INST.xylo(t + 0.05, m + 12, 0.22, bus.sfx, 0.4); }
     },
+    // 灯（試作）：維持で段が上がるときの鐘は combo(段) を使う（段ごとに半音上がる）。2段の受け渡しは、突入の瞬間に同じ鐘を一つだけ（5度と木琴は3段以上）
+    lampPass() { if (!can()) return; INST.bell(now(), 85, 0.16, bus.sfx, 0.8); },
     // 大技の着弾：低く重い一撃＋短い衝撃音（通常の被弾より長く、低い）
     smash() { if (!can()) return; duck(0.5, 0.5); const t = now(); INST.thud(t, 1, bus.sfx, 220); INST.thud(t + 0.03, 0.8, bus.sfx, 70); INST.snare(t, 0.22, bus.sfx); INST.pizz(t + 0.03, 40, 0.5, bus.sfx, 0.12); INST.swish(t, 0.2, 0.1, bus.sfx, 3000, 300); },
     // とどめ：重い一打のあと、鐘が明るく抜ける（終わりの合図）
@@ -4208,15 +4233,41 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 列のランタン：灯った数＝combo（先読み中は回した後）。満タン手前は攻撃列のランタンが脈打つ。第1章・チュートリアルは従来どおりの飾り（全部灯る）
   function hmLamps() {
     const b = $('board'); if (!b) return;
-    if (lampOn() && enemy) {   // 灯：ランタンが回復列→補助列→攻撃列と灯って、段を示す（先読み中は回した後の段）
-      b.dataset.hm = String(Math.min(3, previewOn ? EXP.lampCfg.after : lamp));
-      b.classList.toggle('hm-next', !previewOn && lamp >= lampMax());
+    if (lampOn() && enemy) {   // 灯：攻撃列の左上の炎の大きさと、その下の点で段を示す（先読み中は回した後の段）。ほかの列の提灯はただの飾り
+      const v = previewOn ? EXP.lampCfg.after : lamp, mx = lampMax();
+      b.removeAttribute('data-hm'); b.classList.remove('hm-next');
+      b.dataset.lp = String(v); b.classList.toggle('lp-max', !previewOn && lamp >= mx);
+      const ld = b.querySelector('.strip.r0 .lampf .ld');
+      if (ld) { let h = ''; for (let i = 0; i < mx; i++) h += '<i' + (i < v ? ' class="on"' : '') + '></i>'; if (ld.innerHTML !== h) ld.innerHTML = h; }
       return;
     }
+    b.removeAttribute('data-lp'); b.classList.remove('lp-max');
     if (!comboOn() || !enemy) { b.removeAttribute('data-hm'); b.classList.remove('hm-next'); return; }
     const lit = Math.min(EXP.combo.max, combo + (previewOn ? 1 : 0));
     b.dataset.hm = String(lit);
     b.classList.toggle('hm-next', !previewOn && comboFull());
+  }
+  // 灯の受け渡し（試作 ?lamp）：回した瞬間、攻撃列の炎が、攻撃列に入った仲間へ飛び移る。3段以上は炎を大きく。
+  //   回転の動き（420ms）の中に収める。動きを減らす設定・演出を飛ばす中は飛ばさない（段の点だけが変わる）
+  let lampPassFrom = null, lampPassN = 0;
+  function lampFlameRect() { const f = $('board') && $('board').querySelector('.strip.r0 .lampf .lf'); if (!f || RM || SKIP) return null; const r = f.getBoundingClientRect(); return r.width ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null; }
+  function lampFly(from, n) {
+    if (!from || RM || SKIP) return;
+    const big = n >= 3, d = 400 / SPD;
+    units().filter((x) => x.r === 0 && x.u.entered).forEach((x, i) => {
+      const slot = tokEl(0, x.c) && tokEl(0, x.c).parentElement; if (!slot) return;
+      const r = slot.getBoundingClientRect(), tx = r.left + r.width / 2, ty = r.top + r.height * 0.42;
+      const el = document.createElement('i'); el.className = 'lampfly' + (big ? ' big' : ''); el.innerHTML = FLAME; document.body.appendChild(el);
+      const mx = (from.x + tx) / 2, my = Math.min(from.y, ty) - 40, s0 = big ? 1.3 : 1, s1 = big ? 2.2 : 1.6;
+      const a = el.animate([
+        { transform: 'translate(' + from.x + 'px,' + from.y + 'px) scale(' + s0 + ')', opacity: 1 },
+        { transform: 'translate(' + mx + 'px,' + my + 'px) scale(' + (s0 * 1.1) + ')', opacity: 1, offset: 0.55 },
+        { transform: 'translate(' + tx + 'px,' + ty + 'px) scale(' + s1 + ')', opacity: 0 }
+      ], { duration: d, delay: (40 + i * 60) / SPD, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'backwards' });
+      const end = () => el.remove();
+      if (a) a.finished.then(end).catch(end); else end();
+      setTimeout(end, d + (240 + i * 60) / SPD);
+    });
   }
   function hmFlare() {
     const b = $('board'); if (!b || RM) return;
@@ -4305,7 +4356,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const cn = (c) => '<i class="cn ' + c + '"><svg viewBox="0 0 34 34"><use href="#rbCorner"/></svg></i>';
     const lamp = (c) => '<i class="lamp ' + c + '"><svg viewBox="0 0 30 52"><use href="#rbLamp"/></svg></i>';
     return '<svg class="stone" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true"><rect width="400" height="110" filter="url(#rbSt' + r + ')"/>' +
-      '<g class="ck hi" transform="translate(.8 1.1)">' + ck + '</g><g class="ck">' + ck + '</g></svg>' + cn('tl') + cn('tr') + cn('bl') + cn('br') + lamp('l') + lamp('r');
+      '<g class="ck hi" transform="translate(.8 1.1)">' + ck + '</g><g class="ck">' + ck + '</g></svg>' + cn('tl') + cn('tr') + cn('bl') + cn('br') + lamp('l') + lamp('r') + (r === 0 ? '<i class="lampf" aria-hidden="true"><i class="lf">' + FLAME + '</i><b class="ld"></b></i>' : '');
   }
   // 盤の横幅を変える（作り直す。操作は盤への委譲なので付け直しは要らない）
   function setCols(n) {
@@ -4440,7 +4491,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 補助列の「攻+7」「防-7」の札は出さない。誰から誰へ効くかは、盤の矢印（renderSupArrows）で見せる（v5.4.0）
     const R = RX();
     const torch = comboOn() && (phase === 'prep' || phase === 'choose') && r === hmRow() ? '<i class="torch" title="一巡りの灯を掲げる">' + FLAME + '</i>' : '';
-    const up = comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? '（一巡りの灯で強化）' : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
+    const up = lampOn() ? lampMul(lamp) > 1 : comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? (lampOn() ? '（灯で×' + lampMul(lamp) + '）' : '（一巡りの灯で強化）') : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
     return '<span class="tok cb ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '" style="--cbd:' + ([...String(u.uid)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 7 * 0.34).toFixed(2) + '"><span class="disc">' + CB(u) + '</span>' + ent + torch +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' + '<i class="hpb' + (p <= 35 ? ' low' : '') + '"><b style="width:' + p + '%"></b></i>' +
       (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
@@ -4712,6 +4763,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const TIPS = {
     stars: () => ['★3を目指そう', '勝つ・' + ((enemy.allowFallen || 0) ? '倒れる仲間を' + enemy.allowFallen + '人以下に' : '誰も倒れない') + '・<em>' + enemy.par + 'ターン以内</em>で★がそろう。' + (EXPM() ? '倒れた仲間は戻らない。' : '★3なら勝利の報酬が1つ増える。倒れた仲間は戦死して隊を去る。')],
     combo: () => ['一巡りの灯', '回すたびに列の<em>ランタン</em>が1つ灯る。<em>3つ目が灯る回転</em>で、<em>炎の印</em>の2人が攻撃列に戻り、突入技が<em>2倍</em>。'],
+    lamp: () => ['灯', '<em>維持すると灯が育ち</em>、攻撃列の攻撃が上がる。<em>回すと灯が次の仲間へ渡り</em>、攻撃列に入った仲間の突入技が強まる（<span class="nw">2段×1.5</span>・<span class="nw">3段×2</span>）。渡したあとは1段から。'],
     gauge: () => ['気力', '回すには<em>気力' + EXP.rot.cost + '</em>が要る。気力は毎ターン' + EXP.rot.gain + 'たまる（最大' + EXP.rot.cap + '）。「回す」ボタンの●が気力。<em>いつ回すか</em>を考えよう。'],
     bind: () => ['縛り', '縛られると、<em>次のターンは回せない</em>。縛りの次に大技が来るなら、縛られる前に元気な仲間を前へ。'],
     bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
@@ -4773,7 +4825,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     else if (!EXPM() && battleIdx === 0 && ((phase === 'prep' && swappedOnce) || phase === 'choose') && !seen.stars) k = 'stars';   // 遠征の目標は★ではなく踏破。地図の最初の画面で伝える（v5.2.2）
     else if (run && phase === 'prep' && benchList().length && !seen.bench) k = 'bench';
     else if (EXPM() && phase === 'choose' && !seen.gauge) k = 'gauge';
-    else if (comboOn() && phase === 'choose' && !seen.combo) k = 'combo';   // 第2章で初めて出る（v5.4.7）
+    else if (comboOn() && phase === 'choose' && !seen.combo) k = 'combo';
+    else if (lampOn() && phase === 'choose' && lamp >= 2 && !seen.lamp) k = 'lamp';   // 灯（試作）：初めて2段になったときに一度だけ   // 第2章で初めて出る（v5.4.7）
     else if (act.rule === 'bind') k = 'bind';
     else if (phase === 'choose' && !seen.entry) k = 'entry';
     else if (act.rule === 'charge') k = 'charge';
@@ -5296,7 +5349,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (lampOn() && on) {   // 灯の段（試作）：気力の下に段の数だけ灯る。最大段は光る。回したときの突入技の倍率を添える
       const mx = lampMax(), m = lampMul(lamp), full = lamp >= mx;
       for (let i = 0; i < mx; i++) ch += '<i class="' + (i < lamp ? 'on' : '') + (previewOn && m > 1 ? ' fire' : '') + '"></i>';
-      ch = '<span class="pips cb lp' + (full ? ' full' : '') + '" title="灯 ' + lamp + '段">' + ch + '</span>' + (m > 1 ? '<b class="lmul">×' + m + '</b>' : '');
+      ch = '<span class="pips cb lp' + (full ? ' full' : '') + '" title="灯 ' + lamp + '段">' + ch + '</span>' + (m > 1 ? '<b class="lmul">突入×' + m + '</b>' : '');
       cSay = '。灯' + lamp + '段' + (m > 1 ? '：回すと突入技が' + m + '倍' : '');
     } else if (comboOn() && on) {
       const mx = EXP.combo.max, full = comboFull(), cv = previewOn ? Math.min(mx, combo + 1) : combo, fire = previewOn && full;
@@ -6553,7 +6606,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
       SFX.entry(x.c); vib(14);
       flashBright(el.querySelector('.disc'));
       popAt(el, '突入！' + en.name + (en.boosted ? '（強化）' : ''), 'sub', -34, 0);
-      if (en.boosted && x === list[0]) { try { SFX.combo(EXP.combo.max, true); } catch (e) { /* 音なし */ } await hitStop(45); }   // 発動の瞬間：3段目の鐘と、2〜3コマの止め（v5.4.9。最初の1人のときだけ）
+      if (en.boosted && x === list[0]) {
+        if (lampOn() && fireMul < 2) { try { SFX.lampPass(fireMul); } catch (e) { /* 音なし */ } }   // 灯2段（×1.5）：小さな鐘だけ。止めない
+        else { try { SFX.combo(EXP.combo.max, true); } catch (e) { /* 音なし */ } await hitStop(45); }   // 発動の瞬間：3段目の鐘と、2〜3コマの止め（v5.4.9。最初の1人のときだけ）。灯は3段以上
+      }   // 発動の瞬間：3段目の鐘と、2〜3コマの止め（v5.4.9。最初の1人のときだけ）
       say(x.u.name + 'の突入技「' + en.name + '」' + en.desc);
       if (en.heal) {
         units().filter((y) => y.r === 0).forEach((y) => {
@@ -6604,7 +6660,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     if (lampOn()) {   // 灯を渡す：いまの段の倍率で、攻撃列に入った仲間の突入技が強まる
       const n = lamp, m = lampMul(n);
-      if (m > 1) { comboFire = true; fireMul = m; hmFlare(); }
+      if (m > 1) { comboFire = true; fireMul = m; if (n >= 3) hmFlare(); lampPassFrom = lampFlameRect(); lampPassN = n; }
       lamp = EXP.lampCfg.after;
       say(m > 1 ? '灯を渡した（' + n + '段）。攻撃列に入った仲間の突入技が' + m + '倍になる。' : '灯を渡した。');
     }
@@ -6616,6 +6672,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     SFX.rotate(); vib(18); boardPress(2);
     $('dock').style.visibility = 'hidden';
     renderBoard(); renderBook(); renderTicket();
+    if (lampOn()) hmLamps();   // 灯は渡した直後の段（1段）に戻す。炎が飛んでいくあいだに小さくなる
+    if (lampPassFrom) { lampFly(lampPassFrom, lampPassN); lampPassFrom = null; }
     const board = $('board');
     const ic = document.createElement('span');
     ic.className = 'spinicon'; ic.innerHTML = ICON.rot;
@@ -6696,7 +6754,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
     if (rot) doRotate();
-    else { stayN += 1; saveMark = null; if (lampOn()) lamp = Math.min(lampMax(), lamp + EXP.lampCfg.gain); say('隊列を維持。' + (lampOn() ? '灯が' + lamp + '段に（攻撃列の攻撃+' + lampAtk(lamp) + '）' : relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
+    else { stayN += 1; saveMark = null; if (lampOn()) { const l0 = lamp; lamp = Math.min(lampMax(), lamp + EXP.lampCfg.gain); if (lamp > l0) try { SFX.combo(lamp, false); } catch (e) { /* 音なし */ } } say('隊列を維持。' + (lampOn() ? '灯が' + lamp + '段に（攻撃列の攻撃+' + lampAtk(lamp) + '）' : relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
   }
 
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
@@ -7478,6 +7536,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   };
   // 灯の試作（?lamp）：不動の構えは灯に吸収されるので、「灯芯」（灯の最大段+1）に置き換える。id は保存のためそのまま
   if (LAMPQ) Object.assign(EXP.relics.find((x) => x.id === 'stance'), { name: '灯芯', desc: '灯の最大段+1（4段で突入技×2.5）', stayAtk: 0, stayMax: 0, tag: ['灯の最大段+1'] });
+  // 灯（試作）：遊び方の「一巡りの灯」を灯の説明に差し替える
+  if (LAMPQ) { const li = document.getElementById('hCombo'); if (li) { li.querySelector('.ico').innerHTML = FLAME; li.querySelector('div').innerHTML = '<b>灯</b>攻撃列に宿る。維持するたびに1段育ち（最大3）、攻撃列の攻撃が段の数だけ上がる。回すと灯が次の仲間へ渡り、攻撃列に入った仲間の突入技が強まる（2段×1.5・3段×2）。渡したあとは1段から。攻撃列の仲間が倒れると1段下がる。'; } }
   EXP.trinity = { name: TRI.name, party: TRI.foes, par: TRI.par, allowFallen: TRI.allowFallen };   // 三位一体（定数は TRI）。tools/expsim.mjs が EXP を取り出すので、リテラルの外に置く
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, ent: 1 },
@@ -8602,7 +8662,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   // 第2章の扉（v5.5.2）：一巡りの灯が始まる章に初めて着いたとき、一度だけ物語として知らせる
   function hmIntro() {
-    if (!EXP.combo || tipSeen().hmIntro) return;
+    if (!EXP.combo || LAMPQ || tipSeen().hmIntro) return;   // 灯（試作）は第1章から働くので、第2章の扉は出さない
     if (expCh(Math.min(run.node + 1, EXP.nodes)) < (EXP.combo.from || 0)) return;
     tipMark('hmIntro');
     const ch = expCh(Math.min(run.node + 1, EXP.nodes));
