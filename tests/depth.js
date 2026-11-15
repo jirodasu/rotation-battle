@@ -68,7 +68,7 @@ const title = (p) => p.evaluate(() => document.getElementById('rvTitle').textCon
     ok(await p.evaluate(() => localStorage.getItem('rb-meta')) === '{"runs":9}', '6 旧モードの記録（rb-meta）は触らない');
     ok(/深さ2まで|突破 1回/.test(await p.evaluate(() => document.getElementById('beginSub').textContent)), '5 表紙の突破回数が更新される');
     const cs = await cards(p);
-    ok(cs.length === 1 && /もう一度/.test(cs[0].t) && await p.evaluate(() => !!document.querySelector('.rv-aux')), '6 結果：もう一度の札と、隊と深さを選ぶ副ボタン');
+    ok(cs.length === 1 && /深さ2へ挑む/.test(cs[0].t) && await p.evaluate(() => !!document.querySelector('.rv-aux')), '6 結果：開いた深さ2へ挑む札（v5.8.15。以前は「もう一度」）と、隊と深さを選ぶ副ボタン');
     await p.click('.rv-aux'); await sleep(p, 400);
     ok(await title(p) === 'どの隊で下る？', '6 「隊と深さを選ぶ」で出発の準備へ');
     // 7 勲章：3枚で双魔

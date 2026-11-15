@@ -2338,6 +2338,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 @media (prefers-reduced-motion: reduce) { .inc-n.n1 { animation: none; } }
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
 .inc-w { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
+.nwr { white-space: nowrap; }   /* 名前の途中で折り返さない（v5.8.15） */
 /* レリックの見える化（v5.8.14）：効いた分を、金の宝石の印で示す。予告の数字（攻撃・被ダメ・敵の技の札）には小さな印、効いた瞬間は持ち主の上に名前 */
 .rl { display: inline-grid; place-items: center; width: 12px; height: 12px; margin-left: 1px; font-style: normal; }
 .rl svg, :root[data-skin="goth"] .dm .rl svg { width: 11px; height: 11px; color: #f2b632; filter: drop-shadow(0 0 0.6px rgba(40, 20, 0, 0.95)) drop-shadow(0 0 2px rgba(255, 196, 70, 0.55)); }
@@ -2927,7 +2928,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.14</p>
+    <p class="c-ver" id="cVer">ver 5.8.15</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3447,7 +3448,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.14';
+  const APP_VERSION = '5.8.15';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8871,7 +8872,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const S = { clear: !!clear, fal, reach: clear ? EXP.nodes : run.node + 1, tri: !!run.triWon, sq, depth }, got = [];
     XACH.forEach((a) => { if (!x.ach[a.id] && a.ok(S, x)) { x.ach[a.id] = 1; got.push(a); } });
     const after = xState(x), un = [];
-    if (got.length) un.push('実績 ' + got.map((a) => '<b>「' + a.t + '」</b>').join('') + '　勲章+' + got.length);   // 1行にまとめる（結果の画面が長くならないように）
+    // 勲章の使い道（v5.8.15）：もらった枚数だけでなく、いまの枚数と、あと何枚で何が開くかを添える（使い道は双魔の隊だけ。開いたあとは添えない）
+    const tw = XSQ.find((q) => q.price), have = xMedals(x), use = tw && !xSqOpen(tw.id, x) ? (have >= tw.price ? '　いま' + have + '枚。<b class="nwr">「' + tw.name + '」を開ける</b>' : '　いま' + have + '枚・<span class="nwr">あと' + (tw.price - have) + '枚で「' + tw.name + '」</span>') : '';   // 隊の名前の途中で折り返さない
+    if (got.length) un.push('実績 ' + got.map((a) => '<b>「' + a.t + '」</b>').join('') + '　勲章+' + got.length + use);   // 1行にまとめる（結果の画面が長くならないように）
     const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
     if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
     const relNew = EXP.relics.filter((r) => rel0.indexOf(r.id) < 0 && relOpen(r, mm));
@@ -8887,11 +8890,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const firstEnd = clear && !endingSeen();
     if (clear && !firstEnd) confetti();
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
+    // 次の挑戦（v5.8.15）：新しい深さや隊が開いた回は、大きいボタンをその挑戦にする（同じ条件のやり直しは「隊と深さを選ぶ」から）。札に印は足さない：横長の小さい画面でボタンが押し出された
+    const nsq = after.sq.filter((id) => before.sq.indexOf(id) < 0)[0];
+    const nx = !before.d3 && after.d3 ? { sq, depth: 3, t: '深さ3へ挑む' } : !before.d2 && after.d2 ? { sq, depth: 2, t: '深さ2へ挑む' } : nsq ? { sq: nsq, depth, t: XSQ.find((v) => v.id === nsq).name + 'で挑む' } : null;
+    const nq = nx ? XSQ.find((v) => v.id === nx.sq) : q;
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(relLn, ((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length || relLn.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
-      cards: [{ ico: ICON.rot, t: 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + q.tag + '・深さ' + depth : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
-      on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(sq, depth); else goTitle(); } });
+      cards: [{ ico: ICON.rot, t: nx ? nx.t : 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + nq.tag + '・深さ' + (nx ? nx.depth : depth) : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
+      on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(nx ? nx.sq : sq, nx ? nx.depth : depth); else goTitle(); } });
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
   }
   function beginExp(sqId, depth) {
