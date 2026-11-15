@@ -1,5 +1,5 @@
 /* 灯を継ぐ隊列 -LAST ROTATION-（旧名：ローグライク・ローテーションバトル） — オフラインでも遊べるようにするためのサービスワーカー */
-const VERSION = 'rb-5.8.10';
+const VERSION = 'rb-5.8.11';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png', './img/bg_tall.webp', './img/bg_wide.webp', './img/btn_gold.webp', './img/btn_dark.webp', './fonts/ShipporiMincho-700.woff', './fonts/ShipporiMincho-800.woff', './fonts/ZenKaku-500.woff', './fonts/ZenKaku-700.woff', './fonts/ZenKaku-900.woff'];
 
 self.addEventListener('install', (e) => {
@@ -15,6 +15,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
+  // 旧版（/classic/）はこのサービスワーカーでは扱わない（本体の保存済みページを旧版で上書きしないため）
+  if (url.pathname.includes('/classic/')) return;
   // ページ本体は新しい版を優先し、オフラインなら保存済みの版を使う
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then((res) => { caches.open(VERSION).then((c) => c.put('./index.html', res.clone())); return res; }).catch(() => caches.match('./index.html')));
