@@ -2034,6 +2034,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 /* 一巡りの灯（v5.5.2）：目盛りは◆ではなく小さな炎。盤のランタンと同じ数だけ灯る */
 .rot-meter .pips.cb i { width: 9px; height: 12px; border-radius: 0; transform: none; box-shadow: none; background: currentColor; opacity: .3; -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20'%3E%3Cpath d='M8 .8c1.2 4 5.2 5.6 5.2 11a5.2 5.2 0 0 1-10.4 0c0-3 1.8-4.2 2.2-6.8 1 1 1.8 2.3 1.9 4 1.4-2.1 1.6-5 1.1-8.2Z'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 20'%3E%3Cpath d='M8 .8c1.2 4 5.2 5.6 5.2 11a5.2 5.2 0 0 1-10.4 0c0-3 1.8-4.2 2.2-6.8 1 1 1.8 2.3 1.9 4 1.4-2.1 1.6-5 1.1-8.2Z'/%3E%3C/svg%3E") center / contain no-repeat; }
 .rot-meter .pips.cb i.on { opacity: 1; background: #c8521a; }
+.rot-meter .lmul { margin-left: 4px; font-size: 11px; font-weight: 700; line-height: 1; color: #6e2408; letter-spacing: 0; }   /* 灯の試作：回したときの突入技の倍率 */
 .rot-meter .pips.cb.full i, .rot-meter .pips.cb i.fire { background: #ff8a1f; opacity: 1; animation: hmPip 1.2s ease-in-out infinite; }
 @keyframes hmPip { 50% { background: #ffd36b; } }
 @keyframes cbGlow { 50% { box-shadow: 0 0 0 1.5px #5a3a06, 0 0 10px 3px rgba(255, 236, 160, .7); } }
@@ -2887,7 +2888,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.11</p>
+    <p class="c-ver" id="cVer">ver 5.8.12</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3406,7 +3407,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.11';
+  const APP_VERSION = '5.8.12';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4190,7 +4191,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 回転コンボ（v5.4.5）：遠征だけ（チュートリアルには無い）。combo＝いまの目盛り、comboFire＝このターンの突入技が強化されている
   //   戦闘の途中保存に入れる（ユーザーの決定 2026-11-02：閉じて続きを遊んでも同じ結末になるように。前の版の保存は0として読む）
   let combo = 0, comboFire = false;
-  const comboOn = () => EXPM() && !tut && !!EXP.combo && !!run && expCh(Math.min(run.node + 1, EXP.nodes)) >= (EXP.combo.from || 0);   // 第2章から（v5.4.7）
+  // 灯（試作・?lamp のときだけ）：lamp＝いまの段、fireMul＝このターンの突入技の倍率（回した直後だけ）。数値は EXP.lampCfg
+  const LAMPQ = /[?&]lamp(=|&|$)/.test(location.search);
+  let lamp = 0, fireMul = 0, lampTurn = 0;   // lampTurn：このターンの攻撃に効く段（ターンの始まりで決める。途中で倒れて段が下がっても、このターンの攻撃は変わらない。予報・自動対戦と同じ）
+  const lampOn = () => LAMPQ && EXPM() && !!EXP.lampCfg;
+  const lampMax = () => EXP.lampCfg.max + (relOn('stance') ? 1 : 0);   // 灯芯（灯のときの不動の構え）で+1
+  const lampMul = (n) => { const m = EXP.lampCfg.mul; return m[Math.min(n, m.length - 1)] || 1; };
+  const lampAtk = (n) => (lampOn() ? n * EXP.lampCfg.atk : 0);
+  const comboOn = () => !LAMPQ && EXPM() && !tut && !!EXP.combo && !!run && expCh(Math.min(run.node + 1, EXP.nodes)) >= (EXP.combo.from || 0);   // 第2章から（v5.4.7）
   // 次に回すと満タンになって発動する（目盛りが max-1）。設計書の数値（発動0.95回／戦）は、満タンに「なった」回転で発動する読み方で測られていた（tools/expsim.mjs で確かめた）
   const comboFull = () => comboOn() && combo + 1 >= EXP.combo.max;
   // 一巡りの灯（v5.5.2。中身は回転コンボと同じ）：灯を掲げるのは、戦闘開始のとき攻撃列にいた2人。回すたびに回復列→補助列と巡り、3回目で攻撃列に戻ると燃え上がる。
@@ -4200,6 +4208,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 列のランタン：灯った数＝combo（先読み中は回した後）。満タン手前は攻撃列のランタンが脈打つ。第1章・チュートリアルは従来どおりの飾り（全部灯る）
   function hmLamps() {
     const b = $('board'); if (!b) return;
+    if (lampOn() && enemy) {   // 灯：ランタンが回復列→補助列→攻撃列と灯って、段を示す（先読み中は回した後の段）
+      b.dataset.hm = String(Math.min(3, previewOn ? EXP.lampCfg.after : lamp));
+      b.classList.toggle('hm-next', !previewOn && lamp >= lampMax());
+      return;
+    }
     if (!comboOn() || !enemy) { b.removeAttribute('data-hm'); b.classList.remove('hm-next'); return; }
     const lit = Math.min(EXP.combo.max, combo + (previewOn ? 1 : 0));
     b.dataset.hm = String(lit);
@@ -4211,15 +4224,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     setTimeout(() => b.classList.remove('hm-flare'), 1400);
   }
   // 強化した突入技：数値効果を mul 倍（攻撃・軽減・回復・全体軽減）。速射は追加の攻撃回数を+1。居合の先行（速さ）は対象外。端数は四捨五入（tools/expsim.mjs の boostEntry と同じ）
-  function boostEntry(e) {
-    const o = Object.assign({}, e), mul = EXP.combo.mul;
+  function boostEntry(e, m) {
+    const o = Object.assign({}, e), mul = m || EXP.combo.mul;   // m：灯の倍率（無ければ回転コンボの倍率）
     ['atk', 'guard', 'heal', 'teamGuard'].forEach((k) => { if (o[k]) o[k] = Math.round(o[k] * mul); });
-    if (o.hits) o.hits += 1;
+    if (o.hits && mul >= 2) o.hits += 1;   // 速射の追加は×2以上のときだけ（回転コンボは×2）
     o.boosted = true; o.desc = entryDesc(o);
     return o;
   }
   // 先読み（回したら）で使う突入技：この回転でコンボが発動するなら強化後の値
-  const entryFor = (u, entering) => (u && u.entry && entering && comboFull() ? boostEntry(u.entry) : u && u.entry);
+  const entryFor = (u, entering) => (u && u.entry && entering && (lampOn() ? lampMul(lamp) > 1 : comboFull()) ? boostEntry(u.entry, lampOn() ? lampMul(lamp) : 0) : u && u.entry);
   const gaugeOn = () => EXPM() || !!tut;
   const gaugeOk = () => !gaugeOn() || gauge >= EXP.rot.cost;
   const EXPM = () => !!(run && run.mode === 'exp' && !tut);
@@ -4309,7 +4322,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ue = entryFor(u, entering);
     if (r === 0 && entering && R.entry && ue && ue.atk) power += ue.atk;
     if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
-    if (r === 0) power += stanceAtk(entering ? 0 : phase === 'choose' ? stayN + 1 : stayN) + relN('whet', 'atk');
+    if (r === 0) power += stanceAtk(entering ? 0 : phase === 'choose' ? stayN + 1 : stayN) + relN('whet', 'atk') + lampAtk(entering ? EXP.lampCfg.after : phase === 'choose' ? Math.min(lampMax(), lamp + EXP.lampCfg.gain) : lamp);
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
     let sup = 0;
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
@@ -5280,14 +5293,19 @@ body.fast #stampOk.on { animation-duration: .5s; }
     b.dataset.why = bound ? '縛られている。このターンは維持だけ' : low ? '気力が足りない・' + (wait <= 1 ? '次のターンに回せる' : 'あと' + wait + 'ターンで回せる') : '';   // 何が足りないかを先に言う（v5.6.4）
     // 回転コンボの目盛り（v5.4.5）：気力の下に◆×3。満タンは光る。「回す」の長押し（先読み）中は、回した後の目盛りを出す（満タンで回すと発動して0）
     let ch = '', cSay = '';
-    if (comboOn() && on) {
+    if (lampOn() && on) {   // 灯の段（試作）：気力の下に段の数だけ灯る。最大段は光る。回したときの突入技の倍率を添える
+      const mx = lampMax(), m = lampMul(lamp), full = lamp >= mx;
+      for (let i = 0; i < mx; i++) ch += '<i class="' + (i < lamp ? 'on' : '') + (previewOn && m > 1 ? ' fire' : '') + '"></i>';
+      ch = '<span class="pips cb lp' + (full ? ' full' : '') + '" title="灯 ' + lamp + '段">' + ch + '</span>' + (m > 1 ? '<b class="lmul">×' + m + '</b>' : '');
+      cSay = '。灯' + lamp + '段' + (m > 1 ? '：回すと突入技が' + m + '倍' : '');
+    } else if (comboOn() && on) {
       const mx = EXP.combo.max, full = comboFull(), cv = previewOn ? Math.min(mx, combo + 1) : combo, fire = previewOn && full;
       for (let i = 0; i < mx; i++) ch += '<i class="' + (i < cv ? 'on' : '') + (fire ? ' fire' : '') + '"></i>';
       ch = '<span class="pips cb' + (!previewOn && full ? ' full' : '') + (fire ? ' fire' : '') + '" title="一巡りの灯 ' + cv + '／' + mx + '">' + ch + '</span>';
       cSay = full ? '。一巡りの灯：次に回すと灯が戻り、突入技が強化される' : '。一巡りの灯' + combo + '／' + mx;
     }
     setMeter(m, on ? '<span class="pips">' + h + '</span>' + ch : '');
-    b.classList.toggle('cbfull', comboFull() && on && !bound && !low);
+    b.classList.toggle('cbfull', (lampOn() ? lamp >= lampMax() : comboFull()) && on && !bound && !low);
     b.setAttribute('aria-label', (bound ? '回せない：縛られている。このターンは維持のみ' : low ? '回せない：気力' + g + '／' + cost + '。' + sub : '隊列を回す（気力' + cost + 'を使う。今' + g + '）') + cSay);
   }
   /* 選ぶ前に結果を見せる（v5.3.0）：「回す」「維持」のボタンに、それぞれを選んだときにこのターン受けるダメージを出す。
@@ -6197,7 +6215,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     savedN = 0;   // この戦闘の「しのいだ！」の回数（v5.7.3。保存しない：続きから再開すると数え直し）
     resetFlags();
     roster.forEach((u) => { u.entered = false; });   // 突入技は「回して攻撃列に入った」ときだけ
-    sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = gaugeOn() ? EXP.rot.start : 0; combo = 0; comboFire = false;
+    sel = null; inspect = null; turn = 1; stayN = 0; enemy.bound = false; gauge = gaugeOn() ? EXP.rot.start : 0; combo = 0; comboFire = false; lamp = lampOn() ? EXP.lampCfg.start : 0; fireMul = 0;
     logLines = ['戦闘開始。'];
     battleSave('start');
     runTurn();
@@ -6255,7 +6273,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   async function playerAttack(u, r, c) {
     let power, sup = 0;
     if (r === 0) {
-      power = u.atk + stanceAtk(stayN) + relN('whet', 'atk');
+      power = u.atk + stanceAtk(stayN) + relN('whet', 'atk') + lampAtk(lampTurn);
       const m = grid[1][c];
       if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
     } else power = u.ranged;
@@ -6366,6 +6384,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       say(v.name + 'が倒れた…');
       SFX.down(); impactShake();
       if (stats) stats.fallen += 1;
+      if (lampOn() && row === 0 && lamp > 0) { lamp = Math.max(0, lamp - EXP.lampCfg.fall); say('灯が揺らいだ（' + lamp + '段）。'); }
       anim(el, [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(.2) rotate(-40deg)', opacity: 0 }], { duration: 300, fill: 'forwards' });
       await wait(320);
       grid[row][col] = null;
@@ -6485,7 +6504,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   let saveMark = null, saveN = 0;   // 回して救った仲間と、回す前の盤の人数（v5.7.0）
   async function runTurn() {
-    previewOn = false; hitSeq = 0; SKIP = false;
+    previewOn = false; hitSeq = 0; SKIP = false; lampTurn = lamp;
     foeList().forEach((F) => { F.hungry = !!(F.starve && F.hp * 2 < (F.max || F.hp)); });   // 飢えた：そのターンの技は、ターンの始まりのHPで決める（見込みと食い違わないように）
     phase = 'resolve';
     Music.set('resolve');
@@ -6508,7 +6527,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     turn += 1;
     if (gaugeOn()) gauge = Math.min(EXP.rot.cap, gauge + EXP.rot.gain);
     units().forEach(({ u }) => { u.entered = false; });
-    entryNow = {}; comboFire = false;
+    entryNow = {}; comboFire = false; fireMul = 0;
     order = []; orderIdx = -1;
     phase = 'choose'; SKIP = false;
     Music.set('choose');
@@ -6529,7 +6548,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const list = units().filter((x) => x.r === 0 && x.u.entered && x.u.entry);
     for (const x of list) {
       if (phase === 'over') return;
-      const en = comboFire ? boostEntry(x.u.entry) : x.u.entry, el = tokEl(0, x.c);
+      const en = comboFire ? boostEntry(x.u.entry, fireMul) : x.u.entry, el = tokEl(0, x.c);
       entryNow[x.u.uid] = en;
       SFX.entry(x.c); vib(14);
       flashBright(el.querySelector('.disc'));
@@ -6582,6 +6601,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
       combo += 1;
       if (combo >= EXP.combo.max) { comboFire = true; combo = 0; hmFlare(); say('一巡りの灯！　灯を掲げた仲間が攻撃列に戻り、突入技が強まる。'); }
       else try { SFX.combo(combo, false); } catch (e) { /* 音が出せなくても進行は止めない */ }   // 1段目・2段目（v5.4.9）
+    }
+    if (lampOn()) {   // 灯を渡す：いまの段の倍率で、攻撃列に入った仲間の突入技が強まる
+      const n = lamp, m = lampMul(n);
+      if (m > 1) { comboFire = true; fireMul = m; hmFlare(); }
+      lamp = EXP.lampCfg.after;
+      say(m > 1 ? '灯を渡した（' + n + '段）。攻撃列に入った仲間の突入技が' + m + '倍になる。' : '灯を渡した。');
     }
     if (relOn('incense')) {
       const hv = relD('incense').backHeal, got = [];
@@ -6671,7 +6696,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
     if (rot) doRotate();
-    else { stayN += 1; saveMark = null; say('隊列を維持。' + (relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
+    else { stayN += 1; saveMark = null; if (lampOn()) lamp = Math.min(lampMax(), lamp + EXP.lampCfg.gain); say('隊列を維持。' + (lampOn() ? '灯が' + lamp + '段に（攻撃列の攻撃+' + lampAtk(lamp) + '）' : relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
   }
 
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
@@ -7407,7 +7432,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 気力：回すには cost が要り、毎ターン gain たまる（考えずに毎ターン回すだけでは勝てないように）
     rot: { start: 2, gain: 1, cost: 2, cap: 3 },
     // 回転コンボ（v5.4.5）：回すたびに+1。満タン（max）になる回転で、その回転で攻撃列に入った仲間の突入技が mul 倍になり、0に戻る。戦闘ごとに0から
-    combo: { max: 3, mul: 2, from: 1 },   // from：この章から（0＝第1章）。初めての人が最初の章で覚えることを増やさない（v5.4.7）
+    combo: { max: 3, mul: 2, from: 1 },
+    // 灯（試作・段階3。URL に ?lamp を付けたときだけ。2026-11-15 ユーザー承認の数値）：攻撃列に宿り、維持で gain 段育つ（最大 max）。攻撃列の攻撃+atk×段。
+    //   回すと、攻撃列に入った仲間の突入技が mul[段] 倍になり、after 段に戻る。攻撃列の仲間が倒れると fall 段下がる。敵のHP×hpMul・技の威力×dmgMul。
+    //   灯が働く遠征では回転コンボは働かず、不動の構えは「灯芯」（最大段+1）になる。自動対戦 400回：標準 47.3%・毎ターン回す 3.3%（tools/expsim.mjs の lamp）
+    lampCfg: { start: 1, gain: 1, max: 3, atk: 1, mul: [1, 1, 1.5, 2, 2.5], after: 1, fall: 1, hpMul: 1.2, dmgMul: 1.05 },   // from：この章から（0＝第1章）。初めての人が最初の章で覚えることを増やさない（v5.4.7）
     // 休むたびに章の主が強くなる（HP・威力の割合）。休めば安全だが、主が強くなる
     restPen: { hp: 0.05, dmg: 0.025 },
     relics: [
@@ -7447,6 +7476,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     ] },
     foes: [[0, 'binder'], [1, 'binder'], ['lizard', 'chorus']]
   };
+  // 灯の試作（?lamp）：不動の構えは灯に吸収されるので、「灯芯」（灯の最大段+1）に置き換える。id は保存のためそのまま
+  if (LAMPQ) Object.assign(EXP.relics.find((x) => x.id === 'stance'), { name: '灯芯', desc: '灯の最大段+1（4段で突入技×2.5）', stayAtk: 0, stayMax: 0, tag: ['灯の最大段+1'] });
   EXP.trinity = { name: TRI.name, party: TRI.foes, par: TRI.par, allowFallen: TRI.allowFallen };   // 三位一体（定数は TRI）。tools/expsim.mjs が EXP を取り出すので、リテラルの外に置く
   const AGE_PH = [
     { max: 19, key: 'young', label: '若手', mul: 0.85, ent: 1 },
@@ -8432,7 +8463,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!EXPM() || tut) return;
     const uid = (u) => (u ? u.uid : null), un = {};
     run.members.forEach((m) => { un[m.uid] = { hp: m.hp, atkReady: m.atkReady, defReady: m.defReady, entered: m.entered }; });
-    bsave = Object.assign({ at, commit: null, result: null, pend: run.pendId || null, turn, gauge, combo, stayN, tgtId, swapped: swappedOnce, edef: run.enemy, enemy: JSON.parse(JSON.stringify(enemy)), units: un,
+    bsave = Object.assign({ at, commit: null, result: null, pend: run.pendId || null, turn, gauge, combo, lamp, stayN, tgtId, swapped: swappedOnce, edef: run.enemy, enemy: JSON.parse(JSON.stringify(enemy)), units: un,
       grid: grid.map((row) => row.map(uid)), snap: (snapshot || []).map((x) => ({ uid: x.u.uid, r: x.r, c: x.c })),
       stats: stats ? { dealt: stats.dealt, who: Object.keys(stats.who).reduce((o, k) => { o[k] = uid(stats.who[k]); return o; }, {}), taken: stats.taken, fallen: stats.fallen } : null,
       log: (logLines || []).slice(-30) }, extra || {});
@@ -8447,7 +8478,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     toPrep(false);
     enemy = B.enemy;
     run.members.forEach((m) => { const x = B.units[m.uid]; if (x) { const { sta, ...rest } = x; Object.assign(m, rest); } });   // 旧セーブのスタミナ（sta）は読み捨てる
-    turn = B.turn; gauge = B.gauge; combo = +B.combo || 0; stayN = B.stayN; tgtId = B.tgtId; swappedOnce = true;   // combo は v5.4.5 で足した（それより前の保存は0）
+    turn = B.turn; gauge = B.gauge; combo = +B.combo || 0; lamp = B.lamp != null ? +B.lamp : lampOn() ? EXP.lampCfg.start : 0; stayN = B.stayN;   /* lamp は灯の試作（段階3）で足した。無い保存は始まりの段 */
+    tgtId = B.tgtId; swappedOnce = true;   // combo は v5.4.5 で足した（それより前の保存は0）
     snapshot = B.snap.map((x) => ({ u: U(x.uid), r: x.r, c: x.c })).filter((x) => x.u);
     stats = B.stats ? { dealt: B.stats.dealt, who: Object.keys(B.stats.who).reduce((o, k) => { const u = U(B.stats.who[k]); if (u) o[k] = u; return o; }, {}), taken: B.stats.taken, fallen: B.stats.fallen } : null;
     logLines = (B.log || []).concat(['（中断したところから再開した）']);
@@ -8529,9 +8561,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return Object.assign({}, base, {
       name: (v ? v.pre : '') + (k === 'binder' ? BINDER_NAME : base.name), chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
       eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer),
-      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * dm.hp * (run && run.ward && ch === 0 ? EXP.bless.ward : 1)), boss: k === 'boss', restUp: nr,
+      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * dm.hp * (run && run.ward && ch === 0 ? EXP.bless.ward : 1) * (lampOn() ? EXP.lampCfg.hpMul : 1)), boss: k === 'boss', restUp: nr,
       pattern: base.pattern.map((a) => {
-        const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg) } : {});
+        const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg * (lampOn() ? EXP.lampCfg.dmgMul : 1)) } : {});
         if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
         if (vs.includes('poison') && o.dmg) o.pierce = true;
         return o;

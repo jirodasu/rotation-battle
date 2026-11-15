@@ -71,11 +71,19 @@ const dist = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]);
     ok(after.run === 0 && after.tf.length === 0 && end.arrow === 0, '6 動きのあと、部品は元の形に戻り、矢は見えない（動き ' + after.run + '・形が違う ' + after.tf.join(' ') + '）');
     ok(!errs.length, 'ページのエラーなし ' + errs.join(' / ')); await ctx.close(); }
   // 命中の時刻は、止めずに流す別の盤で測る（止めているあいだも本体の待ちは進むため）
-  { const { ctx, p, errs } = await open(b, false);
+  // 実時間の1回測りは、重い時（ほかのテストと同時に動いた時など）に遅れる。負荷は遅らせるだけで早めはしないので、最大3回測って一番早い値で判定する
+  const hits = []; let ctx, p, errs, tm;
+  for (let k = 0; k < 3; k++) {
+    if (ctx) await ctx.close();
+    ({ ctx, p, errs } = await open(b, false));
     await p.click('#btnStart'); await toChoose(p);
-    const tm = await p.evaluate(() => ({ t0: window.__t0, dmg: window.__dmg, starts: window.__starts }));
-    const aHit = tm.t0 ? tm.dmg.filter((d) => d > tm.t0).map((d) => d - tm.t0)[0] : null;
-    ok(aHit != null && aHit >= 440 && aHit <= 620, '4 アーチャーの命中の演出は動きの始まりから約0.50秒（' + (aHit == null ? '測れず' : Math.round(aHit) + 'ms') + '）');
+    tm = await p.evaluate(() => ({ t0: window.__t0, dmg: window.__dmg, starts: window.__starts }));
+    const h = tm.t0 ? tm.dmg.filter((d) => d > tm.t0).map((d) => d - tm.t0)[0] : null;
+    if (h != null) hits.push(h);
+    if (h != null && h >= 440 && h <= 620) break;
+  }
+  { const aHit = hits.length ? Math.min(...hits) : null;
+    ok(aHit != null && aHit >= 440 && aHit <= 620, '4 アーチャーの命中の演出は動きの始まりから約0.50秒（' + (aHit == null ? '測れず' : hits.map((x) => Math.round(x)).join(',') + 'ms') + '）');
     const others = tm.starts.map((s) => { const d = tm.dmg.find((x) => x > s); return d ? d - s : null; }).filter((x) => x != null && x < 400);
     ok(others.length > 0 && others.every((x) => x >= 120 && x <= 300), '4 ほかの職業の命中は約0.17秒のまま（' + others.map((x) => Math.round(x)).join(',') + 'ms）');
     ok(!errs.length, '4 ページのエラーなし ' + errs.join(' / ')); await ctx.close(); }
