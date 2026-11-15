@@ -15,6 +15,8 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
+  // 旧版（/classic/）はこのサービスワーカーでは扱わない（本体の保存済みページを旧版で上書きしないため）
+  if (url.pathname.includes('/classic/')) return;
   // ページ本体は新しい版を優先し、オフラインなら保存済みの版を使う
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then((res) => { caches.open(VERSION).then((c) => c.put('./index.html', res.clone())); return res; }).catch(() => caches.match('./index.html')));

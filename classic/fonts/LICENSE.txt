@@ -1,0 +1,5 @@
+本アプリに同梱している書体（使用文字だけを切り出したもの）:
+ - Shippori Mincho B1 (c) The Shippori Mincho Project Authors
+ - Zen Kaku Gothic New (c) The Zen Kaku Gothic New Project Authors
+どちらも SIL Open Font License 1.1 のもとで配布されている書体です。
+https://openfontlicense.org/
