@@ -2338,6 +2338,22 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 @media (prefers-reduced-motion: reduce) { .inc-n.n1 { animation: none; } }
 .inc-bd { font-size: 10px; font-weight: 700; opacity: 0.92; margin-left: 2px; letter-spacing: -0.02em; }
 .inc-w { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 3px; border-radius: 4px; background: rgba(255, 255, 255, 0.24); margin-left: 1px; }
+/* レリックの見える化（v5.8.14）：効いた分を、金の宝石の印で示す。予告の数字（攻撃・被ダメ・敵の技の札）には小さな印、効いた瞬間は持ち主の上に名前 */
+.rl { display: inline-grid; place-items: center; width: 12px; height: 12px; margin-left: 1px; font-style: normal; }
+.rl svg, :root[data-skin="goth"] .dm .rl svg { width: 11px; height: 11px; color: #f2b632; filter: drop-shadow(0 0 0.6px rgba(40, 20, 0, 0.95)) drop-shadow(0 0 2px rgba(255, 196, 70, 0.55)); }
+.dm.hasrl, .inc.hasrl { outline: 1.5px solid #f2b632; outline-offset: 0; }
+.rl.tk { width: 11px; height: 11px; margin: 0 2px 0 0; vertical-align: -1px; }
+.rl.tk svg { width: 10px; height: 10px; }
+.pop.sub.rel, :root .pop.sub.rel { display: inline-flex; align-items: center; gap: 3px; font-weight: 800; font-size: 12px; color: #3a2400; background: #ffe9a8; box-shadow: 0 2px 0 #b8892a; padding: 2px 9px; z-index: 61; }
+.pop.rel svg { display: inline-block; width: 12px; height: 12px; color: #c4831a; flex: none; }
+.gemc { display: contents; color: #e0a52a; }
+.gemc > svg { transform: scale(0.6); }   /* 報酬の札の絵の大きさを、ほかの札の絵（ハートなど）とそろえる */
+.rel-ba { display: block; margin-top: 6px; font-size: 13px; line-height: 1.7; }
+.rel-ba b { display: inline-flex; align-items: center; gap: 3px; margin-right: 6px; color: var(--gold-hi, #e0a52a); }
+.rel-ba b svg { width: 12px; height: 12px; color: #f2b632; }
+.rel-ba .nw { white-space: nowrap; margin-right: 10px; }
+.rv-events p:has(.rel-ba)::before { top: 13px; }   /* 段落の印は1行目の高さに（前後の表示で段落が高くなるため） */
+.rel-ba em { font-style: normal; font-weight: 800; color: #f2b632; }
 .t-dmg b { font-weight: var(--fw-1); }
 .t-main > span { font-size: var(--fs-3); font-weight: var(--fw-3); color: var(--ink-soft); }
 .t-main > b { font-weight: var(--fw-1); }
@@ -2911,7 +2927,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.13</p>
+    <p class="c-ver" id="cVer">ver 5.8.14</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3408,6 +3424,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const ICON = {
     dice: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="8.3" cy="8.3" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="15.7" cy="15.7" r="1.8" fill="currentColor"/></svg>',   // 運しだい（v5.6.4：「?」では意味が伝わらなかった）
     sword: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 3.5 20.5 3 20 9 9.5 19.5 4.5 14.5Z" fill="currentColor"/><path d="M3 21l4-4M9 22l-3-3" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>',
+    gem: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 3.5h11L22 9.5 12 21 2 9.5Z" fill="currentColor"/><path d="M2 9.5h20M9 3.5 7.5 9.5 12 21l4.5-11.5L15 3.5" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="1.3" stroke-linejoin="round"/></svg>',   // レリックの印（v5.8.14）
     star: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 14.4 9.6 21.5 12 14.4 14.4 12 21.5 9.6 14.4 2.5 12 9.6 9.6Z" fill="currentColor"/></svg>',
     plus: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 3h5v6.5H21v5h-6.5V21h-5v-6.5H3v-5h6.5Z" fill="currentColor"/></svg>',
     bolt: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 2 5 13.5h6L9.5 22 19 9.5h-6.2Z" fill="currentColor"/></svg>',
@@ -3430,7 +3447,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.13';
+  const APP_VERSION = '5.8.14';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4294,11 +4311,34 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const relFree = () => EXP.relics.filter((x) => !run.relics.includes(x.id) && relOpen(x));
   const relN = (id, k) => (relOn(id) ? relD(id)[k] || 0 : 0);
   function relGet(id) {
-    run.relics.push(id); const r = relD(id);
+    const r = relD(id), ms = run.members.slice();
+    // 取ったときに、誰の何がいくつ変わるかを前と後で見せる（v5.8.14・表示だけ）。数字で言えるもの（攻撃・突入の攻撃・最大HP）だけ
+    const atkRow = (m) => m.atk + stanceAtk(0) + relN('whet', 'atk');
+    const before = ms.map((m) => ({ a: atkRow(m), e: atkRow(m) + ((m.entry && m.entry.atk) || 0) + relN('bell', 'entryAtk'), h: m.max }));
+    run.relics.push(id);
     if (r.hp) run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + r.hp; applyAge(x, true); });   // 灯の石：手に入れたときだけ
-    return r.name + 'を手に入れた。' + r.desc + '。';
+    const ba = (lbl, k, f) => '<span class="rel-ba"><b>' + ICON.gem + lbl + '</b>' + ms.map((m, i) => '<span class="nw">' + m.name + ' ' + before[i][k] + '→<em>' + f(m) + '</em></span>').join('') + '</span>';
+    const extra = id === 'whet' ? ba('攻撃列での攻撃', 'a', atkRow) : id === 'bell' ? ba('突入したときの攻撃', 'e', (m) => atkRow(m) + ((m.entry && m.entry.atk) || 0) + relN('bell', 'entryAtk')) : r.hp ? ba('最大HP', 'h', (m) => m.max) : '';
+    return r.name + 'を手に入れた。' + r.desc + '。' + extra;
   }
   const stanceAtk = (n) => (relOn('stance') ? Math.min(relD('stance').stayMax, n * relD('stance').stayAtk) : 0);
+  /* レリックの見える化（v5.8.14・表示専用）：その攻撃・その被ダメに、どのレリックがいくつ効いたか。計算は今までどおり（ここは数えるだけ）
+     relAtk：攻撃列の攻撃（研ぎ石・不動の構え）、突入のとき（勢いの鐘）、1発ごと（見抜きの眼鏡＝実際に減った防御、狩人の牙＝亜種へ） */
+  const RSN = { whet: '研ぎ石', stance: '構え', bell: '鐘', lens: '眼鏡', fang: '牙', shield: '盾', veil: '衣', cloak: '外套', cup: '杯', incense: '香' };
+  function relAtk(u, r, bellOn, stCnt, T, fresh) {
+    const o = [];
+    if (!EXPM()) return o;
+    if (r === 0 && relOn('whet')) o.push({ id: 'whet', n: relD('whet').atk });
+    if (r === 0 && stanceAtk(stCnt) > 0) o.push({ id: 'stance', n: stanceAtk(stCnt) });
+    if (r === 0 && bellOn && relOn('bell')) o.push({ id: 'bell', n: relD('bell').entryAtk });
+    if (T && relOn('lens') && !T.party && !(T.layer && fresh)) { const n = Math.min(relD('lens').def, Math.max(0, T.def + (T.defUp || 0))); if (n > 0) o.push({ id: 'lens', n, hit: 1 }); }
+    if (T && T.variant && relOn('fang')) o.push({ id: 'fang', n: relD('fang').atk, hit: 1 });
+    return o;
+  }
+  const relTxt = (o, sign) => o.map((x) => relD(x.id).name + ' ' + (sign || (x.id === 'lens' ? '防-' : '+')) + x.n).join('・');
+  const gemI = (o, cls) => (o && o.length ? '<i class="rl' + (cls ? ' ' + cls : '') + '" aria-hidden="true">' + ICON.gem + '</i>' : '');
+  // 効いた瞬間：持ち主（恩恵を受けた仲間）の上に、印とレリックの名前を一瞬だけ出す
+  const relPop = (el, o, sign, dy) => { if (el && o && o.length) popAt(el, ICON.gem + relTxt(o, sign), 'sub rel', dy == null ? -48 : dy); };
   let stats = null, order = [], orderIdx = -1, savedN = 0;
   let camp = { turns: 0, fallen: 0, stars: [], rec: [] };
   let tut = null;
@@ -4380,7 +4420,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     let t = 0;
     const T = F || targetFoe();
     for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && entering);
-    return { val: t, buf: sup > 0, half: foeShare(T) < 1 };
+    const rel = relAtk(u, r, r === 0 && entering && R.entry && !!u.entry, entering ? 0 : phase === 'choose' ? stayN + 1 : stayN, T, r === 0 && entering);   // 表示だけ（v5.8.14）
+    return { val: t, buf: sup > 0, half: foeShare(T) < 1, rel };
   }
   /* 先制撃破（表示専用・v5.1.57）：行動順どおりに味方が先に攻撃して、攻撃対象の敵のHPが0になるなら、その敵は行動できない。
      その敵の被ダメ予測と「倒」は出さない。味方の与ダメは既存の予測（expDmg）と同じ計算。実際の戦闘の行動順・結果には一切触れない。
@@ -4437,13 +4478,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
       let d = act.dmg, why = '';
       if (row !== fr) { const k = row + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d); hpNow.set(u, hpNow.get(u) - Math.max(1, d)); per.push({ F, act, c, r: row, d: Math.max(1, d), why: '' }); return; }   // 尾払い：回復列にそのまま
       if (act.vsEntered && fr === 0 && entering) { d = Math.round(d * act.vsEntered); why = '×' + act.vsEntered; }   // 呼び寄せ：回して入ったばかりの仲間に大きく
+      const rg = [];   // この1回で効いたレリック（表示だけ。v5.8.14）
       if (fr > 0) { d *= 2; why = '×2'; }
-      else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup + relN('cloak', 'def'); used[c] = 1; why = '防'; }  }
+      else if (!act.pierce) { const m = src[1][c]; if (m && m.defSup > 0 && (fresh || m.defReady) && !used[c]) { d -= m.defSup + relN('cloak', 'def'); used[c] = 1; why = '防'; if (relOn('cloak')) rg.push({ id: 'cloak', n: relD('cloak').def }); }  }
       if (fr === 0 && entering && RX().entry) { src[0].forEach((x) => { const xe = entryFor(x, true); if (xe && xe.teamGuard) d -= xe.teamGuard; }); const ue = entryFor(u, true); if (ue && ue.guard) d -= ue.guard; }
-      if (fr === 0 && entering && relOn('shield')) d -= relD('shield').guard;
-      if (fr === 0 && !entering && relOn('veil')) d -= relD('veil').guard;   // 静けさの衣（v5.8.0）：回さなかったターン
+      if (fr === 0 && entering && relOn('shield')) { d -= relD('shield').guard; rg.push({ id: 'shield', n: relD('shield').guard }); }
+      if (fr === 0 && !entering && relOn('veil')) { d -= relD('veil').guard; rg.push({ id: 'veil', n: relD('veil').guard }); }   // 静けさの衣（v5.8.0）：回さなかったターン
       const k = fr + ',' + c; out[k] = (out[k] || 0) + Math.max(1, d); hpNow.set(u, hpNow.get(u) - Math.max(1, d));
-      per.push({ F, act, c, d: Math.max(1, d), why });
+      per.push({ F, act, c, d: Math.max(1, d), why, rel: rg });
     });
     });
     // 敵より先に入る回復（祝福・回復列で休む・列回復・休息の香）を足したHPで「倒」を決める。表示にも入れる（v5.5.6：入れていなかったので、耐えるのに「倒」と出ることがあった）
@@ -4452,7 +4494,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const heal = start.get(u) - u.hp;
       const mine = per.filter((x) => r === fr && x.c === c);
       // 合計と内訳（複数の敵・複数回の攻撃を、味方1人に1つの数で。内訳は小さく添える）。v5.1.57
-      out[k] = { d: out[k], heal, ko: out[k] >= start.get(u), parts: mine.map((x) => ({ n: x.act.name, d: x.d })), why: mine.map((x) => x.why).filter(Boolean)[0] || '' };
+      const rel = []; mine.forEach((x) => (x.rel || []).forEach((g) => { if (!rel.some((y) => y.id === g.id)) rel.push(g); }));
+      out[k] = { d: out[k], heal, ko: out[k] >= start.get(u), parts: mine.map((x) => ({ n: x.act.name, d: x.d })), why: mine.map((x) => x.why).filter(Boolean)[0] || '', rel };
     });
     return out;
   }
@@ -4464,7 +4507,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!per.length) return null;
     const by = {}; per.forEach((x) => { by[x.c] = (by[x.c] || 0) + x.d; });
     const v = Object.keys(by).map((c) => by[c]), lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
-    return { lo, hi, txt: lo === hi ? String(lo) : lo + '〜' + hi };
+    return { lo, hi, txt: lo === hi ? String(lo) : lo + '〜' + hi, rel: per.some((x) => x.rel && x.rel.length) };
   }
   function actorList(src, entering) {
     const a = enemy.party ? enemy.party.filter(foeAlive).map((F) => ({ kind: 'e', foe: F, spd: F.spd })) : [{ kind: 'e', spd: enemy.spd }];
@@ -4494,7 +4537,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const up = lampOn() ? lampMul(lamp) > 1 : comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? (lampOn() ? '（灯で×' + lampMul(lamp) + '）' : '（一巡りの灯で強化）') : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
     return '<span class="tok cb ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '" style="--cbd:' + ([...String(u.uid)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 7 * 0.34).toFixed(2) + '"><span class="disc">' + CB(u) + '</span>' + ent + torch +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' + '<i class="hpb' + (p <= 35 ? ' low' : '') + '"><b style="width:' + p + '%"></b></i>' +
-      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + '">' + ICON.sword + dm.val + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + '" title="' + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
+      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.rel && dm.rel.length ? ' hasrl" title="レリック：' + relTxt(dm.rel) : '') + '">' + ICON.sword + dm.val + gemI(dm.rel) + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + (inc.rel && inc.rel.length ? ' hasrl' : '') + '" title="' + (inc.rel && inc.rel.length ? 'レリック：' + relTxt(inc.rel, '-') + '　' : '') + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + gemI(inc.rel) + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
 
@@ -4963,7 +5006,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     t.classList.toggle('noico', !cdn);   // 印は出さない。大技までのカウントダウンだけ残す（v5.3.6）
     t.innerHTML = (cdn ? '<span class="t-ico disp t-cd" aria-hidden="true"><b>' + cdn + '</b><small>大技まで</small></span>' : '') +
       '<span class="t-main"><b class="disp">' + (slim && warn && warn.seen ? warn.name : head) + '</b>' + (slim ? '' : '<span>' + sub + '</span>') + '</span>' +
-      '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + (cdn ? ' nx' : '') + '"><b class="disp">' + (dmg == null ? '—' : cut ? h.txt : dmg) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
+      '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' + (h.lo !== h.hi ? ' rng' : '') : '') + (cdn ? ' nx' : '') + '"><b class="disp">' + (dmg == null ? '—' : cut ? h.txt : dmg) + '</b><small>' + (cut && h && h.rel ? gemI([1], 'tk') : '') + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : warn && warn.seen && dmg != null ? '大技' : 'ダメージ') + '</small></span>';
     t.setAttribute('aria-label', '敵の予告：' + head + '。' + sub);
     dangerEdge(!!(warn && warn.seen && warn.ahead === 0) && (phase === 'prep' || phase === 'choose'));
     tipsCheck(curAct());
@@ -5001,7 +5044,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
         : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.hi < raw;   // 味方ごとに違うときは範囲を出さない（味方カードの個別の予測に一本化）。全員が軽くなるとき（静けさの衣など。v5.8.0）は、いちばん大きい数字を「軽減後」で出す
-          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? String(h.hi) : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
+          return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? String(h.hi) : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut && h && h.rel ? gemI([1], 'tk') : '') + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
     t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc);
     dangerEdge(!!enemy.charged && !chg && (phase === 'prep' || phase === 'choose'));
     tipsCheck(act);
@@ -5617,7 +5660,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const c = center(el);
     const p = document.createElement('span');
     p.className = 'pop ' + (cls || '');
-    if (/sub/.test(cls || '')) p.textContent = text;
+    if (/\brel\b/.test(cls || '')) p.innerHTML = text;   // レリックの名前（印の絵つき。v5.8.14）
+    else if (/sub/.test(cls || '')) p.textContent = text;
     else p.innerHTML = '<svg aria-hidden="true"><text x="0" y="0" text-anchor="middle" dominant-baseline="central">' + text + '</text></svg>';
     // ダメージ・回復の数字は顔に重ねない（v5.6.4）：位置の指定が無いときは、肖像（敵は絵）の上の縁から出して上へ昇らせる
     let y = c.y + (dy || 0);
@@ -5938,12 +5982,17 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 速射の2発目から：放った姿のまま、弓と体が小さく跳ねる（部品の動きには触れず、絵全体を一瞬だけ）
   function archerKick(tok) { const sv = tok && tok.querySelector('.disc svg'); if (sv) anim(sv, [{ transform: 'translate(0,0)' }, { transform: 'translate(-2px,1px) rotate(-2deg)', offset: 0.35 }, { transform: 'translate(0,0)' }], { duration: 110, easing: 'cubic-bezier(.2,.8,.3,1)' }); }
   // 攻撃の内訳（v5.8.11）：2発以上は、1発ずつの計算が分かるように括弧で書く。計算そのものは foeHit のまま
-  function hitText(u, power, sup, dfn, half, hs, total) {
+  //   v5.8.14：レリックの分は、元の攻撃と分けて「12 ＋研ぎ石2」「－ 防御1（眼鏡-2）」のように書く（rp は relAtk の結果。計算は変えない）
+  function hitText(u, power, sup, dfn, half, hs, total, rp) {
+    rp = rp || [];
+    const add = rp.filter((x) => !x.hit), fg = rp.find((x) => x.id === 'fang'), ln = rp.find((x) => x.id === 'lens');
+    const pw = (power - add.reduce((a, x) => a + x.n, 0)) + add.map((x) => ' ＋' + RSN[x.id] + x.n).join('') + (fg ? ' ＋' + RSN.fang + fg.n : '');
+    const df = ' － 防御' + dfn + (ln ? '（' + RSN.lens + '-' + ln.n + '）' : '');
     const n = hs.length;
-    if (n < 2) return u.name + '　' + power + (sup ? ' ＋補助' + sup : '') + ' － 防御' + dfn + (half ? ' ×½' : '');
-    const one = power - dfn;
-    if (!half && hs.every((d) => d === hs[0])) return u.name + '　' + (hs[0] === one && !sup ? '（' + power + ' － 防御' + dfn + '）' : hs[0]) + ' × ' + n + ' ＝ ' + total;
-    if (!half && sup && hs[0] === one + sup && hs.slice(1).every((d) => d === one)) return u.name + '　（' + power + ' ＋補助' + sup + ' － 防御' + dfn + '）＋（' + power + ' － 防御' + dfn + '）' + (n > 2 ? '×' + (n - 1) : '') + ' ＝ ' + total;
+    if (n < 2) return u.name + '　' + pw + (sup ? ' ＋補助' + sup : '') + df + (half ? ' ×½' : '');
+    const one = power + (fg ? fg.n : 0) - dfn;
+    if (!half && hs.every((d) => d === hs[0])) return u.name + '　' + (hs[0] === one && !sup ? '（' + pw + df + '）' : hs[0]) + ' × ' + n + ' ＝ ' + total;
+    if (!half && sup && hs[0] === one + sup && hs.slice(1).every((d) => d === one)) return u.name + '　（' + pw + ' ＋補助' + sup + df + '）＋（' + pw + df + '）' + (n > 2 ? '×' + (n - 1) : '') + ' ＝ ' + total;
     return u.name + '　' + hs.join(' ＋ ') + ' ＝ ' + total;
   }
   function lunge(el, dist) {
@@ -6296,8 +6345,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
       any = true;
       SFX.heal();
       rests.forEach((t) => { t.u.hp += t.g; });
-      say('回復列で休む　' + rests.map((t) => t.u.name + '+' + t.g).join('　'));
+      say('回復列で休む　' + rests.map((t) => t.u.name + '+' + t.g).join('　') + (relOn('cup') ? '（' + relD('cup').name + '+' + relD('cup').rest + '）' : ''));
       show(rests);
+      if (relOn('cup')) rests.forEach((t) => relPop(tokEl(2, t.c), [{ id: 'cup', n: relD('cup').rest }], '+', 30));   // v5.8.14
       await wait(700);
     }
     // ② 列回復：神官・僧侶が、回復列のほかの仲間（本人以外）をまとめて回復
@@ -6348,11 +6398,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
+    const rp = relAtk(u, r, !!en, stayN, T, r === 0 && !!u.entered);   // 効いたレリック（表示だけ。v5.8.14）
     let total = 0; const hs = [];   // hs：1発ごとのダメージ（表示の内訳だけに使う。合計の計算は今までどおり）
     for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
-    say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + '　' + total + 'ダメージ');
+    say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + (rp.length ? '（' + relTxt(rp) + '）' : '') + '　' + total + 'ダメージ');
     renderBook();
     const tok = tokEl(r, c), arc = !!(tok && tok.querySelector('.disc svg [data-p="bowU"]'));
     const t0 = performance.now(), lw = lunge(tok, r === 1 ? 14 : 24);
@@ -6374,7 +6425,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     weaponFX(u.id, tok); shake(ea, 8); flashBright(ea.firstElementChild);
     const jx = (hitSeq++ % 2 ? 1 : -1) * (34 + Math.random() * 16);
     popAt(ea, '-' + total, 'dmg big', null, jx);
-    popAt(ea, hitText(u, power, sup, dfn, half, hs, total), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
+    popAt(ea, hitText(u, power, sup, dfn, half, hs, total, rp), 'sub', hitSeq % 2 ? 10 : 40, jx * 1.2);
+    relPop(tok, rp, null, 30);   // 胸もとの高さ（上は「突入！」「速射」の札が出るので重ねない）
     const ec = center(ea); sparks(ec.x, ec.y, '#fff3d6', 9);
     if (!enemy.party) renderEnemy(false);
     const fin = T.hp <= 0 && foeList().every((f) => f === T || f.hp <= 0);   // これが最後の一撃（とどめ）
@@ -6397,16 +6449,20 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const fr0 = frontRow(), row = rowAt != null ? rowAt : fr0;
     if (row < 0 || !grid[row][col]) return;
     const v = grid[row][col], before = pct(v);
-    let d = dmg, note = '', guard = false;
+    let d = dmg, note = '', guard = false; const rg = [];
     if (act && act.vsEntered && row === 0 && v.entered) { d = Math.round(d * act.vsEntered); note = '（入ったばかりで×' + act.vsEntered + '）'; }   // 呼び寄せ（v5.6.6）
     if (rowAt != null && row !== fr0) { /* 尾払い：回復列にそのまま当たる */ }
     else if (row > 0) { d *= 2; note = '（攻撃列が空で2倍）'; }
     else {
       const m = grid[1][col];
       if (pierce) { if (m && m.defReady && m.defSup > 0) note = '（防御補助が効かない）'; }
-      else if (m && m.defReady && m.defSup > 0) { const dv = m.defSup + relN('cloak', 'def'); d -= dv; m.defReady = false; note = '（' + m.name + 'の防御補助-' + dv + '）'; guard = true; }
+      else if (m && m.defReady && m.defSup > 0) { const dv = m.defSup + relN('cloak', 'def'); d -= dv; m.defReady = false; note = '（' + m.name + 'の防御補助-' + m.defSup + (relOn('cloak') ? '・' + relD('cloak').name + '-' + relD('cloak').def : '') + '）'; guard = true; if (relOn('cloak')) rg.push({ id: 'cloak', n: relD('cloak').def }); }
       const eg = entryGuard(col);
-      if (eg) { d -= eg; note += '（突入技-' + eg + '）'; }
+      // v5.8.14：盾・衣（レリック）の分は、突入技と分けて書く（前は「突入技-2」とまとめていた）
+      if (relOn('shield') && v.entered) rg.push({ id: 'shield', n: relD('shield').guard });
+      if (relOn('veil') && !v.entered) rg.push({ id: 'veil', n: relD('veil').guard });
+      const egR = rg.filter((x) => x.id !== 'cloak').reduce((a, x) => a + x.n, 0), egE = eg - egR;
+      if (eg) { d -= eg; if (egE) note += '（突入技-' + egE + '）'; rg.filter((x) => x.id !== 'cloak').forEach((x) => { note += '（' + relD(x.id).name + '-' + x.n + '）'; }); }
     }
     d = Math.max(1, d);
     await sweepColumn(col);
@@ -6423,6 +6479,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const el = tokEl(row, col);
     animRing(el, before, pct(v)); shake(el, big ? 12 : 7); flashBright(el.querySelector('.disc'));
     popAt(el, '-' + d, big ? 'dmg big' : 'dmg');
+    relPop(el, rg, '-', 30);   // 効いた盾・衣・外套（v5.8.14）
     const cc = center(el);
     if (big) {   // 大技：ヒットストップ・画面の揺れ・白いフラッシュ・のけぞり・重い音と長い振動
       SFX.smash(); vib([40, 30, 60]);
@@ -6667,7 +6724,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (relOn('incense')) {
       const hv = relD('incense').backHeal, got = [];
       units().filter((x) => x.r === 2).forEach((x) => { const g = Math.min(hv, x.u.max - x.u.hp); if (g > 0) { x.u.hp += g; got.push(x); } });
-      if (got.length) { say('休息の香　回復列に下がった' + got.map((x) => x.u.name).join('・') + 'のHP+' + hv); setTimeout(() => got.forEach((x) => { const el = tokEl(2, x.c); if (el) popAt(el, '+' + hv, 'heal'); }), 120); }
+      if (got.length) { say('休息の香　回復列に下がった' + got.map((x) => x.u.name).join('・') + 'のHP+' + hv); setTimeout(() => got.forEach((x) => { const el = tokEl(2, x.c); if (el) { popAt(el, '+' + hv, 'heal'); relPop(el, [{ id: 'incense', n: hv }], '+', 30); } }), 120); }
     }
     SFX.rotate(); vib(18); boardPress(2);
     $('dock').style.visibility = 'hidden';
@@ -8734,7 +8791,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expReward(pre) {
     const cards = [], free = relFree();
-    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
+    if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
     // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(EXP.upHp ? [{ k: 'st', t: '最大HP+' + EXP.upHp }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (EXP.upHp ? '・最大HP+' + EXP.upHp : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）
@@ -8863,7 +8920,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const mm = expMeta(); if (!(+mm.runs)) return false;
     const h = (mm.hist || [])[0], weak = !!h && !h.clear && +h.node > 0 && +h.node <= 3;
     const cards = [], free = relFree(), B = EXP.bless;
-    if (free.length) { const r = pick(free); cards.push({ ico: ICON.rot, t: '回転レリック　' + r.name, d: r.desc, act: () => relGet(r.id) }); }
+    if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, act: () => relGet(r.id) }); }
     cards.push({ ico: ICON.heart, t: '灯の油', d: '全員の最大HP+' + B.hp + '（HPも同じだけ増える）。', act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + B.hp; applyAge(x, true); }); return '灯の油で、全員の最大HP+' + B.hp + '。'; } });
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''),
