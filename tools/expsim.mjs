@@ -19,11 +19,13 @@ function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>
 
 // 回転コンボ（v5.4.5）の発動回数を数える（report で「発動の平均回数／戦」を出すため）
 export const CSTAT = { fires: 0, battles: 0 };
+// 灯（段階2の試し・2026-11-15）：受け渡しの回数・そのときの段の合計・最大段での受け渡しの回数（report で標準の平均を出す）
+export const LSTAT = { on: false, n: 0, sum: 0, top: 0 };
 // 突入技の強化（回転コンボの発動）：数値効果を mul 倍。攻撃回数（速射）は追加ヒットを +1。速さ（居合の先行）は対象外。端数は四捨五入
 export function boostEntry(e, mul) {
   const o = Object.assign({}, e);
   ['atk', 'guard', 'heal', 'teamGuard'].forEach((k) => { if (o[k]) o[k] = Math.round(o[k] * mul); });
-  if (o.hits) o.hits += 1;
+  if (o.hits && mul >= 2) o.hits += 1;   // 速射の追加ヒットは×2以上のときだけ（回転コンボの×2と同じ）
   return o;
 }
 // ---- 1戦（tools/sim.mjs の battle と同じ規則＋盤の幅・回転レリック・縛り・回転コンボ） ----
@@ -39,7 +41,9 @@ export function battle(en, party, policy, o) {
   // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
   const RT = o.rot || null; let gauge = RT ? RT.start : 0;
   // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンになった回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
-  const CB = o.combo || null; let combo = 0; const boosted = new Set(); if (CB) CSTAT.battles++;   /* 発動の平均は、コンボのある戦闘（第2章から）だけで数える */
+  const CB = o.combo || null; let combo = 0; const boosted = new Map(); if (CB) CSTAT.battles++;
+  // 灯：o.lamp = { start, gain, max, atk, mul:[段0,段1,…], after, fall }。攻撃列に宿り、維持で育ち（攻撃列の攻撃+atk×段）、回すと入った仲間の突入技を mul[段] 倍にして after 段に戻る
+  const LP = o.lamp || null, lmax = LP ? LP.max + (rel.has('wick') ? 1 : 0) : 0; let lamp = LP ? LP.start : 0;   /* 発動の平均は、コンボのある戦闘（第2章から）だけで数える */
   const eaten = () => { if (e.eat && e.hpNow > 0) { e.hpNow = Math.min(e.hp, e.hpNow + Math.round(e.hp * e.eat.heal)); e.pattern.forEach((a) => { if (a.dmg) a.dmg += e.eat.dmg; }); } };   // 灯喰いの（v5.6.7）
   const RN = (id, k) => (rel.has(id) && RD[id] ? RD[id][k] || 0 : 0);   // v5.8.0 の回転レリック（研ぎ石・癒しの杯・守りの外套・静けさの衣・見抜きの眼鏡・狩人の牙）
   const hpMap = () => { const m = {}; unitsOf(grid).forEach(({ u }) => { m[u.uid] = u.hp; }); return m; };
@@ -50,7 +54,7 @@ export function battle(en, party, policy, o) {
       back.filter((h) => h.heal > 0).forEach((h) => back.forEach((u) => { if (u !== h) u.hp = Math.min(u.max, u.hp + h.heal); }));
     }
     const ent = new Map();
-    unitsOf(grid).forEach(({ u, r }) => { if (r === 0 && u.entered && u.entry) ent.set(u, boosted.has(u) ? boostEntry(u.entry, CB.mul) : u.entry); });
+    unitsOf(grid).forEach(({ u, r }) => { if (r === 0 && u.entered && u.entry) ent.set(u, boosted.has(u) && boosted.get(u) !== 1 ? boostEntry(u.entry, boosted.get(u)) : u.entry); });
     ent.forEach((x) => { if (x.heal) for (let c = 0; c < COLS; c++) { const u = grid[0][c]; if (u) u.hp = Math.min(u.max, u.hp + x.heal); } });
     const actors = [{ kind: 'e', spd: e.spd }];
     unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) actors.push({ kind: 'p', u, r, c, spd: u.spd + ((ent.get(u) && ent.get(u).spd) || 0) }); });
@@ -65,7 +69,7 @@ export function battle(en, party, policy, o) {
       if (!u.entered && rel.has('veil')) guardCol[c] = (guardCol[c] || 0) + RD.veil.guard;
     });
     const teamGuard = [...ent.values()].reduce((s, x) => s + (x.teamGuard || 0), 0);
-    const stayAtk = rel.has('stance') ? Math.min(RD.stance.stayMax, stay * RD.stance.stayAtk) : 0;
+    const stayAtk = (rel.has('stance') ? Math.min(RD.stance.stayMax, stay * RD.stance.stayAtk) : 0) + (LP ? lamp * LP.atk : 0);
     for (const a of actors) {
       if (a.kind === 'e') {
         if (act.rule === 'charge') { e.charged = true; continue; }
@@ -82,7 +86,7 @@ export function battle(en, party, policy, o) {
             d -= (guardCol[col] || 0) + teamGuard;
           }
           d = Math.max(1, d); v.hp = Math.max(0, v.hp - d);
-          if (v.hp === 0) { grid[fr][col] = null; fallen++; eaten(); }
+          if (v.hp === 0) { grid[fr][col] = null; fallen++; eaten(); if (LP && fr === 0) lamp = Math.max(0, lamp - (LP.fall || 0)); }
         };
         const fr = frontRow(grid); if (fr < 0) return { win: false, turns: turn, fallen, hp: hpMap() };
         if (act.rule === 'back') {   // 尾払い（v5.6.6）：回復列の全員。回復列が先頭の列なら、ふつうの全体攻撃（2倍）と同じ
@@ -123,15 +127,21 @@ export function battle(en, party, policy, o) {
     boosted.clear();
     if (RT) gauge = Math.min(RT.cap, gauge + RT.gain);
     const canRot = !bound && (!RT || gauge >= RT.cost); bound = false;
-    if (canRot && policy({ grid, turn, enemy: e, cols: COLS })) {
+    if (canRot && policy({ grid, turn, enemy: e, cols: COLS, lamp, lmax })) {
       const n = empty();
       for (let c = 0; c < COLS; c++) { n[0][c] = grid[1][c]; n[1][c] = grid[2][c]; n[2][c] = grid[0][c]; }
       if (rel.has('incense')) for (let c = 0; c < COLS; c++) { const u = n[2][c]; if (u) u.hp = Math.min(u.max, u.hp + RD.incense.backHeal); }
       grid = n; stay = 0; if (RT) gauge -= RT.cost;
       unitsOf(grid).forEach(({ u, r }) => { u.atkReady = true; u.defReady = true; u.entered = r === 0; });
       // 満タンに「なった」回転で発動して0に戻る（ゲームと同じ。設計書の数値はこの読み方で再現する：発動0.92回／戦）
-      if (CB) { combo++; if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.add(u); }); combo = 0; CSTAT.fires++; } }
-    } else stay++;
+      if (CB) { combo++; if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.set(u, CB.mul); }); combo = 0; CSTAT.fires++; } }
+      if (LP) {
+        const m = LP.mul[Math.min(lamp, LP.mul.length - 1)] || 1;
+        unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.set(u, m); });
+        if (LSTAT.on) { LSTAT.n++; LSTAT.sum += lamp; if (lamp >= lmax) LSTAT.top++; }
+        lamp = LP.after;
+      }
+    } else { stay++; if (LP) lamp = Math.min(lmax, lamp + LP.gain); }
   }
   return { win: false, turns: 40, fallen, hp: hpMap(), timeout: true };
 }
@@ -193,6 +203,7 @@ function reinforce(members, cfg, cols, R, uidBase) {
 // strat.node(['battle','rest']) / strat.reward(['relic','up','heal'])
 export function playRun(seed, policy, strat = {}, over = {}) {
   const cfg = Object.assign({}, EXP, over), R = rng(seed), pick = (a) => a[Math.floor(R() * a.length)];
+  if (cfg.lamp) { cfg.combo = null; cfg.relics = cfg.relics.map((x) => (x.id === 'stance' ? { id: 'wick', name: '灯芯', desc: '灯の最大段+1' } : x)); }
   const form = cfg.size === 5 ? cfg.party5 : cfg.party, cols = cfg.size === 5 ? 3 : cfg.cols;
   let members = form.map(([j, r, c], i) => member(j, r, c, 'm' + i, cfg));
   const relics = (cfg.startRelics || []).slice(); let fallen = 0, battles = 0, rests = 0;
@@ -211,12 +222,12 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     if (policy === 'plan') {
       let best = null, sc0 = -1e9;
       for (let mk = 0; mk < 1024; mk++) {
-        const r = battle(en, party(), (st) => (st.turn <= 10 ? !!((mk >> (st.turn - 1)) & 1) : SMART(st)), { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics, combo: cfg.combo && ch >= (cfg.combo.from || 0) ? cfg.combo : null });
+        const r = battle(en, party(), (st) => (st.turn <= 10 ? !!((mk >> (st.turn - 1)) & 1) : SMART(st)), { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics, combo: cfg.combo && ch >= (cfg.combo.from || 0) ? cfg.combo : null, lamp: cfg.lamp || null });
         const sc = (r.win ? 1e5 : 0) - r.fallen * 1000 + Object.values(r.hp).reduce((a, b) => a + b, 0);
         if (sc > sc0) { sc0 = sc; best = r; }
       }
       res = best;
-    } else res = battle(en, party(), policy, { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics, combo: cfg.combo && ch >= (cfg.combo.from || 0) ? cfg.combo : null });
+    } else res = battle(en, party(), policy, { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics, combo: cfg.combo && ch >= (cfg.combo.from || 0) ? cfg.combo : null, lamp: cfg.lamp || null });
     members.forEach((m) => { m.hp = res.hp[m.uid] != null ? res.hp[m.uid] : 0; });
     fallen += members.filter((m) => m.hp <= 0).length;
     members = members.filter((m) => m.hp > 0);
@@ -264,7 +275,7 @@ export function report(n = 200, over = {}) {
   function rng2(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
   let rr = rng2(12345); const RANDOM = () => rr() < 0.5;
   const out = { stay: rate(STAY), always: rate(() => true), combo: !!cfg.combo }; rr = rng2(12345); out.random = rate(RANDOM);
-  CSTAT.fires = 0; CSTAT.battles = 0; out.smart = rate(SMART); out.fires = CSTAT.battles ? CSTAT.fires / CSTAT.battles : 0; out.plan = rate('plan', {}, Math.min(n, 120));
+  CSTAT.fires = 0; CSTAT.battles = 0; Object.assign(LSTAT, { on: true, n: 0, sum: 0, top: 0 }); out.smart = rate(SMART); LSTAT.on = false; out.lamp = cfg.lamp ? { avg: LSTAT.n ? LSTAT.sum / LSTAT.n : 0, top: LSTAT.n ? LSTAT.top / LSTAT.n : 0 } : null; out.fires = CSTAT.battles ? CSTAT.fires / CSTAT.battles : 0; out.plan = rate('plan', {}, Math.min(n, 120));
   out.rewards = { relic: rate(SMART, { reward: () => 'relic' }).clear, up: rate(SMART, { reward: () => 'up' }).clear, heal: rate(SMART, { reward: () => 'heal' }).clear };
   if (cfg.swap) out.rewards.swap = rate(SMART, { reward: () => 'swap' }).clear;
   out.nodes = { fight: rate(SMART, { node: () => 'battle' }).clear, rest: rate(SMART, { node: () => 'rest' }).clear };
@@ -282,7 +293,8 @@ export function judge(o) {
     ['各章の突破率（着いた人のうち）50〜90%', o.smart.chap.every((x) => x >= 0.5 && x <= 0.9)],
     ['報酬の差（入れ替えを含む4種） ≦10pt', Math.max(...rw) - Math.min(...rw) <= 0.10],
     ['標準：戦う ≧ 休む', o.nodes.fight >= o.nodes.rest]
-  ].concat(o.combo ? [['回転コンボの発動 0.7〜1.3回／戦（標準）', o.fires >= 0.7 && o.fires <= 1.3]] : []);
+  ].concat(o.combo && !o.lamp ? [['回転コンボの発動 0.7〜1.3回／戦（標準）', o.fires >= 0.7 && o.fires <= 1.3]] : [])
+   .concat(o.lamp ? [['灯：受け渡しの平均の段 1.6〜2.4（標準）', o.lamp.avg >= 1.6 && o.lamp.avg <= 2.4], ['灯：最大段での受け渡し 15〜40%（標準）', o.lamp.top >= 0.15 && o.lamp.top <= 0.4]] : []);
 }
 
 if (process.argv[1] && /(^|[\\/])expsim\.mjs$/.test(process.argv[1])) {
@@ -294,6 +306,7 @@ if (process.argv[1] && /(^|[\\/])expsim\.mjs$/.test(process.argv[1])) {
   console.log(`標準の章ごとの突破率（着いた人のうち）：${o.smart.chap.map((x, i) => '第' + (i + 1) + '章 ' + p(x)).join('　')}`);
   console.log(`報酬はいつも：レリック ${p(o.rewards.relic)}　突入技の強化 ${p(o.rewards.up)}　手当て ${p(o.rewards.heal)}` + (o.rewards.swap != null ? `　仲間の入れ替え ${p(o.rewards.swap)}` : ''));
   console.log(`地点の選び方：戦闘を常に ${p(o.nodes.fight)}　休息を常に ${p(o.nodes.rest)}`);
-  if (o.combo) console.log(`回転コンボ：発動 ${o.fires.toFixed(2)}回／戦（標準・コンボのある戦闘だけ）`);
+  if (o.combo && !o.lamp) console.log(`回転コンボ：発動 ${o.fires.toFixed(2)}回／戦（標準・コンボのある戦闘だけ）`);
+  if (o.lamp) console.log(`灯：受け渡しの平均の段 ${o.lamp.avg.toFixed(2)}　最大段での受け渡し ${p(o.lamp.top)}（標準）`);
   judge(o).forEach(([k, v]) => console.log((v ? '  OK  ' : '  NG  ') + k));
 }
