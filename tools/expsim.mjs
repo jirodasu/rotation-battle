@@ -177,9 +177,10 @@ export function enemyAt(step, k, cfg, vkey, rests = 0) {
   const t = step - 1, rp = chief && cfg.restPen ? cfg.restPen : null;
   const dm = (cfg.depth || 1) >= 3 && cfg.deepMul ? cfg.deepMul : { hp: 1, dmg: 1 };   // 深さ3の敵の底上げ（ゲームの EXP.deepMul と同じ）
   const kh = rp ? 1 + rp.hp * rests : 1, kd = rp ? 1 + rp.dmg * rests : 1;
+  const lh = cfg.lamp && cfg.lamp.hpMul ? cfg.lamp.hpMul : 1, ld = cfg.lamp && cfg.lamp.dmgMul ? cfg.lamp.dmgMul : 1;   // 灯の試作：敵のHP・技の威力（ゲームの EXP.lampCfg と同じ）
   const pk = chief ? 'chief' + ch : String(key), pat = cfg.patch && cfg.patch[pk] ? cfg.patch[pk] : base.pattern;
-  return Object.assign({}, base, { variant: vs.length ? vs.join('+') : null, eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer), def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1) * dm.hp), pattern: pat.map((a) => {
-    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg) } : {});
+  return Object.assign({}, base, { variant: vs.length ? vs.join('+') : null, eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer), def: base.def + ((v && v.def) || 0), hp: Math.round(base.hp * cfg.hp[t] * kh * ((v && v.hp) || 1) * dm.hp * lh), pattern: pat.map((a) => {
+    const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * cfg.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg * ld) } : {});
     if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
     if (vs.includes('poison') && o.dmg) o.pierce = true;
     return o;
