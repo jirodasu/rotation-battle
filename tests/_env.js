@@ -38,7 +38,10 @@ const guardPage = (p) => { p.addInitScript = onceInit(p.addInitScript.bind(p)); 
 const guardCtx = (c) => { c.addInitScript = onceInit(c.addInitScript.bind(c)); const cnp = c.newPage.bind(c); c.newPage = async () => guardPage(await cnp()); return c; };
 const launch = async () => {
   const b = await chromium.launch({ executablePath: CHROME });
-  { const nc0 = b.newContext.bind(b), np0 = b.newPage.bind(b); b.newContext = async (o) => guardCtx(await nc0(o)); b.newPage = async (o) => guardPage(await np0(o)); }
+  // 段階的開示（v5.8.17）：結果の画面などはタップで1段ずつ出る。ほかのテストは、すぐ全部見える・押せるように外す（読み込みのたびに入れる）。
+  //   RB_PHASE_HOLD=1 のときだけ本来の動き（tests/v5816.js・v5817.js が確かめる）
+  const free = async (c) => { if (!process.env.RB_PHASE_HOLD) await c.addInitScript(() => { window.__rbPhaseFree = true; }); return c; };
+  { const nc0 = b.newContext.bind(b), np0 = b.newPage.bind(b); b.newContext = async (o) => guardCtx(await free(await nc0(o))); b.newPage = async (o) => { const pg = await np0(o); await free(pg); return guardPage(pg); }; }
   if (process.env.RB_STORY) return b;
   // ページの読み込みが終わってから書く（goto・reload のあと）。読み込みの最初（addInitScript）で書くと、file:// では
   //   すでにある保存が消えることがあった（v5.5.8 の全テストで、読み込み直しのあとの「続きから」が3〜4本で消えた）

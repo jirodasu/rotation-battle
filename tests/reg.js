@@ -17,6 +17,7 @@ const { launch, indexURL } = require('./_env');
       if (can) {
         if (!opened) { await p.click('#eart'); await p.waitForTimeout(300); await p.keyboard.press('Escape'); await p.waitForTimeout(200); opened = true; }
         const dis = await p.evaluate(() => document.getElementById('btnRotate').disabled);   // 縛り・気力不足では回せない
+        if (await p.evaluate(() => !document.getElementById('tip').hidden)) { await p.click('#tipOk'); await p.waitForTimeout(200); continue; }   // v5.8.17：ヒントのあいだは判断が止まる。先に「わかった」
         await p.click(i % 2 && !dis ? '#btnRotate' : '#btnStay');
       }
     }
