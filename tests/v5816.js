@@ -6,6 +6,7 @@
 //  4 札が出ても、上の題・名簿の位置は動かない
 //  5 動きを減らす設定では待たずに出る。地図の画面では待たない
 //  6 どれもページのエラーなし
+process.env.RB_PHASE_HOLD = '1';   // 段階的開示の本来の動きで確かめる
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const tipsOff = () => { try { localStorage.setItem('rb-tips', JSON.stringify({ stars: 1, gauge: 1, bind: 1, bench: 1, charge: 1, pierce: 1, entry: 1, trinity: 1, stamina: 1, combo: 1, hmIntro: 1 })); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } };

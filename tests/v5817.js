@@ -5,6 +5,7 @@
 //  3 遠征の終わり：出た直後は実績の行・開いた行・次の行動が見えない。待っても自動では出ない。タップのたびに 実績 → 開いたもの → 次の行動 の順に1段ずつ出る
 //  4 勝利の報酬：上の一文に「報酬を1つ選ぶ」が入らない。「報酬を1つ選ぶ」の見出しは札と一緒に、タップで出る
 //  5 320×568：遠征の終わり・勝利の報酬で、札とボタンが横にはみ出さない。どれもページのエラーなし
+process.env.RB_PHASE_HOLD = '1';   // 段階的開示の本来の動きで確かめる
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const ALL = { stars: 1, gauge: 1, bind: 1, entry: 1, charge: 1, pierce: 1, stamina: 1, trinity: 1, bench: 1, combo: 1, hmIntro: 1 };
@@ -14,8 +15,7 @@ async function open(b, o) {
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   const tips = Object.assign({}, ALL); (o.unseen || []).forEach((k) => delete tips[k]);
   await p.addInitScript(([t, m]) => { try { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-ending', '1'); if (m) localStorage.setItem('rb-exp', m); sessionStorage.setItem('seeded', '1'); } } catch (e) { /* */ } }, [JSON.stringify(tips), o.meta ? JSON.stringify(o.meta) : null]);
-  if (o.goal) process.env.RB_GOAL_HOLD = '1';
-  const url = testPage(); delete process.env.RB_GOAL_HOLD;
+  const url = testPage();
   await p.goto(url); await p.waitForTimeout(400); await p.click('#cover').catch(() => {}); await p.waitForTimeout(500); await p.click('#begin'); await p.waitForTimeout(900);
   return { ctx, p, errs };
 }

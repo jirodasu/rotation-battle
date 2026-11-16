@@ -8044,11 +8044,12 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
     { // 段階的開示（v5.8.16 回復→報酬、v5.8.17 初めての地図の目標→道、遠征の終わりの行→次の行動）。1画面で同時に判断させるのは1つだけ
-      const healOn = !RM && !o.map && !!o.heal && !!o.heal.from && Object.keys(o.heal.gain).some((k) => o.heal.gain[k] > 0);
-      const goalFirst = !!o.map && EXPM() && !!o.goal && !window.__rbGoalFree;
+      const pfree = !!window.__rbPhaseFree;   // テスト用（段を分けずに全部出す）
+      const healOn = !pfree && !RM && !o.map && !!o.heal && !!o.heal.from && Object.keys(o.heal.gain).some((k) => o.heal.gain[k] > 0);
+      const goalFirst = !pfree && !!o.map && EXPM() && !!o.goal;
       v.classList.toggle('goal-first', goalFirst);
       const ph = [];
-      if (o.stage) { const kids = [...$('rvEvents').children]; if (o.stage === 'each') kids.forEach((k) => ph.push([k])); else if (kids.length) ph.push(kids); }
+      if (o.stage && !pfree) { const kids = [...$('rvEvents').children]; if (o.stage === 'each') kids.forEach((k) => ph.push([k])); else if (kids.length) ph.push(kids); }
       if (healOn || goalFirst || ph.length) ph.push([$('rvCards')]);
       // どの段もタップで進む（自動では進まない）。「タップで次へ」の案内は、いまの段が落ち着いてから出す（回復は棒が伸び終わる 1.25秒後）
       rvPhase(ph, goalFirst ? 0 : healOn ? 1250 : 500, goalFirst ? 'タップで道を選ぶ' : 'タップで次へ', !!o.stageDefer); }
