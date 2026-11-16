@@ -2945,7 +2945,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.17</p>
+    <p class="c-ver" id="cVer">ver 5.8.18</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3465,7 +3465,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.17';
+  const APP_VERSION = '5.8.18';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4269,9 +4269,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function hmLamps() {
     const b = $('board'); if (!b) return;
     if (lampOn() && enemy) {   // 灯：攻撃列の左上の炎の大きさと、その下の点で段を示す（先読み中は回した後の段）。ほかの列の提灯はただの飾り
-      const v = previewOn ? EXP.lampCfg.after : lamp, mx = lampMax();
+      const v = previewOn ? EXP.lampCfg.after : phase === 'prep' ? EXP.lampCfg.start : lamp, mx = lampMax();   // 準備中は前の戦闘の段が残っているので、開始段を見せる（v5.8.18）
       b.removeAttribute('data-hm'); b.classList.remove('hm-next');
-      b.dataset.lp = String(v); b.classList.toggle('lp-max', !previewOn && lamp >= mx);
+      b.dataset.lp = String(v); b.classList.toggle('lp-max', !previewOn && v >= mx);
       const ld = b.querySelector('.strip.r0 .lampf .ld');
       if (ld) { let h = ''; for (let i = 0; i < mx; i++) h += '<i' + (i < v ? ' class="on"' : '') + '></i>'; if (ld.innerHTML !== h) ld.innerHTML = h; }
       return;
@@ -4340,6 +4340,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return r.name + 'を手に入れた。' + r.desc + '。' + extra;
   }
   const stanceAtk = (n) => (relOn('stance') ? Math.min(relD('stance').stayMax, n * relD('stance').stayAtk) : 0);
+  // 予告に使う「そのターンに効く」維持の回数と灯の段（v5.8.18）。準備（戦闘開始の前）は、前の戦闘の stayN・lamp が残っているので、
+  //   戦闘開始で決まる値（維持0回・灯の開始段）で数える。選ぶとき（choose）の盤は「維持すると」なので次の維持の分を足す。実際の解決（playerAttack）は変えない
+  const stayFc = () => (phase === 'prep' ? 0 : phase === 'choose' ? stayN + 1 : stayN);
+  const lampFc = () => (phase === 'prep' ? (lampOn() ? EXP.lampCfg.start : 0) : phase === 'choose' ? Math.min(lampMax(), lamp + EXP.lampCfg.gain) : lamp);
   /* レリックの見える化（v5.8.14・表示専用）：その攻撃・その被ダメに、どのレリックがいくつ効いたか。計算は今までどおり（ここは数えるだけ）
      relAtk：攻撃列の攻撃（研ぎ石・不動の構え）、突入のとき（勢いの鐘）、1発ごと（見抜きの眼鏡＝実際に減った防御、狩人の牙＝亜種へ） */
   const RSN = { whet: '研ぎ石', stance: '構え', bell: '鐘', lens: '眼鏡', fang: '牙', shield: '盾', veil: '衣', cloak: '外套', cup: '杯', incense: '香' };
@@ -4431,14 +4435,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const ue = entryFor(u, entering);
     if (r === 0 && entering && R.entry && ue && ue.atk) power += ue.atk;
     if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
-    if (r === 0) power += stanceAtk(entering ? 0 : phase === 'choose' ? stayN + 1 : stayN) + relN('whet', 'atk') + lampAtk(entering ? EXP.lampCfg.after : phase === 'choose' ? Math.min(lampMax(), lamp + EXP.lampCfg.gain) : lamp);
+    if (r === 0) power += stanceAtk(entering ? 0 : stayFc()) + relN('whet', 'atk') + lampAtk(entering ? EXP.lampCfg.after : lampFc());
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
     let sup = 0;
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
     let t = 0;
     const T = F || targetFoe();
     for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && entering);
-    const rel = relAtk(u, r, r === 0 && entering && R.entry && !!u.entry, entering ? 0 : phase === 'choose' ? stayN + 1 : stayN, T, r === 0 && entering);   // 表示だけ（v5.8.14）
+    const rel = relAtk(u, r, r === 0 && entering && R.entry && !!u.entry, entering ? 0 : stayFc(), T, r === 0 && entering);   // 表示だけ（v5.8.14）
     return { val: t, buf: sup > 0, half: foeShare(T) < 1, rel };
   }
   /* 先制撃破（表示専用・v5.1.57）：行動順どおりに味方が先に攻撃して、攻撃対象の敵のHPが0になるなら、その敵は行動できない。
