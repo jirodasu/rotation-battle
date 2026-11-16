@@ -177,7 +177,7 @@ async function open(b, w, h, kind, node) {
     await p.click('#setClose'); await p.waitForTimeout(150);
     // 地図
     await p.click('#begin'); await p.waitForTimeout(600);
-    const mp = await p.evaluate(() => ({ lb: document.querySelectorAll('#rvTrack text.lb').length, gl: document.querySelectorAll('#rvTrack text.g').length, tags: [...document.querySelectorAll('#rvCards .rv-card')].map((c) => [c.querySelector('b').textContent, [...c.querySelectorAll('.rv-tags em')].map((e) => e.textContent)]) }));
+    const mp = await p.evaluate(() => ({ lb: document.querySelectorAll('#rvTrack text.lb').length, gl: document.querySelectorAll('#rvTrack text.g, #rvTrack g.ic').length,   /* v5.8.20：地図の見本Aで、漢字の印は線画のアイコン（g.ic）になった */ tags: [...document.querySelectorAll('#rvCards .rv-card')].map((c) => [c.querySelector('b').textContent, [...c.querySelectorAll('.rv-tags em')].map((e) => e.textContent)]) }));
     ok(mp.lb === 0 && mp.gl > 3, 'C10 地図のノードは漢字アイコンのみ（文字ラベル ' + mp.lb + '、アイコン ' + mp.gl + '）');
     const bt = mp.tags.filter((x) => /戦闘/.test(x[0])), rest = mp.tags.filter((x) => /休息/.test(x[0]));
     ok(bt.length > 0 && bt.every((x) => x[1].length === 0), 'C5 戦闘カードにピルがない（' + JSON.stringify(bt.map((x) => x[1])) + '）');

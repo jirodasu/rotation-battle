@@ -1912,6 +1912,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .route.rt-a .rt-dot.sel, .route.rt-a .rt-dot.done { fill: #ffc15a; stroke: #fff3d0; }
 .route.rt-a .rta-bg { stroke: #c9a35a; stroke-width: 1.6; }
 @media (prefers-reduced-motion: reduce) { .route.rt-a .rt-n.avail:not(.sel) .seal { animation: none; } }
+@media (max-height: 680px) { .route.rt-a .rt-n .st { font-size: 18px; } }   /* 背の低い画面は地図が縮むので、亜種の字を大きく（8px 以上で見えるように） */
 .runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(110px, calc(100dvh - 470px - var(--rr, 0) * 56px), 330px); }
 @media (max-height: 740px) and (max-aspect-ratio: 6/5) { .runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(100px, calc(100dvh - 430px - var(--rr, 0) * 56px), 260px); } }
 @media (max-height: 680px) and (max-aspect-ratio: 6/5) { .runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(90px, calc(100dvh - 400px - var(--rr, 0) * 52px), 220px); } }
@@ -8099,8 +8100,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         (id === sel ? '<circle class="ring" cx="' + x + '" cy="' + y + '" r="' + (R + 6) + '"/>' : '') +
         '<circle class="seal" cx="' + x + '" cy="' + y + '" r="' + R + '"/>' + rtaIcon(ic, p[0], p[1], big ? (dense ? 32 : 36) : (dense ? 25 : 28)) +
         (st === 'done' ? '<circle class="ok" cx="' + (p[0] + R * 0.72).toFixed(1) + '" cy="' + (p[1] - R * 0.72).toFixed(1) + '" r="8"/>' + rtaIcon('check', p[0] + R * 0.72, p[1] - R * 0.72, 12) : '') +
-        (big && st !== 'done' && st !== 'here' ? '<text class="lb" x="' + x + '" y="' + (p[1] + R + 15).toFixed(1) + '">' + inf.t + '</text>' : inf.s && st !== 'done' && st !== 'here' ? '<text class="st" x="' + x + '" y="' + (p[1] + R + 14).toFixed(1) + '">' + inf.s + '</text>' : '') +
-        (st === 'here' ? '<text class="lb" x="' + x + '" y="' + (p[1] + R + 15).toFixed(1) + '">いま</text>' : '') + '</g>';
+        (inf.s && st !== 'done' && st !== 'here' ? '<text class="st" x="' + x + '" y="' + (p[1] + R + 14).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';   // 分類の文字ラベルは付けない（UI監査 C10）。いま＝金、章の主＝大きく光る祭壇で見分ける
       ROUTE.nodes[id].next.forEach((t) => {
         if (G.all.indexOf(t) < 0) return;
         const q = G.pt[t], taken = seq.indexOf(t) > 0 && seq[seq.indexOf(t) - 1] === id, go = id === here && avail[t] != null;
