@@ -112,6 +112,7 @@ export function battle(en, party, policy, o) {
         else if (act.rule === 'all') L.map((x) => x.c).forEach(hit);
         else {
           let t = act.rule === 'job' ? L.find((x) => (x.u.jname || x.u.name) === act.job) : null;
+          if (!t && act.rule === 'highatk') t = L.reduce((p, q) => (q.u.atk > p.u.atk ? q : p));   // 誘い火：攻撃力がいちばん高い仲間
           if (!t) t = act.rule === 'highhp' ? L.reduce((p, q) => (q.u.hp > p.u.hp ? q : p)) : L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p));   // 重石：HPがいちばん多い仲間
           for (let i = 0; i < (act.hits || 1); i++) hit(t.c);
         }

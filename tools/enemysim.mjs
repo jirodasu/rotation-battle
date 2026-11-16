@@ -5,16 +5,18 @@ import { playRun, SMART, STAY, EXP } from './expsim.mjs';
 
 export const CANDS = {
   weight: { ch: 0, def: { name: '重石の番兵', hp: 140, spd: 4, def: 2, pattern: [
-    { name: '押し潰し', rule: 'highhp', dmg: 18 }, { name: 'ちからをためる', rule: 'charge' }, { name: '大槌', rule: 'highhp', dmg: 32 }, { name: '薙ぎ', rule: 'all', dmg: 10 }] } },
+    { name: '押し潰し', rule: 'highhp', dmg: 24 }, { name: 'ちからをためる', rule: 'charge' }, { name: '大槌', rule: 'highhp', dmg: 40 }, { name: '薙ぎ', rule: 'all', dmg: 12 }] } },
   thief: { ch: 0, def: { name: '灯盗みの影猫', hp: 130, spd: 8, def: 0, pattern: [
-    { name: 'ひっかき', rule: 'lowhp', dmg: 14 }, { name: '灯を盗む', rule: 'lowhp', dmg: 10, steal: { at: 3, n: 2 } }, { name: '二度ひっかき', rule: 'random', hits: 2, dmg: 9 }, { name: 'とびかかり', rule: 'lowhp', dmg: 24 }] } },
+    { name: 'ひっかき', rule: 'lowhp', dmg: 14 }, { name: '灯を盗む', rule: 'lowhp', dmg: 10, steal: { at: 2, n: 1 } }, { name: '二度ひっかき', rule: 'random', hits: 2, dmg: 9 }, { name: 'とびかかり', rule: 'lowhp', dmg: 24 }] } },
+  lure: { ch: 0, def: { name: '誘い火の燐光', hp: 130, spd: 6, def: 1, pattern: [
+    { name: '燐光の矢', rule: 'highatk', dmg: 16 }, { name: 'ちらつき', rule: 'all', dmg: 8 }, { name: 'ちからをためる', rule: 'charge' }, { name: '焦がす', rule: 'highatk', dmg: 30 }] } },
   silence: { ch: 1, def: { name: '沈黙の司書', hp: 250, spd: 4, def: 2, pattern: [
     { name: '本の角', rule: 'lowhp', dmg: 18 }, { name: 'ちからをためる', rule: 'charge' }, { name: '静粛に', rule: 'all', dmg: 8, silence: true }, { name: '禁書の頁', rule: 'all', dmg: 26 }] } },
   shell: { ch: 1, def: { name: '割れ殻の守り貝', hp: 220, spd: 3, def: 1, shell: { min: 18, every: 3 }, pattern: [
     { name: '殻ごし体当たり', rule: 'lowhp', dmg: 16 }, { name: '潮騒', rule: 'all', dmg: 10 }, { name: 'ちからをためる', rule: 'charge' }, { name: '大波', rule: 'all', dmg: 24 }] } },
   thorns: { ch: 1, def: { name: '棘殻の聖骸', hp: 260, spd: 3, def: 2, pattern: [
-    { name: '骨の鞭', rule: 'lowhp', dmg: 18 }, { name: '棘をまとう', rule: 'all', dmg: 6, thorns: 4 }, { name: 'ちからをためる', rule: 'charge' }, { name: '骨嵐', rule: 'all', dmg: 24 }] } },
-  bell: { ch: 1, def: { name: '鐘楼の鳴き鐘', hp: 250, spd: 3, def: 2, bell: { at: 3, act: { dmg: 26 } }, pattern: [
+    { name: '骨の鞭', rule: 'lowhp', dmg: 18 }, { name: '棘をまとう', rule: 'all', dmg: 6, thorns: 7 }, { name: 'ちからをためる', rule: 'charge' }, { name: '骨嵐', rule: 'all', dmg: 24 }] } },
+  bell: { ch: 1, def: { name: '鐘楼の鳴き鐘', hp: 250, spd: 3, def: 2, bell: { at: 3, act: { dmg: 32 } }, pattern: [
     { name: '鐘の舌', rule: 'lowhp', dmg: 18 }, { name: '余韻', rule: 'all', dmg: 10 }, { name: '打ち鳴らし', rule: 'lowhp', dmg: 20 }, { name: '余韻', rule: 'all', dmg: 10 }] } },
   reverse: { ch: 2, def: { name: '逆さ時計の守', hp: 280, spd: 5, def: 2, pattern: [
     { name: '針', rule: 'lowhp', dmg: 20 }, { name: '時を戻す', rule: 'all', dmg: 8, reverse: true }, { name: 'ちからをためる', rule: 'charge' }, { name: '秒針の嵐', rule: 'random', hits: 3, dmg: 12 }] } },
@@ -24,14 +26,14 @@ export const CANDS = {
     { name: 'こぼれ砂', rule: 'all', dmg: 8 }, { name: '砂礫', rule: 'lowhp', dmg: 16 }, { name: 'こぼれ砂', rule: 'all', dmg: 8 }, { name: '砂礫', rule: 'lowhp', dmg: 16 }, { name: 'こぼれ砂', rule: 'all', dmg: 8 }, { name: '砂礫', rule: 'lowhp', dmg: 16 }, { name: '終の刻', rule: 'all', dmg: 60, pierce: true }] } },
   silence2: { ch: 1, def: { name: '沈黙の司書（改）', hp: 250, spd: 4, def: 2, pattern: [
     { name: '本の角', rule: 'lowhp', dmg: 18 }, { name: '頁めくり', rule: 'all', dmg: 10 }, { name: 'ちからをためる', rule: 'charge' }, { name: '静粛に（禁書の頁）', rule: 'all', dmg: 24, silence: true }] } },
-  phase: { ch: 2, def: { name: '二つ顔の祭司', hp: 300, spd: 5, def: 2, phase2: { at: 0.5, pattern: [
-    { name: '裏の顔', rule: 'back', dmg: 16 }, { name: '断罪', rule: 'lowhp', dmg: 26 }, { name: '呪詛', rule: 'all', dmg: 14, pierce: true }, { name: '審判', rule: 'all', dmg: 26, pierce: true }] }, pattern: [
+  phase: { ch: 2, def: { name: '二つ顔の祭司', hp: 280, spd: 5, def: 2, phase2: { at: 0.5, pattern: [
+    { name: '裏の顔', rule: 'back', dmg: 12 }, { name: '断罪', rule: 'lowhp', dmg: 22 }, { name: '呪詛', rule: 'all', dmg: 10, pierce: true }, { name: '審判', rule: 'all', dmg: 22, pierce: true }] }, pattern: [
     { name: '祝詞', rule: 'all', dmg: 12 }, { name: '断罪', rule: 'lowhp', dmg: 24 }, { name: 'ちからをためる', rule: 'charge' }, { name: '審判', rule: 'all', dmg: 26, pierce: true }] } }
 };
 // 仕掛けを外した同じ敵（数値はそのまま、ふつうの技に置き換える）
 export function plain(d) {
   const o = JSON.parse(JSON.stringify(d));
-  const fix = (a) => { if (a.rule === 'highhp') a.rule = 'lowhp'; if (a.dmg >= 60) a.dmg = 24; delete a.steal; delete a.silence; delete a.thorns; delete a.reverse; delete a.swap; return a; };
+  const fix = (a) => { if (a.rule === 'highhp' || a.rule === 'highatk') a.rule = 'lowhp'; if (a.dmg >= 60) a.dmg = 24; delete a.steal; delete a.silence; delete a.thorns; delete a.reverse; delete a.swap; return a; };
   o.pattern = o.pattern.map(fix); delete o.shell; delete o.bell;
   if (o.phase2) { o.pattern = o.pattern; delete o.phase2; }
   return o;
@@ -46,7 +48,7 @@ export const SMART2 = (s) => {
   const lethal = (() => {   // このまま維持すると、次の技で前の仲間が倒れるか
     if (!nx || !nx.dmg) return false;
     if (nx.rule === 'all') return front.some((u) => u.hp <= nx.dmg + (nx.thorns || 0) * (u.hits || 1));
-    const t = nx.rule === 'highhp' ? front.reduce((a, b) => (b.hp > a.hp ? b : a)) : front.reduce((a, b) => (b.hp < a.hp ? b : a));
+    const t = nx.rule === 'highatk' ? front.reduce((a, b) => (b.atk > a.atk ? b : a)) : nx.rule === 'highhp' ? front.reduce((a, b) => (b.hp > a.hp ? b : a)) : front.reduce((a, b) => (b.hp < a.hp ? b : a));
     return t.hp <= dmgOf(nx);
   })();
   if (e.bell && s.bell + 1 >= e.bell.at) {   // この回転で鐘が3つ鳴る：次のターンに鐘の音。回したあと前に来る仲間（補助列）が耐えられないなら回さない
