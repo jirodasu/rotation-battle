@@ -1,7 +1,7 @@
 // v5.8.16 回復を見届けてから報酬を出す（表示だけ。ルール・セーブの形は変えない）
 // 合格の基準（測る前に決めたもの）：
 //  1 戦闘に勝って回復した仲間がいるとき：報酬の画面が出た直後（0.3秒）は、下の報酬の札が見えない（場所は取っている）
-//  2 回復の演出が終わったころ（1.6秒）には札が見え、押して選べる
+//  2 回復の演出が終わったころ（1.6秒）も札は隠れたまま（v5.8.17 からタップ式）。「タップで次へ」が出る。タップすると札が出て、そのあと押して選べる
 //  3 待っているあいだに画面をタップすると、札がすぐ出る。そのタップで札が選ばれてしまわない
 //  4 札が出ても、上の題・名簿の位置は動かない
 //  5 動きを減らす設定では待たずに出る。地図の画面では待たない
@@ -31,8 +31,11 @@ async function toWin(b, rm, w, h) {
     await p.waitForTimeout(300); const a = await st(p);
     const heal = await p.evaluate(() => document.querySelectorAll('#rvRoster .rv-heal').length);
     ok(a.title === '勝利' && heal > 0 && a.vis === 'hidden' && a.h > 0, '1 出た直後は札が見えない（回復 ' + heal + '人・札の高さ ' + a.h + '）：' + a.vis);
-    await p.waitForTimeout(1300); const c = await st(p);
-    ok(c.vis === 'visible', '2 回復のあとは札が見える：' + c.vis);
+    await p.waitForTimeout(1300); const c0 = await st(p);
+    const hint = await p.evaluate(() => { const t = document.getElementById('rvTap'); return !!t && t.classList.contains('on') && /タップ/.test(t.textContent); });
+    ok(c0.vis === 'hidden' && hint, '2 回復のあとも自動では出ず、「タップで次へ」が出る：' + c0.vis + '・案内 ' + hint);
+    await p.touchscreen.tap(195, 40); await p.waitForTimeout(400); const c = await st(p);
+    ok(c.vis === 'visible', '2 タップで札が見える：' + c.vis);
     ok(c.rosterY === a.rosterY, '4 名簿の位置は動かない：' + a.rosterY + '→' + c.rosterY);
     await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(600);
     ok(await p.evaluate(() => document.getElementById('runv').hidden || document.getElementById('rvTitle').textContent !== '勝利'), '2 押して選べる');

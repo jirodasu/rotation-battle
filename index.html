@@ -2771,8 +2771,21 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .rv-heal-note, .r-heal { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0 !important; padding: 0 !important; }
 @media (prefers-reduced-motion: reduce) { .rv-m.healed .hpb i, .rv-m.healed .rv-heal { animation: none; } }
 /* v5.8.16 回復を見届けてから報酬を出す：回復の演出のあいだ、下の札は場所だけ取って隠す（出たときに上の行が動かないように）。画面をタップすればすぐ出る */
-#rvCards.rv-wait { visibility: hidden; opacity: 0; }
-#rvCards.rv-show { animation: rvCardsIn .3s ease-out both; }
+/* v5.8.17 段階的開示：結果の画面の行・初めての地図の札も、同じ仕組みで1段ずつ出す（.ph-wait は場所だけ取って隠す） */
+.runv .ph-wait { visibility: hidden; opacity: 0; }
+.runv .ph-show { animation: rvCardsIn .3s ease-out both; }
+@media (prefers-reduced-motion: reduce) { .runv .ph-show { animation: none; } }
+.rv-tap { position: absolute; left: 0; right: 0; bottom: 16px; z-index: 6; margin: 0; text-align: center; font-size: 13px; font-weight: 700; letter-spacing: .08em; color: var(--gold); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.runv .r-card > .rv-tap { position: absolute; left: 0; right: 0; bottom: 16px; top: auto; width: auto; margin: 0; order: 99; }   /* ほかの .r-card の子の決まり（並びの位置）に負けないように */
+.rv-tap::after { content: ' ▸'; }
+.rv-tap.on { opacity: 1; animation: tapPulse 1.6s ease-in-out .3s infinite; }
+@keyframes tapPulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .rv-tap.on { animation: none; } }
+.rv-pick { margin: 0 0 2px; font-size: 13px; font-weight: 700; color: var(--ink-soft); text-align: center; }
+.rv-pick small { font-size: 11.5px; font-weight: 400; letter-spacing: normal; }
+/* v5.8.17 ヒントが出ているあいだは、ターンの判断（下のボタン・盤）を止める。「わかった」で戻る */
+body.tip-on #dock button, body.tip-on #board { pointer-events: none; }
+body.tip-on #dock button { opacity: .45; transition: opacity .2s; }
 @keyframes rvCardsIn { from { opacity: 0; transform: translateY(8px); } }
 
 /* ===== C 報酬カード：効き目は金の数字の札。説明は札で足りないもの（レリックの条件）だけ残す（v5.1.60） ===== */
@@ -2932,7 +2945,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.16</p>
+    <p class="c-ver" id="cVer">ver 5.8.17</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3452,7 +3465,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.16';
+  const APP_VERSION = '5.8.17';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4860,7 +4873,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   addEventListener('resize', () => placeTip());
   try { const tro = new ResizeObserver(() => placeTip()); ['ticket', 'board', 'dock'].forEach((id) => { const e = document.getElementById(id); if (e) tro.observe(e); }); } catch (e) { /* 古い端末 */ }
-  function hideTip() { if (tipKey) { tipMark(tipKey); tipKey = null; } $('tip').hidden = true; if (fgPend) { const f = fgPend; fgPend = null; setTimeout(f, 250); } }
+  function hideTip() { if (tipKey) { tipMark(tipKey); tipKey = null; } $('tip').hidden = true; document.body.classList.remove('tip-on'); if (fgPend) { const f = fgPend; fgPend = null; setTimeout(f, 250); } }
   function tipsCheck(act) {
     if (tut || !$('result').hidden || document.body.classList.contains('is-cover')) { if (tipKey) hideTip(); return; }
     if (phase !== 'prep' && phase !== 'choose') { if (tipKey) hideTip(); return; }
@@ -4887,7 +4900,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 置き場所：ヒントが指す予告札（三位一体は3体のパネルも）を隠さない所。v5.1.43
     //   ①下の行動順カードの上に重ねる（縦画面はほぼここ）②敵の絵の上 ③横画面は右の盤の上。重なりがいちばん少ない所を選ぶ
     const el = $('tip');
-    el.dataset.k = k; el.hidden = false;
+    el.dataset.k = k; el.hidden = false; document.body.classList.add('tip-on');   // v5.8.17 ヒントを読むあいだは、ターンの判断を止める
     placeTip();
     $('ticket').classList.remove('tip-ping'); void $('ticket').offsetWidth; $('ticket').classList.add('tip-ping');
   }
@@ -8017,7 +8030,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
     $('rvEvents').innerHTML = o.body || eventsHTML(o.events || [], o.openLog);
-    $('rvCards').innerHTML = o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
+    $('rvCards').innerHTML = (o.pick ? '<p class="rv-pick">報酬を1つ選ぶ<small>（遠征のあいだ隊に残る）</small></p>' : '') + o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
       (o.aux ? '<div class="rv-btnrow">' : '') + (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') + (o.aux ? '<button type="button" class="btn rv-skip rv-aux" data-i="-2">' + o.aux + '</button></div>' : '') +
       (o.map && EXPM() ? '<button type="button" class="rv-more" id="rvMore" aria-expanded="false">詳しく</button>' : '') +
       (o.map ? '<button type="button" class="btn primary rv-go" id="rvGo" data-go="1"></button>' : '');
@@ -8030,20 +8043,47 @@ body.fast #stampOk.on { animation-duration: .5s; }
     v.style.setProperty('--rr', (o.roster || (run ? run.members : [])).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
-    rvHold(!RM && !o.map && o.heal && o.heal.from && Object.keys(o.heal.gain).some((k) => o.heal.gain[k] > 0));
+    { // 段階的開示（v5.8.16 回復→報酬、v5.8.17 初めての地図の目標→道、遠征の終わりの行→次の行動）。1画面で同時に判断させるのは1つだけ
+      const healOn = !RM && !o.map && !!o.heal && !!o.heal.from && Object.keys(o.heal.gain).some((k) => o.heal.gain[k] > 0);
+      const goalFirst = !!o.map && EXPM() && !!o.goal && !window.__rbGoalFree;
+      v.classList.toggle('goal-first', goalFirst);
+      const ph = [];
+      if (o.stage) { const kids = [...$('rvEvents').children]; if (o.stage === 'each') kids.forEach((k) => ph.push([k])); else if (kids.length) ph.push(kids); }
+      if (healOn || goalFirst || ph.length) ph.push([$('rvCards')]);
+      // どの段もタップで進む（自動では進まない）。「タップで次へ」の案内は、いまの段が落ち着いてから出す（回復は棒が伸び終わる 1.25秒後）
+      rvPhase(ph, goalFirst ? 0 : healOn ? 1250 : 500, goalFirst ? 'タップで道を選ぶ' : 'タップで次へ', !!o.stageDefer); }
     Music.charge(false); Music.era((run ? run.node : 0) / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
   }
-  // v5.8.16 回復の演出（HP棒が伸び終わるまで 0.35秒＋0.9秒）が終わってから、下の報酬を出す。待つあいだに画面をタップすれば、すぐ出す
-  let rvHoldT = 0;
-  function rvHold(on) {
-    const c = $('rvCards'); clearTimeout(rvHoldT); c.classList.remove('rv-wait', 'rv-show');
-    if (!on) return;
-    c.classList.add('rv-wait'); rvHoldT = setTimeout(rvRelease, 1250);
+  // 段階的開示の順番待ち（v5.8.16 → v5.8.17 で一般化）：ph は「一緒に出す要素の組」の並び。first ミリ秒後に1段目、そのあと gap ごとに次。
+  //   first/gap が null の段はタップ（キー）を待つ。タップすれば次の1段をすぐ出す。defer のときは rvPhaseGo() を呼ぶまで始めない（初めての踏破の結末の物語のあと）
+  //   v5.8.17：どの段もタップ（キー）で進む。自動では進まない。hintMs 後に「タップで次へ」を画面の下に出す（段が落ち着くまでは出さない）
+  let rvQ = [], rvQT = 0, rvQHint = 0, rvQText = '';
+  function rvTapHint(on) {
+    let t = $('rvTap');
+    if (!t) { t = document.createElement('p'); t.id = 'rvTap'; t.className = 'rv-tap'; t.setAttribute('aria-live', 'polite'); }
+    const rc = $('runv').querySelector('.r-card'); if (t.parentNode !== rc) rc.appendChild(t);   // 札（枠）の中の下に置く
+    t.textContent = rvQText; t.classList.toggle('on', !!on);
   }
-  function rvRelease() { const c = $('rvCards'); clearTimeout(rvHoldT); if (!c.classList.contains('rv-wait')) return; c.classList.remove('rv-wait'); void c.offsetWidth; c.classList.add('rv-show'); }
-  let rvTapAt = -1e9;   // タップで出した直後のクリックは、札を選んだことにしない（指を離した位置に出てきた札が押されてしまうため）
-  $('runv').addEventListener('pointerdown', () => { if ($('rvCards').classList.contains('rv-wait')) { rvTapAt = performance.now(); rvRelease(); } });
-  $('runv').addEventListener('keydown', () => { if ($('rvCards').classList.contains('rv-wait')) rvRelease(); });
+  function rvPhase(ph, hintMs, text, defer) {
+    clearTimeout(rvQT); document.querySelectorAll('#runv .ph-wait, #runv .ph-show').forEach((e) => e.classList.remove('ph-wait', 'ph-show'));
+    rvQ = ph; rvQHint = hintMs; rvQText = text || 'タップで次へ'; rvTapHint(false);
+    ph.forEach((g) => g.forEach((e) => e.classList.add('ph-wait')));
+    if (ph.length && !defer) rvPhaseGo();
+  }
+  function rvPhaseGo() { clearTimeout(rvQT); if (rvQ.length) rvQT = setTimeout(() => rvTapHint(true), rvQHint); }
+  function rvNext() {
+    clearTimeout(rvQT); const g = rvQ.shift(); if (!g) return;
+    const v = $('runv');
+    if (v.classList.contains('goal-first') && g.indexOf($('rvCards')) >= 0) { v.classList.remove('goal-first', 'show-goal'); $('rvHelp').setAttribute('aria-expanded', 'false'); }
+    g.forEach((e) => { e.classList.remove('ph-wait'); void e.offsetWidth; e.classList.add('ph-show'); });
+    rvTapHint(false); rvQText = 'タップで次へ';
+    if (rvQ.length) rvQT = setTimeout(() => rvTapHint(true), 450);
+  }
+  // タップで次の段を出したときは、そのタップのクリックを札・地点・「?」に届けない（指を離した位置に出てきた札が押されてしまうため）。次に押したときは普通に届く
+  let rvEatNext = false;
+  const rvEat = () => { if (!rvEatNext) return false; rvEatNext = false; return true; };
+  $('runv').addEventListener('pointerdown', () => { rvEatNext = false; if (rvQ.length && $('story').hidden) { rvEatNext = true; rvNext(); } });
+  $('runv').addEventListener('keydown', (ev) => { if (rvQ.length && $('story').hidden) { ev.preventDefault(); rvNext(); } });
   // 地図での選択：札か地図の地点を一度タップして選び、「進む」で確定（選んだ札をもう一度タップしても確定）
   function routeRefresh() {
     if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
@@ -8055,16 +8095,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
     $('rvTrack').innerHTML = trackHTML();
   }
-  $('rvHelp').addEventListener('click', () => { const v = $('runv'), on = !v.classList.contains('show-goal'); v.classList.toggle('show-goal', on); $('rvHelp').setAttribute('aria-expanded', String(on)); SFX.page(); });
+  $('rvHelp').addEventListener('click', () => { if (rvEat()) return; const v = $('runv'), on = !v.classList.contains('show-goal'); v.classList.toggle('show-goal', on); $('rvHelp').setAttribute('aria-expanded', String(on)); SFX.page(); });
   $('rvCards').addEventListener('click', (ev) => { const b = ev.target.closest('#rvMore'); if (!b) return; const v = $('runv'), on = !v.classList.contains('more'); v.classList.toggle('more', on); b.setAttribute('aria-expanded', String(on)); b.textContent = on ? '閉じる' : '詳しく'; SFX.page(); });
   function routePick(i) { if (!run.choices[i]) return; routeSel = i; if ($('runv').classList.contains('show-goal')) { $('runv').classList.remove('show-goal'); $('rvHelp').setAttribute('aria-expanded', 'false'); }   // 道を選んだら目標の吹き出しは閉じる（v5.5.7）
     SFX.page(); routeRefresh(); }
-  $('rvTrack').addEventListener('click', (ev) => { const n = ev.target.closest('[data-pick]'); if (n && $('rvCards').__on) routePick(+n.dataset.pick); });
+  $('rvTrack').addEventListener('click', (ev) => { if (rvEat()) return; const n = ev.target.closest('[data-pick]'); if (n && $('rvCards').__on) routePick(+n.dataset.pick); });
   $('rvTrack').addEventListener('keydown', (ev) => { const n = ev.target.closest && ev.target.closest('[data-pick]'); if (n && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if ($('rvCards').__on) routePick(+n.dataset.pick); } });
   $('rvCards').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-i],[data-go]'); if (!b || b.disabled) return;
     const on = $('rvCards').__on; if (!on) return;
-    if (performance.now() - rvTapAt < 600) return;
+    if (rvEat()) return;
     const map = $('runv').classList.contains('is-map');
     let i = b.dataset.go ? routeSel : +b.dataset.i;
     if (map && i == null) return;
@@ -8837,7 +8877,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   let expWin = null;   // 勝利の★と一言（v5.3.3）。報酬の画面の上に出す。地図へ進むと消す
   function expRewardShow(pre, cards) {
-    rvShow({ small: expSmall(), title: expWin ? '勝利' : '報酬を1つ選ぶ', stars: expWin ? expWin.stars : null, sub: expWin ? expWin.sub + '報酬を1つ選ぶ（遠征のあいだ隊に残る）。' : enemy.name + 'を倒した。選んだものは、この遠征のあいだ隊に残る。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
+    rvShow({ small: expSmall(), title: expWin ? '勝利' : '報酬を1つ選ぶ', stars: expWin ? expWin.stars : null, pick: !!expWin, sub: expWin ? expWin.sub : enemy.name + 'を倒した。選んだものは、この遠征のあいだ隊に残る。', heal: lastHeal, events: pre || [], cards, on: (i) => { if (cards[i].swap) expSwapPick(pre, cards, cards[i].swap); else expAdvance([cards[i].act()]); } });
   }
   // 誰と入れ替えるか。「やめる」で報酬の選び直し
   function expSwapPick(pre, cards, nm) {
@@ -8911,12 +8951,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const nsq = after.sq.filter((id) => before.sq.indexOf(id) < 0)[0];
     const nx = !before.d3 && after.d3 ? { sq, depth: 3, t: '深さ3へ挑む' } : !before.d2 && after.d2 ? { sq, depth: 2, t: '深さ2へ挑む' } : nsq ? { sq: nsq, depth, t: XSQ.find((v) => v.id === nsq).name + 'で挑む' } : null;
     const nq = nx ? XSQ.find((v) => v.id === nx.sq) : q;
-    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true,
+    rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true, stage: un.length || relLn.length ? 'each' : 'all', stageDefer: firstEnd,   // v5.8.17 結果→実績→開いたもの→次の行動、の順に1段ずつ
+     
       // 倒れた仲間は「帰らなかった」の行で伝えるので、同じ人の「倒れた」の記録は重ねて出さない
       events: un.concat(relLn, ((ev || []).concat(run.events.slice(-6).filter((t) => !(ev || []).some((e) => /）が倒れた/.test(t) && t.includes(e.split('は帰らなかった')[0] + 'が倒れた'))))).slice(0, un.length || relLn.length ? 0 : 99)),   // 解禁の行が出るときは、ほかの出来事は出さず（名簿と上の行で伝わる）、画面からはみ出させない
       cards: [{ ico: ICON.rot, t: nx ? nx.t : 'もう一度、環廊へ', d: (deeper ? 'これまでで最も深く進んだ（地点' + deeper + '）。' : '') + '新しい4人で下る。（遠征 ' + mm.runs + '回目・踏破 ' + (+mm.clears || 0) + '回）' + (choice ? '　' + nq.tag + '・深さ' + (nx ? nx.depth : depth) : '') + (xNext(x) && !un.length ? '　次に開く：' + xNext(x).s + '。' : '') }], skip: 'タイトルへ', aux: choice ? '隊と深さを選ぶ' : null,   // 次に開くもの：解禁の行が出るときは重ねない。短い言い方で（はみ出さないように・v5.3.1）
       on: (i) => { $('runv').hidden = true; if (i === -2) showDepart(); else if (i === 0) beginExp(nx ? nx.sq : sq, nx ? nx.depth : depth); else goTitle(); } });
-    if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
+    if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); rvPhaseGo(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
   }
   function beginExp(sqId, depth) {
     sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 3 && xDepthOpen(3, xmeta()) ? 3 : depth === 2 ? 2 : 1;
