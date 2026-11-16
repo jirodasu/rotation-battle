@@ -37,7 +37,7 @@ export function battle(en, party, policy, o) {
   let grid = empty();
   party.forEach((p) => { grid[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, entered: false }); });
   const e = Object.assign({}, en, { hpNow: en.hp, charged: false, pattern: en.pattern.map((a) => Object.assign({}, a)) });
-  let fallen = 0, stay = 0, bound = false;
+  let fallen = 0, stay = 0, bound = false, bell = 0, bellNext = false, shellUp = !!(en.shell);   // 敵10体の検討（2026-11-17）：鐘の数・鐘が鳴るか・殻
   // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
   const RT = o.rot || null; let gauge = RT ? RT.start : 0;
   // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンになった回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
@@ -59,7 +59,12 @@ export function battle(en, party, policy, o) {
     const actors = [{ kind: 'e', spd: e.spd }];
     unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) actors.push({ kind: 'p', u, r, c, spd: u.spd + ((ent.get(u) && ent.get(u).spd) || 0) }); });
     actors.sort((x, y) => y.spd - x.spd || (x.kind === 'p' ? -1 : 1));
-    let act = e.pattern[(turn - 1) % e.pattern.length];
+    const pat = e.phase2 && e.hpNow < e.hp * e.phase2.at ? e.phase2.pattern : e.pattern;   // 二つ顔：HPが一定を切ると技の並びが変わる
+    let act = pat[(turn - 1) % pat.length];
+    if (bellNext) { act = Object.assign({ name: '鐘の音', rule: 'all' }, e.bell.act); bellNext = false; }   // 鐘：3回目の回転の次のターンは鐘の音
+    if (e.shell && turn > 1 && (turn - 1) % e.shell.every === 0) shellUp = true;   // 割れ殻：殻はときどき戻る
+    if (act.silence) ent.clear();   // 沈黙：このターンは突入技が出ない
+    if (act.steal && RT && gauge >= act.steal.at) gauge -= act.steal.n;   // 灯盗み：気力がたまっていると盗まれる
     if (e.starve && act.rule === 'charge' && e.hpNow * 2 < e.hp) { const b = e.pattern[turn % e.pattern.length]; if (b && b.dmg) act = Object.assign({}, b, { big: true }); }   // 飢えた（v5.6.7）
     const guardCol = {};
     unitsOf(grid).forEach(({ u, r, c }) => {
@@ -107,7 +112,7 @@ export function battle(en, party, policy, o) {
         else if (act.rule === 'all') L.map((x) => x.c).forEach(hit);
         else {
           let t = act.rule === 'job' ? L.find((x) => (x.u.jname || x.u.name) === act.job) : null;
-          if (!t) t = L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p));
+          if (!t) t = act.rule === 'highhp' ? L.reduce((p, q) => (q.u.hp > p.u.hp ? q : p)) : L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p));   // 重石：HPがいちばん多い仲間
           for (let i = 0; i < (act.hits || 1); i++) hit(t.c);
         }
         if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
@@ -125,20 +130,25 @@ export function battle(en, party, policy, o) {
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
         const dfn = e.layer && r === 0 && u.entered ? 0 : Math.max(0, e.def - RN('lens', 'def'));   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
         if (e.variant) power += RN('fang', 'atk');   // 狩人の牙（v5.8.0）：亜種への攻撃は1回ごとに+
-        let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - dfn);
+        let tot = 0; for (let i = 0; i < hitsN; i++) { let d = Math.max(1, power + (i === 0 ? sup : 0) - dfn); if (shellUp) { if (d >= e.shell.min) shellUp = false; else d = 1; } tot += d; }   // 割れ殻：一撃が min 以上で殻が割れる。それまでは1しか通らない
+        if (act.thorns) { u.hp = Math.max(0, u.hp - act.thorns * hitsN); if (u.hp === 0) { grid[r][c] = null; fallen++; } }   // 棘：攻撃した仲間は1回ごとに棘のダメージ
         e.hpNow -= tot;
         if (e.hpNow <= 0) return { win: true, turns: turn, fallen, hp: hpMap() };
       }
     }
+    if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
     unitsOf(grid).forEach(({ u }) => { u.entered = false; });
     boosted.clear();
+    if (act.reverse) { const n = empty(); for (let c = 0; c < COLS; c++) { n[0][c] = grid[2][c]; n[1][c] = grid[0][c]; n[2][c] = grid[1][c]; } grid = n; unitsOf(grid).forEach(({ u }) => { u.atkReady = true; u.defReady = true; }); }   // 逆回し：回復列が攻撃列へ（突入技は出ない）
+    if (act.swap) { const t0 = grid[1][0]; grid[1][0] = grid[1][1]; grid[1][1] = t0; }   // 札替え：補助列の左右を入れ替える
     if (RT) gauge = Math.min(RT.cap, gauge + RT.gain);
     const canRot = !bound && (!RT || gauge >= RT.cost); bound = false;
-    if (canRot && policy({ grid, turn, enemy: e, cols: COLS, lamp, lmax })) {
+    if (canRot && policy({ grid, turn, enemy: e, cols: COLS, lamp, lmax, gauge, bell, shellUp })) {
       const n = empty();
       for (let c = 0; c < COLS; c++) { n[0][c] = grid[1][c]; n[1][c] = grid[2][c]; n[2][c] = grid[0][c]; }
       if (rel.has('incense')) for (let c = 0; c < COLS; c++) { const u = n[2][c]; if (u) u.hp = Math.min(u.max, u.hp + RD.incense.backHeal); }
       grid = n; stay = 0; if (RT) gauge -= RT.cost;
+      if (e.bell) { bell++; if (bell >= e.bell.at) { bell = 0; bellNext = true; } }   // 鐘：回すたびに1つ鳴り、3つで次のターンに鐘の音
       unitsOf(grid).forEach(({ u, r }) => { u.atkReady = true; u.defReady = true; u.entered = r === 0; });
       // 満タンに「なった」回転で発動して0に戻る（ゲームと同じ。設計書の数値はこの読み方で再現する：発動0.92回／戦）
       if (CB) { combo++; if (combo >= CB.max) { unitsOf(grid).forEach(({ u, r }) => { if (r === 0) boosted.set(u, CB.mul); }); combo = 0; CSTAT.fires++; } }
