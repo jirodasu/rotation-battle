@@ -4900,7 +4900,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 置き場所：ヒントが指す予告札（三位一体は3体のパネルも）を隠さない所。v5.1.43
     //   ①下の行動順カードの上に重ねる（縦画面はほぼここ）②敵の絵の上 ③横画面は右の盤の上。重なりがいちばん少ない所を選ぶ
     const el = $('tip');
-    el.dataset.k = k; el.hidden = false; document.body.classList.add('tip-on');   // v5.8.17 ヒントを読むあいだは、ターンの判断を止める
+    el.dataset.k = k; el.hidden = false; if (!window.__rbPhaseFree) document.body.classList.add('tip-on');   // v5.8.17 ヒントを読むあいだは、ターンの判断を止める
     placeTip();
     $('ticket').classList.remove('tip-ping'); void $('ticket').offsetWidth; $('ticket').classList.add('tip-ping');
   }
