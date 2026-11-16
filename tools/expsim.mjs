@@ -81,6 +81,7 @@ export function battle(en, party, policy, o) {
           if (fr > 0) d *= 2;
           else {
             if (act.vsEntered && v.entered) d = Math.round(d * act.vsEntered);   // 実験用：入ったばかりの仲間に大きく当たる
+            if (act.vsStayed && !v.entered && turn > 1) d = Math.round(d * act.vsStayed);   // 第4章の試作（影縫い）：前のターンも攻撃列にいた仲間に大きく当たる
             const m = grid[1][col];
             if (!act.pierce && m && m.defReady && m.defSup > 0) { d -= m.defSup + RN('cloak', 'def'); m.defReady = false; }
             d -= (guardCol[col] || 0) + teamGuard;
@@ -92,6 +93,12 @@ export function battle(en, party, policy, o) {
         if (act.rule === 'back') {   // 尾払い（v5.6.6）：回復列の全員。回復列が先頭の列なら、ふつうの全体攻撃（2倍）と同じ
           if (fr === 2) { unitsOf(grid).filter((x) => x.r === 2).map((x) => x.c).forEach(hit); }
           else for (let c = 0; c < COLS; c++) { const v = grid[2][c]; if (!v) continue; v.hp = Math.max(0, v.hp - Math.max(1, act.dmg)); if (v.hp === 0) { grid[2][c] = null; fallen++; eaten(); } }
+          if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
+          continue;
+        }
+        if (act.rule === 'mid') {   // 第4章の試作（鱗粉）：補助列の全員。前列がいても届く（防御補助は効かない）。補助列が先頭の列なら、ふつうの全体攻撃（2倍）と同じ。補助列が空なら当たらない
+          if (fr === 1) { unitsOf(grid).filter((x) => x.r === 1).map((x) => x.c).forEach(hit); }
+          else if (fr === 0) for (let c = 0; c < COLS; c++) { const v = grid[1][c]; if (!v) continue; v.hp = Math.max(0, v.hp - Math.max(1, act.dmg)); if (v.hp === 0) { grid[1][c] = null; fallen++; eaten(); } }
           if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
           continue;
         }
@@ -152,8 +159,12 @@ export const SMART = (s) => {
   const g = s.grid, e = s.enemy, act = e.pattern[s.turn % e.pattern.length];
   const front = []; for (let c = 0; c < s.cols; c++) if (g[0][c]) front.push(g[0][c]);
   if (!front.length) return true;
-  if (act.dmg) {
-    const d = act.dmg * (act.hits || 1);
+  if (act.dmg && act.rule === 'mid') {   // 第4章の試作：補助列が倒れそうなら回す（回すと回復列の仲間が補助列に来る）
+    const mid = []; for (let c = 0; c < s.cols; c++) if (g[1][c]) mid.push(g[1][c]);
+    if (mid.some((u) => u.hp <= act.dmg)) return true;
+  }
+  if (act.dmg && act.rule !== 'mid') {
+    const d = act.dmg * (act.hits || 1) * (act.vsStayed && s.turn >= 1 ? act.vsStayed : 1);   // 影縫い：居続けると×2（予告に出るので標準の遊び方も読む）
     if (act.rule === 'all' && front.some((u) => u.hp <= act.dmg)) return true;
     const low = front.reduce((a, b) => (b.hp < a.hp ? b : a));
     if (low.hp <= d) return true;
@@ -208,6 +219,30 @@ export function playRun(seed, policy, strat = {}, over = {}) {
   const form = cfg.size === 5 ? cfg.party5 : cfg.party, cols = cfg.size === 5 ? 3 : cfg.cols;
   let members = form.map(([j, r, c], i) => member(j, r, c, 'm' + i, cfg));
   const relics = (cfg.startRelics || []).slice(); let fallen = 0, battles = 0, rests = 0;
+  const giveReward = (step) => {
+      const free = cfg.relics.filter((x) => !relics.includes(x.id) && (cfg.relicAll || !x.unlock));   // v5.8.0：解放のいる回転レリックは relicAll のときだけ（既定は初めから出る4つ＝これまでの数字と同じ）
+      const tags = (free.length ? ['relic'] : []).concat(['up', 'heal'], cfg.swap ? ['swap'] : []);
+      let t = strat.reward ? strat.reward(tags) : pick(tags); if (!tags.includes(t)) t = pick(tags);
+      // 入れ替え候補：いまの隊にいない職業から（全職業がいれば全体から）
+      const have = new Set(members.map((m) => m.job)), pool = JOBS.filter((j) => !have.has(j.id)), job = (pool.length ? pick(pool) : pick(JOBS)).id;
+      if (t === 'swap' && cfg.refill && members.length < cfg.party.length) {
+        // 補充：仲間が欠けているときは、誰も抜けずに空いたマスへ加わる（ゲームの runGrid と同じく回復列→補助列→攻撃列の順で空きを探す）
+        const used = new Set(members.map((m) => m.r + ',' + m.c)); let pos = null;
+        for (const r of [2, 1, 0]) for (let c = 0; c < cols; c++) if (!pos && !used.has(r + ',' + c)) pos = [r, c];
+        const nm = member(job, pos[0], pos[1], 'f' + step, cfg); members.push(nm);
+        if (cfg.swapBonus && cfg.refillBonus !== false) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }
+        if (cfg.refillMax != null) { nm.max = Math.round(nm.max * cfg.refillMax); nm.hp = nm.max; }   // 補充の仲間は見習い：最大HPが低い
+      } else if (t === 'swap') {
+        // 誰と入れ替えるか：strat.swapOut（既定は「強さ」がいちばん低い仲間）
+        const pw = (m) => m.hp * (m.atk + (m.heal || 0) * 2 + (m.defSup || 0) + 4);
+        const out = strat.swapOut ? strat.swapOut(members, job, R) : members.reduce((a, b) => (pw(b) < pw(a) ? b : a));
+        const nm = member(job, out.r, out.c, 'w' + step, cfg); members[members.indexOf(out)] = nm;
+        if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
+        if (cfg.swapKeep) { for (let k = 0; k < (out.ups || 0); k++) upgrade(nm, cfg.up); nm.ups = out.ups || 0; nm.max += (out.max - JOBS.find((j) => j.id === out.job).hp) ; nm.hp = nm.max; }   // 去る仲間の強化（突入技・最大HP）を引き継ぐ
+      } else if (t === 'relic') { const r = pick(free); relics.push(r.id); if (r.hp) members.forEach((m) => { m.max += r.hp; m.hp += r.hp; }); }   // 灯の石：手に入れたとき全員の最大HP+
+      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; if (cfg.upHp) { m.max += cfg.upHp; m.hp += cfg.upHp; } }   // upHp：強化した仲間の最大HPも増やす（ゲームの EXP.upHp と同じ。v5.6.2）
+      else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
+  };
   for (let step = 1; step <= cfg.nodes; step++) {
     const ch = chapterOf(step, cfg), chief = cfg.chiefs.includes(step);
     const type = chief ? 'battle' : (strat.node ? strat.node(['battle', 'rest'], step, R) : pick(['battle', 'rest']));
@@ -235,30 +270,38 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     if (!res.win || !members.length) return { clear: false, reached: step, fallen, battles, relics };
     members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * cfg.afterHeal)); });
     if (!last) {
-      const free = cfg.relics.filter((x) => !relics.includes(x.id) && (cfg.relicAll || !x.unlock));   // v5.8.0：解放のいる回転レリックは relicAll のときだけ（既定は初めから出る4つ＝これまでの数字と同じ）
-      const tags = (free.length ? ['relic'] : []).concat(['up', 'heal'], cfg.swap ? ['swap'] : []);
-      let t = strat.reward ? strat.reward(tags) : pick(tags); if (!tags.includes(t)) t = pick(tags);
-      // 入れ替え候補：いまの隊にいない職業から（全職業がいれば全体から）
-      const have = new Set(members.map((m) => m.job)), pool = JOBS.filter((j) => !have.has(j.id)), job = (pool.length ? pick(pool) : pick(JOBS)).id;
-      if (t === 'swap' && cfg.refill && members.length < cfg.party.length) {
-        // 補充：仲間が欠けているときは、誰も抜けずに空いたマスへ加わる（ゲームの runGrid と同じく回復列→補助列→攻撃列の順で空きを探す）
-        const used = new Set(members.map((m) => m.r + ',' + m.c)); let pos = null;
-        for (const r of [2, 1, 0]) for (let c = 0; c < cols; c++) if (!pos && !used.has(r + ',' + c)) pos = [r, c];
-        const nm = member(job, pos[0], pos[1], 'f' + step, cfg); members.push(nm);
-        if (cfg.swapBonus && cfg.refillBonus !== false) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }
-        if (cfg.refillMax != null) { nm.max = Math.round(nm.max * cfg.refillMax); nm.hp = nm.max; }   // 補充の仲間は見習い：最大HPが低い
-      } else if (t === 'swap') {
-        // 誰と入れ替えるか：strat.swapOut（既定は「強さ」がいちばん低い仲間）
-        const pw = (m) => m.hp * (m.atk + (m.heal || 0) * 2 + (m.defSup || 0) + 4);
-        const out = strat.swapOut ? strat.swapOut(members, job, R) : members.reduce((a, b) => (pw(b) < pw(a) ? b : a));
-        const nm = member(job, out.r, out.c, 'w' + step, cfg); members[members.indexOf(out)] = nm;
-        if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
-        if (cfg.swapKeep) { for (let k = 0; k < (out.ups || 0); k++) upgrade(nm, cfg.up); nm.ups = out.ups || 0; nm.max += (out.max - JOBS.find((j) => j.id === out.job).hp) ; nm.hp = nm.max; }   // 去る仲間の強化（突入技・最大HP）を引き継ぐ
-      } else if (t === 'relic') { const r = pick(free); relics.push(r.id); if (r.hp) members.forEach((m) => { m.max += r.hp; m.hp += r.hp; }); }   // 灯の石：手に入れたとき全員の最大HP+
-      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; if (cfg.upHp) { m.max += cfg.upHp; m.hp += cfg.upHp; } }   // upHp：強化した仲間の最大HPも増やす（ゲームの EXP.upHp と同じ。v5.6.2）
-      else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
+      giveReward(step);
       if (chief) { reinforce(members, cfg, cols, R, 's' + step); rests = 0; }   // 章を越えた
     }
+  }
+  // 第4章（試作・ステージ4設計書 2026-11-16）：cfg.ch4 を渡したときだけ。毒竜のあと「さらに底へ」（倒れた仲間は戻らない・章の主の休みの数え直し）。
+  //   地点11・12は新しい敵2種を1回ずつ（どちらが先かは乱数）か休息、地点13は第4章の主。strat.pol4：第4章だけの戦い方（既定は policy）
+  if (cfg.ch4) {
+    const C4 = cfg.ch4, pol4 = strat.pol4 || policy, c4 = Object.assign({}, cfg, { chiefs: cfg.chiefs.concat([cfg.nodes + 3]), chiefFoe: cfg.chiefFoe.concat([C4.chief]), hp: cfg.hp.concat(C4.hp), dmg: cfg.dmg.concat(C4.dmg) });
+    C4.defs && Object.assign(c4, C4.defs);
+    rests = 0; const order = R() < 0.5 ? C4.foes.slice() : C4.foes.slice().reverse(); let fi = 0;
+    for (let k = 0; k < 3; k++) {
+      const step = cfg.nodes + 1 + k, chief = k === 2;
+      const type = chief ? 'battle' : (strat.node ? strat.node(['battle', 'rest'], step, R) : pick(['battle', 'rest']));
+      if (type === 'rest') { rests++; members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * (cfg.restHeal == null ? 1 : cfg.restHeal))); }); continue; }
+      battles++;
+      const fk = chief ? null : order[fi++ % order.length], dp = cfg.depth || 1, VK = Object.keys(VARIANTS).filter((x) => !VARIANTS[x].deep), VKD = Object.keys(VARIANTS);
+      const pairV = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'].includes(a + '+' + b)) return a + '+' + b; } };
+      const vk = !chief && R() < (dp >= 2 ? 1 : cfg.variantRate) ? (dp >= 3 ? pairV() : pick(VK)) : null;
+      const en = enemyAt(step, fk, c4, vk, relics.includes('chart') ? 0 : rests), bseed = Math.floor(R() * 1e9);
+      const party = () => members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
+      const bo = { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics, combo: cfg.combo || null, lamp: cfg.lamp || null };
+      let res;
+      if (pol4 === 'plan') { let best = null, sc0 = -1e9; for (let mk = 0; mk < 1024; mk++) { const r = battle(en, party(), (st) => (st.turn <= 10 ? !!((mk >> (st.turn - 1)) & 1) : SMART(st)), bo); const sc = (r.win ? 1e5 : 0) - r.fallen * 1000 + Object.values(r.hp).reduce((a, b) => a + b, 0); if (sc > sc0) { sc0 = sc; best = r; } } res = best; }
+      else res = battle(en, party(), pol4, bo);
+      members.forEach((m) => { m.hp = res.hp[m.uid] != null ? res.hp[m.uid] : 0; });
+      fallen += members.filter((m) => m.hp <= 0).length;
+      members = members.filter((m) => m.hp > 0);
+      if (!res.win || !members.length) return { clear: true, reached: cfg.nodes, fallen, battles, relics, ch4: { win: false, reached: step } };
+      members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * cfg.afterHeal)); });
+      if (!chief) giveReward(step);
+    }
+    return { clear: true, reached: cfg.nodes, fallen, battles, relics, ch4: { win: true, reached: cfg.nodes + 3 } };
   }
   return { clear: true, reached: cfg.nodes, fallen, battles, relics };
 }
