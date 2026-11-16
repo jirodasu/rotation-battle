@@ -1880,6 +1880,43 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rv-go:disabled { opacity: 1; background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1.5px var(--rule-a); filter: none; text-shadow: none; font-weight: 700; }   /* 選ぶ前は押せる金のボタンに見せない（v5.3.3）。選ぶ場所は札と地図 */
 .rv-go:disabled::before, .rv-go:disabled::after { display: none; }
 @media (prefers-reduced-motion: reduce) { .rt-n.avail:not(.sel) .land { animation: none; } }
+
+/* 地図の見本A（v5.8.20）：環廊の回廊の地図と、大きなメダル。領地は見えない当たり判定 */
+.route.rt-a .land { fill: transparent !important; stroke: none !important; animation: none !important; }
+.route.rt-a .rt-n.mk { cursor: pointer; }
+.route.rt-a .rt-n .seal { fill: #1d2148; stroke: #8d8fbf; stroke-width: 2; stroke-dasharray: none; filter: drop-shadow(0 4px 6px rgba(0,0,0,.45)); }
+.route.rt-a .rt-n .ic { fill: none; stroke: #c9cbf2; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.route.rt-a .rt-n.locked { opacity: .78; }
+.route.rt-a .rt-n.avail .seal { stroke: #ffc15a; stroke-width: 2.6; }
+.route.rt-a .rt-n.avail .ic { stroke: #ffc15a; }
+.route.rt-a .rt-n.avail:not(.sel) .seal { animation: rtaPulse 1.8s ease-in-out infinite; }
+@keyframes rtaPulse { 0%, 100% { stroke-opacity: 1; } 50% { stroke-opacity: .45; } }
+.route.rt-a .rt-n .ring { fill: none; stroke: #ffc15a; stroke-width: 3; opacity: .45; }
+.route.rt-a .rt-n.here .seal { fill: #e8b55a; stroke: #f6efc8; stroke-width: 2.6; }
+.route.rt-a .rt-n.here .ic { stroke: #3a2300; }
+.route.rt-a .rt-n.done .seal { fill: #2a2d55; stroke: #6b6f9f; }
+.route.rt-a .rt-n.done .ic { stroke: #8d8fbf; }
+.route.rt-a .rt-n .ok { fill: #ffc15a; stroke: #1d2148; stroke-width: 1.5; }
+.route.rt-a .rt-n.done .ic + .ok + .ic, .route.rt-a .rt-n .ok + .ic { stroke: #2d1c00; stroke-width: 3; }
+.route.rt-a .rt-n.k-fort:not(.done) .seal, .route.rt-a .rt-n.k-boss:not(.done) .seal { fill: #2e1f30; stroke: #ffc15a; stroke-width: 3; }
+.route.rt-a .rt-n.k-fort:not(.done) .ic, .route.rt-a .rt-n.k-boss:not(.done) .ic { stroke: #ffd88f; }
+.route.rt-a .rt-n.k-boss:not(.done) .seal { fill: #4a1e22; }
+.route.rt-a .rt-n .lb { font: 800 12.5px var(--serif); text-anchor: middle; fill: #ffd88f; paint-order: stroke; stroke: rgba(10,12,32,.85); stroke-width: 3px; letter-spacing: .06em; }
+.route.rt-a .rt-n .st { font: 800 11px var(--sans); text-anchor: middle; fill: #ff9a82; paint-order: stroke; stroke: rgba(10,12,32,.85); stroke-width: 3px; }
+.route.rt-a .rt-l { fill: none; stroke-linecap: round; pointer-events: none; }
+.route.rt-a .rt-l.done { stroke: #e9b866; stroke-width: 3; stroke-dasharray: none; opacity: .75; }
+.route.rt-a .rt-l.go { stroke: #e9b866; stroke-width: 3; stroke-dasharray: none; opacity: .6; }
+.route.rt-a .rt-l.go.sel { stroke: #ffc15a; stroke-width: 3.6; opacity: 1; }
+.route.rt-a .rt-l.idle { stroke: #8d8fbf; stroke-width: 2.4; stroke-dasharray: 2 7; opacity: .8; }
+.route.rt-a .rt-dot { fill: #a9adde; stroke: #e9eaff; stroke-width: 1; pointer-events: none; }
+.route.rt-a .rt-dot.sel, .route.rt-a .rt-dot.done { fill: #ffc15a; stroke: #fff3d0; }
+.route.rt-a .rta-bg { stroke: #c9a35a; stroke-width: 1.6; }
+@media (prefers-reduced-motion: reduce) { .route.rt-a .rt-n.avail:not(.sel) .seal { animation: none; } }
+@media (max-height: 680px) { .route.rt-a .rt-n .st { font-size: 18px; } }   /* 背の低い画面は地図が縮むので、亜種の字を大きく（8px 以上で見えるように） */
+.runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(110px, calc(100dvh - 470px - var(--rr, 0) * 56px), 330px); }
+@media (max-height: 740px) and (max-aspect-ratio: 6/5) { .runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(100px, calc(100dvh - 430px - var(--rr, 0) * 56px), 260px); } }
+@media (max-height: 680px) and (max-aspect-ratio: 6/5) { .runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(90px, calc(100dvh - 400px - var(--rr, 0) * 52px), 220px); } }
+@media (min-aspect-ratio: 6/5) and (min-width: 560px) { .runv.is-map.map-a .rv-track svg.route.rt-a { max-height: clamp(110px, calc(100dvh - 210px), 360px); } }
 /* ---- 地点画面（地図）：どの向き・どの大きさでも、スクロールなしで全部が見えるように ----
    高さは dvh で測って、地図の高さを残りの余白に合わせて決める。足りないときは説明文から先に減らす。 */
 .runv.is-map .r-card { padding: 12px 14px 12px; gap: 5px; }
@@ -2945,7 +2982,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.19</p>
+    <p class="c-ver" id="cVer">ver 5.8.20</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3465,7 +3502,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.19';
+  const APP_VERSION = '5.8.20';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -7953,7 +7990,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };
   /* 遠征地図の描画：いまの章を1つの島として描き、地点ごとの領地（ボロノイ分割）に分ける。
      道は ROUTE の接続そのもの。通った道は実線、いま進める道は金、その先は点線 */
-  const RT_W = 360, RT_H = 222;
+  const RT_W = 360, RT_H = 222, RT_HA = 360;   // RT_HA：遠征の地図（見本A・v5.8.20）は縦に広く、左下から右上へ進む
   const rtHash = (str) => { let h = 2166136261; for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); } return ((h >>> 0) % 1000) / 1000; };
   // 凸多角形でなくても、半平面で切り取る（Sutherland–Hodgman）
   function rtClip(poly, px, py, nx, ny) {
@@ -7968,19 +8005,21 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 章の配置：列（地点）ごとの x、列の中の並び y。島の輪郭と、各地点の領地
   const rtGeoCache = {};
   function rtGeo(ch) {
-    if (rtGeoCache[ch]) return rtGeoCache[ch];
+    const A = EXPM(), H = A ? RT_HA : RT_H, ck = ch + (A ? 'a' : '');
+    if (rtGeoCache[ck]) return rtGeoCache[ck];
     const ids = Object.keys(ROUTE.nodes).filter((id) => ROUTE.nodes[id].ch === ch && ROUTE.nodes[id].kind !== 'start');
     const entry = ch === 0 ? 'start' : Object.keys(ROUTE.nodes).find((id) => ROUTE.nodes[id].ch === ch - 1 && (ROUTE.nodes[id].kind === 'fort'));
     const all = [entry].concat(ids), steps = all.map((id) => ROUTE.nodes[id].step), s0 = Math.min.apply(null, steps), s1 = Math.max.apply(null, steps);
-    const X0 = 34, X1 = RT_W - 34, Y0 = 22, Y1 = RT_H - 40;
+    const X0 = A ? 44 : 34, X1 = RT_W - (A ? 44 : 34), Y0 = A ? 96 : 22, Y1 = H - (A ? 64 : 40);
     const pt = {};
     all.forEach((id) => {
       const n = ROUTE.nodes[id], j = rtHash(id) - 0.5, k = rtHash(id + 'y') - 0.5;
-      const three = Object.keys(ROUTE.nodes).filter((o) => ROUTE.nodes[o].step === n.step).length === 3, dx = three ? (n.row === 1 ? 15 : -7) : 0;  // 3つ並ぶ列は中央を少しずらし、文字の重なりを避ける
-      pt[id] = [X0 + (X1 - X0) * (n.step - s0) / Math.max(1, s1 - s0) + dx + j * 8, Y0 + (Y1 - Y0) * n.y + k * 6];
+      const three = Object.keys(ROUTE.nodes).filter((o) => ROUTE.nodes[o].step === n.step).length === 3, dx = three ? (n.row === 1 ? (A ? 24 : 15) : -7) : 0;  // 3つ並ぶ列は中央を少しずらし、文字の重なりを避ける
+      const fx = (n.step - s0) / Math.max(1, s1 - s0);
+      pt[id] = [X0 + (X1 - X0) * fx + dx + j * 8, Y0 + (Y1 - Y0) * n.y + k * 6 + (A ? 20 - 40 * fx : 0)];   // 見本A：先へ行くほど上へ（左下の入口から右上の章の主へ）
     });
     // 島の輪郭：楕円を章ごとに少し崩す
-    const isl = [], cx = RT_W / 2, cy = (RT_H - 12) / 2, rx = RT_W / 2 - 6, ry = (RT_H - 12) / 2 - 3;
+    const isl = [], cx = RT_W / 2, cy = (H - 12) / 2, rx = RT_W / 2 - 6, ry = (H - 12) / 2 - 3;
     for (let i = 0; i < 56; i++) {
       const t = i / 56 * Math.PI * 2, w = 1 + 0.035 * Math.sin(3 * t + ch * 1.7) + 0.03 * Math.sin(7 * t + ch) + 0.018 * Math.sin(13 * t + ch * 2.3);
       const e = Math.pow(Math.abs(Math.cos(t)), 0.62) * Math.sign(Math.cos(t)), f = Math.pow(Math.abs(Math.sin(t)), 0.72) * Math.sign(Math.sin(t));
@@ -7994,7 +8033,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     });
     const span = [];
     for (let st = s0; st <= s1; st++) span.push([st, X0 + (X1 - X0) * (st - s0) / Math.max(1, s1 - s0)]);
-    return (rtGeoCache[ch] = { all, pt, isl, cell, span, entry });
+    return (rtGeoCache[ck] = { all, pt, isl, cell, span, entry, H });
   }
   const rtD = (poly) => 'M' + poly.map((p) => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('L') + 'Z';
   // 地点の見出し（地図とカードで共通）。地図に出すのは既存データにある情報だけ
@@ -8008,12 +8047,83 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (EXPM()) return { g: n.kind === 'fort' ? '主' : '戦', t: n.kind === 'fort' ? '章の主' : '戦闘', s: c.variant ? '亜種' : '' };
     return { g: '戦', t: n.kind === 'fort' ? '砦の戦い' : '戦闘', s: '★'.repeat(tier + 1) + (c.variant ? ' 亜種' : '') };
   }
+  // 地図の見本A（v5.8.20・2026-11-17 決定）：環廊の回廊を描いた地図に、大きなメダル（線画のアイコン）を置く。左下の入口から右上の章の主へ進む。
+  //   領地（.land）は見えない当たり判定として残す（タップの広さは今までどおり）。表示だけで、道の決まり・保存は変えない
+  const RTA_IC = {
+    gate: '<path d="M5 21V10a7 7 0 0 1 14 0v11"/><path d="M9 21v-7a3 3 0 0 1 6 0v7"/><path d="M3 21h18"/>',
+    sword: '<path d="M4 4l10 10M4 4h4M4 4v4"/><path d="M20 4L10 14M20 4h-4M20 4v4"/><path d="M8 16l-3 3M16 16l3 3M7 13l4 4M17 13l-4 4"/>',
+    rest: '<path d="M12 3c2 3 4 4 4 7a4 4 0 0 1-8 0c0-2 1-3 2-4 .5 1 1 1.5 2 2 0-2-1-3 0-5z"/><path d="M5 16h14l-2 4H7z"/>',
+    event: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9a8 5 0 0 1 16 0"/><path d="M4 13h16"/><rect x="10.5" y="11.5" width="3" height="4" rx=".6"/>',
+    scroll: '<path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8"/><path d="M7 4a2 2 0 0 0-2 2v1h4"/><path d="M7 4v14a2 2 0 0 0 2 2"/><path d="M11 9h5M11 13h5"/>',
+    altar: '<path d="M12 2.5c1.6 2.2 3 3.2 3 5.2a3 3 0 0 1-6 0c0-1.4.8-2.2 1.5-3 .4.7.8 1 1.5 1.4 0-1.4-.7-2.2 0-3.6z"/><path d="M5 21h14M7 21v-6h10v6M5 15h14l-1-2H6z"/><path d="M9 18h6"/>',
+    check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>'
+  };
+  const RTA_TINT = [['#2b3062', '#191c40', '#5b61a3'], ['#21434d', '#122930', '#4f8f96'], ['#4a2633', '#28141f', '#a3606b']];   // 章ごとの色（祈りの間・貝殻の書庫・竜の眠る祭壇）
+  function rtaBack(ch, H) {
+    const T = RTA_TINT[Math.min(ch, RTA_TINT.length - 1)], W = RT_W;
+    let a = '<defs><linearGradient id="rtaBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + T[0] + '"/><stop offset="1" stop-color="' + T[1] + '"/></linearGradient>' +
+      '<radialGradient id="rtaGlow"><stop offset="0" stop-color="#ffd27a" stop-opacity=".55"/><stop offset="1" stop-color="#ffd27a" stop-opacity="0"/></radialGradient>' +
+      '<linearGradient id="rtaWater" x1="0" x2="1"><stop offset="0" stop-color="#3f6fa8" stop-opacity=".15"/><stop offset=".5" stop-color="#6fa0d8" stop-opacity=".5"/><stop offset="1" stop-color="#3f6fa8" stop-opacity=".15"/></linearGradient></defs>';
+    a += '<rect class="rta-bg" x="1" y="1" width="' + (W - 2) + '" height="' + (H - 2) + '" rx="12" fill="url(#rtaBg)"/>';
+    // 上のアーチの列と、まんなかの薔薇窓
+    a += '<g class="rta-arch" fill="rgba(10,12,32,.55)" stroke="' + T[2] + '" stroke-width="1.1">';
+    [[8, 52, 92], [66, 50, 80], [244, 50, 80], [300, 52, 92]].forEach(([x, w, h]) => { a += '<path d="M' + x + ' ' + h + 'V' + (h * 0.4).toFixed(0) + 'q0-' + (w * 0.5).toFixed(0) + ' ' + (w / 2) + '-' + (w * 0.7).toFixed(0) + 'q' + (w / 2) + ' ' + (w * 0.2).toFixed(0) + ' ' + (w / 2) + ' ' + (w * 0.7).toFixed(0) + 'V' + h + 'z"/>'; });
+    a += '</g><circle cx="180" cy="40" r="38" fill="url(#rtaGlow)" opacity=".55"/><g fill="none" stroke="' + T[2] + '" stroke-width="1" opacity=".8"><circle cx="180" cy="40" r="28"/><circle cx="180" cy="40" r="17"/><path d="M180 12v56M152 40h56M160 20l40 40M200 20l-40 40"/></g>';
+    // 両側の柱と、下の地下水路
+    a += '<g fill="rgba(10,12,32,.45)" stroke="' + T[2] + '" stroke-width="1" opacity=".9"><rect x="2" y="100" width="14" height="' + (H - 102) + '"/><rect x="' + (W - 16) + '" y="100" width="14" height="' + (H - 102) + '"/></g>';
+    const wy = H - 50;
+    a += '<path d="M16 ' + wy + ' C80 ' + (wy - 26) + ' 120 ' + (wy + 24) + ' 180 ' + (wy - 4) + ' S300 ' + (wy - 30) + ' 344 ' + (wy + 6) + '" fill="none" stroke="url(#rtaWater)" stroke-width="14" stroke-linecap="round"/>';
+    a += '<path d="M16 ' + wy + ' C80 ' + (wy - 26) + ' 120 ' + (wy + 24) + ' 180 ' + (wy - 4) + ' S300 ' + (wy - 30) + ' 344 ' + (wy + 6) + '" fill="none" stroke="#9cc4ef" stroke-width="1" stroke-dasharray="4 10" opacity=".55"/>';
+    // 崩れた石とろうそく（章ごとに少し場所を変える）
+    a += '<g fill="rgba(255,255,255,.06)" stroke="' + T[2] + '" stroke-width="1">';
+    [[40, H - 18], [292, H - 22], [150, H - 10], [62, 150]].forEach(([x, y], i) => { const o = (ch * 17 + i * 23) % 30 - 15; a += '<path d="M' + (x + o) + ' ' + y + 'l12-9 16 3 5 8-10 6H' + (x + o + 3) + 'z"/>'; });
+    a += '</g><g>';
+    [[74, H - 24], [304, H - 30], [228, H - 12]].forEach(([x, y], i) => { const o = (ch * 29 + i * 41) % 40 - 20; a += '<rect x="' + (x + o) + '" y="' + y + '" width="4" height="12" rx="1" fill="#f6efc8"/><ellipse cx="' + (x + o + 2) + '" cy="' + (y - 4) + '" rx="2.4" ry="4" fill="#ffcf73"/>'; });
+    return a + '</g>';
+  }
+  function rtaIcon(k, x, y, sz) { return '<g class="ic" transform="translate(' + (x - sz / 2).toFixed(1) + ' ' + (y - sz / 2).toFixed(1) + ') scale(' + (sz / 24).toFixed(3) + ')">' + RTA_IC[k] + '</g>'; }
+  function trackA(G, ch, here, done, avail, sel, seq) {
+    const H = G.H;
+    let land = '', road = '', mark = '', glow = '';
+    G.all.forEach((id) => {
+      const n = ROUTE.nodes[id], st = id === here ? 'here' : done.has(id) ? 'done' : avail[id] != null ? 'avail' : 'locked';
+      const inf = rtInfo(id), p = G.pt[id], big = n.kind === 'fort' || n.kind === 'boss', dense = G.span.length >= 5, R = big ? (dense ? 28 : 31) : (dense ? 22 : 25);   // 5列ある章（第3章）は少し小さく
+      const cls = 'rt-n k-' + n.kind + ' ' + st + (id === sel ? ' sel' : '');
+      const stTxt = { done: '攻略済み', here: '現在地', avail: '進める', locked: 'まだ進めない' }[st];
+      const pick = avail[id] != null ? ' data-pick="' + avail[id] + '" tabindex="0" role="button" aria-pressed="' + (id === sel) + '" aria-label="地点' + n.step + '　' + inf.t + (inf.s ? '　' + inf.s : '') + '（進める）"' : '';
+      land += '<g class="' + cls + '"' + pick + '><title>地点' + n.step + '　' + inf.t + (inf.s ? '　' + inf.s : '') + '：' + stTxt + '</title><path class="land" d="' + rtD(G.cell[id]) + '"/></g>';
+      const ic = n.kind === 'start' ? 'gate' : big ? 'altar' : n.kind === 'camp' ? (inf.g === '縁' ? 'event' : inf.g === '継' ? 'scroll' : 'rest') : 'sword';
+      const x = p[0].toFixed(1), y = p[1].toFixed(1);
+      if (big && st !== 'done') glow += '<circle cx="' + x + '" cy="' + y + '" r="' + (R + 34) + '" fill="url(#rtaGlow)"/>';
+      if (st === 'here') glow += '<circle cx="' + x + '" cy="' + y + '" r="' + (R + 16) + '" fill="url(#rtaGlow)" opacity=".8"/>';
+      mark += '<g class="' + cls + ' mk"' + (avail[id] != null ? ' data-pick="' + avail[id] + '"' : '') + '>' +
+        (id === sel ? '<circle class="ring" cx="' + x + '" cy="' + y + '" r="' + (R + 6) + '"/>' : '') +
+        '<circle class="seal" cx="' + x + '" cy="' + y + '" r="' + R + '"/>' + rtaIcon(ic, p[0], p[1], big ? (dense ? 32 : 36) : (dense ? 25 : 28)) +
+        (st === 'done' ? '<circle class="ok" cx="' + (p[0] + R * 0.72).toFixed(1) + '" cy="' + (p[1] - R * 0.72).toFixed(1) + '" r="8"/>' + rtaIcon('check', p[0] + R * 0.72, p[1] - R * 0.72, 12) : '') +
+        (inf.s && st !== 'done' && st !== 'here' ? '<text class="st" x="' + x + '" y="' + (p[1] + R + 14).toFixed(1) + '">' + inf.s + '</text>' : '') + '</g>';   // 分類の文字ラベルは付けない（UI監査 C10）。いま＝金、章の主＝大きく光る祭壇で見分ける
+      ROUTE.nodes[id].next.forEach((t) => {
+        if (G.all.indexOf(t) < 0) return;
+        const q = G.pt[t], taken = seq.indexOf(t) > 0 && seq[seq.indexOf(t) - 1] === id, go = id === here && avail[t] != null;
+        const mx = (p[0] + q[0]) / 2, my = (p[1] + q[1]) / 2, c1 = (p[0] + mx) / 2, k = (q[1] - p[1]) * 0.25;
+        const kind = taken ? 'done' : go ? 'go' + (t === sel ? ' sel' : '') : 'idle';
+        road += '<path class="rt-l ' + kind + '" d="M' + x + ' ' + y + ' Q' + c1.toFixed(1) + ' ' + (p[1] + k).toFixed(1) + ' ' + mx.toFixed(1) + ' ' + my.toFixed(1) + ' T' + q[0].toFixed(1) + ' ' + q[1].toFixed(1) + '"/>';
+        if (taken || go) road += '<circle class="rt-dot ' + kind + '" cx="' + mx.toFixed(1) + '" cy="' + my.toFixed(1) + '" r="4"/>';
+      });
+    });
+    return '<svg class="route rt-a" viewBox="0 0 ' + RT_W + ' ' + H + '" role="group" aria-label="遠征地図（' + chName(ch) + '）。' + (here === 'start' ? '出陣前' : '現在地は地点' + ROUTE.nodes[here].step) + '。光っているメダルへ進める">' +
+      rtaBack(ch, H) + '<g class="rt-roads">' + road + '</g>' + glow + land + mark + '</svg>';
+  }
   function trackHTML() {
     const here = routeCur(), done = new Set(['start'].concat(run.path || []));
     const avail = {}; run.choices.forEach((c, i) => { if (c.rid) avail[c.rid] = i; });
     const sel = routeSel != null && run.choices[routeSel] ? run.choices[routeSel].rid : null;
     const first = run.choices[0] && run.choices[0].rid, ch = first ? ROUTE.nodes[first].ch : ROUTE.nodes[here].ch;
     const G = rtGeo(ch), seq = ['start'].concat(run.path || []);
+    if (EXPM()) {   // 地図の見本A（v5.8.20）
+      const prog = '<div class="rt-prog" role="img" aria-label="地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '">' + Array.from({ length: EXP.nodes }, (_, i) => '<i class="' + (i < run.node ? 'done' : i === run.node ? 'now' : '') + (EXP.chiefs.includes(i + 1) ? ' chief' : '') + '"></i>').join('') + '</div>';
+      const chips = []; for (let i = 0; i < ROUTE.chapters; i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + chName(i) + '</span>');   // 章の名前の札（地点選びAでは隠れている。読み上げと古い画面のため残す）
+      return prog + '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div>' + trackA(G, ch, here, done, avail, sel, seq);
+    }
     let land = '', road = '', mark = '';
     G.all.forEach((id) => {
       const n = ROUTE.nodes[id], st = id === here ? 'here' : done.has(id) ? 'done' : avail[id] != null ? 'avail' : 'locked';

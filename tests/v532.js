@@ -21,7 +21,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
       const star = tx.some((t) => /★/.test(t.textContent)) || [...document.querySelectorAll('#rvTrack [aria-label]')].some((e) => /★/.test(e.getAttribute('aria-label')));
       const chips = [...document.querySelectorAll('.rt-ch span')].map((e) => R(e).height);
       const picks = [...document.querySelectorAll('#rvTrack g[data-pick]:not(.mk)')].map((g) => { const r = R(g); return [Math.round(r.width), Math.round(r.height)]; });
-      return { small, star, chips, picks, n: tx.length };
+      return { small, star, chips, picks, n: tx.length + document.querySelectorAll('#rvTrack g.ic').length };   // v5.8.20：地図の見本Aは字の代わりに線画のアイコン。字が1つもない地図もある
     });
     ok(m.n > 0 && !m.small.length, w + '×' + h + ' 1 地図の文字が8px以上 ' + JSON.stringify(m.small));
     ok(!m.star, w + '×' + h + ' 2 遠征の地図に★がない');
