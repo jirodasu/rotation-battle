@@ -211,8 +211,11 @@ const vis = (p, id) => p.evaluate((id) => !document.getElementById(id).hidden, i
               const a = dmgActs[0], cutOn = el.classList.contains('cut'), mm = el.querySelector('b').textContent.replace(/×\d+$/, '').match(/^(\d+)(?:〜(\d+))?$/);
               if (mm) { const lo = +mm[1], hi = mm[2] ? +mm[2] : lo; tk = { all: a.rule === 'all', lo, hi, n: a.rule === 'all' ? lo : cutOn ? lo : lo * (a.hits || 1), cut: cutOn }; } }
             return { m, tk, random: acts.some((a) => a.rule === 'random'), ctx: (rot ? 'rot' : R.phase) + ' ' + acts.map((a) => a.rule).join('+'), snap: R.log.slice() }; }, rot);
-          if (rot) { await p.mouse.up(); } else await p.click(st.prep ? '#btnStart' : '#btnStay');
-          await p.waitForTimeout(20); continue;
+          if (rot) { await p.mouse.up(); } else await p.click(st.prep ? '#btnStart' : '#btnStay').catch(() => {});
+          await p.waitForTimeout(20);
+          // v5.8.17：ヒントが出ているあいだは判断が止まる。先読みのあとにヒントが出て、押した手が届かなかったときは、その予告は照合しない
+          if (await p.evaluate(() => !document.getElementById('tip').hidden)) pred = null;
+          continue;
         }
         await p.waitForTimeout(25);
       }

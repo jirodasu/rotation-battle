@@ -18,6 +18,7 @@ async function toWin(b, rm, w, h) {
   await p.addInitScript(tipsOff);
   await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400);
   await p.click('#begin'); await p.waitForTimeout(700);
+  await p.touchscreen.tap(195, 120); await p.waitForTimeout(300);   // v5.8.17：初めての地図は目標の吹き出しのあと、タップで道の札が出る
   const m0 = await st(p);
   await p.click('#rvCards .rv-card[data-i="0"]'); await p.waitForTimeout(200); await p.click('#rvGo'); await p.waitForTimeout(1300);
   await p.evaluate(() => { const R = window.__rb; R.enemy.hp = 1; R.run.members.forEach((m) => { m.atk = 99; m.hp = Math.max(1, m.max - 10); }); });

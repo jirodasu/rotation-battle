@@ -17,6 +17,7 @@ async function open(b, o) {
   await p.addInitScript(([t, m]) => { try { if (!sessionStorage.getItem('seeded')) { localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-ending', '1'); if (m) localStorage.setItem('rb-exp', m); sessionStorage.setItem('seeded', '1'); } } catch (e) { /* */ } }, [JSON.stringify(tips), o.meta ? JSON.stringify(o.meta) : null]);
   const url = testPage();
   await p.goto(url); await p.waitForTimeout(400); await p.click('#cover').catch(() => {}); await p.waitForTimeout(500); await p.click('#begin'); await p.waitForTimeout(900);
+  if (!o.goal) { await p.touchscreen.tap(195, 120); await p.waitForTimeout(300); }   // 初めての地図の吹き出しを閉じて道の札を出す
   return { ctx, p, errs };
 }
 const vis = (p, sel) => p.evaluate((s) => [...document.querySelectorAll(s)].map((e) => getComputedStyle(e).visibility === 'visible'), sel);

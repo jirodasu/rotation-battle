@@ -1,6 +1,6 @@
 // v5.3.3 画面を減らす
 // 合格の基準（測る前に決めたもの）：
-//  1. 遠征の途中の勝利では勝利パネルを出さず、報酬の画面へ。題は「勝利」、★（3つの枠、取った数だけ金）、「Nターンで撃破」「報酬を1つ選ぶ」が出る。報酬は4枚
+//  1. 遠征の途中の勝利では勝利パネルを出さず、報酬の画面へ。題は「勝利」、★（3つの枠、取った数だけ金）、「Nターンで撃破」が出る。「報酬を1つ選ぶ」は上の一文ではなく札の見出し（v5.8.17）。報酬は4枚
 //  2. 戦闘のあとの回復は、報酬の画面の名簿と一文で見える（回復した仲間がいるとき）
 //  3. 入れ替えを「やめる」で戻っても、題は「勝利」のまま。報酬を選んで地図へ進むと「勝利」は消える
 //  4. 負け・最後の戦い・チュートリアルは、これまでどおり勝利／全滅のパネル
@@ -33,11 +33,11 @@ async function toBattle(p) {
     for (let i = 0; i < 100; i++) { const s = await p.evaluate(() => ({ res: !document.getElementById('result').hidden, rv: !document.getElementById('runv').hidden })); if (s.res) sawResult = true; if (s.rv) break; await p.waitForTimeout(100); }
     await p.waitForTimeout(800);
     const r = await p.evaluate(() => { const R = (e) => e.getBoundingClientRect(), card = document.querySelector('#rvCards .rv-card');
-      return { t: document.getElementById('rvTitle').textContent, st: document.querySelectorAll('#rvStars i').length, on: document.querySelectorAll('#rvStars i.on').length, sub: document.getElementById('rvSub').textContent, n: document.querySelectorAll('#rvCards .rv-card').length,
+      return { t: document.getElementById('rvTitle').textContent, st: document.querySelectorAll('#rvStars i').length, on: document.querySelectorAll('#rvStars i.on').length, sub: document.getElementById('rvSub').textContent, pick: /報酬を1つ選ぶ/.test((document.querySelector('#rvCards .rv-pick') || {}).textContent || ''), n: document.querySelectorAll('#rvCards .rv-card').length,
         heal: document.querySelectorAll('#rvRoster .rv-heal').length, note: document.getElementById('rvHealNote').hidden ? '' : document.getElementById('rvHealNote').textContent,
         vis: [document.getElementById('rvTitle'), document.getElementById('rvStars'), card].every((e) => { const q = R(e); return q.top >= 0 && q.top < innerHeight - 20 && q.left >= 0 && q.right <= innerWidth + 1; }), res: !document.getElementById('result').hidden }; });
     ok(!sawResult && !r.res, w + '×' + h + ' 1 勝利パネルは出ない');
-    ok(r.t === '勝利' && r.st === 3 && r.on >= 1 && /ターンで撃破/.test(r.sub) && /報酬を1つ選ぶ/.test(r.sub) && r.n === 4, w + '×' + h + ' 1 報酬の画面が「勝利」：★' + r.on + '　' + r.sub + '　札' + r.n);
+    ok(r.t === '勝利' && r.st === 3 && r.on >= 1 && /ターンで撃破/.test(r.sub) && !/報酬を1つ選ぶ/.test(r.sub) && r.pick && r.n === 4, w + '×' + h + ' 1 報酬の画面が「勝利」：★' + r.on + '　' + r.sub + '　札' + r.n);
     ok(r.heal >= 1, w + '×' + h + ' 2 回復した仲間に「+N」（' + r.heal + '人）' + (r.note ? '　' + r.note.slice(0, 30) : ''));
     ok(r.vis, w + '×' + h + ' 6 題・★・報酬の1枚目が画面内');
     // 3. 入れ替え→やめる
