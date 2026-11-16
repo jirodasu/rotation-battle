@@ -66,6 +66,8 @@ Object.assign(CANDS, {
     { name: '左の道／右の道', branch: { rot: { rule: 'all', dmg: 14 }, stay: { rule: 'back', dmg: 15 } } }, { name: '坂の道／沢の道', branch: { rot: { rule: 'lowhp', dmg: 20 }, stay: { rule: 'mid', dmg: 13 } } }] } },
   A10: { ch: 2, src: 'A', def: { name: '灯芯を摘む者', hp: 300, spd: 6, def: 1, pattern: [
     { name: '摘芯', rule: 'lowhp', dmg: 14, steal: { at: 1, n: 1 } }, { name: '芯喰い', rule: 'all', dmg: 12 }, { name: 'ため', rule: 'charge' }, { name: '黒い息', rule: 'all', dmg: 23, pierce: true }, { name: '摘芯', rule: 'lowhp', dmg: 14, steal: { at: 1, n: 1 } }] } },
+  A09b: { ch: 2, src: 'A', def: { name: '岐路の案内翁（7割）', hp: 260, spd: 5, def: 2, pattern: [
+    { name: '左の道／右の道', branch: { rot: { rule: 'all', dmg: 10 }, stay: { rule: 'back', dmg: 11 } } }, { name: '坂の道／沢の道', branch: { rot: { rule: 'lowhp', dmg: 14 }, stay: { rule: 'mid', dmg: 9 } } }] } },
   B01: { ch: 0, src: 'B', def: { name: '鐘腹の守り蟲', hp: 140, spd: 4, def: 1, pattern: [
     { name: '強者狙い', rule: 'highhp', dmg: 14 }, { name: '小突き', rule: 'lowhp', dmg: 10 }, { name: '鐘をためる', rule: 'charge' }, { name: '大鐘の衝撃', rule: 'all', dmg: 20 }] } },
   B02: { ch: 0, src: 'B', def: { name: '継ぎ目の亡衣', hp: 140, spd: 4, def: 3, rotDef: 3, pattern: [
@@ -76,7 +78,7 @@ Object.assign(CANDS, {
     { name: '閉櫃', rule: 'none', defUp: 6 }, { name: '殻の衝撃', rule: 'all', dmg: 12 }, { name: '開櫃', rule: 'lowhp', dmg: 20 }, { name: '力をためる', rule: 'charge' }, { name: '聖櫃砕き', rule: 'all', dmg: 26 }] } },
   B06: { ch: 2, src: 'B', def: { name: '灯盗みの火鼠', hp: 260, spd: 6, def: 1, pattern: [
     { name: '噛みつき', rule: 'lowhp', dmg: 18 }, { name: '灯盗み', rule: 'none', steal: { at: 1, n: 1, once: true } }, { name: '力をためる', rule: 'charge' }, { name: '火の暴発', rule: 'all', dmg: 27 }] } },
-  B07: { ch: 2, src: 'B', def: { name: '三段の鐘獣', hp: 270, spd: 4, def: 2, pattern: [
+  B07: { ch: 2, src: 'B', def: { name: '三段の鐘獣', rows: true, hp: 270, spd: 4, def: 2, pattern: [
     { name: '前鐘', rule: 'all', dmg: 15 }, { name: '中鐘', rule: 'mid', dmg: 12 }, { name: '後鐘', rule: 'back', dmg: 13 }, { name: '三鐘をためる', rule: 'charge' }, { name: '大鐘', rule: 'all', dmg: 26 }] } },
   B08: { ch: 2, src: 'B', def: { name: '貪り火の獣', hp: 260, spd: 5, def: 1, starve: true, pattern: [
     { name: '爪', rule: 'lowhp', dmg: 17 }, { name: '力をためる', rule: 'charge' }, { name: '炎の咆哮', rule: 'all', dmg: 27 }, { name: '尾撃', rule: 'lowhp', dmg: 12 }] } },
@@ -87,13 +89,13 @@ Object.assign(CANDS, {
 });
 // 仕掛けを外した同じ敵（数値はそのまま、ふつうの技に置き換える）
 export function plain(d) {
-  const o = JSON.parse(JSON.stringify(d));
+  const o = JSON.parse(JSON.stringify(d)); o.__rows = !!d.rows;   // 三段の鐘獣：仕掛けなし＝列の順番をやめて、全部「攻撃列の全員」に
   const fix = (a) => { if (a.rule === 'highhp' || a.rule === 'highatk') a.rule = 'lowhp'; if (/終の刻/.test(a.name)) { a.dmg = 24; delete a.pierce; } delete a.steal; delete a.silence; delete a.douse; delete a.strip; delete a.drain; delete a.noRest; delete a.vsHurt; if (a.rule === 'lance' || a.rule === 'col') a.rule = 'lowhp'; delete a.perRot; delete a.col; delete a.thorns; delete a.reverse; delete a.swap; return a; };
   const fix2 = (a) => { a = fix(a);
     if (a.interrupt) delete a.interrupt; if (a.perMid) { a.dmg += 10; delete a.perMid; } if (a.sleep) delete a.sleep;
     if (a.trap) { Object.assign(a, { rule: a.trap.row === 0 ? 'all' : 'back', dmg: a.trap.dmg }); delete a.trap; }
     if (a.branch) { const b = a.branch.rot; delete a.branch; Object.assign(a, b); }
-    if (a.rule === 'lock') a.rule = 'lowhp'; delete a.mark; delete a.rotHeal; delete a.defUp; delete a.vsEntered; delete a.vsStayed; return a; };
+    if (a.rule === 'lock') a.rule = 'lowhp'; if (o.__rows && (a.rule === 'mid' || a.rule === 'back')) a.rule = 'all'; delete a.mark; delete a.rotHeal; delete a.defUp; delete a.vsEntered; delete a.vsStayed; return a; };
   o.pattern = o.pattern.map(fix2); delete o.shell; delete o.bell; delete o.rotCost; delete o.rotDef; delete o.starve;
   if (o.phase2) { o.pattern = o.pattern; delete o.phase2; }
   return o;
