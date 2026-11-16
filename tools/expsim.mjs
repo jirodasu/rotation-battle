@@ -37,7 +37,7 @@ export function battle(en, party, policy, o) {
   let grid = empty();
   party.forEach((p) => { grid[p.r][p.c] = Object.assign({}, p, { atkReady: true, defReady: true, entered: false }); });
   const e = Object.assign({}, en, { hpNow: en.hp, charged: false, pattern: en.pattern.map((a) => Object.assign({}, a)) });
-  let rots = 0, fallen = 0, stay = 0, bound = false, bell = 0, bellNext = false, shellUp = !!(en.shell);   // 敵10体の検討（2026-11-17）：鐘の数・鐘が鳴るか・殻
+  let po = 0, nextAct = null, traps = [], rots = 0, fallen = 0, stay = 0, bound = false, bell = 0, bellNext = false, shellUp = !!(en.shell);   // 敵10体の検討（2026-11-17）：鐘の数・鐘が鳴るか・殻
   // 実験用（ゲームには無い）：o.rot = { start, gain, cost, cap } … 回すには気力が要る。毎ターン gain 回復、回すと cost 消費
   const RT = o.rot || null; let gauge = RT ? RT.start : 0;
   // 回転コンボ：o.combo = { max, mul }。回すたびに+1、満タンになった回転で入った仲間の突入技を強化して0に戻す。戦闘ごとに0から
@@ -57,18 +57,23 @@ export function battle(en, party, policy, o) {
     const ent = new Map();
     unitsOf(grid).forEach(({ u, r }) => { if (r === 0 && u.entered && u.entry) ent.set(u, boosted.has(u) && boosted.get(u) !== 1 ? boostEntry(u.entry, boosted.get(u)) : u.entry); });
     ent.forEach((x) => { if (x.heal) for (let c = 0; c < COLS; c++) { const u = grid[0][c]; if (u) u.hp = Math.min(u.max, u.hp + x.heal); } });
+    const rotNow = unitsOf(grid).some(({ u, r }) => r === 0 && u.entered);   // このターン、回して入った仲間がいる（A・B案の検討用）
+    let dealt = 0;
     const actors = [{ kind: 'e', spd: e.spd }];
     unitsOf(grid).forEach(({ u, r, c }) => { if (r === 0 || (r === 1 && u.ranged > 0)) actors.push({ kind: 'p', u, r, c, spd: u.spd + ((ent.get(u) && ent.get(u).spd) || 0) }); });
     actors.sort((x, y) => y.spd - x.spd || (x.kind === 'p' ? -1 : 1));
     const pat = e.phase2 && e.hpNow < e.hp * e.phase2.at ? e.phase2.pattern : e.pattern;   // 二つ顔：HPが一定を切ると技の並びが変わる
-    let act = pat[(turn - 1) % pat.length];
+    let act = pat[(((turn - 1 - po) % pat.length) + pat.length) % pat.length];
+    if (nextAct) { act = nextAct; nextAct = null; }   // 割れ鐘：ためを叩き割ったあとの弱い技
+    if (act.branch) act = Object.assign({ name: act.name }, rotNow ? act.branch.rot : act.branch.stay);   // 案内翁：回したか維持したかで、このターンの技が決まる
+    if (act.perMid) { let k = 0; for (let c = 0; c < COLS; c++) if (grid[1][c]) k++; act = Object.assign({}, act, { dmg: act.dmg + act.perMid * k }); }   // 数え貝：補助列の人数ぶん強く
     if (bellNext) { act = Object.assign({ name: '鐘の音', rule: 'all' }, e.bell.act); bellNext = false; }   // 鐘：3回目の回転の次のターンは鐘の音
     if (e.shell && turn > 1 && (turn - 1) % e.shell.every === 0) shellUp = true;   // 割れ殻：殻はときどき戻る
     if (act.perRot) act = Object.assign({}, act, { dmg: act.dmg + act.perRot * rots });   // 数え歌：この戦闘で回した数だけ強くなる
     if (act.silence) ent.clear();
     if (act.douse && CB) combo = 0;   // 灯消し：一巡りの灯（回転コンボ）を0に戻す
     if (act.strip) for (let c = 0; c < COLS; c++) { const m = grid[1][c]; if (m) { m.atkReady = false; m.defReady = false; } }   // 盾剥ぎ：補助列の補助を使い切らせる（回すと付け直る）   // 沈黙：このターンは突入技が出ない
-    if (act.steal && RT && gauge >= act.steal.at) gauge -= act.steal.n;   // 灯盗み：気力がたまっていると盗まれる
+    if (act.steal && RT && gauge >= act.steal.at && !(act.steal.once && e.stolen)) { gauge -= act.steal.n; e.stolen = true; }   // 灯盗み：気力がたまっていると盗まれる
     if (e.starve && act.rule === 'charge' && e.hpNow * 2 < e.hp) { const b = e.pattern[turn % e.pattern.length]; if (b && b.dmg) act = Object.assign({}, b, { big: true }); }   // 飢えた（v5.6.7）
     const guardCol = {};
     unitsOf(grid).forEach(({ u, r, c }) => {
@@ -81,6 +86,12 @@ export function battle(en, party, policy, o) {
     const stayAtk = (rel.has('stance') ? Math.min(RD.stance.stayMax, stay * RD.stance.stayAtk) : 0) + (LP ? lamp * LP.atk : 0);
     for (const a of actors) {
       if (a.kind === 'e') {
+        traps.filter((t) => t.at === turn).forEach((t) => { for (let c = 0; c < COLS; c++) { const v = grid[t.row][c]; if (v) { v.hp = Math.max(0, v.hp - t.dmg); if (v.hp === 0) { grid[t.row][c] = null; fallen++; } } } });   // 仕掛け番人：2ターン前に仕掛けた列が開く
+        if (act.trap) traps.push({ at: turn + 2, row: act.trap.row, dmg: act.trap.dmg });
+        if (act.rotHeal && rotNow) e.hpNow = Math.min(e.hp, e.hpNow + act.rotHeal);   // 蝋人形：回したターンは敵が回復
+        if (act.mark) { const L = unitsOf(grid).filter((x) => x.r === frontRow(grid)); if (L.length) e.markUid = L.reduce((p, q) => (q.u.hp < p.u.hp ? q : p)).u.uid; }   // 審問官：仲間1人に印
+        if (act.rule === 'lock') { const t = unitsOf(grid).find((x) => x.u.uid === e.markUid); if (t) { t.u.hp = Math.max(0, t.u.hp - act.dmg); if (t.u.hp === 0) { grid[t.r][t.c] = null; fallen++; } } if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() }; continue; }   // 印の本人へ（どの列にいても）
+        if (act.rule === 'none' || act.sleep) continue;
         if (act.rule === 'charge') { e.charged = true; continue; }
         if (act.rule === 'bind') { bound = true; continue; }
         e.charged = false;
@@ -137,15 +148,17 @@ export function battle(en, party, policy, o) {
           if (x) power += (x.atk || 0) + (rel.has('bell') ? RD.bell.entryAtk : 0);
         } else power = u.ranged;
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
-        const dfn = e.layer && r === 0 && u.entered ? 0 : Math.max(0, e.def - RN('lens', 'def'));   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
+        const tdef = act.sleep ? 0 : e.def - (e.rotDef && rotNow ? e.rotDef : 0) + (act.defUp || 0);   // 眠り＝防御0・亡衣＝回したターンは防御が下がる・貝守＝閉じると防御が上がる
+        const dfn = e.layer && r === 0 && u.entered ? 0 : Math.max(0, tdef - RN('lens', 'def'));   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
         if (e.variant) power += RN('fang', 'atk');   // 狩人の牙（v5.8.0）：亜種への攻撃は1回ごとに+
         let tot = 0; for (let i = 0; i < hitsN; i++) { let d = Math.max(1, power + (i === 0 ? sup : 0) - dfn); if (shellUp) { if (d >= e.shell.min) shellUp = false; else d = 1; } tot += d; }   // 割れ殻：一撃が min 以上で殻が割れる。それまでは1しか通らない
         if (act.thorns) { u.hp = Math.max(0, u.hp - act.thorns * hitsN); if (u.hp === 0) { grid[r][c] = null; fallen++; } }   // 棘：攻撃した仲間は1回ごとに棘のダメージ
-        e.hpNow -= tot;
+        e.hpNow -= tot; dealt += tot;
         if (e.hpNow <= 0) return { win: true, turns: turn, fallen, hp: hpMap() };
       }
     }
     if (!unitsOf(grid).length) return { win: false, turns: turn, fallen, hp: hpMap() };
+    if (act.interrupt && dealt >= act.interrupt.n) { if (act.interrupt.to) nextAct = act.interrupt.to; if (act.interrupt.sleep) po = turn; }   // ためを叩き割る／眠りに戻す
     unitsOf(grid).forEach(({ u }) => { u.entered = false; });
     boosted.clear();
     if (act.reverse) { const n = empty(); for (let c = 0; c < COLS; c++) { n[0][c] = grid[2][c]; n[1][c] = grid[0][c]; n[2][c] = grid[1][c]; } grid = n; unitsOf(grid).forEach(({ u }) => { u.atkReady = true; u.defReady = true; }); }   // 逆回し：回復列が攻撃列へ（突入技は出ない）

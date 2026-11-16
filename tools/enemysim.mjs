@@ -48,11 +48,53 @@ export const CANDS = {
     { name: '裏の顔', rule: 'back', dmg: 12 }, { name: '断罪', rule: 'lowhp', dmg: 22 }, { name: '呪詛', rule: 'all', dmg: 10, pierce: true }, { name: '審判', rule: 'all', dmg: 22, pierce: true }] }, pattern: [
     { name: '祝詞', rule: 'all', dmg: 12 }, { name: '断罪', rule: 'lowhp', dmg: 24 }, { name: 'ちからをためる', rule: 'charge' }, { name: '審判', rule: 'all', dmg: 26, pierce: true }] } }
 };
+
+// ---- 2026-11-17 朝：添付のA案・B案を同じ物差しで測る（数値は各案の基礎値。第4章の案は第3章の枠で測る） ----
+const N = (o) => o;
+Object.assign(CANDS, {
+  A01: { ch: 0, src: 'A', def: { name: '割れ鐘の番骸', hp: 210, spd: 4, def: 1, pattern: [
+    { name: '打ち鳴らし', rule: 'lowhp', dmg: 13 }, { name: '鐘鳴らし', rule: 'all', dmg: 9 }, { name: 'ため', rule: 'charge', interrupt: { n: 20, to: { name: '落ちた鐘', rule: 'all', dmg: 9 } } }, { name: '落鐘', rule: 'all', dmg: 20, pierce: true }] } },
+  A02: { ch: 1, src: 'A', def: { name: '数え貝の秤守', hp: 230, spd: 4, def: 2, pattern: [
+    { name: '数え打ち', rule: 'lowhp', dmg: 8, perMid: 5 }, { name: '秤ゆらし', rule: 'all', dmg: 8 }, { name: '貝殻投げ', rule: 'all', dmg: 10 }, { name: '大数え', rule: 'lowhp', dmg: 16, perMid: 5 }] } },
+  A03: { ch: 2, src: 'A', def: { name: '眠り竜のまぶた', hp: 250, spd: 3, def: 2, pattern: [
+    { name: 'まどろみ', rule: 'none', sleep: true }, { name: 'まどろみ', rule: 'none', sleep: true }, { name: '開眼の構え', rule: 'charge', interrupt: { n: 30, sleep: true } }, { name: '開眼の一睨み', rule: 'lowhp', dmg: 26 }] } },
+  A04: { ch: 2, src: 'A', def: { name: '祭壇の仕掛け番人', hp: 240, spd: 4, def: 2, pattern: [
+    { name: '石拳', rule: 'lowhp', dmg: 14 }, { name: '仕掛け（攻撃列）', rule: 'none', trap: { row: 0, dmg: 16 } }, { name: 'なぎ払い', rule: 'all', dmg: 10 }, { name: '仕掛け（回復列）', rule: 'none', trap: { row: 2, dmg: 16 } }] } },
+  A05: { ch: 2, src: 'A', def: { name: '旺食の仔竜', hp: 260, spd: 6, def: 0, pattern: [
+    { name: '旺食', rule: 'highhp', dmg: 18 }, { name: '噛みつき', rule: 'lowhp', dmg: 12 }, { name: 'ため', rule: 'charge' }, { name: '盛食', rule: 'highhp', dmg: 22, pierce: true }] } },
+  A09: { ch: 2, src: 'A', def: { name: '岐路の案内翁', hp: 300, spd: 5, def: 2, pattern: [
+    { name: '左の道／右の道', branch: { rot: { rule: 'all', dmg: 14 }, stay: { rule: 'back', dmg: 15 } } }, { name: '坂の道／沢の道', branch: { rot: { rule: 'lowhp', dmg: 20 }, stay: { rule: 'mid', dmg: 13 } } }] } },
+  A10: { ch: 2, src: 'A', def: { name: '灯芯を摘む者', hp: 300, spd: 6, def: 1, pattern: [
+    { name: '摘芯', rule: 'lowhp', dmg: 14, steal: { at: 1, n: 1 } }, { name: '芯喰い', rule: 'all', dmg: 12 }, { name: 'ため', rule: 'charge' }, { name: '黒い息', rule: 'all', dmg: 23, pierce: true }, { name: '摘芯', rule: 'lowhp', dmg: 14, steal: { at: 1, n: 1 } }] } },
+  B01: { ch: 0, src: 'B', def: { name: '鐘腹の守り蟲', hp: 140, spd: 4, def: 1, pattern: [
+    { name: '強者狙い', rule: 'highhp', dmg: 14 }, { name: '小突き', rule: 'lowhp', dmg: 10 }, { name: '鐘をためる', rule: 'charge' }, { name: '大鐘の衝撃', rule: 'all', dmg: 20 }] } },
+  B02: { ch: 0, src: 'B', def: { name: '継ぎ目の亡衣', hp: 140, spd: 4, def: 3, rotDef: 3, pattern: [
+    { name: '針の一突き', rule: 'lowhp', dmg: 13 }, { name: '裂布', rule: 'all', dmg: 9 }, { name: '身を縫う', rule: 'charge' }, { name: '針雨', rule: 'all', dmg: 19 }] } },
+  B04: { ch: 1, src: 'B', def: { name: '逆祈の蝋人形', hp: 240, spd: 4, def: 1, pattern: [
+    { name: '蝋涙', rule: 'lowhp', dmg: 17 }, { name: '逆祈り', rule: 'none', rotHeal: 10 }, { name: '溶蝋の雨', rule: 'all', dmg: 15 }, { name: '蝋の腕', rule: 'lowhp', dmg: 19 }] } },
+  B05: { ch: 1, src: 'B', def: { name: '聖櫃の貝守', hp: 240, spd: 3, def: 1, pattern: [
+    { name: '閉櫃', rule: 'none', defUp: 6 }, { name: '殻の衝撃', rule: 'all', dmg: 12 }, { name: '開櫃', rule: 'lowhp', dmg: 20 }, { name: '力をためる', rule: 'charge' }, { name: '聖櫃砕き', rule: 'all', dmg: 26 }] } },
+  B06: { ch: 2, src: 'B', def: { name: '灯盗みの火鼠', hp: 260, spd: 6, def: 1, pattern: [
+    { name: '噛みつき', rule: 'lowhp', dmg: 18 }, { name: '灯盗み', rule: 'none', steal: { at: 1, n: 1, once: true } }, { name: '力をためる', rule: 'charge' }, { name: '火の暴発', rule: 'all', dmg: 27 }] } },
+  B07: { ch: 2, src: 'B', def: { name: '三段の鐘獣', hp: 270, spd: 4, def: 2, pattern: [
+    { name: '前鐘', rule: 'all', dmg: 15 }, { name: '中鐘', rule: 'mid', dmg: 12 }, { name: '後鐘', rule: 'back', dmg: 13 }, { name: '三鐘をためる', rule: 'charge' }, { name: '大鐘', rule: 'all', dmg: 26 }] } },
+  B08: { ch: 2, src: 'B', def: { name: '貪り火の獣', hp: 260, spd: 5, def: 1, starve: true, pattern: [
+    { name: '爪', rule: 'lowhp', dmg: 17 }, { name: '力をためる', rule: 'charge' }, { name: '炎の咆哮', rule: 'all', dmg: 27 }, { name: '尾撃', rule: 'lowhp', dmg: 12 }] } },
+  B09: { ch: 2, src: 'B', def: { name: '双面の裁判官', hp: 270, spd: 5, def: 2, pattern: [
+    { name: '入列裁き', rule: 'lowhp', dmg: 16, vsEntered: 2 }, { name: '居座り裁き', rule: 'lowhp', dmg: 16, vsStayed: 2 }, { name: '仮面の祈り', rule: 'charge' }, { name: '連帯責任', rule: 'all', dmg: 18 }] } },
+  B10: { ch: 2, src: 'B', def: { name: '魂秤の審問官', hp: 270, spd: 5, def: 2, pattern: [
+    { name: '魂を量る', rule: 'none', mark: true }, { name: '魂の徴収', rule: 'lock', dmg: 28 }, { name: '秤の一撃', rule: 'all', dmg: 11 }, { name: '再び量る', rule: 'none', mark: true }] } }
+});
 // 仕掛けを外した同じ敵（数値はそのまま、ふつうの技に置き換える）
 export function plain(d) {
   const o = JSON.parse(JSON.stringify(d));
   const fix = (a) => { if (a.rule === 'highhp' || a.rule === 'highatk') a.rule = 'lowhp'; if (/終の刻/.test(a.name)) { a.dmg = 24; delete a.pierce; } delete a.steal; delete a.silence; delete a.douse; delete a.strip; delete a.drain; delete a.noRest; delete a.vsHurt; if (a.rule === 'lance' || a.rule === 'col') a.rule = 'lowhp'; delete a.perRot; delete a.col; delete a.thorns; delete a.reverse; delete a.swap; return a; };
-  o.pattern = o.pattern.map(fix); delete o.shell; delete o.bell; delete o.rotCost;
+  const fix2 = (a) => { a = fix(a);
+    if (a.interrupt) delete a.interrupt; if (a.perMid) { a.dmg += 10; delete a.perMid; } if (a.sleep) delete a.sleep;
+    if (a.trap) { Object.assign(a, { rule: a.trap.row === 0 ? 'all' : 'back', dmg: a.trap.dmg }); delete a.trap; }
+    if (a.branch) { const b = a.branch.rot; delete a.branch; Object.assign(a, b); }
+    if (a.rule === 'lock') a.rule = 'lowhp'; delete a.mark; delete a.rotHeal; delete a.defUp; delete a.vsEntered; delete a.vsStayed; return a; };
+  o.pattern = o.pattern.map(fix2); delete o.shell; delete o.bell; delete o.rotCost; delete o.rotDef; delete o.starve;
   if (o.phase2) { o.pattern = o.pattern; delete o.phase2; }
   return o;
 }
@@ -78,6 +120,14 @@ export const SMART2 = (s) => {
   if (nx && nx.douse && s.combo === 2) return true;   // 灯を吹き消される前に3回目を回す   // 沈黙のターンに入ると突入技が出ない
   if (nx && nx.steal && s.gauge >= nx.steal.at) return true;   // 気力を盗まれる前に使う
   if (nx && nx.thorns && front.some((u) => u.hp <= (nx.dmg || 0) + nx.thorns * (u.hits || 1) + 4)) return true;
+  if (nx && nx.branch) {   // 案内翁：回したときと維持したときの技を両方読み、倒れないほうを選ぶ
+    const kill = (act, rowUnits) => act.rule === 'all' ? rowUnits.some((u) => u.hp <= act.dmg) : act.rule === 'lowhp' ? rowUnits.length && rowUnits.reduce((a, b) => (b.hp < a.hp ? b : a)).hp <= act.dmg : false;
+    const back = row(2);
+    const stayK = nx.branch.stay.rule === 'back' ? back.some((u) => u.hp <= nx.branch.stay.dmg) : nx.branch.stay.rule === 'mid' ? mid.some((u) => u.hp <= nx.branch.stay.dmg) : kill(nx.branch.stay, front);
+    const rotK = kill(nx.branch.rot, mid.length ? mid : front);
+    if (stayK && !rotK) return true; if (rotK && !stayK) return false;
+  }
+  if (nx && nx.rotHeal && !lethal) return false;   // 蝋人形：回すと敵が回復するターン
   if (lethal) return true;
   return SMART(s);
 };
