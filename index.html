@@ -2770,6 +2770,10 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 @keyframes healFloat { 0% { transform: translateY(8px) scale(.6); opacity: 0; } 35% { opacity: 1; } 60% { transform: translateY(-3px) scale(1.15); } 100% { transform: none; opacity: 1; } }
 .rv-heal-note, .r-heal { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; margin: 0 !important; padding: 0 !important; }
 @media (prefers-reduced-motion: reduce) { .rv-m.healed .hpb i, .rv-m.healed .rv-heal { animation: none; } }
+/* v5.8.16 回復を見届けてから報酬を出す：回復の演出のあいだ、下の札は場所だけ取って隠す（出たときに上の行が動かないように）。画面をタップすればすぐ出る */
+#rvCards.rv-wait { visibility: hidden; opacity: 0; }
+#rvCards.rv-show { animation: rvCardsIn .3s ease-out both; }
+@keyframes rvCardsIn { from { opacity: 0; transform: translateY(8px); } }
 
 /* ===== C 報酬カード：効き目は金の数字の札。説明は札で足りないもの（レリックの条件）だけ残す（v5.1.60） ===== */
 .rv-card.hd .rv-d { display: none; }
@@ -2928,7 +2932,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.15</p>
+    <p class="c-ver" id="cVer">ver 5.8.16</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3448,7 +3452,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.15';
+  const APP_VERSION = '5.8.16';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8026,8 +8030,20 @@ body.fast #stampOk.on { animation-duration: .5s; }
     v.style.setProperty('--rr', (o.roster || (run ? run.members : [])).length > 7 ? 1 : 0);  // 団員が8人以上だと名簿が2行になる。地図の高さを決める計算に使う
     const card = v.querySelector('.r-card'); card.classList.toggle('memo', !!o.openLog); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
     card.scrollTop = 0;
+    rvHold(!RM && !o.map && o.heal && o.heal.from && Object.keys(o.heal.gain).some((k) => o.heal.gain[k] > 0));
     Music.charge(false); Music.era((run ? run.node : 0) / (RUN.nodes - 1)); Music.set(o.calm ? 'title' : 'march');
   }
+  // v5.8.16 回復の演出（HP棒が伸び終わるまで 0.35秒＋0.9秒）が終わってから、下の報酬を出す。待つあいだに画面をタップすれば、すぐ出す
+  let rvHoldT = 0;
+  function rvHold(on) {
+    const c = $('rvCards'); clearTimeout(rvHoldT); c.classList.remove('rv-wait', 'rv-show');
+    if (!on) return;
+    c.classList.add('rv-wait'); rvHoldT = setTimeout(rvRelease, 1250);
+  }
+  function rvRelease() { const c = $('rvCards'); clearTimeout(rvHoldT); if (!c.classList.contains('rv-wait')) return; c.classList.remove('rv-wait'); void c.offsetWidth; c.classList.add('rv-show'); }
+  let rvTapAt = -1e9;   // タップで出した直後のクリックは、札を選んだことにしない（指を離した位置に出てきた札が押されてしまうため）
+  $('runv').addEventListener('pointerdown', () => { if ($('rvCards').classList.contains('rv-wait')) { rvTapAt = performance.now(); rvRelease(); } });
+  $('runv').addEventListener('keydown', () => { if ($('rvCards').classList.contains('rv-wait')) rvRelease(); });
   // 地図での選択：札か地図の地点を一度タップして選び、「進む」で確定（選んだ札をもう一度タップしても確定）
   function routeRefresh() {
     if (!run || !$('runv').classList.contains('is-map') && !$('rvGo')) return;
@@ -8048,6 +8064,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('rvCards').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-i],[data-go]'); if (!b || b.disabled) return;
     const on = $('rvCards').__on; if (!on) return;
+    if (performance.now() - rvTapAt < 600) return;
     const map = $('runv').classList.contains('is-map');
     let i = b.dataset.go ? routeSel : +b.dataset.i;
     if (map && i == null) return;
