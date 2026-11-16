@@ -2,18 +2,9 @@
 //   node tools/ch4sim.mjs [回数=400] [上書きJSON]
 // 地点1〜10は標準の遊び方（SMART）で進め、踏破した隊だけが第4章に入る。第4章だけ戦い方を変えて比べる。
 // 目標（設計書7節）：第4章に入った隊が主に勝つ割合 標準 40〜55%・毎ターン維持するだけ ≦15%
-import { playRun, SMART, STAY } from './expsim.mjs';
-export const CH4 = {
-  foes: ['shade', 'moth'], chief: 'lightless', hp: [0.506, 0.506, 0.529], dmg: [0.77, 0.77, 0.726],   // 案B（2026-11-16 の400回で、標準45%・毎ターン維持0%・毎ターン回す13%・名人88%）
-  defs: {
-    shade: { name: '影縫いの番人', hp: 300, def: 2, spd: 5, pattern: [
-      { name: '影縫い', rule: 'lowhp', dmg: 16, vsStayed: 2 }, { name: '影縫い', rule: 'lowhp', dmg: 16, vsStayed: 2 }, { name: 'ちからをためる', rule: 'charge' }, { name: '闇の波', rule: 'all', dmg: 22, vsStayed: 2 }] },
-    moth: { name: '燭喰いの蛾', hp: 250, def: 0, spd: 7, pattern: [
-      { name: '鱗粉', rule: 'mid', dmg: 12 }, { name: '体当たり', rule: 'lowhp', dmg: 20 }, { name: '鱗粉', rule: 'mid', dmg: 12 }, { name: '羽ばたき', rule: 'all', dmg: 22 }] },
-    lightless: { name: '灯を知らぬもの', hp: 340, def: 3, spd: 6, pattern: [
-      { name: '影縫い', rule: 'lowhp', dmg: 18, vsStayed: 2 }, { name: '黒い鱗粉', rule: 'mid', dmg: 14 }, { name: 'ちからをためる', rule: 'charge' }, { name: '灯消し', rule: 'all', dmg: 24, pierce: true, vsStayed: 2 }] }
-  }
-};
+import { playRun, SMART, STAY, EXP } from './expsim.mjs';
+// 敵と倍率は、ゲーム本体の EXP（shade・moth・lightless・deep4）をそのまま使う（数値の出どころを1つにする）
+export const CH4 = { foes: ['shade', 'moth'], chief: 'lightless', hp: EXP.deep4.hp.slice(), dmg: EXP.deep4.dmg.slice(), defs: { shade: EXP.shade, moth: EXP.moth, lightless: EXP.lightless } };
 function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s >>>= 0; s ^= s >> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; }; }
 export function report4(n, over) {
   const run = (pol4, N = n, depth = 1) => {
