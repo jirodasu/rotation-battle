@@ -2981,7 +2981,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.19</p>
+    <p class="c-ver" id="cVer">ver 5.8.20</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3501,7 +3501,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.19';
+  const APP_VERSION = '5.8.20';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8121,7 +8121,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const G = rtGeo(ch), seq = ['start'].concat(run.path || []);
     if (EXPM()) {   // 地図の見本A（v5.8.20）
       const prog = '<div class="rt-prog" role="img" aria-label="地点 ' + Math.min(run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '">' + Array.from({ length: EXP.nodes }, (_, i) => '<i class="' + (i < run.node ? 'done' : i === run.node ? 'now' : '') + (EXP.chiefs.includes(i + 1) ? ' chief' : '') + '"></i>').join('') + '</div>';
-      return prog + trackA(G, ch, here, done, avail, sel, seq);
+      const chips = []; for (let i = 0; i < ROUTE.chapters; i++) chips.push('<span class="' + (i < ch ? 'done' : i === ch ? 'now' : '') + '">' + chName(i) + '</span>');   // 章の名前の札（地点選びAでは隠れている。読み上げと古い画面のため残す）
+      return prog + '<div class="rt-ch" aria-hidden="true">' + chips.join('<i></i>') + '</div>' + trackA(G, ch, here, done, avail, sel, seq);
     }
     let land = '', road = '', mark = '';
     G.all.forEach((id) => {
