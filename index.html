@@ -2982,7 +2982,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.20</p>
+    <p class="c-ver" id="cVer">ver 5.8.21</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3502,7 +3502,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.20';
+  const APP_VERSION = '5.8.21';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -7620,7 +7620,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     bless: { hp: 5, ward: 0.75 },
     // 出来事（v5.8.1・提案E）：地点2から、休息の地点の一部（rate）が「出来事」になる。どれも「得るものと失うもの」の札と、安全な札（全員HP+safe割）の2択。章の主は強くならない
     event: { rate: 0.4, safe: 0.3, cost: { ember: 0.2, cask: 0.15 }, shrineRests: 2, caskHp: 4 },
-    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, deepMul: { hp: 1.1, dmg: 1.08 },   // deepMul：深さ3の敵のHP・技（v5.6.7。自動対戦400回で標準の踏破率 9.5%・名人 61.7%）
+    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, pairRate: { 3: 0.35, 4: 0.5, 5: 0.5 },   // pairRate：亜種を2つ重ねる戦闘の割合（v5.8.21。深さ3の敵のHP・技の底上げ deepMul はやめた。自動対戦400回で深さ3の標準の踏破率 約41%）
         // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
       refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
       // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回（v5.6.2 から最大HP+はなし）
@@ -8716,7 +8716,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const XDEPTH = [
     { d: 1, name: '深さ1', desc: 'いつもの環廊。亜種は出ることも、出ないこともある。' },
     { d: 2, name: '深さ2', desc: '戦闘の敵が、かならず「亜種」になる（三位一体と最後の戦いは除く）。同じ敵でも戦い方を変える必要がある。', hint: '実績「初めての突破」' },
-    { d: 3, name: '深さ3', desc: '戦闘の敵が、亜種を2つ重ねて出る。深さ3だけの亜種（灯喰いの・飢えた・重ね鎧の）もいる。', hint: 'どれかの隊で深さ2を踏破すると開く' },
+    { d: 3, name: '深さ3', desc: '戦闘の敵が、ときどき亜種を2つ重ねて出る。重ねたときだけの亜種（灯喰いの・飢えた・重ね鎧の）もいる。', hint: 'どれかの隊で深さ2を踏破すると開く' },
+    { d: 4, name: '深さ4', desc: '亜種を2つ重ねた敵が、戦闘の半分に出る。', hint: 'どれかの隊で深さ3を踏破すると開く' },
+    { d: 5, name: '深さ5', desc: '環廊のいちばん底。', hint: 'どれかの隊で深さ4を踏破すると開く（いまは準備中）', soon: true },
   ];
   const XACH = [
     { id: 'mid', t: '中盤まで', d: '地点7に着く（負けてもよい）', un: 'fast', ok: (S) => S.reach >= 7 },
@@ -8732,10 +8734,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (+m.best >= 6) x.ach.mid = 1;         // 地点7（6地点を終えた）まで来たことがある
     return x;
   }
-  const xDepthOpen = (d, x) => d === 1 || (d === 2 && !!x.ach.first) || (d === 3 && Object.keys(x.won).some((k) => +k.split(':')[1] === 2 && x.won[k] > 0));   // 深さ3（v5.6.7）：どれかの隊で深さ2を踏破
+  const xDepthOpen = (d, x) => d === 1 || (d === 2 && !!x.ach.first) || (d >= 3 && XDEPTH.some((dp) => dp.d === d && !dp.soon) && Object.keys(x.won).some((k) => +k.split(':')[1] === d - 1 && x.won[k] > 0));   // 深さ3〜（v5.6.7・v5.8.21）：どれかの隊で1つ浅い深さを踏破。準備中（soon）の深さは開かない
   const xSqOpen = (id, x) => id === 'std' || !!x.bought[id] || XACH.some((a) => a.un === id && x.ach[a.id]);
   const xMedals = (x) => Math.max(0, XACH.filter((a) => x.ach[a.id]).length - x.spent);
-  const xState = (x) => ({ d2: xDepthOpen(2, x), d3: xDepthOpen(3, x), sq: XSQ.filter((q) => xSqOpen(q.id, x)).map((q) => q.id) });
+  const xState = (x) => ({ d2: xDepthOpen(2, x), d3: xDepthOpen(3, x), d4: xDepthOpen(4, x), d5: xDepthOpen(5, x), sq: XSQ.filter((q) => xSqOpen(q.id, x)).map((q) => q.id) });
   const xHasChoice = (x) => xDepthOpen(2, x) || XSQ.some((q) => q.id !== 'std' && xSqOpen(q.id, x));
   const xDmax = (m) => { const x = xmeta(m); return Math.max(+m.clears > 0 ? 1 : 0, ...Object.keys(x.won).filter((k) => x.won[k] > 0).map((k) => +k.split(':')[1] || 0)); };
   const xVariantRate = () => (run && run.depth >= 2 ? 1 : EXP.variantRate);
@@ -8834,7 +8836,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     Object.keys(ROUTE.nodes).forEach((id) => {
       const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
       if (isFightKind(n.kind)) {
-        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? (run && run.depth >= 3 ? pair() : pick(VK)) : null };
+        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? (run && run.depth >= 3 && rnd() < (EXP.pairRate[run.depth] || 0) ? pair() : pick(VK)) : null };   // 深さ3以降：決まった割合で亜種を2つ重ねる（v5.8.21）。深さ1・2は乱数の並びを変えない
         // 初めての遠征（v5.7.4）：地点1は「しのいだ！」を体験する専用の戦闘（提案A）。地点1・2は亜種を出さない（提案D：基本より先に例外を覚えさせない）
         if (n.step <= 2 && firstRun()) { m[id].variant = null; if (n.step === 1) m[id].foe = 'first'; }
         if (!chief && !last && TRI.steps.includes(n.step)) { m[id].foe = 'trinity'; m[id].variant = null; }   // 三位一体：乱数の並びは変えずに、置き換えるだけ
@@ -8890,14 +8892,13 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const nr = chief && !(run && (run.relics || []).includes('chart')) ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
     const base = k === 'first' ? firstFoe() : k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'first' ? 0 : k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
     const vs = vkeys(vkey), v = vs.length ? vs.reduce((o, k) => { const x = VARIANTS[k]; return { pre: o.pre + x.pre, hp: o.hp * (x.hp || 1), dmg: o.dmg * (x.dmg || 1), def: o.def + (x.def || 0), f: [o.f, x.f].filter(Boolean).join(' '), eat: o.eat || x.eat, starve: o.starve || x.starve, layer: o.layer || x.layer }; }, { pre: '', hp: 1, dmg: 1, def: 0, f: '' }) : null;   // 亜種は1つか2つ（深さ3）。重ねるときは掛け合わせる
-    const dm = run && run.depth >= 3 && EXP.deepMul ? EXP.deepMul : { hp: 1, dmg: 1 };   // 深さ3の底上げ（v5.6.7）
     if (base.party) return { name: base.name, party: base.party, chief: false, ch, variant: null, vf: null, art: 0, boss: false, restUp: 0, par: base.par, allowFallen: base.allowFallen, hp: base.party.reduce((a, f) => a + f.hp, 0), spd: 0, def: 0, voice: 'club', pattern: [{ name: '三位一体', glyph: '三', rule: 'party' }] };
     return Object.assign({}, base, {
       name: (v ? v.pre : '') + (k === 'binder' ? BINDER_NAME : base.name), chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
       eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer),
-      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * dm.hp * (run && run.ward && ch === 0 ? EXP.bless.ward : 1) * (lampOn() ? EXP.lampCfg.hpMul : 1)), boss: k === 'boss', restUp: nr,
+      hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * (run && run.ward && ch === 0 ? EXP.bless.ward : 1) * (lampOn() ? EXP.lampCfg.hpMul : 1)), boss: k === 'boss', restUp: nr,
       pattern: base.pattern.map((a) => {
-        const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1) * dm.dmg * (lampOn() ? EXP.lampCfg.dmgMul : 1)) } : {});
+        const o = Object.assign({}, a, a.dmg ? { dmg: Math.round(a.dmg * EXP.dmg[t] * kd * ((v && v.dmg) || 1) * (lampOn() ? EXP.lampCfg.dmgMul : 1)) } : {});
         if (vs.includes('swarm') && o.dmg && (o.rule === 'job' || o.rule === 'lowhp')) Object.assign(o, { rule: 'random', hits: 2, dmg: Math.round(o.dmg * 0.6) });
         if (vs.includes('poison') && o.dmg) o.pierce = true;
         return o;
@@ -9091,7 +9092,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     // 勲章の使い道（v5.8.15）：もらった枚数だけでなく、いまの枚数と、あと何枚で何が開くかを添える（使い道は双魔の隊だけ。開いたあとは添えない）
     const tw = XSQ.find((q) => q.price), have = xMedals(x), use = tw && !xSqOpen(tw.id, x) ? (have >= tw.price ? '　いま' + have + '枚。<b class="nwr">「' + tw.name + '」を開ける</b>' : '　いま' + have + '枚・<span class="nwr">あと' + (tw.price - have) + '枚で「' + tw.name + '」</span>') : '';   // 隊の名前の途中で折り返さない
     if (got.length) un.push('実績 ' + got.map((a) => '<b>「' + a.t + '」</b>').join('') + '　勲章+' + got.length + use);   // 1行にまとめる（結果の画面が長くならないように）
-    const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
+    const opened = (!before.d2 && after.d2 ? ['深さ2'] : []).concat(!before.d3 && after.d3 ? ['深さ3'] : [], !before.d4 && after.d4 ? ['深さ4'] : [], !before.d5 && after.d5 ? ['深さ5'] : []).concat(after.sq.filter((id) => before.sq.indexOf(id) < 0).map((id) => XSQ.find((q) => q.id === id).name));
     if (opened.length) un.push('開いた：<b>' + opened.join('・') + '</b>');
     const relNew = EXP.relics.filter((r) => rel0.indexOf(r.id) < 0 && relOpen(r, mm));
     const opI = un.findIndex((t) => /^開いた：/.test(t));
@@ -9108,7 +9109,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const choice = xHasChoice(x), q = XSQ.find((v) => v.id === sq) || XSQ[0];
     // 次の挑戦（v5.8.15）：新しい深さや隊が開いた回は、大きいボタンをその挑戦にする（同じ条件のやり直しは「隊と深さを選ぶ」から）。札に印は足さない：横長の小さい画面でボタンが押し出された
     const nsq = after.sq.filter((id) => before.sq.indexOf(id) < 0)[0];
-    const nx = !before.d3 && after.d3 ? { sq, depth: 3, t: '深さ3へ挑む' } : !before.d2 && after.d2 ? { sq, depth: 2, t: '深さ2へ挑む' } : nsq ? { sq: nsq, depth, t: XSQ.find((v) => v.id === nsq).name + 'で挑む' } : null;
+    const nx = !before.d5 && after.d5 ? { sq, depth: 5, t: '深さ5へ挑む' } : !before.d4 && after.d4 ? { sq, depth: 4, t: '深さ4へ挑む' } : !before.d3 && after.d3 ? { sq, depth: 3, t: '深さ3へ挑む' } : !before.d2 && after.d2 ? { sq, depth: 2, t: '深さ2へ挑む' } : nsq ? { sq: nsq, depth, t: XSQ.find((v) => v.id === nsq).name + 'で挑む' } : null;
     const nq = nx ? XSQ.find((v) => v.id === nx.sq) : q;
     rvShow({ small: expSmall(), calm: true, clear: !!clear, title: clear ? '最初の灯' : '灯は、ここで途絶えた', sub: '倒れた仲間 ' + fal + '人　·　' + growLine().replace(/^勝つたびに.*$/, '育ちなし').replace('隊の育ち：', '育ち：'), roster: run.members.concat(run.gone), openLog: true, stage: un.length || relLn.length ? 'each' : 'all', stageDefer: firstEnd,   // v5.8.17 結果→実績→開いたもの→次の行動、の順に1段ずつ
      
@@ -9119,7 +9120,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (firstEnd) openEnding(run.gone.filter((m) => m.fate === 'fallen').map((m) => m.name), () => { confetti(); rvPhaseGo(); const c = document.querySelector('#rvCards .rv-card'); if (c) try { c.focus({ preventScroll: true }); } catch (e) { /* */ } });   // 初めての踏破は、結末の物語を重ねて流す。閉じたら紙吹雪
   }
   function beginExp(sqId, depth) {
-    sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth === 3 && xDepthOpen(3, xmeta()) ? 3 : depth === 2 ? 2 : 1;
+    sqId = XSQ.some((q) => q.id === sqId) ? sqId : 'std'; depth = depth >= 3 && xDepthOpen(depth, xmeta()) ? depth : depth === 2 ? 2 : 1;   // 開いていない深さ（3〜）は深さ1。深さ2は今までどおり
     enterRun();
     rseed = (Date.now() & 0xffffffff) || 7; uidSeq = 0;
     run = { mode: 'exp', node: 0, year: 1, act: 0, rests: 0, chRests: 0, members: [], gone: [], events: [], best: 0, lastStars: 0, hist: [], mentors: {}, path: [], relics: [], squad: 'exp', sq: sqId, depth, gen: 0, fame: 0, spent: 0, region: [] };
@@ -9184,7 +9185,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function qaOpts(q, step) {
     const get = (k) => { const m = q.match(new RegExp('[?&]' + k + '=([^&]*)')); return m ? decodeURIComponent(m[1]) : null; };
     const o = { list: [], bad: [] }, ok = (k, v) => o.list.push(k + '=' + v), ng = (k, v) => o.bad.push(k + '=' + v);
-    const d = get('depth'); if (d != null) { if (/^[123]$/.test(d)) { o.depth = +d; ok('depth', d); } else ng('depth', d); }
+    const d = get('depth'); if (d != null) { if (/^[1-5]$/.test(d)) { o.depth = +d; ok('depth', d); } else ng('depth', d); }
     const sq = get('sq'); if (sq != null) { if (XSQ.some((x) => x.id === sq)) { o.sq = sq; ok('sq', sq); } else ng('sq', sq); }
     const f = get('foe'); if (f != null) {
       const all = EXP.foes.flat().map(String).concat(TRI.steps.length ? ['trinity'] : []);

@@ -1,7 +1,7 @@
 // v5.6.7 深さ3（亜種を2つ重ねる）と、深さ3だけの亜種（灯喰いの・飢えた・重ね鎧の）
 // 合格の基準（測る前に決めたもの）：
 //  1. 深さ3は、どれかの隊で深さ2を踏破するまで選べない（選んでも深さ1で始まる）。踏破していれば深さ3で始まる
-//  2. 深さ3の地図：ふつうの戦闘の敵は亜種が2つ（「a+b」）。鎧の＋重ね鎧の・群れの＋飢えた の組み合わせは出ない。深さ1・2には深さ3だけの亜種が出ない
+//  2. 深さ3の地図：ふつうの戦闘の敵は亜種が1つか2つ（「a+b」。v5.8.21 から重ねるのは一部）。鎧の＋重ね鎧の・群れの＋飢えた の組み合わせは出ない。深さ3だけの亜種は重ねたときだけ。深さ1・2には深さ3だけの亜種が出ない
 //  3. 飢えた：HPが半分を切ると、「ちからをためる」の手番が大技になる（半分以上なら、ためる）
 //  4. 重ね鎧の：入ったばかりの仲間の攻撃は防御を無視、ほかは防御を引く
 //  5. 灯喰いの：仲間を倒すと、敵のHPが最大の15%回復し、技のダメージが+2
@@ -27,10 +27,11 @@ const DEEP = ['eater', 'starve', 'layer'];
   // 1・2（解禁後）
   { const { ctx, p } = await open(true);
     let all = [];
-    for (let i = 0; i < 6; i++) { const d = await p.evaluate(() => { document.getElementById('runv').hidden = true; window.__rb.beginExp('std', 3); return window.__rb.run.depth; }); if (d !== 3) { all = null; break; } all = all.concat(await mapV(p)); }
+    for (let i = 0; i < 12; i++) { const d = await p.evaluate(() => { document.getElementById('runv').hidden = true; window.__rb.beginExp('std', 3); return window.__rb.run.depth; }); if (d !== 3) { all = null; break; } all = all.concat(await mapV(p)); }
     ok(all && all.length > 0, '1 深さ2を踏破していれば深さ3で始まる');
     const ng = ['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'];
-    ok(all && all.every((k) => k.split('+').length === 2 && k.split('+')[0] !== k.split('+')[1] && !ng.includes(k)) && all.some((k) => DEEP.some((x) => k.includes(x))), '2 深さ3の敵は亜種が2つ（NGの組み合わせなし） ' + (all || []).slice(0, 6).join(' '));
+    const prs = (all || []).filter((k) => k.includes('+')), one = (all || []).filter((k) => !k.includes('+'));
+    ok(all && prs.length > 0 && one.length > 0 && prs.every((k) => k.split('+').length === 2 && k.split('+')[0] !== k.split('+')[1] && !ng.includes(k)) && prs.some((k) => DEEP.some((x) => k.includes(x))) && one.every((k) => !DEEP.includes(k)), '2 深さ3の敵は亜種が1つか2つ（重ねたものにNGの組み合わせなし・深さ3だけの亜種は重ねたときだけ） 重ね' + prs.length + '・1つ' + one.length + ' ' + prs.slice(0, 4).join(' '));
     // 3 飢えた
     const st = await p.evaluate(() => { const R = window.__rb; R.run.node = 6; const e = R.expEnemy(7, 'starve+poison', 1); R.run.enemy = e; document.getElementById('runv').hidden = true; R.toPrepForTest(); const E = R.enemy, i = E.pattern.findIndex((a) => a.rule === 'charge'); if (i < 0) return { none: true }; R.setTurn(i + 1); const full = R.actOf(E).rule; E.hp = Math.floor(E.max / 2) - 1; const half = R.actOf(E);   /* フックの actOf はいまの手番 */ return { full, half: half.rule, big: !!half.big, dmg: half.dmg }; });
     ok(!st.none && st.full === 'charge' && st.half !== 'charge' && st.big && st.dmg > 0, '3 飢えた：半分を切ると、ためる手番が大技 ' + JSON.stringify(st));
