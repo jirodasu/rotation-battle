@@ -48,7 +48,7 @@ async function toPrep(p) {
     ok(/none\|rgba\(0, 0, 0, 0\)/.test(r.bg), w + '×' + h + ' 2 陣立ての印は金の丸ではない（' + r.bg + '）');
     ok(r.how === 'タップ→タップで入れ替え' && r.say.length > 0, w + '×' + h + ' 3 一言：' + r.how + '／' + r.say);
     ok(!(r.tnum && /攻撃が来ない/.test(r.say)), w + '×' + h + ' 3 予告に数字があるのに「攻撃が来ない」とは言わない');
-    ok(r.prot === '並びを回す', w + '×' + h + ' 4 陣立ての回すは「' + r.prot + '」');
+    ok(r.prot.replace(/\s+/g, "") === "並びを回す気力いらず", w + '×' + h + ' 4 陣立ての回すは「' + r.prot + '」');
     ok(r.start <= r.vh + 1, w + '×' + h + ' 5 戦闘開始のボタンが画面内（' + Math.round(r.start) + ' / ' + r.vh + '）');
     // 3. 一言が盤の数字と合う：当たる仲間の名前と数字
     const m = await p.evaluate(() => { const R = window.__rb, inc = R.incoming(R.grid, true, false), ks = Object.keys(inc); return ks.map((k) => { const [rr, cc] = k.split(',').map(Number); return R.grid[rr][cc].name + ':' + Math.max(0, R.grid[rr][cc].hp - inc[k].d); }); });   // v5.5.1：札は「名前 HP いまから次」

@@ -661,6 +661,8 @@ body.boss-stage .en-u b { color: var(--ink); }
 .btn.icon { flex: none; width: 56px; padding: 0; }
 #btnPrepRot { flex: none; padding: 0 16px; gap: 6px; }
 #btnPrepRot svg { width: 22px; height: 22px; }
+#btnPrepRot .pr-l { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
+#btnPrepRot .pr-l small { margin-top: 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.78; }   /* v5.8.22：戦闘前の回転は無料（気力を使わない）ことを、ボタンの中で常に示す */
 #btnStay { flex: 0.8; }
 /* 選んだときに受けるダメージ（v5.3.0）：盤の赤い数字と同じ色・同じ書き方で、ボタンの右肩に */
 .dock .btn { position: relative; }
@@ -1726,6 +1728,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .cover .c-btns #installBtn::after { display: none; }
 .cover .btn.stack b { font-size: 21px; letter-spacing: 0.12em; }
 .cover .btn.stack small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 359px) { .cover .ts-x { display: none; } }
 .cover .c-btns #setBtn, .cover .c-btns #storyBtn { min-height: 54px; }
 .cover.tight .c-tag { display: none; }
 .cover.tight .c-star { display: none; }
@@ -1735,10 +1738,14 @@ html .cover.tight .c-kicker { display: block; margin-top: -6px; font-size: 12px;
   .c-inner > .c-star, .c-inner > .c-tag { grid-column: 1; }
   .c-inner > .c-press, .c-inner > .c-btns { grid-row: 1 / span 6; }
 }
-@media (orientation: landscape) and (max-height: 520px) {   /* 横持ちのスマホ：左の列に題字と紋が収まるように、星とキャッチコピーを外して題字を小さく */
-  .cover .c-star, .cover .c-tag { display: none; }
+@media (orientation: landscape) and (max-height: 520px) {   /* 横持ちのスマホ：左の列に題字と紋が収まるように、星を外して題字を小さく */
+  .cover .c-star { display: none; }
   .cover .c-title { font-size: 34px; }
   html .cover .c-kicker { margin-top: -6px; font-size: 12px; }
+  /* v5.8.22：キャッチコピーは横持ちでも残す（以前は外していた）。小さくして題字の下に置き、紋を一回り小さくして「-LAST ROTATION-」と重ねない */
+  html .cover:not(.tight) .c-tag { display: flex; margin: 0; font-size: 12px; gap: 8px; letter-spacing: 0.12em; }
+  .cover .c-tag::before, .cover .c-tag::after { width: 18px; }
+  .cover .orbit, .cover.has-save .orbit { transform: scale(0.6); margin: -40px 0 -46px; }
 }
 
 /* ---- あそびかた・チュートリアル・ヒント：頁の余白に書き込まれた注記 ---- */
@@ -2754,6 +2761,8 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .runv.map-a.show-goal #rvSub { display: block; position: absolute; left: 12px; right: 12px; top: 48px; z-index: 3; margin: 0; padding: 10px 12px; border: 1px solid var(--gold); border-radius: 12px; background: var(--paper, #f3ead6); box-shadow: 0 8px 24px rgba(0,0,0,.35); font-size: 13px; line-height: 1.6; text-align: left; pointer-events: none; }   /* 押しても下の地図・札に届く（吹き出しが邪魔をしない）。道を選ぶと閉じる。地図の上に吹き出しで重ねる。下の札と「進む」を押し下げない（小さい画面でも「進む」が見える） */
 .rv-help { position: absolute; top: 8px; right: 10px; width: 34px; height: 34px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, var(--ink-soft) 55%, transparent); background: transparent; color: var(--ink-soft); font: 800 15px/1 var(--sans); cursor: pointer; z-index: 4; }   /* 目標の吹き出しより手前（閉じられるように） */
 .rv-help[hidden] { display: none; }
+.rv-help::after { content: ""; position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; transform: translate(-50%, -50%); border-radius: 50%; }   /* 押せる広さは44px（見た目は34px。v5.8.22） */
+@media (orientation: landscape) and (max-height: 820px) { .runv.map-a.show-goal #rvSub { right: calc(50% + 11px); } .runv .r-card > .rv-help { z-index: 6; } }   /* v5.8.22：横持ちは左が地図・右が札。吹き出しは地図の上だけ、？は札より手前 */
 .runv .r-card > .rv-help { position: absolute; top: 8px; right: 10px; margin: 0; }   /* 右上の角に（ほかの .r-card の子の決まりに負けないように） */
 .runv.map-a .r-card > #rvSmall { padding-right: 44px; padding-left: 44px; }
 .runv.map-a.show-goal .rv-help { color: var(--gold); border-color: var(--gold); }
@@ -2771,7 +2780,8 @@ body.is-cover #dangerEdge { opacity: 0; animation: none; }
 .runv.is-map.map-a:not(.more) .rv-card.sel .rv-txt > .rv-d { display: none; }
 .runv.is-map.map-a.more .rv-card.sel .rv-txt > .rv-d { display: block; -webkit-line-clamp: unset; max-height: none; opacity: 1; margin-top: 5px; padding-top: 5px; border-top: 1px dashed var(--rule-a, rgba(0,0,0,.2)); font-size: 12.5px; line-height: 1.5; }
 .rv-more { display: none; }
-.runv.map-a .rv-more { display: block; margin: 0 2px 0 auto; padding: 6px 4px; min-height: 32px; background: none; border: 0; color: var(--ink-soft); font: 700 12.5px var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.rv-more::after { content: ""; position: absolute; left: -6px; right: -6px; top: 50%; height: 44px; transform: translateY(-50%); }   /* 押せる広さは44px（v5.8.22） */
+.runv.map-a .rv-more { position: relative; display: block; margin: 0 2px 0 auto; padding: 6px 4px; min-height: 32px; background: none; border: 0; color: var(--ink-soft); font: 700 12.5px var(--sans); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
 .runv.map-a .rv-card:not(.sel) .rv-k { opacity: .8; }
 
 /* ===== 冒頭の物語（v5.5.8）：初めて「環廊へ」を押したときだけ。タップで1枚ずつ。「とばす」でいつでも抜ける ===== */
@@ -2926,9 +2936,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   <section class="book" id="book" aria-live="polite"></section>
 
   <div class="dock" id="dock">
-    <button class="btn" id="btnPrepRot" type="button" aria-label="隊列を縦に回す（列の左右はそのまま）" hidden>
+    <button class="btn" id="btnPrepRot" type="button" aria-label="隊列を縦に回す（列の左右はそのまま）。戦闘開始の前は気力を使わず、何度でも回せる" hidden>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.6-5.9" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/><path d="M20.5 3.5v5.5H15" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      並びを回す
+      <span class="pr-l">並びを回す<small>気力いらず</small></span>
     </button>
     <button class="btn primary" id="btnStart" type="button" hidden><span class="oc-h" id="startLbl">戦闘開始</span><span class="oc-b" id="ocStart"></span></button>
     <button class="btn skip" id="btnSkip" type="button" aria-label="この演出を飛ばして先へ進む" hidden>演出を飛ばす ▶▶</button>
@@ -2982,7 +2992,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.21</p>
+    <p class="c-ver" id="cVer">ver 5.8.22</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3502,7 +3512,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.21';
+  const APP_VERSION = '5.8.22';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5363,9 +5373,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
         const pg = previewGrid();
         bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnRotate'), 0, 'pvTip');
       } else hideBubble('pvTip');
-      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); hideBubble('foeTip'); hideBubble('tkTip'); hideBubble('holdTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
+      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); hideBubble('foeTip'); hideBubble('tkTip'); hideBubble('holdTip'); hideBubble('numTip'); hideBubble('emptyTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
       lockBook();
-      teachInc(); teachHold();
+      teachInc(); teachNums(); teachHold();
       return;
     }
     if (phase === 'prep') hint = '仲間→入れ替え先の順にタップ' + (grid[0].some(Boolean) ? '' : '（攻撃列が空だと被害2倍）');
@@ -5595,7 +5605,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
       }
       if (koWarnRun !== run) { const kb = [[st, 'ocStart'], [sb, 'ocStay'], [rb, 'ocRot']].find(([b, id]) => !b.hidden && $(id).querySelector('b.ko')); if (kb) { koWarnRun = run; setTimeout(() => bubble('倒れた仲間は、この遠征のあいだ戻らない', kb[0], 3200, 'koWarn'), 350); } }
     }
-    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。一巡りの灯で突入技強化' : '')); }
+    if (ch) teachEmpty(rb);
+    if (ch) { sb.setAttribute('aria-label', '維持：' + ocSay($('ocStay'))); rb.setAttribute('aria-label', (rb.disabled ? '回せない：' : '回す：') + ocSay($('ocRot')) + (comboFull() && !rb.disabled ? '。一巡りの灯で突入技強化' : '') + (!rb.disabled && rotEmpties() ? '。回すと攻撃列が空になり、受けるダメージ2倍' : '')); }
     if (pr) st.setAttribute('aria-label', $('startLbl').textContent + '：' + ocSay($('ocStart'))); else st.removeAttribute('aria-label');
     requestAnimationFrame(() => { dockLock(); fitBoard(); setBleed(); placeTip(); });   // 念のためもう一度。盤の大きさを合わせ直したら、案内も置き直す（v5.4.8：先に置いた案内が、後から伸びた予告の札に重なっていた。v537 が時々落ちる原因）
   }
@@ -5677,15 +5688,53 @@ body.fast #stampOk.on { animation-duration: .5s; }
       bubble('赤い数字は、このターンに受けるダメージ', incs[0], 2800, 'incTip');
     });
   }
+  /* 札の数字の説明（v5.8.22・初学者向けの穴）：赤い数字の説明（最初の3ターン）を覚えたあと、
+     「剣の数字」と「あと○発」を、初めて見えたターンに1つずつ、1回だけ吹き出しで言う。1ターンに出す吹き出しは1つだけ（段階的開示） */
+  let numKey = '', teachTurn = '';
+  const teachSeen = () => { try { return JSON.parse(localStorage.getItem('rb-teach-num') || '{}') || {}; } catch (e) { return { dm: 1, n: 1 }; } };
+  function teachNums() {
+    if (tut || phase !== 'choose') return;
+    let n = 0; try { n = +(localStorage.getItem('rb-teach-inc') || 0); } catch (e) { return; }
+    if (n < 3) return;   // 赤い数字の説明が先
+    const key = (run ? run.node : battleIdx) + ':' + turn;
+    if (key === teachKey || key === numKey || key === teachTurn) return;   // このターンはもう別の吹き出しを出した
+    const f = teachSeen(); if (f.dm && f.n) return;
+    requestAnimationFrame(() => {
+      if (phase !== 'choose' || numKey === key || teachTurn === key) return;
+      const dm = document.querySelector('#board .tok .dm'), nn = document.querySelector('#board .tok .inc-n');
+      let txt = '', el = null;
+      if (!f.dm && dm) { f.dm = 1; el = dm; txt = '剣の数字は、このターンに与えるダメージ'; }
+      else if (!f.n && nn) { f.n = 1; el = nn; const k = (nn.textContent.match(/\d+/) || ['2'])[0]; txt = 'あと' + k + '発：この強さの攻撃を、あと' + k + '回受けると倒れる'; }
+      if (!el) return;
+      numKey = key; teachTurn = key;
+      try { localStorage.setItem('rb-teach-num', JSON.stringify(f)); } catch (e) { /* 保存できない */ }
+      bubble(txt, el, 3200, 'numTip');
+    });
+  }
+  /* 攻撃列が空になる回転の注意（v5.8.22・初見プロファイル評価）：回すと攻撃列が空になる場面で、押す前に「攻撃なし・受けるダメージ2倍」を言う。
+     最初の2回だけ吹き出し（ほかの吹き出しより優先）。読み上げのラベルには毎回入れる。数値・計算は変えない */
+  let emptyKey = '';
+  const rotEmpties = () => { try { return !previewGrid()[0].some(Boolean); } catch (e) { return false; } };
+  function teachEmpty(rb) {
+    if (tut || phase !== 'choose' || !rb || rb.hidden || rb.disabled || !rotEmpties()) return;
+    const key = (run ? run.node : battleIdx) + ':' + turn;
+    if (key === emptyKey) return;
+    let n = 0; try { n = +(localStorage.getItem('rb-teach-empty') || 0); } catch (e) { return; }
+    if (n >= 2) return;
+    emptyKey = key; teachTurn = key;
+    try { localStorage.setItem('rb-teach-empty', String(n + 1)); } catch (e) { /* 保存できない */ }
+    setTimeout(() => { if (phase !== 'choose' || !rotEmpties()) return; ['saveHint', 'holdTip', 'numTip', 'incTip'].forEach(hideBubble); bubble('回すと攻撃列が空になる。攻撃できず、受けるダメージは2倍', rb, 3600, 'emptyTip'); }, 400);
+  }
   /* E の教え方：「回す」を長押しすると先読みできる。2ターン目以降に一度だけ、吹き出しで知らせる（文章を常に置かない） */
   let holdBusy = false;
   function teachHold() {
     if (tut || phase !== 'choose' || turn < 2 || $('btnRotate').disabled || $('btnRotate').hidden) return;
+    if (teachTurn === (run ? run.node : battleIdx) + ':' + turn) return;   // このターンは別の説明を出した（1ターンに1つ。v5.8.22）
     let done = false; try { done = localStorage.getItem('rb-teach-hold') === '1'; } catch (e) { /* 保存できない */ }
     if (done || holdBusy) return;
     holdBusy = true;
     setTimeout(() => {
-      if (phase !== 'choose' || $('btnRotate').disabled) { holdBusy = false; return; }
+      if (phase !== 'choose' || $('btnRotate').disabled || document.querySelector('#emptyTip.on, #numTip.on')) { holdBusy = false; return; }   // ほかの説明が出ているターンは出さない（v5.8.22）
       try { localStorage.setItem('rb-teach-hold', '1'); } catch (e) { /* 保存できない */ }
       bubble('押したままで、回したあとが見える', $('btnRotate'), 3200, 'holdTip');
     }, 900);
@@ -7576,7 +7625,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     document.body.classList.add('is-cover');
     coverProgress();
     Music.charge(false); Music.set('title');
-    $('tutSub').textContent = tutDone() ? '操作しながら一つずつ覚える' : 'はじめての方はこちら　操作しながら覚える';
+    tutSubSet();
     try { $('begin').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ }
     if (bat0) toast(bat0.at === 'over' ? '戦闘のあとまで保存しました' : '戦闘の途中まで保存しました（ターン' + bat0.turn + '）');
   }
@@ -8332,6 +8381,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const squadList = () => [{ id: 'std', name: '標準の騎士団', tag: '標準', desc: '戦士・騎士・サムライ・魔女ほか基本の7人。', form: DEFAULT_FORM.map(([id, r, c]) => [id, r, c, RUN.start[id]]) }].concat(SQUADS);
   const squadName = (id) => (squadList().find((q) => q.id === id) || squadList()[0]).name;
   // 本番の開始：一度でも本番を終えていれば騎士団を選ぶ。はじめては標準の騎士団でそのまま始める
+  // チュートリアルの小さい説明（v5.8.22）：幅360px 未満では後半を外す（以前は「…」で切れていた）
+  function tutSubSet() { $('tutSub').innerHTML = tutDone() ? '操作しながら一つずつ覚える' : 'はじめての方はこちら<span class="ts-x">　操作しながら覚える</span>'; }
   function startFlow() { if (metaLoad().runs > 0) showSquads(); else beginMain(); }
   function showSquads(note) {
     const m = metaLoad(), list = squadList(), have = medals(m);
@@ -9436,7 +9487,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('resume').addEventListener('click', () => { actx(); Music.warm(); resumeExp(); });
   $('beginTut').addEventListener('click', beginTutorial);
   $('resultAlt').addEventListener('click', () => { SFX.tap(); if (tut) beginTutorial(); else toPrep(true); });
-  $('tutSub').textContent = tutDone() ? '操作しながら一つずつ覚える' : 'はじめての方はこちら　操作しながら覚える';
+  tutSubSet();
   const QA_STEP = qaStep(location.search);
   if (QA_REQ && !QA_STEP) qaRelease();   // 地点の指定が正しくない ?qa は、保存を初めて読む coverProgress より前に元へ戻す（普通の起動）
   coverProgress();
