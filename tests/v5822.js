@@ -37,7 +37,7 @@ const phaseIs = async (p, list, n) => { for (let i = 0; i < (n || 400); i++) { c
     await p.evaluate((d) => { document.getElementById('runv').hidden = true; window.__rb.beginExp('std', d); }, depth); await p.waitForTimeout(300);
     const bad = [], stat = { battles: 0, turns: 0, cmp: 0, ko: 0 };
     for (let n = 0; n < 9; n++) {
-      await p.evaluate((n) => { const R = window.__rb; R.run.map = R.expFill(); const ids = Object.keys(R.run.map).filter((id) => R.run.map[id].foe != null && R.routeChoice(id).type === 'battle'); const id = ids[(n * 3) % ids.length]; const c = R.routeChoice(id);
+      await p.evaluate((n) => { const R = window.__rb; R.run.map = R.expFill(); const ids = Object.keys(R.run.map).filter((id) => R.ROUTE.nodes[id] && R.run.map[id].foe != null && R.routeChoice(id).type === 'battle'); const id = ids[(n * 3) % ids.length]; const c = R.routeChoice(id);
         R.run.members.forEach((m) => { m.hp = m.max; }); R.run.node = c.step - 1; R.run.enemy = R.expEnemy(c.step, c.variant, R.run.map[id].foe); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, n);
       stat.battles++; await p.waitForTimeout(200); await p.click('#btnStart').catch(() => {});
       for (let t = 0; t < 30; t++) {
@@ -71,7 +71,7 @@ const phaseIs = async (p, list, n) => { for (let i = 0; i < (n || 400); i++) { c
     await p.evaluate(() => { document.getElementById('runv').hidden = true; window.__rb.beginExp('std', 3); }); await p.waitForTimeout(300);
     const res = [];
     for (let k = 0; k < 6 && res.length < 3; k++) {
-      await p.evaluate((k) => { const R = window.__rb; R.run.map = R.expFill(); const ids = Object.keys(R.run.map).filter((id) => typeof R.run.map[id].foe === 'number' && R.routeChoice(id).type === 'battle'); const id = ids[k % ids.length], c = R.routeChoice(id);
+      await p.evaluate((k) => { const R = window.__rb; R.run.map = R.expFill(); const ids = Object.keys(R.run.map).filter((id) => R.ROUTE.nodes[id] && typeof R.run.map[id].foe === 'number' && R.routeChoice(id).type === 'battle'); const id = ids[k % ids.length], c = R.routeChoice(id);
         R.run.members.forEach((m) => { m.hp = m.max; }); R.run.node = c.step - 1; R.run.enemy = R.expEnemy(c.step, 'eater', R.run.map[id].foe); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, k);
       await p.waitForTimeout(200); await p.click('#btnStart').catch(() => {});
       for (let t = 0; t < 12 && res.length < 3; t++) {
