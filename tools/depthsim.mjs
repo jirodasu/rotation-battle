@@ -10,6 +10,7 @@ T.A02.def.pattern = [{ name: '数え打ち', rule: 'lowhp', dmg: 6, perMid: 4 },
 const ADDS = {
   plan1: { 2: [['weight', 0], ['door', 1]], 3: [['hourglass', 2], ['A04', 2]], 4: [['A02', 1], ['lance', 2], ['twin', 2]], 5: [['thorns', 1], ['phase', 2]] },
   // 2026-11-17 昼：10体はすべて深さ4以降。深さ1〜3は今のまま
+  none: {},   // 新しい敵なし（v5.8.21 の枠だけの版）
   d45: { 4: [['weight', 0], ['door', 1], ['A02', 1], ['hourglass', 2], ['A04', 2], ['twin', 2]], 5: [['thorns', 1], ['lance', 2], ['phase', 2]] }
 };
 const ADD = ADDS[process.env.ADDSET || 'plan1'];
