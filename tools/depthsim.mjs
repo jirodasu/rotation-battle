@@ -7,13 +7,18 @@ import { CH4 } from './ch4sim.mjs';
 const T = JSON.parse(JSON.stringify(CANDS));
 // 採用10体の数値（案内翁・秤守は基礎値が強すぎたので下げた案）
 T.A02.def.pattern = [{ name: '数え打ち', rule: 'lowhp', dmg: 6, perMid: 4 }, { name: '秤ゆらし', rule: 'all', dmg: 8 }, { name: '貝殻投げ', rule: 'all', dmg: 10 }, { name: '大数え', rule: 'lowhp', dmg: 12, perMid: 4 }];
-const ADD = { 2: [['weight', 0], ['door', 1]], 3: [['hourglass', 2], ['A04', 2]], 4: [['A02', 1], ['lance', 2], ['twin', 2]], 5: [['thorns', 1], ['phase', 2]] };
+const ADDS = {
+  plan1: { 2: [['weight', 0], ['door', 1]], 3: [['hourglass', 2], ['A04', 2]], 4: [['A02', 1], ['lance', 2], ['twin', 2]], 5: [['thorns', 1], ['phase', 2]] },
+  // 2026-11-17 昼：10体はすべて深さ4以降。深さ1〜3は今のまま
+  d45: { 4: [['weight', 0], ['door', 1], ['A02', 1], ['hourglass', 2], ['A04', 2], ['twin', 2]], 5: [['thorns', 1], ['lance', 2], ['phase', 2]] }
+};
+const ADD = ADDS[process.env.ADDSET || 'plan1'];
 export function cfgFor(depth) {
   const foes = EXP.foes.map((f) => f.slice()), M = (globalThis.__MAP || [0, 1, 2, 3, 3, 3])[depth], o = { size: 4, depth: Math.floor(M) };
   if (M % 1) o.pairRate = +(M % 1).toFixed(2);   // 2.4＝亜種1つ＋40%の戦闘で亜種2つ
   for (let d = 2; d <= depth; d++) (ADD[d] || []).forEach(([k, ch]) => { foes[ch].push(k); o[k] = T[k].def; });
   o.foes = foes;
-  if (depth >= 5) { const c4 = JSON.parse(JSON.stringify(CH4)); c4.foes = ['shade', 'guide']; c4.defs.guide = T.A09b.def; o.ch4 = c4; }
+  if (depth >= 5) { const c4 = JSON.parse(JSON.stringify(CH4)); c4.foes = process.env.NOGUIDE ? ['shade', 'moth'] : ['shade', 'guide']; c4.defs.guide = T.A09b.def; o.ch4 = c4; }
   return o;
 }
 function run(n, pol, depth) {
