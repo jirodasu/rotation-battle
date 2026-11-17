@@ -5526,7 +5526,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     for (const a of AL) {
       if (a.kind === 'e') {
         const F = a.foe || enemy;
-        per.filter((x) => x.F === F).forEach((x) => { const u = fr >= 0 && src[fr][x.c]; if (u) hp.set(u, hp.get(u) - x.d); });
+        per.filter((x) => x.F === F).forEach((x) => { const u = fr >= 0 && src[fr][x.c]; if (!u) return; const was = hp.get(u); hp.set(u, was - x.d);
+          // 灯喰いの（v5.6.7）：仲間が倒れると、敵は最大HPの15%を回復する。予告の「敵 HP」にも入れる（v5.8.22：以前は入っておらず、倒れる見込みのターンだけ敵の残りHPが実際より少なく出た）
+          if (was > 0 && was - x.d <= 0 && enemy.eat && !enemy.party && foeHp > 0) foeHp += Math.min((enemy.max || enemy.hp) - foeHp, Math.round((enemy.max || enemy.hp) * enemy.eat.heal)); });
         const ac = enemy.party ? actOf(F) : curAct();
         if (ac && ac.rule === 'random' && ac.dmg && fr >= 0 && foeAlive(F)) { const most = ac.dmg * (fr > 0 ? 2 : 1) * (ac.hits || 1); a.rnd = most; }
         // 祈り手の回復（v5.6.4）：攻撃している敵を、その順番で治す。倒しきったあとは治せない（実際の戦闘と同じ：最大HPまで）
