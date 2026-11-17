@@ -283,7 +283,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     const fk = pick(cfg.foes[ch]), last = step === cfg.nodes;
     const dp = cfg.depth || 1, VK = Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep), VKD = Object.keys(VARIANTS);
     const pairV = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'].includes(a + '+' + b)) return a + '+' + b; } };
-    const vk = (!chief || (cfg.chiefVariant && !last)) && R() < (dp >= 2 ? 1 : cfg.variantRate) ? ((dp >= 3 || (cfg.pairRate && R() < cfg.pairRate)) ? pairV() : pick(VK)) : null;   // 深さ（v5.6.7）：2＝かならず亜種、3＝亜種を2つ重ねる
+    const vk = (!chief || (cfg.chiefVariant && !last)) && R() < (dp >= 2 ? 1 : cfg.variantRate) ? ((cfg.pairRate != null ? R() < cfg.pairRate : dp >= 3) ? pairV() : pick(VK)) : null;   // 深さ（v5.6.7）：2＝かならず亜種、3＝亜種を2つ重ねる
     const en = enemyAt(step, fk, cfg, vk, relics.includes('chart') ? 0 : rests), bseed = Math.floor(R() * 1e9);
     const party = () => members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
     let res;
@@ -319,7 +319,7 @@ export function playRun(seed, policy, strat = {}, over = {}) {
       battles++;
       const fk = chief ? null : order[fi++ % order.length], dp = cfg.depth || 1, VK = Object.keys(VARIANTS).filter((x) => !VARIANTS[x].deep), VKD = Object.keys(VARIANTS);
       const pairV = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'].includes(a + '+' + b)) return a + '+' + b; } };
-      const vk = !chief && R() < (dp >= 2 ? 1 : cfg.variantRate) ? ((dp >= 3 || (cfg.pairRate && R() < cfg.pairRate)) ? pairV() : pick(VK)) : null;
+      const vk = !chief && R() < (dp >= 2 ? 1 : cfg.variantRate) ? ((cfg.pairRate != null ? R() < cfg.pairRate : dp >= 3) ? pairV() : pick(VK)) : null;
       const en = enemyAt(step, fk, c4, vk, relics.includes('chart') ? 0 : rests), bseed = Math.floor(R() * 1e9);
       const party = () => members.map((m) => Object.assign({}, m, { entry: Object.assign({}, m.entry) }));
       const bo = { cols, seed: bseed, relics, rot: cfg.rot, relicDefs: cfg.relics, combo: cfg.combo || null, lamp: cfg.lamp || null };

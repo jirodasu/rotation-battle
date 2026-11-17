@@ -16,6 +16,7 @@ const ADD = ADDS[process.env.ADDSET || 'plan1'];
 export function cfgFor(depth) {
   const foes = EXP.foes.map((f) => f.slice()), M = (globalThis.__MAP || [0, 1, 2, 3, 3, 3])[depth], o = { size: 4, depth: Math.floor(M) };
   if (M % 1) o.pairRate = +(M % 1).toFixed(2);   // 2.4＝亜種1つ＋40%の戦闘で亜種2つ
+  if (globalThis.__PR && globalThis.__PR[depth] != null) { o.depth = 3; o.pairRate = globalThis.__PR[depth]; }   // 深さ3の底上げ（deepMul）を残したまま、亜種2つの割合だけ変える
   for (let d = 2; d <= depth; d++) (ADD[d] || []).forEach(([k, ch]) => { foes[ch].push(k); o[k] = T[k].def; });
   o.foes = foes;
   if (depth >= 5) { const c4 = JSON.parse(JSON.stringify(CH4)); c4.foes = process.env.NOGUIDE ? ['shade', 'moth'] : ['shade', 'guide']; c4.defs.guide = T.A09b.def; o.ch4 = c4; }
@@ -31,7 +32,8 @@ function run(n, pol, depth) {
   return { clear: clear / n, c4: c4 ? c4w / c4 : null, fallen: fallen / n };
 }
 if (process.argv[1] && /depthsim\.mjs$/.test(process.argv[1])) {
-  if (process.argv[3]) globalThis.__MAP = JSON.parse(process.argv[3]);   // 深さ→今の亜種の決まり（1〜3）の対応
+  if (process.argv[3]) globalThis.__MAP = JSON.parse(process.argv[3]);
+  if (process.env.PR) globalThis.__PR = JSON.parse(process.env.PR);   // 深さ→今の亜種の決まり（1〜3）の対応
   const n = +(process.argv[2] || 400), p = (v) => (v == null ? '  —  ' : (v * 100).toFixed(1).padStart(5) + '%');
   for (let d = 1; d <= 5; d++) {
     const a = run(n, SMART2, d), s = run(n, STAY, d), r = run(n, () => true, d), pl = run(Math.min(n, 80), 'plan', d);
