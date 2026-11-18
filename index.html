@@ -943,6 +943,7 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
   animation: coin 0.35s cubic-bezier(.2, 1.1, .3, 1);
 }
 .coach[hidden] { display: none; }
+.coach.over-sheet { z-index: 46; }   /* v5.9.4：敵の詳細（シート）を開いたまま読む手順 */
 .coach.pos-top { top: calc(env(safe-area-inset-top, 0px) + 54px); }
 .coach.pos-bottom { bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); }
 @keyframes coin { from { opacity: 0; transform: translateY(14px) scale(0.97); } to { opacity: 1; transform: none; } }
@@ -1159,6 +1160,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; align-items: center; animation: tipin 0.42s cubic-bezier(.2, 1.3, .4, 1) both; }
 .tip[hidden] { display: none; }
 .ticket.tip-ping { animation: tipping 0.9s ease-out 2; }
+.einfo.ei-ping, #ename.ei-ping::after { animation: tipping 0.9s ease-out 3; }   /* v5.9.4：章の主のヒントで「i」を光らせる（見た目の種類で i の出し方が違うので両方） */
 @keyframes tipping { 0% { box-shadow: 0 0 0 0 rgba(240, 169, 58, 0.75); } 100% { box-shadow: 0 0 0 14px rgba(240, 169, 58, 0); } }
 .tip b { font-size: 16px; line-height: 1.3; }
 .tip b::before { content: "はじめての仕掛け"; display: block; font-family: inherit; font-size: 11px; letter-spacing: .18em; color: var(--accent-deep); margin-bottom: 1px; }
@@ -1184,7 +1186,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   .tip p { font-size: 12px; line-height: 1.42; }
   .tip button { min-width: 50px; padding: 0 9px; font-size: 13px; }
 }
-@media (prefers-reduced-motion: reduce) { .tip, .ticket.tip-ping { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .tip, .ticket.tip-ping, .einfo.ei-ping, #ename.ei-ping::after { animation: none; } }
 
 /* ================= 横長画面（スマホ横持ち・PC）=================
    左の列：敵の舞台（名前・HP・絵・攻撃予告）と情報欄。右の列：隊列盤と操作ボタン。
@@ -1985,7 +1987,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   .runv.is-map .r-card { padding: 8px 12px 8px; gap: 4px; }
   .runv.is-map .r-card h2 { font-size: 21px; }
   .runv.is-map .r-card h2::after { display: none; }
-  .runv.is-map .r-card > p { display: none; }
+  .runv.is-map .r-card > p:not(.rv-tap) { display: none; }   /* 「タップで道を選ぶ」は残す（v5.9.3） */
   .runv.is-map .rv-track svg.route { max-height: clamp(70px, calc(100dvh - 420px - var(--rr, 0) * 52px), 200px); }
   .runv.is-map .rv-ico { width: 36px; height: 36px; }
   .runv.is-map .rv-card { padding: 5px 8px; }
@@ -2000,7 +2002,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   .runv.is-map .r-card > small { grid-column: 1; grid-row: 1; justify-self: start; text-align: left; align-self: center; }
   .runv.is-map .r-card > h2 { grid-column: 2; grid-row: 1; justify-self: start; text-align: left; font-size: 20px; }
   .runv.is-map .rv-main { grid-row: 2; }
-  .runv.is-map .r-card > p { display: none; }
+  .runv.is-map .r-card > p:not(.rv-tap) { display: none; }
   .runv.is-map .rv-card.sel .rv-d { max-height: 6.5em; font-size: 11px; line-height: 1.35; }
   .runv.is-map .r-card h2::after { display: none; }
 }
@@ -2998,7 +3000,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.2</p>
+    <p class="c-ver" id="cVer">ver 5.9.5</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3518,7 +3520,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.2';
+  const APP_VERSION = '5.9.5';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4488,7 +4490,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const R = RX();
     let power = r === 0 ? u.atk : u.ranged;
     const ue = entryFor(u, entering);
-    if (r === 0 && entering && R.entry && ue && ue.atk) power += ue.atk;
+    const ue1 = r === 0 && entering && R.entry && ue && ue.atk && ue.hits ? ue.atk : 0;   // 速射の強化（v5.9.4・案A）：攻撃+は1本目の矢だけ
+    if (r === 0 && entering && R.entry && ue && ue.atk && !ue.hits) power += ue.atk;
     if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
     if (r === 0) power += stanceAtk(entering ? 0 : stayFc()) + relN('whet', 'atk') + lampAtk(entering ? EXP.lampCfg.after : lampFc());
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
@@ -4496,7 +4499,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
     let t = 0;
     const T = F || targetFoe();
-    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && entering);
+    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup + ue1 : 0), T, r === 0 && entering);
     const rel = relAtk(u, r, r === 0 && entering && R.entry && !!u.entry, entering ? 0 : stayFc(), T, r === 0 && entering);   // 表示だけ（v5.8.14）
     return { val: t, buf: sup > 0, half: foeShare(T) < 1, rel };
   }
@@ -4902,6 +4905,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     stayed: () => ['居続けると狙われる', 'この技は、<em>前のターンも攻撃列にいた仲間</em>に<em>2倍</em>で当たる。「維持」すると赤い数字が2倍になる。回して入れ替えれば、ふつうの強さ。'],
+    einfo: () => ['章の主の技を見よう', '章の主は技が多い。敵の名前の横の<em>i</em>を押すと、技の一覧と<em>その次の行動</em>が見られる。'],
     highhp: () => ['元気な仲間ほど狙う', 'この技は、前列で<em>HPがいちばん多い仲間</em>に当たる（同じなら左）。いつもと逆なので、HPの多い仲間を前に残すか、回して受け手を選ぶ。'],
     gate: () => ['重い扉', 'この戦いのあいだ、<em>回すのに気力3</em>が要る（ふだんは2）。回せる回数が少ないので、大技の前のために気力をためておく。'],
     doom: () => ['終の刻が近い', '8ターン目に<em>全員へ防御無効の大技</em>「終の刻」が来る。予告に「あと何ターン」と出るので、それまでに倒すか、HPを整えて受ける。'],
@@ -4960,6 +4964,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const seen = tipSeen();
     let k = null;
     if (enemy.party && !seen.trinity) k = 'trinity';
+    else if (EXPM() && (+run.depth || 1) === 1 && expIsChief(run.node + 1) && (phase === 'prep' || phase === 'choose') && !seen.einfo) k = 'einfo';   // v5.9.4：深さ1の章の主（初めて）で、敵の i をもう一度教える
     else if (!EXPM() && battleIdx === 0 && ((phase === 'prep' && swappedOnce) || phase === 'choose') && !seen.stars) k = 'stars';   // 遠征の目標は★ではなく踏破。地図の最初の画面で伝える（v5.2.2）
     else if (run && phase === 'prep' && benchList().length && !seen.bench) k = 'bench';
     else if (EXPM() && phase === 'choose' && !seen.gauge) k = 'gauge';
@@ -4985,6 +4990,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     el.dataset.k = k; el.hidden = false; if (!window.__rbPhaseFree) document.body.classList.add('tip-on');   // v5.8.17 ヒントを読むあいだは、ターンの判断を止める
     placeTip();
     $('ticket').classList.remove('tip-ping'); void $('ticket').offsetWidth; $('ticket').classList.add('tip-ping');
+    [document.querySelector('.einfo'), $('ename')].forEach((ei) => { if (!ei) return; ei.classList.remove('ei-ping'); if (k === 'einfo') { void ei.offsetWidth; ei.classList.add('ei-ping'); } });   // i を光らせて、どこを押すかを見せる
   }
   /* --- 敵の3体のパネル（三位一体）--- */
   const NO_FOE_ART = '';
@@ -6423,8 +6429,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   window.addEventListener('resize', () => { if (!$('peek').hidden) renderBook(); });
   function toggleFoe() {
     if (phase === 'resolve' || phase === 'over') return;
-    if (tut && !tut.free) { tutNudge(); return; }
+    if (tut && !tut.free && !(tut.expect && tut.expect.foe && !inspect)) { tutNudge(); return; }
     SFX.tap();
+    if (tut && !tut.free && tut.expect && tut.expect.foe) { inspect = FOE; render(); tutShow(tut.i + 1); return; }   // チュートリアル：敵の詳細を開いたら、次の手順（閉じる）へ
     if (phase === 'prep') sel = null;
     inspect = inspect === FOE ? null : FOE;
     render();
@@ -6443,7 +6450,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     ev.stopPropagation();
     pickTarget(fc.dataset.f);
   });
-  const closeFoe = () => { if (inspect) { const wasFoe = inspect === FOE; inspect = null; render(); if (wasFoe) { try { $('stage').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ } } } };
+  const closeFoe = () => { if (tut && !tut.free && tut.expect && tut.expect.foeClose && inspect === FOE) { inspect = null; render(); tutShow(tut.i + 1); return; }
+    if (inspect) { const wasFoe = inspect === FOE; inspect = null; render(); if (wasFoe) { try { $('stage').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ } } } };
   $('foeBg').addEventListener('click', closeFoe);
   $('foeSheet').addEventListener('click', (ev) => { if (ev.target.closest('#cardClose')) closeFoe(); });
   document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') closeFoe(); });
@@ -6537,14 +6545,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (r === 1) await tutNote('ranged', '補助列も攻撃する', u.name + 'のような間接攻撃の仲間は、補助列からでも攻撃できる。', () => tokEl(1, c), 'top');
     const en = r === 0 ? entryNow[u.uid] : null, R = RX();
     if (r === 0) {
-      if (en && en.atk) power += en.atk;
+      if (en && en.atk && !en.hits) power += en.atk;   // 速射（2本撃つ技）の強化の攻撃+は、1本目の矢だけ（v5.9.4・案A。下の en1）
       if (en && relOn('bell')) power += relD('bell').entryAtk;
     }
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
     const rp = relAtk(u, r, !!en, stayN, T, r === 0 && !!u.entered);   // 効いたレリック（表示だけ。v5.8.14）
     let total = 0; const hs = [];   // hs：1発ごとのダメージ（表示の内訳だけに使う。合計の計算は今までどおり）
-    for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
+    const en1 = en && en.atk && en.hits ? en.atk : 0;
+    for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup + en1 : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
     say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + (rp.length ? '（' + relTxt(rp) + '）' : '') + '　' + total + 'ダメージ');
@@ -7092,6 +7101,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     { t: '4人の仲間', x: '戦士は隊の盾。魔女は仲間を支え、神官は傷を癒やす。サムライは一撃が重いが、打たれ弱い。', pos: 'bottom', spot: () => bd(), next: true },
     { t: '攻撃列が最前線', x: '隊列は「攻撃列」「補助列」「回復列」の3段。敵と戦うのも、敵に狙われるのも、いちばん上の攻撃列だけ。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
     { t: '敵の予告', x: '敵は次の行動を予告する。赤い枠の仲間が狙われ、赤い数字のダメージを受ける。', pos: 'bottom', spot: () => [$('ticket'), document.querySelector('.beam.on')].filter(Boolean), next: true },
+    { t: '敵を調べる', x: '敵の名前の横の「i」を押すと、敵の技の一覧と「その次」の行動が見られる。押してみよう。', pos: 'bottom', spot: () => document.querySelector('.plate'), expect: { foe: true }, hint: '光っている「i」を押す' },
+    { t: '技の一覧', x: '「次」がこのターンの行動、その下が「その次」。大技が来る前に、ここで確かめよう。', pos: 'bottom', cls: 'over-sheet', expect: { foeClose: true }, hint: '右上の × で閉じる' },
     { t: '仲間を動かす ①', x: 'サムライは回復列で休んでいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
     { t: '仲間を動かす ②', x: '次に、攻撃列の空きマスをタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
     { t: '攻撃列に出た', x: 'サムライに剣マークの数字が出た。次に与えるダメージの見込み。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
@@ -7103,7 +7114,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
     { t: '維持のあと', x: '魔女の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
     { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
-    { t: '基本はここまで', x: 'あとは自由に。敵の名前をタップすると、行動の一覧と「その次」の行動が見える。新しい仕掛けは、出てきたときに案内する。', pos: 'bottom', next: true, last: true }
+    { t: '基本はここまで', x: 'あとは自由に。敵の「i」を押せば、いつでも技の一覧が見られる。新しい仕掛けは、出てきたときに案内する。', pos: 'bottom', next: true, last: true }
   ];
 
   function placeSpot() {
@@ -7133,7 +7144,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function showCoach(o) {
     const c = $('coach');
-    c.className = 'coach pos-' + (o.pos || 'bottom');
+    c.className = 'coach pos-' + (o.pos || 'bottom') + (o.cls ? ' ' + o.cls : '');
     $('coStep').textContent = o.label;
     $('coTitle').textContent = o.t;
     $('coText').textContent = o.x;
@@ -7910,8 +7921,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function entryDesc(o) {
     const p = [];
     if (o.spd) p.push('先に動き');
-    if (o.atk) p.push('攻撃+' + o.atk);
     if (o.hits) p.push('攻撃回数+' + o.hits);
+    if (o.atk) p.push((o.hits ? '1本目の' : '') + '攻撃+' + o.atk);   // 速射の強化は1本目の矢だけ（v5.9.4）
     if (o.guard) p.push('同じ側の被ダメージ-' + o.guard);
     if (o.teamGuard) p.push('攻撃列の被ダメージ-' + o.teamGuard);
     if (o.heal) return '攻撃列の全員をHP+' + o.heal + '（最大HPまで）';
@@ -8184,7 +8195,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const RTA_IC = {
     gate: '<path d="M5 21V10a7 7 0 0 1 14 0v11"/><path d="M9 21v-7a3 3 0 0 1 6 0v7"/><path d="M3 21h18"/>',
     sword: '<path d="M4 4l10 10M4 4h4M4 4v4"/><path d="M20 4L10 14M20 4h-4M20 4v4"/><path d="M8 16l-3 3M16 16l3 3M7 13l4 4M17 13l-4 4"/>',
-    rest: '<path d="M12 3c2 3 4 4 4 7a4 4 0 0 1-8 0c0-2 1-3 2-4 .5 1 1 1.5 2 2 0-2-1-3 0-5z"/><path d="M5 16h14l-2 4H7z"/>',
+    rest: '<path d="M12 20s-7.5-4.9-7.5-10.3A4.2 4.2 0 0 1 12 7.1a4.2 4.2 0 0 1 7.5 2.6C19.5 15.1 12 20 12 20z"/>',   // 休息はハート（v5.9.3。札の絵と同じ印。炎は灯・祭壇と見分けにくかった）
     event: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9a8 5 0 0 1 16 0"/><path d="M4 13h16"/><rect x="10.5" y="11.5" width="3" height="4" rx=".6"/>',
     scroll: '<path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8"/><path d="M7 4a2 2 0 0 0-2 2v1h4"/><path d="M7 4v14a2 2 0 0 0 2 2"/><path d="M11 9h5M11 13h5"/>',
     altar: '<path d="M12 2.5c1.6 2.2 3 3.2 3 5.2a3 3 0 0 1-6 0c0-1.4.8-2.2 1.5-3 .4.7.8 1 1.5 1.4 0-1.4-.7-2.2 0-3.6z"/><path d="M5 21h14M7 21v-6h10v6M5 15h14l-1-2H6z"/><path d="M9 18h6"/>',
@@ -8354,6 +8365,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!t) { t = document.createElement('p'); t.id = 'rvTap'; t.className = 'rv-tap'; t.setAttribute('aria-live', 'polite'); }
     const rc = $('runv').querySelector('.r-card'); if (t.parentNode !== rc) rc.appendChild(t);   // 札（枠）の中の下に置く
     t.textContent = rvQText; t.classList.toggle('on', !!on);
+    // 札の下の出来事の行（「〜が強くなった」など）と重ねない（v5.9.3）：行があれば、そのすぐ上に出す
+    const ev = $('rvEvents'), er = ev && ev.offsetHeight && ev.children.length ? ev.getBoundingClientRect() : null, cr = rc.getBoundingClientRect();
+    t.style.bottom = er && er.top < cr.bottom && er.bottom > cr.bottom - 80 ? Math.round(cr.bottom - er.top + 6) + 'px' : '';
   }
   function rvPhase(ph, hintMs, text, defer) {
     clearTimeout(rvQT); document.querySelectorAll('#runv .ph-wait, #runv .ph-show').forEach((e) => e.classList.remove('ph-wait', 'ph-show'));
@@ -9141,7 +9155,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expUpDesc(m) {
     const e = m.entry, U = EXP.up;
-    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : '攻撃+' + (e.cap ? Math.max(0, Math.min(U.atk, e.cap - e.atk)) : U.atk);
+    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : (e.hits ? '1本目の攻撃+' : '攻撃+') + (e.cap ? Math.max(0, Math.min(U.atk, e.cap - e.atk)) : U.atk);
   }
   function expUpgrade(m) {
     const e = m.entry, U = EXP.up, k = e.guard ? 'guard' : e.heal ? 'heal' : e.teamGuard ? 'teamGuard' : 'atk';
@@ -9592,23 +9606,31 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const base = b.querySelector('.slot').getBoundingClientRect().width;
     const trio = st.classList.contains('trio');
     const max = Math.max(base, Math.min((b.clientWidth - 48) / 3, base * 1.6));
-    const min = trio ? base * 0.85 : base;   // 三位一体だけは、パネルが収まらなければ盤を少し縮める
+    let min = trio ? base * 0.85 : base;   // 三位一体だけは、パネルが収まらなければ盤を少し縮める
     $('app').classList.add('fit');
+    let tight = false;
+    const over = () => { const de = document.documentElement, d = $('dock'); return de.scrollHeight > innerHeight + 1 || (d && d.offsetParent !== null && d.getBoundingClientRect().bottom > innerHeight + 1); };   // 画面からはみ出す（ページが伸びる、または下のボタンが画面の外。ページが伸びずに切れることもある）   // v5.9.4：今の大きさでも画面に収まらない（チュートリアルの記録欄が高い・iPhone の上下の余白）。盤を少し縮めてでも、下のボタンを画面に入れる
     const ok = () => {
-      const de = document.documentElement;
-      if (de.scrollHeight > innerHeight + 1) return false;
+      if (over()) return false;
+      if (tight) return true;
       const sr = st.getBoundingClientRect(), tk = $('ticket').getBoundingClientRect();
       if (trio) return [...$('party').children].every((e) => e.scrollHeight <= e.clientHeight + 1) && $('party').getBoundingClientRect().bottom <= tk.top + 2;
       const low = [document.querySelector('#stage .ehp'), $('espd')].filter((e) => e && getComputedStyle(e).display !== 'none').reduce((m, e) => Math.max(m, e.getBoundingClientRect().bottom), 0);
       const art = $('eart').getBoundingClientRect().height;
       return low <= tk.top - 4 && art >= (innerHeight < 760 ? 48 : 90);
     };
-    let lo = min, hi = max;
     b.style.setProperty('--cell', base + 'px');
+    if (!trio && !ok() && over()) { tight = true; min = base * 0.75; }
+    let lo = min, hi = max;
     if (!ok()) hi = base; else lo = base;
     for (let i = 0; i < 8; i++) { const m = (lo + hi) / 2; b.style.setProperty('--cell', m + 'px'); if (ok()) lo = m; else hi = m; }
     b.style.setProperty('--cell', lo + 'px');
-    if (Math.abs(lo - base) < 2 || !ok()) { b.style.removeProperty('--cell'); $('app').classList.remove('fit'); } else b.style.setProperty('--cell', Math.floor(lo) + 'px');
+    if (tight) { b.style.setProperty('--cell', Math.floor(lo) + 'px'); return; }   // 収まらなくても、いちばん小さくした盤のまま（はみ出しを減らす）
+    if (Math.abs(lo - base) < 2 || !ok()) {
+      b.style.removeProperty('--cell'); $('app').classList.remove('fit');
+      // v5.9.4：fit を外すと画面からはみ出す（チュートリアルの記録欄が高いとき・iPhone の上下の余白）なら、fit（敵の枠が縮める）は残す。下の「回す」「維持」を隠さない
+      if (over()) { $('app').classList.add('fit'); if (over()) $('app').classList.remove('fit'); }
+    } else b.style.setProperty('--cell', Math.floor(lo) + 'px');
   }
   // 石のレーンを画面の端まで広げる幅（左右とも、盤の端まで（ほかのパネルと同じ幅））。盤が中央寄せで余白ができるときにも、レーンは横いっぱい
   function setBleed() {

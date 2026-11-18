@@ -120,12 +120,13 @@ export function battle(en, party, policy, o) {
           const m = grid[1][c];
           if (m && m.atkReady && m.atkSup > 0) { sup = m.atkSup; m.atkReady = false; }
           const x = ent.get(u);
-          if (x) power += (x.atk || 0) + (rel.has('bell') ? RD.bell.entryAtk : 0);
+          if (x) power += (x.hits ? 0 : (x.atk || 0)) + (rel.has('bell') ? RD.bell.entryAtk : 0);   // 速射の強化の攻撃+は1本目だけ（v5.9.4）
         } else power = u.ranged;
         const hitsN = (u.hits || 1) + ((ent.get(u) && ent.get(u).hits) || 0);
         const dfn = e.layer && r === 0 && u.entered ? 0 : Math.max(0, e.def - RN('lens', 'def'));   // 重ね鎧の（v5.6.7）：入ったばかりの仲間は防御を無視
         if (e.variant) power += RN('fang', 'atk');   // 狩人の牙（v5.8.0）：亜種への攻撃は1回ごとに+
-        let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup : 0) - dfn);
+        const x1 = r === 0 && ent.get(u) && ent.get(u).hits ? (ent.get(u).atk || 0) : 0;
+        let tot = 0; for (let i = 0; i < hitsN; i++) tot += Math.max(1, power + (i === 0 ? sup + x1 : 0) - dfn);
         e.hpNow -= tot;
         if (e.hpNow <= 0) return { win: true, turns: turn, fallen, hp: hpMap() };
       }
