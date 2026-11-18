@@ -1712,7 +1712,13 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 /* ---- 表紙 v5.8.4「灯を継ぐ隊列」：地の底の大聖堂の絵、金の題字、羊皮紙と革の板のボタン ----
    背景とボタンの板は img/ の WebP（ChatGPT で描いた素材を軽くしたもの）。キャラの紋はゲームの絵のまま */
 .cover, html:root[data-skin] .cover { background: #0b1019 url("img/bg_tall.webp") center top / cover no-repeat; }   /* 見た目（data-skin）ごとの表紙の背景より優先 */
-@media (min-aspect-ratio: 1/1) { .cover, html:root[data-skin] .cover { background-image: url("img/bg_wide.webp"); background-position: center; } }
+@media (min-aspect-ratio: 1/1) { .cover, html:root[data-skin] .cover { background-image: url("img/bg_wide.webp"); background-position: center 25%; } }
+/* v5.9.2：背景に7人の仲間が描かれたので、表紙の紋（丸い3つの顔）は隠す。場所は残し、題字とボタンの位置は変えない */
+.cover .orbit { visibility: hidden; }
+/* 縦に長い画面（390×844 など）：後ろの列の頭がキャッチコピーに重ならないよう、絵を少し下げて上を暗くつなぐ */
+@media (max-aspect-ratio: 1/2) { .cover, html:root[data-skin] .cover { background: linear-gradient(to bottom, #0b1019 0, rgba(11, 16, 25, 0) 12vh), url("img/bg_tall.webp") center 7vh / auto 100% no-repeat, #0b1019; } }
+/* 横長でも正方形に近い画面（タブレットの横持ち）：仲間を左に寄せ、題字の下まで下げる */
+@media (min-aspect-ratio: 1/1) and (max-aspect-ratio: 8/5) { .cover, html:root[data-skin] .cover { background: linear-gradient(to bottom, #0b1019 0, rgba(11, 16, 25, 0) 34vh), url("img/bg_wide.webp") left 16vh / auto 100% no-repeat, #0b1019; } }
 .cover::before { mix-blend-mode: normal; opacity: 1; background-image: linear-gradient(180deg, rgba(6, 9, 16, 0.55) 0%, rgba(6, 9, 16, 0.1) 34%, rgba(6, 9, 16, 0.08) 52%, rgba(6, 9, 16, 0.5) 76%, rgba(6, 9, 16, 0.78) 100%); }
 .c-star { width: 34px; height: 34px; margin-bottom: -16px; filter: drop-shadow(0 0 8px rgba(255, 214, 120, 0.85)); }
 .c-title { font-size: clamp(38px, 13vw, 60px); letter-spacing: 0.04em; line-height: 1.12; filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.7)) drop-shadow(0 0 22px rgba(240, 190, 90, 0.35)); }
@@ -2992,7 +2998,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.1</p>
+    <p class="c-ver" id="cVer">ver 5.9.2</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3512,7 +3518,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.1';
+  const APP_VERSION = '5.9.2';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [

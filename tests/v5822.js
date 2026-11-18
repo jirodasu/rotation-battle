@@ -71,7 +71,8 @@ const phaseIs = async (p, list, n) => { for (let i = 0; i < (n || 400); i++) { c
     await p.evaluate(() => { document.getElementById('runv').hidden = true; window.__rb.beginExp('std', 3); }); await p.waitForTimeout(300);
     const res = [];
     for (let k = 0; k < 6 && res.length < 3; k++) {
-      await p.evaluate((k) => { const R = window.__rb; R.run.map = R.expFill(); const ids = Object.keys(R.run.map).filter((id) => R.ROUTE.nodes[id] && typeof R.run.map[id].foe === 'number' && R.routeChoice(id).type === 'battle'); const id = ids[k % ids.length], c = R.routeChoice(id);
+      await p.evaluate((k) => { const R = window.__rb; let ids = [];   // 地図によっては「番号の敵」の戦闘が1つも無い（およそ7枚に1枚）。そのときは地図を作り直す（v5.9.2：ここで止まることがあった）
+        for (let g = 0; g < 30 && !ids.length; g++) { R.run.map = R.expFill(); ids = Object.keys(R.run.map).filter((id) => R.ROUTE.nodes[id] && typeof R.run.map[id].foe === 'number' && R.routeChoice(id).type === 'battle'); } const id = ids[k % ids.length], c = R.routeChoice(id);
         R.run.members.forEach((m) => { m.hp = m.max; }); R.run.node = c.step - 1; R.run.enemy = R.expEnemy(c.step, 'eater', R.run.map[id].foe); document.getElementById('runv').hidden = true; R.toPrepForTest(); }, k);
       await p.waitForTimeout(200); await p.click('#btnStart').catch(() => {});
       for (let t = 0; t < 12 && res.length < 3; t++) {
