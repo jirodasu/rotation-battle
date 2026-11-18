@@ -2992,7 +2992,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.0</p>
+    <p class="c-ver" id="cVer">ver 5.9.1</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3512,7 +3512,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.0';
+  const APP_VERSION = '5.9.1';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -9420,16 +9420,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
   /* ===== 冒頭の物語（v5.5.8）：なぜ環廊に潜るのか。初めて「環廊へ」を押したときだけ自動で流し、2回目からはタイトルの「物語」から見返せる ===== */
   /* 冒頭の物語（v5.7.6・提案C）：初めは4枚だけ（最初の地図まで約55秒→30秒）。残りの3枚は「物語の続き」として、第1章の主を倒して第2章へ入るときに1回だけ流す。
      タイトルの「物語」は、続きを見たあとなら7枚を通して流す */
-  const STORY_OPEN = [
-    { a: 'far', t: '地の底に、輪のかたちをした<br>大聖堂がある。<br>人はそれを<em>「環廊」</em>と呼ぶ。' },
-    { a: 'bright', t: 'その最も深い場所に、<br><em>「最初の灯」</em>が眠るという。<br>手にした者には、<br>尽きぬ富を――と。' },
-    { a: 'party', t: '倒れた者の灯を拾い、<br>次の者がそれを掲げる。<br>ほつれた道を繕いながら深くへ。<br>人は彼らを<em>「修繕隊」</em>と呼んだ。' },
-    { a: 'party2', t: '灯は、<em>受け渡す</em>もの。<br>前に立つ者が掲げ、<br>疲れたら後ろへ渡す。<br>――さあ、灯を手に取れ。' }
+  const STORY_OPEN = [   // 文（v5.9.1）：小学生にも分かる言葉に（2026-11-18 ユーザー承認）
+    { a: 'far', t: '地の底に、<br>輪のかたちをした<br>大きな聖堂がある。<br>その名は<em>「環廊」</em>。' },
+    { a: 'bright', t: 'いちばん深い場所には、<br><em>「最初の灯」</em>が眠っているという。<br>手に入れた者は、<br>ずっとなくならない宝を<br>手にできる、と。' },
+    { a: 'party', t: '倒れた者の灯を拾って、<br>次の者がかかげる。<br>こわれた道をなおしながら、<br>もっと深くへ。<br>人は彼らを<em>「修繕隊」</em>と呼んだ。' },
+    { a: 'party2', t: '灯は、<em>受け渡す</em>もの。<br>前に立つ者がかかげ、<br>つかれたら後ろへ渡す。<br>さあ、灯を手に取れ！' }
   ];
   const STORY_CONT = [
-    { a: 'descend', t: '金を求める者、名を求める者、<br>ただ明日を求める者。<br>あまたの冒険者が灯を掲げ、<br>環廊へ降りていった。' },
-    { a: 'beast', t: '戻った者は、ひとりもいない。<br>散らばった灯を喰らった獣が、<br>いまも<em>「十二の門」</em>を守っている。' },
-    { a: 'pass', t: 'それでも、灯は消えきらなかった。<br>門をひとつ越えた灯が、<br>次の門を照らしている。' }
+    { a: 'descend', t: 'お金がほしい者。<br>有名になりたい者。<br>ただ、明日を生きたい者。<br>たくさんの冒険者が灯をかかげ、<br>環廊へ降りていった。' },
+    { a: 'beast', t: 'でも、帰ってきた者は<br>ひとりもいない。<br>こぼれた灯を食べたけものたちが、<br>今も<em>「十二の門」</em>を守っている。' },
+    { a: 'pass', t: 'それでも、灯は消えずに残った。<br>門をひとつこえた灯が、<br>次の門を照らしている。' }
   ];
   const STORY = STORY_OPEN;
   const ST_NUM = ['一', '二', '三', '四', '五', '六', '七'];
@@ -9459,7 +9459,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       { a: 'bottom', t: '門をくぐり、<br>環廊の底へ。<br>そこに<em>「最初の灯」</em>はあった。' },
       { a: 'ring', t: '宝ではなかった。<br>倒れた者たちが残した灯が、<br>輪になって燃えていた。' },
       { a: 'names', t: fallen.length ? nm + '――<br>道の途中で渡された灯も、<br>その輪の中にあった。' : '誰ひとり欠けずに、ここまで来た。<br>それでも輪の中には、<br>名も知らぬ者たちの灯があった。' },
-      { a: 'rise', t: '尽きぬ富とは、<br>受け渡されてきた<em>この灯</em>のこと。<br>灯は、また次の者へ。' }
+      { a: 'rise', t: 'ずっとなくならない宝とは、<br>受け渡されてきた<em>この灯</em>のこと。<br>灯は、また次の者へ。' }   // 冒頭の「ずっとなくならない宝」（v5.9.1）に合わせた
     ];
   }
   let stPages = STORY, stEnd = false;
