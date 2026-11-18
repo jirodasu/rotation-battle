@@ -2992,7 +2992,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.8.22</p>
+    <p class="c-ver" id="cVer">ver 5.9.0</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3512,7 +3512,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.8.22';
+  const APP_VERSION = '5.9.0';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4368,7 +4368,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 先読み（回したら）で使う突入技：この回転でコンボが発動するなら強化後の値
   const entryFor = (u, entering) => (u && u.entry && entering && (lampOn() ? lampMul(lamp) > 1 : comboFull()) ? boostEntry(u.entry, lampOn() ? lampMul(lamp) : 0) : u && u.entry);
   const gaugeOn = () => EXPM() || !!tut;
-  const gaugeOk = () => !gaugeOn() || gauge >= EXP.rot.cost;
+  const rotCost = () => (enemy && enemy.rotCost) || EXP.rot.cost;   // 重い扉の番人（v5.9.0）：戦うあいだ、回すのに要る気力が増える
+  const gaugeOk = () => !gaugeOn() || gauge >= rotCost();
   const EXPM = () => !!(run && run.mode === 'exp' && !tut);
   const relOn = (id) => EXPM() && (run.relics || []).includes(id);
   const relD = (id) => EXP.relics.find((x) => x.id === id);
@@ -4708,7 +4709,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const nextActOf = (F) => F.pattern[turn % F.pattern.length];
   const nextAct = () => nextActOf(enemy);
   // 大技の狙い方（v5.6.4）：ためているターンから出す。だれに当たるかは、次のターンの並びで決まるので、決まり方を言う
-  const aimOf = (n) => (!n || !n.dmg ? '' : n.rule === 'all' ? '一番前の列の全員' : n.rule === 'random' ? '一番前の列からランダム' : n.rule === 'job' ? n.job + '（いなければHP最低）' : n.rule === 'lowhp' ? 'HPがいちばん低い仲間' + (n.vsEntered ? '（入ったばかりなら×' + n.vsEntered + '）' : '') + (n.vsStayed ? '（居続けると×' + n.vsStayed + '）' : '') : n.rule === 'back' ? '回復列の全員' : n.rule === 'mid' ? '補助列の全員' : '') + (n.dmg && n.vsStayed && n.rule !== 'lowhp' ? '（居続けると×' + n.vsStayed + '）' : '');
+  const aimOf = (n) => (!n || !n.dmg ? '' : n.rule === 'all' ? '一番前の列の全員' : n.rule === 'random' ? '一番前の列からランダム' : n.rule === 'job' ? n.job + '（いなければHP最低）' : n.rule === 'lowhp' ? 'HPがいちばん低い仲間' + (n.vsEntered ? '（入ったばかりなら×' + n.vsEntered + '）' : '') + (n.vsStayed ? '（居続けると×' + n.vsStayed + '）' : '') : n.rule === 'highhp' ? 'HPがいちばん多い仲間（同じなら左）' : n.rule === 'back' ? '回復列の全員' : n.rule === 'mid' ? '補助列の全員' : '') + (n.dmg && n.vsStayed && n.rule !== 'lowhp' ? '（居続けると×' + n.vsStayed + '）' : '');
   function targetInfo(act, g, F, hpOf) {   // hpOf：予測で、その時点のHP（祝福の回復・先の敵の攻撃のあと）で狙いを決める（v5.5.6）
     if (act.rule === 'bind') return { cols: [], desc: '縛られると、次のターンは隊列を回せない' };
     if (act.rule === 'charge') { const n = nextActOf(F || enemy); return { cols: [], desc: '次に ' + n.name + '（' + n.dmg + (n.hits > 1 ? '×' + n.hits : '') + '）' + (aimOf(n) ? '・狙い ' + aimOf(n) : '') }; }
@@ -4731,9 +4732,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const t = L.find((x) => (x.u.jname || x.u.name) === act.job);   // 本番の団員は個人名なので職業名で照合する
       if (t) return { cols: [t.c], desc: '狙い　' + act.job + '（' + colN(t.c) + '）' };
     }
+    if (act.rule === 'highhp') {   // 重石の番兵（v5.9.0）：HPがいちばん多い仲間。同じなら左
+      const h = L.reduce((a, b) => (HP(b.u) > HP(a.u) || (HP(b.u) === HP(a.u) && b.c < a.c) ? b : a));
+      return { cols: [h.c], desc: '狙い　HP最多の' + h.u.name + '（' + colN(h.c) + '）' };
+    }
     const t = L.reduce((a, b) => (HP(b.u) < HP(a.u) ? b : a));
     return { cols: [t.c], desc: (act.rule === 'job' ? '狙い　前列に' + act.job + 'がいないため、HPが最も少ない' + t.u.name : '狙い　HP最低の' + t.u.name + '（' + colN(t.c) + '）') + (act.vsEntered ? '。入ったばかりなら×' + act.vsEntered : '') + (act.vsStayed ? '。居続けると×' + act.vsStayed : '') };
   }
+  // 時告げの砂時計（v5.9.0）：終の刻（doom）まであと何ターンか。3ターン前から数える（突然には来ない）。0＝数えない
+  const doomIn = (F) => { if (!F || !F.pattern) return 0; const n = F.pattern.length, d = F.pattern.findIndex((a) => a.doom); if (d < 0) return 0; const k = (d - (((turn || 1) - 1) % n) + n) % n; return k >= 1 && k <= 3 ? k : 0; };
   const actOf = (F, t) => {
     const n = F.pattern.length, i = ((t || turn) - 1) % n, a = F.pattern[i];
     if (F.starve && a && a.rule === 'charge' && (phase === 'resolve' ? F.hungry : F.hp * 2 < (F.max || F.hp))) { const b = F.pattern[(i + 1) % n]; if (b && b.dmg) return Object.assign({}, b, { big: true, starved: true }); }   // 飢えた（v5.6.7）：HPが半分を切ると、ためずに大技
@@ -4889,6 +4896,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     bench: () => ['留守番', '出撃は<em>' + RUN.sortie + '人まで</em>。下に並んだ顔は留守番で、戦闘のあと全快する。顔をタップ→盤面の仲間をタップで入れ替え。'],
     charge: () => ['ちからをためている', 'このターンは攻撃なし。<em>次のターンに大技</em>が来る。今のうちに回して、元気な仲間を前へ。'],
     stayed: () => ['居続けると狙われる', 'この技は、<em>前のターンも攻撃列にいた仲間</em>に<em>2倍</em>で当たる。「維持」すると赤い数字が2倍になる。回して入れ替えれば、ふつうの強さ。'],
+    highhp: () => ['元気な仲間ほど狙う', 'この技は、前列で<em>HPがいちばん多い仲間</em>に当たる（同じなら左）。いつもと逆なので、HPの多い仲間を前に残すか、回して受け手を選ぶ。'],
+    gate: () => ['重い扉', 'この戦いのあいだ、<em>回すのに気力3</em>が要る（ふだんは2）。回せる回数が少ないので、大技の前のために気力をためておく。'],
+    doom: () => ['終の刻が近い', '8ターン目に<em>全員へ防御無効の大技</em>「終の刻」が来る。予告に「あと何ターン」と出るので、それまでに倒すか、HPを整えて受ける。'],
     mid: () => ['補助列を狙う技', '<em>補助列（真ん中）の全員</em>に当たる。攻撃列がいても届き、防御補助は効かない。HPの少ない仲間を真ん中に置かないように。'],
     pierce: () => ['防無効の攻撃（防御補助を無視）', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
@@ -4952,6 +4962,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     else if (act.rule === 'bind') k = 'bind';
     else if (act.vsStayed && phase === 'choose' && !seen.stayed) k = 'stayed';   // 第4章の試作：初めて「居続けて×2」を予告されたとき
     else if (act.rule === 'mid' && !seen.mid) k = 'mid';
+    else if (enemy.rotCost && phase === 'choose' && !seen.gate) k = 'gate';   // 深さ4の新しい敵（v5.9.0）：初めて会ったときに1回だけ
+    else if ((act.rule === 'highhp' || (act.rule === 'charge' && (nextActOf(enemy) || {}).rule === 'highhp')) && phase === 'choose' && !seen.highhp) k = 'highhp';   // 準備では陣立ての案内と重なるので、選ぶフェーズで（ためのターンは次の大槌の狙いとして）
+    else if (doomIn(enemy) && phase === 'choose' && !seen.doom) k = 'doom';
     else if (phase === 'choose' && !seen.entry) k = 'entry';
     else if (act.rule === 'charge') k = 'charge';
     else if (act.pierce) k = 'pierce';
@@ -5122,11 +5135,11 @@ body.fast #stampOk.on { animation-duration: .5s; }
         '<span class="t-main"><b class="disp">' + act.name + '</b>' + (aimOf(nx) ? '<span class="t-aim">狙い ' + aimOf(nx) + '</span>' : '') + '</span>' +
         '<span class="t-dmg nx"><b class="disp">' + nx.dmg * (nx.hits || 1) + '</b><small>次に大技</small></span>';
     } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
-      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + '</span>' +
+      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + (doomIn(enemy) ? '<span class="t-aim t-doom">終の刻まで あと' + doomIn(enemy) + 'ターン</span>' : '') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
         : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.hi < raw;   // 味方ごとに違うときは範囲を出さない（味方カードの個別の予測に一本化）。全員が軽くなるとき（静けさの衣など。v5.8.0）は、いちばん大きい数字を「軽減後」で出す
           return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? String(h.hi) : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut && h && h.rel ? gemI([1], 'tk') : '') + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
-    t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc);
+    t.setAttribute('aria-label', '敵の予告：' + act.name + '。' + info.desc + (doomIn(enemy) ? '。終の刻まであと' + doomIn(enemy) + 'ターン' : ''));
     dangerEdge(!!enemy.charged && !chg && (phase === 'prep' || phase === 'choose'));
     tipsCheck(act);
     const showBeam = phase === 'prep' || phase === 'choose';
@@ -5197,6 +5210,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (a.rule === 'job') return a.job + 'を狙う（前列にいなければHP最低）';
     const st = a.vsStayed ? '（前のターンも攻撃列にいたら×' + a.vsStayed + '）' : '';   // 影縫い（第4章の試作）
     if (a.rule === 'lowhp') return '前列でHPが最も低い仲間' + (a.vsEntered ? '（回して入ったばかりなら×' + a.vsEntered + '）' : '') + st + (a.pierce ? '・防無効' : '');
+    if (a.rule === 'highhp') return '前列でHPが最も多い仲間（同じなら左）' + (a.pierce ? '・防無効' : '');
     if (a.rule === 'back') return '回復列（いちばん後ろ）の全員に当たる';
     if (a.rule === 'mid') return '補助列（真ん中）の全員に当たる。防御補助は効かない';
     if (a.rule === 'all') return '前列の全員に当たる' + st + (a.pierce ? '・防無効' : '');
@@ -5429,7 +5443,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let gaugeShown = null;
   function renderGauge() {
     const head = (tut ? '練習' : (run ? '地点' + (run.node + 1) : '第' + (battleIdx + 1) + '戦')) + '　ターン' + turn;
-    const on = gaugeOn() && phase !== 'prep', cap = EXP.rot.cap, cost = EXP.rot.cost, g = Math.max(0, Math.min(cap, gauge));
+    const on = gaugeOn() && phase !== 'prep', cap = EXP.rot.cap, cost = rotCost(), g = Math.max(0, Math.min(cap, gauge));
     const chip = $('chipTurn');
     if (!on) { chip.textContent = head; gaugeShown = null; return; }
     const up = gaugeShown != null && g > gaugeShown, down = gaugeShown != null && g < gaugeShown;
@@ -5463,7 +5477,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (why) b.dataset.block = why; else delete b.dataset.block;
     $('btnStay').classList.remove('only');   // 状態でボタンの格を入れ替えない：回す＝常に金の主要、維持＝常に暗い副次（v5.1.57）
     if (!on && !bound) { setMeter(m, ''); b.setAttribute('aria-label', '隊列を回す'); return; }
-    const cap = EXP.rot.cap, cost = EXP.rot.cost, g = Math.max(0, Math.min(cap, gauge));
+    const cap = EXP.rot.cap, cost = rotCost(), g = Math.max(0, Math.min(cap, gauge));
     let h = '';
     if (on) { for (let i = 0; i < cap; i++) h += '<i class="' + (i < g ? 'on' : '') + (i < cost ? ' need' : '') + '"></i>'; }
     const wait = cost - g;
@@ -6838,7 +6852,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('board').querySelectorAll('.tok[data-id]').forEach((t) => { const b = t.getBoundingClientRect(); old[t.dataset.id] = { x: b.left, y: b.top }; });
     rotateGrid();
     stayN = 0;
-    if (gaugeOn()) gauge -= EXP.rot.cost;
+    if (gaugeOn()) gauge -= rotCost();
     say('隊列を回した。補助が再び使える。');
     // 回転コンボ（v5.4.5）：+1。満タンになったら、この回転で入った仲間の突入技を強化して0に戻す
     if (comboOn()) {
@@ -7508,7 +7522,46 @@ body.fast #stampOk.on { animation-duration: .5s; }
       '<ellipse cx="120" cy="100" rx="22" ry="16" fill="url(#gE5)"/><ellipse cx="120" cy="100" rx="7" ry="4.5" fill="#d9f0ff"/>' +
       '<path d="M84 120q-18 10-12 30l22-4q-4-14 4-22zM156 120q18 10 12 30l-22-4q4-14-4-22z" fill="#262b3c" ' + ES + '/>' +
       '<path d="M98 136h44l-4 18h-36z" fill="#5a4a34" ' + ES + '/><path d="M120 136v18" stroke="' + K + '" stroke-width="1.6"/>' +
-      '<path d="M60 168q30-8 60 0q30-8 60 0" fill="none" stroke="#9fb6d6" stroke-width="1.4" opacity=".35"/>')
+      '<path d="M60 168q30-8 60 0q30-8 60 0" fill="none" stroke="#9fb6d6" stroke-width="1.4" opacity=".35"/>'),
+    // 6 重石の番兵（v5.9.0・深さ4）：背を丸めた石の番兵が、大きな分銅を担いで振り下ろす構え
+    E('<defs>' + halo('gE6', '#ff8a4a') + '</defs>' +
+      '<path d="M84 158l-6 12h22l2-12M142 158l2 12h22l-6-12" fill="#353b4b" ' + ES + '/>' +
+      '<path d="M66 160q-10-52 20-80q24-20 58-14q36 8 42 48q4 30-8 46z" fill="#4c5468" ' + ES + '/>' +
+      '<path d="M92 92q30-12 64 4" fill="none" stroke="#8a93ad" stroke-width="1.4" opacity=".55"/>' +
+      '<path d="M104 118l10 9-6 9M156 118l-7 12" fill="none" stroke="#d8b660" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>' +
+      '<path d="M146 98q12-28 30-36l12 12q-16 10-24 30z" fill="#4c5468" ' + ES + '/>' +
+      '<circle cx="190" cy="44" r="7" fill="none" stroke="' + K + '" stroke-width="3"/>' +
+      '<path d="M164 52h52l-6 14q-9 5-9 13t9 13l6 14h-52l6-14q9-5 9-13t-9-13z" fill="#2f3443" ' + ES + '/>' +
+      '<path d="M170 74h40" stroke="#d8b660" stroke-width="2.2"/><path d="M176 60h28" stroke="#6b7390" stroke-width="1.4"/>' +
+      '<path d="M54 102q-12-30 14-44q26-10 40 12q8 18-6 32q-24 14-48 0z" fill="#3a4152" ' + ES + '/>' +
+      '<path d="M60 86q10-18 30-18" fill="none" stroke="#6b7390" stroke-width="1.2"/>' +
+      eye(74, 92, 'gE6')),
+    // 7 重い扉の番人（v5.9.0・深さ4）：鉄の帯と大きな閂をかけた、歩く扉。覗き窓から目が光る
+    E('<defs>' + halo('gE7', '#ff8a4a') + '</defs>' +
+      '<path d="M78 162l-6 10h24l-2-10M148 162l2 10h24l-6-10" fill="#2c2228" ' + ES + '/>' +
+      '<path d="M64 164V78q0-48 56-48t56 48v86z" fill="#4a3628" ' + ES + '/>' +
+      '<path d="M92 40v124M120 32v132M148 40v124" stroke="' + K + '" stroke-width="1.6" opacity=".55"/>' +
+      '<path d="M64 64h112v12H64zM64 132h112v12H64z" fill="#3a4152" ' + ES + '/>' +
+      '<g fill="#d8b660" stroke="' + K + '" stroke-width="1.2"><circle cx="76" cy="70" r="2.6"/><circle cx="164" cy="70" r="2.6"/><circle cx="76" cy="138" r="2.6"/><circle cx="164" cy="138" r="2.6"/></g>' +
+      '<path d="M58 92h14v24H58zM168 92h14v24h-14z" fill="#2c3140" ' + ES + '/>' +
+      '<rect x="42" y="97" width="156" height="14" rx="3" fill="#6b7390" ' + ES + '/>' +
+      '<path d="M48 104h144" stroke="#9aa3bf" stroke-width="1.2" opacity=".7"/>' +
+      '<rect x="104" y="40" width="32" height="20" rx="4" fill="#11141f" ' + ES + '/>' +
+      eye(120, 50, 'gE7') +
+      '<path d="M108 40v20M116 40v20M124 40v20M132 40v20" stroke="' + K + '" stroke-width="1.6" opacity=".8"/>'),
+    // 8 時告げの砂時計（v5.9.0・深さ4）：祭壇の砂時計に目が宿ったもの。上の砂が落ちきると「終の刻」
+    E('<defs>' + halo('gE8', '#ffb24a') + '<radialGradient id="gE8s"><stop offset="0" stop-color="#ffe7a8" stop-opacity=".6"/><stop offset="1" stop-color="#ffe7a8" stop-opacity="0"/></radialGradient></defs>' +
+      '<path d="M78 34q42-30 84 0z" fill="#5a4a34" ' + ES + '/>' +
+      eye(120, 24, 'gE8') +
+      '<path d="M70 34h100l-8 12H78zM70 160h100l-8-12H78z" fill="#6b5838" ' + ES + '/>' +
+      '<path d="M80 46h8v102h-8zM152 46h8v102h-8z" fill="#3e3036" ' + ES + '/>' +
+      '<path d="M84 60q8-4 0-8M84 90q8-4 0-8M84 120q8-4 0-8M156 60q-8-4 0-8M156 90q-8-4 0-8M156 120q-8-4 0-8" fill="none" stroke="#d8b660" stroke-width="1.4"/>' +
+      '<ellipse cx="120" cy="96" rx="34" ry="44" fill="url(#gE8s)"/>' +
+      '<path d="M94 46q0 32 24 50q-24 18-24 52h52q0-34-24-52q24-18 24-50z" fill="rgba(170,196,232,.16)" stroke="' + K + '" stroke-width="2.4" stroke-linejoin="round"/>' +
+      '<path d="M101 60q19 6 38 0q-3 20-19 32q-16-12-19-32z" fill="#d8b660" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M120 94v42" stroke="#f0d890" stroke-width="2" stroke-dasharray="3 3"/>' +
+      '<path d="M98 146q22-22 44 0z" fill="#d8b660" stroke="' + K + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M104 52q8-4 12 4" fill="none" stroke="#e6f0ff" stroke-width="1.6" opacity=".7" stroke-linecap="round"/>')
   ];
   // 三位一体の3体（v5.1.39）：石の像・祈り手・断罪者。大きさは敵と同じ 240×180
   const party = {
@@ -7741,6 +7794,28 @@ body.fast #stampOk.on { animation-duration: .5s; }
       { name: '灯消し', glyph: '消', rule: 'all', dmg: 24, pierce: true, vsStayed: 2 }
     ] },
     deep4: { hp: [0.506, 0.506, 0.529], dmg: [0.77, 0.77, 0.726] },   // 第4章（地点11・12・13）の倍率
+    // 深さ4から加わる敵（v5.9.0・2026-11-18 承認「新しい敵10体と深さ5の構成」案B）。数値は設計書の基礎値（自動対戦 tools/d4plan.mjs：深さ4 予告を読む35.0%・名人83.8%・毎ターン維持0%）
+    //   重石の番兵＝HPがいちばん多い仲間を狙う（同じなら左）、重い扉の番人＝戦うあいだ回すのに気力3、時告げの砂時計＝8ターン目に終の刻（全員・防無効）
+    sentinel: { name: '重石の番兵', art: 6, voice: 'club', hp: 140, spd: 4, def: 2, par: 10, allowFallen: 0, pattern: [
+      { name: '押し潰し', glyph: '潰', rule: 'highhp', dmg: 21 },
+      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+      { name: '大槌', glyph: '槌', rule: 'highhp', dmg: 36 },
+      { name: '薙ぎ', glyph: '薙', rule: 'all', dmg: 11 }
+    ] },
+    gate: { name: '重い扉の番人', art: 7, voice: 'club', hp: 210, spd: 3, def: 2, par: 10, allowFallen: 0, rotCost: 3, pattern: [
+      { name: '閂打ち', glyph: '閂', rule: 'lowhp', dmg: 16 },
+      { name: '軋み', glyph: '軋', rule: 'all', dmg: 8 },
+      { name: 'ちからをためる', glyph: '溜', rule: 'charge' },
+      { name: '扉の一撃', glyph: '扉', rule: 'all', dmg: 20 }
+    ] },
+    hourglass: { name: '時告げの砂時計', art: 8, voice: 'horn', hp: 240, spd: 4, def: 1, par: 12, allowFallen: 1, pattern: [
+      { name: 'こぼれ砂', glyph: '砂', rule: 'all', dmg: 8 }, { name: '砂礫', glyph: '礫', rule: 'lowhp', dmg: 16 },
+      { name: 'こぼれ砂', glyph: '砂', rule: 'all', dmg: 8 }, { name: '砂礫', glyph: '礫', rule: 'lowhp', dmg: 16 },
+      { name: 'こぼれ砂', glyph: '砂', rule: 'all', dmg: 8 }, { name: '砂礫', glyph: '礫', rule: 'lowhp', dmg: 16 },
+      { name: 'こぼれ砂', glyph: '砂', rule: 'all', dmg: 8 },
+      { name: '終の刻', glyph: '終', rule: 'all', dmg: 45, pierce: true, doom: true }
+    ] },
+    deepFoes: [['sentinel'], ['gate'], ['hourglass']],   // 深さ4から各章の候補に加わる敵。章の最初の列の戦闘は、この中から選ぶ（案B）
     foes: [[0, 'binder'], [1, 'binder'], ['lizard', 'chorus']]
   };
   // 第4章の試作（?deep4・手順2）：第4章の地図はまだ無いので、第3章の地点7〜9の戦闘を第4章の敵と倍率に置き換えて、技の手触りを試す（主の「灯を知らぬもの」は手順3で地点13に置く）
@@ -8884,17 +8959,24 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expClearSave() { try { localStorage.removeItem(EXP_KEY); } catch (e) { /* 保存できない環境 */ } }
   // 地図の中身：戦闘の敵（章ごとに EXP.foes から。章の主は EXP.chiefFoe）と亜種。休息系はすべて休息
+  const expPool = (ch) => EXP.foes[ch].concat(run && run.depth >= 4 ? EXP.deepFoes[ch] : []);   // 深さ4から、各章の候補に新しい敵が加わる（v5.9.0）
   function expFill() {
     const m = {}, VK = Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep), VKD = Object.keys(VARIANTS), pair = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !VPAIR_NG.includes(a + '+' + b)) return a + '+' + b; } };
     Object.keys(ROUTE.nodes).forEach((id) => {
       const n = ROUTE.nodes[id], chief = expIsChief(n.step), last = n.step === EXP.nodes;
       if (isFightKind(n.kind)) {
-        m[id] = { foe: chief ? 'chief' : pick(EXP.foes[expCh(n.step)]), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? (run && run.depth >= 3 && rnd() < (EXP.pairRate[run.depth] || 0) ? pair() : pick(VK)) : null };   // 深さ3以降：決まった割合で亜種を2つ重ねる（v5.8.21）。深さ1・2は乱数の並びを変えない
+        m[id] = { foe: chief ? 'chief' : pick(expPool(expCh(n.step))), variant: (!chief || (EXP.chiefVariant && !last)) && rnd() < xVariantRate() ? (run && run.depth >= 3 && rnd() < (EXP.pairRate[run.depth] || 0) ? pair() : pick(VK)) : null };   // 深さ3以降：決まった割合で亜種を2つ重ねる（v5.8.21）。深さ1・2は乱数の並びを変えない
         // 初めての遠征（v5.7.4）：地点1は「しのいだ！」を体験する専用の戦闘（提案A）。地点1・2は亜種を出さない（提案D：基本より先に例外を覚えさせない）
         if (n.step <= 2 && firstRun()) { m[id].variant = null; if (n.step === 1) m[id].foe = 'first'; }
         if (!chief && !last && TRI.steps.includes(n.step)) { m[id].foe = 'trinity'; m[id].variant = null; }   // 三位一体：乱数の並びは変えずに、置き換えるだけ
       }
       else if (n.kind === 'camp') m[id] = { camp: 'rest' };
+    });
+    // 深さ4（v5.9.0・案B）：章の最初の列の戦闘は、その深さで加わる敵にする（1周で新しい敵に必ず出会えるように）。深さ1〜3は乱数を引かない
+    if (run && run.depth >= 4) [0, 1, 2].forEach((ch) => {
+      const ids = Object.keys(ROUTE.nodes).filter((id) => { const n = ROUTE.nodes[id]; return m[id] && m[id].foe !== 'chief' && m[id].foe !== 'trinity' && isFightKind(n.kind) && expCh(n.step) === ch && n.step !== EXP.nodes; });
+      const st = Math.min(...ids.map((id) => ROUTE.nodes[id].step));
+      ids.filter((id) => ROUTE.nodes[id].step === st).forEach((id) => { m[id].foe = pick(EXP.deepFoes[ch]); });
     });
     // 出来事（v5.8.1）：戦闘の乱数の並びを変えないように、戦闘を決めたあとで休息の一部を置き換える。初めての遠征の地点1・2は休息のまま
     if (EXP.event) Object.keys(ROUTE.nodes).forEach((id) => { const n = ROUTE.nodes[id]; if (n.kind !== 'camp' || n.step < 2 || (n.step <= 2 && firstRun())) return; if (rnd() < EXP.event.rate) m[id] = { camp: 'event', ev: pick(EV_KEYS) }; });
@@ -9230,7 +9312,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   /* QAジャンプの追加の指定（v5.6.8）。どれも省略できる。正しくない指定はその項目だけ無視して（console に [QA] で出す）、ジャンプ自体は続ける
        depth=1〜3   深さ（解放していなくてよい）
        sq=std|fast|guard|twin   隊
-       foe=0|1|2|binder|lizard|chorus|trinity   敵（章の主・最後の主の地点では効かない。章の主は rests で強さを変える）
+       foe=0|1|2|binder|lizard|chorus|sentinel|gate|hourglass|trinity   敵（章の主・最後の主の地点では効かない。章の主は rests で強さを変える）
        v=亜種（swarm|poison|armor|eater|starve|layer、深さ3の重ねは eater+starve のように + でつなぐ）／v=none で亜種なし
        rests=0〜9   その章で休んだ回数（章の主のHP・威力が上がる）
        hp=1〜100    仲間全員のHPを最大の何%で始めるか
@@ -9241,7 +9323,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const d = get('depth'); if (d != null) { if (/^[1-5]$/.test(d)) { o.depth = +d; ok('depth', d); } else ng('depth', d); }
     const sq = get('sq'); if (sq != null) { if (XSQ.some((x) => x.id === sq)) { o.sq = sq; ok('sq', sq); } else ng('sq', sq); }
     const f = get('foe'); if (f != null) {
-      const all = EXP.foes.flat().map(String).concat(TRI.steps.length ? ['trinity'] : []);
+      const all = EXP.foes.flat().concat(EXP.deepFoes.flat()).map(String).concat(TRI.steps.length ? ['trinity'] : []);   // 深さ4の敵（v5.9.0）も試せる
       if (!all.includes(f)) ng('foe', f); else if (expIsChief(step) || step === EXP.nodes) ng('foe', f + '（主の地点）'); else { o.foe = /^\d+$/.test(f) ? +f : f; ok('foe', f); }
     }
     const v = get('v'); if (v != null) {
