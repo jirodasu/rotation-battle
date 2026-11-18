@@ -19,7 +19,8 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
   ];
   for (const [n, neu, old] of cases) ok(has(neu) && (!old || !has(old)), n);
   ok(has("'狙い　前列に' + act.job + 'がいないため"), 'H-05 「狙い　」の先頭は残っている（回すと／維持だと の置き換えに必要）');
-  ok(/APP_VERSION = '5\.8\.([5-9]|\d\d)'/.test(src) && />ver 5\.8\.([5-9]|\d\d)</.test(src), '版が 5.8.5 以降');
+  { const m = src.match(/APP_VERSION = '(\d+)\.(\d+)\.(\d+)'/), v = m ? [+m[1], +m[2], +m[3]] : [0, 0, 0], ge = v[0] > 5 || (v[0] === 5 && (v[1] > 8 || (v[1] === 8 && v[2] >= 5)));   // v5.9.0 で小さい番号が0に戻っても通るように、数で比べる
+    ok(ge && new RegExp('>ver ' + v.join('\\.') + '<').test(src), '版が 5.8.5 以降（' + v.join('.') + '）'); }
   const b = await launch(), ctx = await b.newContext({ viewport: { width: 320, height: 568 }, reducedMotion: 'reduce' });
   const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
   await p.goto(testPage()); await p.waitForTimeout(700); await p.click('#cover'); await p.waitForTimeout(500); await p.click('#setBtn'); await p.waitForTimeout(500);
