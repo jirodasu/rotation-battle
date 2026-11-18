@@ -1985,7 +1985,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   .runv.is-map .r-card { padding: 8px 12px 8px; gap: 4px; }
   .runv.is-map .r-card h2 { font-size: 21px; }
   .runv.is-map .r-card h2::after { display: none; }
-  .runv.is-map .r-card > p { display: none; }
+  .runv.is-map .r-card > p:not(.rv-tap) { display: none; }   /* 「タップで道を選ぶ」は残す（v5.9.3） */
   .runv.is-map .rv-track svg.route { max-height: clamp(70px, calc(100dvh - 420px - var(--rr, 0) * 52px), 200px); }
   .runv.is-map .rv-ico { width: 36px; height: 36px; }
   .runv.is-map .rv-card { padding: 5px 8px; }
@@ -2000,7 +2000,7 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
   .runv.is-map .r-card > small { grid-column: 1; grid-row: 1; justify-self: start; text-align: left; align-self: center; }
   .runv.is-map .r-card > h2 { grid-column: 2; grid-row: 1; justify-self: start; text-align: left; font-size: 20px; }
   .runv.is-map .rv-main { grid-row: 2; }
-  .runv.is-map .r-card > p { display: none; }
+  .runv.is-map .r-card > p:not(.rv-tap) { display: none; }
   .runv.is-map .rv-card.sel .rv-d { max-height: 6.5em; font-size: 11px; line-height: 1.35; }
   .runv.is-map .r-card h2::after { display: none; }
 }
@@ -2998,7 +2998,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.2</p>
+    <p class="c-ver" id="cVer">ver 5.9.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3518,7 +3518,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.2';
+  const APP_VERSION = '5.9.3';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8184,7 +8184,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const RTA_IC = {
     gate: '<path d="M5 21V10a7 7 0 0 1 14 0v11"/><path d="M9 21v-7a3 3 0 0 1 6 0v7"/><path d="M3 21h18"/>',
     sword: '<path d="M4 4l10 10M4 4h4M4 4v4"/><path d="M20 4L10 14M20 4h-4M20 4v4"/><path d="M8 16l-3 3M16 16l3 3M7 13l4 4M17 13l-4 4"/>',
-    rest: '<path d="M12 3c2 3 4 4 4 7a4 4 0 0 1-8 0c0-2 1-3 2-4 .5 1 1 1.5 2 2 0-2-1-3 0-5z"/><path d="M5 16h14l-2 4H7z"/>',
+    rest: '<path d="M12 20s-7.5-4.9-7.5-10.3A4.2 4.2 0 0 1 12 7.1a4.2 4.2 0 0 1 7.5 2.6C19.5 15.1 12 20 12 20z"/>',   // 休息はハート（v5.9.3。札の絵と同じ印。炎は灯・祭壇と見分けにくかった）
     event: '<rect x="4" y="9" width="16" height="11" rx="1.5"/><path d="M4 9a8 5 0 0 1 16 0"/><path d="M4 13h16"/><rect x="10.5" y="11.5" width="3" height="4" rx=".6"/>',
     scroll: '<path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H8"/><path d="M7 4a2 2 0 0 0-2 2v1h4"/><path d="M7 4v14a2 2 0 0 0 2 2"/><path d="M11 9h5M11 13h5"/>',
     altar: '<path d="M12 2.5c1.6 2.2 3 3.2 3 5.2a3 3 0 0 1-6 0c0-1.4.8-2.2 1.5-3 .4.7.8 1 1.5 1.4 0-1.4-.7-2.2 0-3.6z"/><path d="M5 21h14M7 21v-6h10v6M5 15h14l-1-2H6z"/><path d="M9 18h6"/>',
@@ -8354,6 +8354,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!t) { t = document.createElement('p'); t.id = 'rvTap'; t.className = 'rv-tap'; t.setAttribute('aria-live', 'polite'); }
     const rc = $('runv').querySelector('.r-card'); if (t.parentNode !== rc) rc.appendChild(t);   // 札（枠）の中の下に置く
     t.textContent = rvQText; t.classList.toggle('on', !!on);
+    // 札の下の出来事の行（「〜が強くなった」など）と重ねない（v5.9.3）：行があれば、そのすぐ上に出す
+    const ev = $('rvEvents'), er = ev && ev.offsetHeight && ev.children.length ? ev.getBoundingClientRect() : null, cr = rc.getBoundingClientRect();
+    t.style.bottom = er && er.top < cr.bottom && er.bottom > cr.bottom - 80 ? Math.round(cr.bottom - er.top + 6) + 'px' : '';
   }
   function rvPhase(ph, hintMs, text, defer) {
     clearTimeout(rvQT); document.querySelectorAll('#runv .ph-wait, #runv .ph-show').forEach((e) => e.classList.remove('ph-wait', 'ph-show'));
