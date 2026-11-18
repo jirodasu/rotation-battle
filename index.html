@@ -2998,7 +2998,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.3</p>
+    <p class="c-ver" id="cVer">ver 5.9.4</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3518,7 +3518,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.3';
+  const APP_VERSION = '5.9.4';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4488,7 +4488,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const R = RX();
     let power = r === 0 ? u.atk : u.ranged;
     const ue = entryFor(u, entering);
-    if (r === 0 && entering && R.entry && ue && ue.atk) power += ue.atk;
+    const ue1 = r === 0 && entering && R.entry && ue && ue.atk && ue.hits ? ue.atk : 0;   // 速射の強化（v5.9.4・案A）：攻撃+は1本目の矢だけ
+    if (r === 0 && entering && R.entry && ue && ue.atk && !ue.hits) power += ue.atk;
     if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
     if (r === 0) power += stanceAtk(entering ? 0 : stayFc()) + relN('whet', 'atk') + lampAtk(entering ? EXP.lampCfg.after : lampFc());
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
@@ -4496,7 +4497,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (r === 0) { const m = src[1][c]; if (m && m.atkSup > 0 && (fresh || m.atkReady)) sup = m.atkSup; }
     let t = 0;
     const T = F || targetFoe();
-    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup : 0), T, r === 0 && entering);
+    for (let i = 0; i < hitsN; i++) t += foeHit(power + (i === 0 ? sup + ue1 : 0), T, r === 0 && entering);
     const rel = relAtk(u, r, r === 0 && entering && R.entry && !!u.entry, entering ? 0 : stayFc(), T, r === 0 && entering);   // 表示だけ（v5.8.14）
     return { val: t, buf: sup > 0, half: foeShare(T) < 1, rel };
   }
@@ -6537,14 +6538,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (r === 1) await tutNote('ranged', '補助列も攻撃する', u.name + 'のような間接攻撃の仲間は、補助列からでも攻撃できる。', () => tokEl(1, c), 'top');
     const en = r === 0 ? entryNow[u.uid] : null, R = RX();
     if (r === 0) {
-      if (en && en.atk) power += en.atk;
+      if (en && en.atk && !en.hits) power += en.atk;   // 速射（2本撃つ技）の強化の攻撃+は、1本目の矢だけ（v5.9.4・案A。下の en1）
       if (en && relOn('bell')) power += relD('bell').entryAtk;
     }
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
     const rp = relAtk(u, r, !!en, stayN, T, r === 0 && !!u.entered);   // 効いたレリック（表示だけ。v5.8.14）
     let total = 0; const hs = [];   // hs：1発ごとのダメージ（表示の内訳だけに使う。合計の計算は今までどおり）
-    for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
+    const en1 = en && en.atk && en.hits ? en.atk : 0;
+    for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup + en1 : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
     say(u.name + (r === 1 ? 'の間接攻撃' : 'の攻撃') + (enemy.party ? '　→' + T.name : '') + (sup ? '（攻撃補助+' + sup + '）' : '') + (half ? '（像が肩代わりして半減）' : '') + (rp.length ? '（' + relTxt(rp) + '）' : '') + '　' + total + 'ダメージ');
@@ -7910,8 +7912,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function entryDesc(o) {
     const p = [];
     if (o.spd) p.push('先に動き');
-    if (o.atk) p.push('攻撃+' + o.atk);
     if (o.hits) p.push('攻撃回数+' + o.hits);
+    if (o.atk) p.push((o.hits ? '1本目の' : '') + '攻撃+' + o.atk);   // 速射の強化は1本目の矢だけ（v5.9.4）
     if (o.guard) p.push('同じ側の被ダメージ-' + o.guard);
     if (o.teamGuard) p.push('攻撃列の被ダメージ-' + o.teamGuard);
     if (o.heal) return '攻撃列の全員をHP+' + o.heal + '（最大HPまで）';
@@ -9144,7 +9146,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expUpDesc(m) {
     const e = m.entry, U = EXP.up;
-    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : '攻撃+' + (e.cap ? Math.max(0, Math.min(U.atk, e.cap - e.atk)) : U.atk);
+    return e.guard ? '同じ側の被ダメージ-' + U.guard : e.heal ? '回復+' + U.heal : e.teamGuard ? '攻撃列の被ダメージ-' + U.teamGuard : (e.hits ? '1本目の攻撃+' : '攻撃+') + (e.cap ? Math.max(0, Math.min(U.atk, e.cap - e.atk)) : U.atk);
   }
   function expUpgrade(m) {
     const e = m.entry, U = EXP.up, k = e.guard ? 'guard' : e.heal ? 'heal' : e.teamGuard ? 'teamGuard' : 'atk';
