@@ -280,7 +280,8 @@ export function playRun(seed, policy, strat = {}, over = {}) {
     const type = chief ? 'battle' : (strat.node ? strat.node(['battle', 'rest'], step, R) : pick(['battle', 'rest']));
     if (type === 'rest') { rests++; members.forEach((m) => { m.hp = Math.min(m.max, m.hp + Math.ceil(m.max * (cfg.restHeal == null ? 1 : cfg.restHeal))); }); continue; }
     battles++;
-    const fk = pick(cfg.foes[ch]), last = step === cfg.nodes;
+    let fk = pick(cfg.foes[ch]); const last = step === cfg.nodes;
+    if (!chief && cfg.newFoes && cfg.newFoes[ch] && cfg.newFoes[ch].length && !(cfg.__met = cfg.__met || {})[seed + ':' + ch]) { fk = pick(cfg.newFoes[ch]); cfg.__met[seed + ':' + ch] = 1; }   // 章の最初の戦闘は新しい敵（試算用）
     const dp = cfg.depth || 1, VK = Object.keys(VARIANTS).filter((k) => !VARIANTS[k].deep), VKD = Object.keys(VARIANTS);
     const pairV = () => { for (;;) { const a = pick(VKD), b = pick(VKD); if (a !== b && !['armor+layer', 'layer+armor', 'swarm+starve', 'starve+swarm'].includes(a + '+' + b)) return a + '+' + b; } };
     const vk = (!chief || (cfg.chiefVariant && !last)) && R() < (dp >= 2 ? 1 : cfg.variantRate) ? ((cfg.pairRate != null ? R() < cfg.pairRate : dp >= 3) ? pairV() : pick(VK)) : null;   // 深さ（v5.6.7）：2＝かならず亜種、3＝亜種を2つ重ねる
