@@ -787,6 +787,13 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 .fly { position: fixed; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 13px; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5), 0 3px 0 rgba(35, 49, 74, 0.3); }
 .fly.atk { background: var(--accent); color: var(--accent-ink); }
 .fly.def { background: var(--shield-strong); color: var(--on-shield); }
+/* v5.9.10 補助と攻撃列の仲間をつなぐ光（「攻」は金、「防」は青） */
+.sup-link { --lk: var(--gold, #d6ac5c); position: fixed; inset: 0; z-index: 25; pointer-events: none; animation: slIn 0.95s ease-out forwards; }
+.sup-link.def { --lk: #6f9fd8; }
+.sup-link .sl-ring { position: fixed; border-radius: 14px; border: 2.5px solid var(--lk); box-shadow: 0 0 10px var(--lk), inset 0 0 8px color-mix(in srgb, var(--lk) 45%, transparent); }
+.sup-link .sl-bar { position: fixed; width: 6px; border-radius: 3px; background: var(--lk); box-shadow: 0 0 10px var(--lk); }
+@keyframes slIn { 0% { opacity: 0; } 15% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sup-link { animation: none; } }
 .fly.heal { background: var(--heal); color: #fff; }
 .sweep { position: fixed; border-radius: 14px; background: linear-gradient(180deg, transparent, var(--danger) 45%, var(--danger) 55%, transparent); mix-blend-mode: normal; opacity: 0.85; }
 .slash { position: fixed; width: 150px; height: 8px; margin: -4px 0 0 -75px; border-radius: 4px; background: linear-gradient(90deg, transparent, #fff 30%, #fff 70%, transparent); box-shadow: 0 0 14px 3px rgba(255, 255, 255, 0.85); transform-origin: center; }
@@ -1905,6 +1912,13 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .rv-go { width: 100%; margin-top: 4px; }
 .rv-go:disabled { opacity: 1; background: transparent; color: var(--ink-soft); box-shadow: inset 0 0 0 1.5px var(--rule-a); filter: none; text-shadow: none; font-weight: 700; }   /* 選ぶ前は押せる金のボタンに見せない（v5.3.3）。選ぶ場所は札と地図 */
 .rv-go:disabled::before, .rv-go:disabled::after { display: none; }
+/* v5.9.10 押せる札とボタンには右端に「›」（Xの通しプレイの指摘：押せるかどうか・何をする画面か分からない）。押せないもの（選ぶ前の「進む」）には付けない */
+.rv-cards > .rv-card:not([disabled]) { padding-right: 34px; }
+.rv-go:not(:disabled), .runv .r-card .btn, #next { position: relative; }
+.rv-cards > .rv-card:not([disabled])::after, .rv-go:not(:disabled)::after, .runv .r-card .btn:not(:disabled)::after, #next::after { content: ""; position: absolute; right: 14px; top: 50%; width: 9px; height: 9px; margin-top: -5px; border: solid currentColor; border-width: 2.5px 2.5px 0 0; transform: rotate(45deg); opacity: 0.8; pointer-events: none; }
+.rv-cards > .rv-card:not([disabled])::after { border-color: var(--gold); opacity: 0.95; }
+.runv .rv-btnrow .btn { padding: 0 22px 0 8px; }
+.runv .rv-btnrow .btn::after { right: 10px; width: 8px; height: 8px; margin-top: -4px; }   /* 2つ並ぶと狭い（320幅で文字と「›」が重ならないように） */
 @media (prefers-reduced-motion: reduce) { .rt-n.avail:not(.sel) .land { animation: none; } }
 
 /* 地図の見本A（v5.8.20）：環廊の回廊の地図と、大きなメダル。領地は見えない当たり判定 */
@@ -3016,7 +3030,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.9</p>
+    <p class="c-ver" id="cVer">ver 5.9.10</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3536,7 +3550,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.9';
+  const APP_VERSION = '5.9.10';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -6279,6 +6293,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
     ono(w.ono, c.x + 78, c.y + 34, -8);
     return an.finished.catch(() => {});
   }
+  // v5.9.10 補助の「攻」「防」が前の仲間に乗った瞬間、2人を光る線でつなぐ（Xの通しプレイの指摘：前後の並びで何が起きているか分からない）。待ち時間は増やさない
+  function linkFlash(a, b, cls) {
+    if (!a || !b) return;
+    const A = center(a), B = center(b), box = document.createElement('div');
+    box.className = 'sup-link ' + cls;
+    const ring = (P) => '<i class="sl-ring" style="left:' + (P.x - P.w / 2 - 4) + 'px;top:' + (P.y - P.h / 2 - 4) + 'px;width:' + (P.w + 8) + 'px;height:' + (P.h + 8) + 'px"></i>';
+    box.innerHTML = ring(A) + ring(B) + '<i class="sl-bar" style="left:' + ((A.x + B.x) / 2 - 3) + 'px;top:' + Math.min(A.y, B.y) + 'px;height:' + Math.abs(B.y - A.y) + 'px"></i>';
+    $('fx').appendChild(box);
+    setTimeout(() => box.remove(), RM ? 700 : 950);
+  }
   function flySeal(a, b, txt, cls) {
     if (!a || !b || RM) return Promise.resolve();
     const A = center(a), B = center(b);
@@ -6553,6 +6577,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     } else power = u.ranged;
     if (sup) {
       SFX.buff();
+      linkFlash(tokEl(1, c), tokEl(0, c), 'atk');
       await flySeal(tokEl(1, c), tokEl(0, c), '攻', 'atk');
       renderBoard();
       await tutBand('atkSup', '「攻」でダメージ+' + sup + '。1回で使い切り');
@@ -6641,6 +6666,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await sweepColumn(col);
     if (guard) {
       SFX.guard();
+      linkFlash(tokEl(1, col), tokEl(0, col), 'def');
       await flySeal(tokEl(1, col), tokEl(0, col), '防', 'def');
       const gm = grid[1][col];
       await tutBand('guard', '「防」でダメージ-' + gm.defSup + '。1回で使い切り');
@@ -7182,7 +7208,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const st = [0, 1, 2].map((r) => bd().querySelector('.strip.r' + r));
     if (!tut || !tut.arrows || $('coach').hidden || st.some((x) => !x)) { sv.setAttribute('hidden', ''); return; }   // svg は .hidden が効かないので属性で
     const q = st.map((x) => x.getBoundingClientRect()), cy = (k) => q[k].top + q[k].height / 2;
-    const L = q[0].left + 10, R = q[0].right - 10;
+    const L = Math.max(q[0].left + 10, 22), R = Math.min(q[0].right - 10, innerWidth - 24);   // 曲線のふくらみ（約0.75×幅）が画面の外に出ないように（v5.9.10：375幅で右の矢印が切れていた）
     const arc = (x, y1, y2, dx) => 'M' + x + ' ' + y1 + ' C' + (x + dx) + ' ' + y1 + ' ' + (x + dx) + ' ' + y2 + ' ' + x + ' ' + y2;
     const ds = [arc(R, cy(0), cy(2), 26), arc(L, cy(1), cy(0) + 6, -22), arc(L, cy(2), cy(1) + 6, -22)];
     sv.setAttribute('viewBox', '0 0 ' + innerWidth + ' ' + innerHeight);
@@ -8446,7 +8472,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const go = $('rvGo'); if (!go) return;
     const c = routeSel != null ? run.choices[routeSel] : null;
     const A = EXPM();   // 地点選び A（v5.5.7。rvShow の中では印を付ける前に呼ばれるので、印ではなく遠征かどうかで決める）：選んだ札の名前はすぐ上に見えているので、ボタンは短く。読み上げには名前を入れる
-    go.disabled = !c; go.textContent = c ? (A ? '進む' : '「' + choiceName(c) + '」へ進む') : (A ? '道を選ぶ' : '地図か札で、進む道を選ぶ');
+    go.disabled = !c; go.textContent = c ? (A ? '進む' : '「' + choiceName(c) + '」へ進む') : (A ? '札か地図をタップして道を選ぶ' : '地図か札で、進む道を選ぶ');
     if (c) go.setAttribute('aria-label', '「' + choiceName(c) + '」へ進む'); else go.removeAttribute('aria-label');
     $('rvCards').querySelectorAll('.rv-card').forEach((b) => { const on = +b.dataset.i === routeSel; b.classList.toggle('sel', on); b.setAttribute('aria-pressed', on); });
     $('rvTrack').innerHTML = trackHTML();
