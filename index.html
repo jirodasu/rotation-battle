@@ -868,8 +868,10 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 @keyframes fall { to { transform: translateY(105vh) rotate(720deg); } }
 
 .help { z-index: 46; }
-.result { overflow-y: auto; padding: 16px; }
-.r-card { max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+:root { --sat: env(safe-area-inset-top, 0px); --sab: env(safe-area-inset-bottom, 0px); }   /* 画面上下の安全な余白（iPhoneの時刻・ホームバー）。テストで値を差し替えられるよう変数にする（v5.9.12） */
+/* v5.9.12：結果・報酬の画面は、上下の余白に安全な余白を足す（以前は16pxだけで、iPhoneのホーム画面から開くと一番上の行が時刻の帯の下に隠れていた） */
+.result { overflow-y: auto; padding: 16px; padding-top: max(16px, var(--sat)); padding-bottom: max(16px, var(--sab)); }
+.r-card { max-height: calc(100vh - 32px); max-height: calc(100dvh - max(16px, var(--sat)) - max(16px, var(--sab))); overflow-y: auto; overscroll-behavior: contain; }
 .h-card { padding-bottom: 0; }
 .h-card .steps { margin-bottom: 0; }
 .h-foot { position: sticky; bottom: 0; width: calc(100% + 44px); margin: 6px -22px 0; padding: 12px 22px 18px; background: linear-gradient(180deg, transparent, var(--paper) 30%); grid-column: 1 / -1; display: flex; justify-content: center; }
