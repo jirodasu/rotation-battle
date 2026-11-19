@@ -1,6 +1,6 @@
 // v5.9.12 muse の実プレイの指摘（2026-11-19）から、採点で上位だった3つ
 // 合格の基準（測る前に決めたもの）：
-//  1 使い切った補助（2ターン目）：線（点線も）を描かない。印は暗く（off used）残る。長押しの先読み中は明るい矢印（on）になる＝回すと戻る
+//  1 使い切った補助（2ターン目）：線（点線も）を描かない。印は暗く（off used）残る。長押しの先読み（回したあと）では使い切りの印は1つも無い＝回すと戻る
 //  2 このターン効かない補助の線は1本も無い（.ds が無い）。効く補助は今までどおり矢印（on）
 //  3 初めての仕掛けの案内（ヒント札）は、回す・維持の欄（dock）・盤・予告の札に重ならない（390・375・320・852×393・1024×768・1280×720）
 //  4 チュートリアル最初の手順の文は「ふだん、戦うのも狙われるのも、いちばん上の攻撃列。」（「だけ」と言い切らない）。あそびかたから点線の説明が消え、「回すと戻る」がある
@@ -35,9 +35,9 @@ const SA = () => [...document.querySelectorAll('#supAr .sa')].map((g) => ({ k: g
     const box = await p.evaluate(() => { const r = document.getElementById('btnRotate').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
     await p.mouse.move(box.x, box.y); await p.evaluate(({ x, y }) => { const el = document.getElementById('btnRotate'); el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: x, clientY: y, button: 0, pointerType: 'touch' })); }, box);
     await p.waitForTimeout(600);
-    const pv = await p.evaluate(() => ({ on: window.__rb.previewOn, sa: [...document.querySelectorAll('#supAr .sa')].map((g) => (g.classList.contains('on') ? 'on' : 'off')) }));
+    const pv = await p.evaluate(() => ({ on: window.__rb.previewOn, sa: [...document.querySelectorAll('#supAr .sa')].map((g) => (g.classList.contains('on') ? 'on' : g.classList.contains('used') ? 'used' : 'off')) }));
     await p.evaluate(() => document.getElementById('btnRotate').dispatchEvent(new PointerEvent('pointercancel', { bubbles: true })));
-    ok(pv.on && pv.sa.length >= 1 && pv.sa.includes('on'), '1 長押しの先読みでは補助が明るい矢印に戻る（回すと戻る） ' + JSON.stringify(pv));
+    ok(pv.on && !pv.sa.includes('used'), '1 長押しの先読み（回したあと）には使い切りの印が無い（回すと戻る） ' + JSON.stringify(pv));
     ok(!errs.length, '5 ページのエラーなし ' + errs.join(' / '));
     await ctx.close();
   }

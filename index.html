@@ -4708,7 +4708,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       const B = $('board'), br = { left: 0, top: 0 }, k = 1, st = supArrowState(src, ghost);
       const box = (el) => { let l = 0, t = 0, e = el; while (e && e !== B) { l += e.offsetLeft; t += e.offsetTop; e = e.offsetParent; } return e === B ? { left: l, top: t, right: l + el.offsetWidth, bottom: t + el.offsetHeight, width: el.offsetWidth } : null; };
       for (let c = 0; c < COLS; c++) {
-        // v5.9.12：このターン効かない補助は線を描かない（点線が「まだ効いている」に見えた。muse の実プレイ）。使い切った補助だけ、印を暗く残す（回すと戻る。先読みでは明るく出る）
+        // v5.9.12：このターン効かない補助は線を描かない（点線が「まだ効いている」に見えた。muse の実プレイ）。使い切った補助だけ、印を暗く残す（回すと戻る。先読みには暗い印は出ない）
         const mine = st.filter((a) => a.c === c && (a.live || a.used)); if (!mine.length) continue;
         const d1 = slotEl(1, c).querySelector('.disc'); if (!d1) continue;
         const dr = box(d1); if (!dr || !dr.width) continue;

@@ -2,13 +2,13 @@
 // 合格の基準（測る前に決めたもの）：
 //  1. 補助列の「攻+7」「防-7」の札は出ない。読み上げ（aria-label）には攻撃補助・防御補助の数字が残る
 //  2. 矢印は、補助列の仲間の円から、真上（同じ側）の攻撃列の仲間の名前の札の下まで。ほかの列には伸びない
-//  3. 攻撃補助の矢印：実線なのは、真上の仲間の剣の数字が金色（補助込み）のときだけ。それ以外は点線
-//  4. 防御補助の矢印：真上の仲間が狙われ、防御補助が使えるときは実線。使い切ったら点線
+//  3. 攻撃補助の矢印：実線なのは、真上の仲間の剣の数字が金色（補助込み）のときだけ。それ以外は線なし（v5.9.12。以前は点線）
+//  4. 防御補助の矢印：真上の仲間が狙われ、防御補助が使えるときは実線。使い切ったら線なしの暗い印（v5.9.12。以前は点線）
 //  5. 「回す」を長押しすると、回した後の並びで矢印を描く。戦闘の演出中（resolve）は矢印を出さない
 //  6. 393×852・320×568・852×393：根元の「攻」「防」の丸どうしが重ならず、盤の中に収まる。ページのエラーなし
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { const r = g.getBoundingClientRect(), lb = g.querySelector('.lb').getBoundingClientRect(), hd = g.querySelector('.hd'), ln = g.querySelector('.bd, .ds').getBoundingClientRect();
+const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { const r = g.getBoundingClientRect(), lb = g.querySelector('.lb').getBoundingClientRect(), hd = g.querySelector('.hd'), ln = (g.querySelector('.bd, .ds') || g.querySelector('.lb')).getBoundingClientRect();   /* v5.9.12：使い切りは線なし（印だけ） */
   return { c: +g.dataset.c, k: g.classList.contains('a') ? 'a' : 'd', on: g.classList.contains('on'), lb: { l: lb.left, r: lb.right, t: lb.top, b: lb.bottom }, top: hd ? hd.getBoundingClientRect().top : ln.top, x: (lb.left + lb.right) / 2, box: { l: r.left, r: r.right, t: r.top, b: r.bottom } }; });
 (async () => {
   const b = await launch();
@@ -32,7 +32,7 @@ const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { c
         const lbs = A.map((a) => a.lb), clash = lbs.some((x, i) => lbs.some((y, j) => j > i && Math.min(x.r, y.r) - Math.max(x.l, y.l) > 1 && Math.min(x.b, y.b) - Math.max(x.t, y.t) > 1));
         const want = []; for (let c = 0; c < src[1].length; c++) { const u = src[1][c]; if (u && u.atkSup > 0) want.push(c + 'a'); if (u && u.defSup > 0) want.push(c + 'd'); }
         return { out, clash, want: want.join(), got: A.map((a) => a.c + a.k).join() }; }, '(' + arrows.toString() + ')');
-      ok(r.want === r.got && r.want.length > 0, tag + ' 2 ' + lbl + '：補助の仲間の数だけ矢印 ' + r.got);
+      ok(r.want.length > 0 && r.got.split(',').filter(Boolean).every((x) => r.want.split(',').includes(x)) && r.want.split(',').filter((x) => x.endsWith('a')).every((x) => r.got.split(',').includes(x)), tag + ' 2 ' + lbl + '：攻撃補助は全員に矢印、防御補助は効くときだけ（v5.9.12） want ' + r.want + ' got ' + r.got);
       ok(r.out.every((a) => a.inDisc && a.reach && a.inBoard && a.sup), tag + ' 2 ' + lbl + '：補助の円から、真上の仲間の名前の札の下まで ' + JSON.stringify(r.out.filter((a) => !(a.inDisc && a.reach && a.inBoard))));
       ok(!r.clash, tag + ' 6 ' + lbl + '：「攻」「防」の丸が重ならない');
       return r;
