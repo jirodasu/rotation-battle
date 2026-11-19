@@ -43,10 +43,10 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     const ctx = await b.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
     const p = await ctx.newPage();
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400); await p.click('#beginTut'); await p.waitForTimeout(1500);
-    await p.click('#coNext'); await p.waitForTimeout(700);
+    await p.waitForTimeout(700);   // v5.9.9：「4人の仲間」を削ったので、最初の手順「攻撃列が最前線」で確かめる
     const r = await p.evaluate(() => { const R = (e) => e.getBoundingClientRect(), c = R(document.getElementById('coach'));
       return { t: document.getElementById('coTitle').textContent, cov: [...document.querySelectorAll('#board .tok .disc')].map((d) => { const q = R(d); return Math.max(0, Math.min(c.bottom, q.bottom) - Math.max(c.top, q.top)) / q.height; }) }; });
-    ok(r.t === '4人の仲間' && r.cov.length === 4 && r.cov.every((x) => x <= 0.3), w + '×' + h + ' 6 「4人の仲間」で顔を隠すのは3割まで ' + r.cov.map((x) => Math.round(x * 100) + '%').join(','));
+    ok(r.t === '攻撃列が最前線' && r.cov.length === 4 && r.cov.every((x) => x <= 0.3), w + '×' + h + ' 6 「攻撃列が最前線」で顔を隠すのは3割まで ' + r.cov.map((x) => Math.round(x * 100) + '%').join(','));
     await ctx.close();
   }
   await b.close();

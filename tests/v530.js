@@ -35,7 +35,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400); await p.click('#beginTut'); await p.waitForTimeout(1500);
     const lbl = await p.evaluate(() => document.getElementById('coStep').textContent);
-    ok(/1 \/ 18/.test(lbl), '5 チュートリアルは18手順（v5.9.4 で「敵を調べる」「技の一覧」を足した）：' + lbl);
+    ok(/1 \/ 11/.test(lbl), '5 チュートリアルは11手順（v5.9.9 で18→11に減らした）：' + lbl);
     ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }

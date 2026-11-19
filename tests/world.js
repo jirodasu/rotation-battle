@@ -37,7 +37,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover'); await p.waitForTimeout(300);
     await p.click('#beginTut'); await p.waitForTimeout(900);
     const t = await p.evaluate(() => document.getElementById('coText').textContent);
-    ok(/環廊/.test(t), 'チュートリアルの冒頭に環廊 ' + t);
+    ok(/攻撃列/.test(t), 'チュートリアルの冒頭は攻撃列の説明（v5.9.9 で「ようこそ」を削った。環廊の名前は表紙と冒頭の物語で出す） ' + t);
     await ctx.close();
   }
   await b.close();
