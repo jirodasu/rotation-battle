@@ -1,6 +1,6 @@
 // v5.8.7 初めての遠征：物語のあとすぐ初戦（地図の二択は出さない）。初戦の中で短く教える。アイコンを新しい題に合わせる
 // 合格の基準（測る前に決めたもの）：
-//  1 初めての人が「環廊へ」→物語→そのまま初戦の隊列（地図は出ない）。隊列で「上から攻撃・補助・回復の列。まずは「戦闘開始」」の案内（320・390px で画面の中）
+//  1 初めての人が「環廊へ」→物語→そのまま初戦の隊列（地図は出ない）。隊列で「まずは「戦闘開始」」の案内（320・390px で画面の中。v5.9.6 で短くし、敵の名前の帯が消えてから出す）
 //  2 最初に選ぶとき「ボタンに、押したあとのHPが出る。比べて選ぼう」。説明（tip）と同時には出さない（閉じてから出る）
 //  3 初戦に勝ったあとの地図で、目標（goal）が開いている
 //  4 初めてでない人（地図を一度飛ばした・遠征1回以上）は、地点1の地図が出る
@@ -27,9 +27,9 @@ const pngSize = (f) => { const b = fs.readFileSync(path.join(ROOT, f)); return [
   for (const [w, h] of [[390, 844], [320, 568]]) {
     const { ctx, p, errs } = await start(w, h);
     const s = await p.evaluate(() => ({ map: !document.getElementById('runv').hidden, prep: window.__rb.phase, skip: window.__rb.run && window.__rb.run.skip0, foe: window.__rb.enemy && window.__rb.enemy.name }));
-    const g = await bub(p);
+    let g = null; for (let k = 0; k < 30 && !(g = await bub(p)); k++) await p.waitForTimeout(100);   // 帯が消えてから出る（v5.9.6）
     ok(!s.map && s.prep === 'prep' && s.skip === 1, w + ' 1 物語のあとは地図を出さずに初戦の隊列 ' + JSON.stringify(s));
-    ok(g && /^上から攻撃・補助・回復の列。\n?まずは「戦闘開始」$/.test(g.t) && g.in, w + ' 1 隊列の案内が画面の中に ' + JSON.stringify(g));
+    ok(g && /^まずは「戦闘開始」$/.test(g.t) && g.in, w + ' 1 隊列の案内が画面の中に ' + JSON.stringify(g));
     await p.click('#btnStart');
     let seenTogether = false, guide = null, tipSeen = false;
     for (let k = 0; k < 160 && !guide; k++) {
