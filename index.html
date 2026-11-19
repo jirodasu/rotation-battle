@@ -7180,14 +7180,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function drawArrows() {
     const sv = $('tutArrows'); if (!sv) return;
     const st = [0, 1, 2].map((r) => bd().querySelector('.strip.r' + r));
-    if (!tut || !tut.arrows || $('coach').hidden || st.some((x) => !x)) { sv.hidden = true; return; }
+    if (!tut || !tut.arrows || $('coach').hidden || st.some((x) => !x)) { sv.setAttribute('hidden', ''); return; }   // svg は .hidden が効かないので属性で
     const q = st.map((x) => x.getBoundingClientRect()), cy = (k) => q[k].top + q[k].height / 2;
     const L = q[0].left + 10, R = q[0].right - 10;
     const arc = (x, y1, y2, dx) => 'M' + x + ' ' + y1 + ' C' + (x + dx) + ' ' + y1 + ' ' + (x + dx) + ' ' + y2 + ' ' + x + ' ' + y2;
     const ds = [arc(R, cy(0), cy(2), 26), arc(L, cy(1), cy(0) + 6, -22), arc(L, cy(2), cy(1) + 6, -22)];
     sv.setAttribute('viewBox', '0 0 ' + innerWidth + ' ' + innerHeight);
     sv.innerHTML = '<defs><marker id="taH" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fff"/></marker></defs>' + ds.map((d) => '<path d="' + d + '" marker-end="url(#taH)"/>').join('');
-    sv.hidden = false;
+    sv.removeAttribute('hidden');
   }
   function tutRefresh() {
     ['btnStart', 'btnRotate', 'btnStay', 'btnPreview'].forEach((id) => {

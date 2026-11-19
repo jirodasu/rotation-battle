@@ -22,14 +22,14 @@ const ACT = { '仲間を動かす ①': '.slot[data-r="2"][data-c="1"]', '仲間
         const dm = document.querySelector('.slot[data-r="0"][data-c="1"] .dm');
         return { vis: !c.hidden, label: document.getElementById('coStep').textContent, t: document.getElementById('coTitle').textContent, x: document.getElementById('coText').textContent, nx: !document.getElementById('coNext').hidden,
           band: !bd.hidden && bd.classList.contains('on') ? { x: bd.textContent, h: bd.getBoundingClientRect().height } : null,
-          glow: document.body.classList.contains('tut-glow') && !!dm && getComputedStyle(dm).filter !== 'none', arrows: !sv.hidden ? sv.querySelectorAll('path[marker-end]').length : 0, ph: window.__rb.phase };
+          glow: document.body.classList.contains('tut-glow') && !!dm && getComputedStyle(dm).filter !== 'none', arrows: !sv.hasAttribute('hidden') && getComputedStyle(sv).display !== 'none' ? sv.querySelectorAll('path[marker-end]').length : 0, ph: window.__rb.phase };
       });
       const now = Date.now();
       if (st.band) { if (!bandCur || bandCur.x !== st.band.x) { bandCur = { x: st.band.x, h: st.band.h, t0: now }; bands.push(bandCur); } bandCur.t1 = now; }
       else if (bandCur) { bandCur.gone = now; bandCur = null; }
       if (st.vis && st.t !== lastT) { lastT = st.t; if (st.label === '解説') noteSeen.push(st.t); else coach.push(st.t); if (st.x.length > 40) longText.push(st.t + ' ' + st.x.length + '字'); }
       if (st.vis && st.t === '戦闘開始' && glow === null) { await p.waitForTimeout(950); glow = await p.evaluate(() => { const dm = document.querySelector('.slot[data-r="0"][data-c="1"] .dm'); return document.body.classList.contains('tut-glow') && !!dm; }); }
-      if (st.vis && st.t === '回す' && arrows === null) { await p.waitForTimeout(400); arrows = st.arrows || await p.evaluate(() => document.getElementById('tutArrows').querySelectorAll('path[marker-end]').length); await p.screenshot({ path: path.join(OUT, 'v599_' + w + '_rotate.png') }); }
+      if (st.vis && st.t === '回す' && arrows === null) { await p.waitForTimeout(400); arrows = await p.evaluate(() => { const v = document.getElementById('tutArrows'); return getComputedStyle(v).display === 'none' ? 0 : v.querySelectorAll('path[marker-end]').length; }); /* 見えているときだけ数える（svg は .hidden が効かない） */ await p.screenshot({ path: path.join(OUT, 'v599_' + w + '_rotate.png') }); }
       if (st.band && !shotA) { shotA = true; await p.screenshot({ path: path.join(OUT, 'v599_' + w + '_band.png') }); }
       if (st.vis) {   // 帯は押さない（押さなくても消えることを確かめる）
         if (st.t === '基本はここまで') { await p.screenshot({ path: path.join(OUT, 'v599_' + w + '_end.png') }); await p.click('#coNext').catch(() => {}); finished = true; break; }
@@ -38,7 +38,7 @@ const ACT = { '仲間を動かす ①': '.slot[data-r="2"][data-c="1"]', '仲間
       await p.waitForTimeout(100);
     }
     await p.waitForTimeout(400);
-    const after = await p.evaluate(() => ({ glow: document.body.classList.contains('tut-glow'), arrows: !document.getElementById('tutArrows').hidden, band: !document.getElementById('tutBand').hidden }));
+    const after = await p.evaluate(() => ({ glow: document.body.classList.contains('tut-glow'), arrows: getComputedStyle(document.getElementById('tutArrows')).display !== 'none', band: !document.getElementById('tutBand').hidden }));
     ok(coach.length <= 11 && !noteSeen.length, tag + ' 1 押して進む解説 ' + coach.length + '画面（11以内）・途中の解説 ' + noteSeen.length + '回 ' + JSON.stringify(coach));
     ok(!longText.length, tag + ' 1 解説の本文は40字以内 ' + JSON.stringify(longText));
     const slow = bands.filter((x) => !x.gone || x.gone - x.t0 > 3200), big = bands.filter((x) => x.h > 60 || x.x.length > 40);
