@@ -4978,7 +4978,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     cands.slice(1).forEach((c) => { const v = ov(c); if (v < bv - 1) { best = c; bv = v; } });
     // 詰めても予告の札・盤に重なるときは、それに重ならない候補の中から選ぶ（v5.7.5：時計の安全域のぶん上が狭くなった 320×568 で、札に重なった）
     if (tight) { const hardAt = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.filter((r, i) => i < 2 || i === di).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0); };
-      if (hardAt(best)) { const okC = cands.filter((c) => !hardAt(c)); if (okC.length) { best = okC.reduce((x, y) => (ov(y) < ov(x) ? y : x)); bv = ov(best); } } }
+      if (hardAt(best)) { let okC = cands.filter((c) => !hardAt(c)); if (!okC.length && di >= 0) { const d0 = di; di = -1; okC = cands.filter((c) => !hardAt(c)); di = d0; }   // v5.9.12：どこに置いても盤・予告・下の欄のどれかに重なる（320×568＋iPhone の上の安全域）ときは、下の欄（案内のあいだは押せない）より予告・盤を守る
+        if (okC.length) { best = okC.reduce((x, y) => (ov(y) < ov(x) ? y : x)); bv = ov(best); } } }
     // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
     if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.filter((r, i) => i < 2 || i === di).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
       if (hard || bv > 0) { placeTip(true); return; } }   // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
