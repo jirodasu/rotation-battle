@@ -2,13 +2,14 @@
 // 合格の基準（測る前に決めたもの）：
 //  1. 補助列の「攻+7」「防-7」の札は出ない。読み上げ（aria-label）には攻撃補助・防御補助の数字が残る
 //  2. 矢印は、補助列の仲間の円から、真上（同じ側）の攻撃列の仲間の名前の札の下まで。ほかの列には伸びない
-//  3. 攻撃補助の矢印：実線なのは、真上の仲間の剣の数字が金色（補助込み）のときだけ。それ以外は点線
-//  4. 防御補助の矢印：真上の仲間が狙われ、防御補助が使えるときは実線。使い切ったら点線
+//  3. 攻撃補助の矢印：出るのは、真上の仲間の剣の数字が補助込みのときだけ。それ以外は出さない（v5.9.13：点線は廃止）
+//  4. 防御補助の矢印：真上の仲間が狙われ、防御補助が使えるときだけ出る。使い切ったら出さない（v5.9.13）
 //  5. 「回す」を長押しすると、回した後の並びで矢印を描く。戦闘の演出中（resolve）は矢印を出さない
 //  6. 393×852・320×568・852×393：根元の「攻」「防」の丸どうしが重ならず、盤の中に収まる。ページのエラーなし
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
-const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { const r = g.getBoundingClientRect(), lb = g.querySelector('.lb').getBoundingClientRect(), hd = g.querySelector('.hd'), ln = g.querySelector('.bd, .ds').getBoundingClientRect();
+// v5.9.13：線と矢じりは仲間の下の層（#fxLn）、「攻」「防」の丸は上の層（#supAr）。同じ列・同じ種類で組にする
+const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { const k0 = g.classList.contains('a') ? 'a' : 'd', L = document.querySelector('#fxLn .sa.' + k0 + '[data-c="' + g.dataset.c + '"]'), r = g.getBoundingClientRect(), lb = g.querySelector('.lb').getBoundingClientRect(), hd = L && L.querySelector('.hd'), ln = L.querySelector('.bd').getBoundingClientRect();
   return { c: +g.dataset.c, k: g.classList.contains('a') ? 'a' : 'd', on: g.classList.contains('on'), lb: { l: lb.left, r: lb.right, t: lb.top, b: lb.bottom }, top: hd ? hd.getBoundingClientRect().top : ln.top, x: (lb.left + lb.right) / 2, box: { l: r.left, r: r.right, t: r.top, b: r.bottom } }; });
 (async () => {
   const b = await launch();
@@ -30,9 +31,9 @@ const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { c
         A.forEach((a) => { const d = document.querySelector('.slot[data-r="1"][data-c="' + a.c + '"] .disc').getBoundingClientRect(), nm = src[0][a.c] ? lay(document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .nm')) : null, bd = document.getElementById('board').getBoundingClientRect();
           out.push({ c: a.c, k: a.k, on: a.on, inDisc: a.x > d.left && a.x < d.right && a.lb.t >= d.top - 2 && a.lb.b <= d.bottom, reach: nm ? (a.on ? Math.abs(a.top - nm.bottom) <= 3 : a.top <= nm.bottom + 4) : true, dbg: nm ? Math.round(a.top) + "/" + Math.round(nm.bottom) : "", inBoard: a.box.l >= bd.left - 1 && a.box.r <= bd.right + 1, sup: !!(src[1][a.c] && (a.k === 'a' ? src[1][a.c].atkSup : src[1][a.c].defSup)) }); });
         const lbs = A.map((a) => a.lb), clash = lbs.some((x, i) => lbs.some((y, j) => j > i && Math.min(x.r, y.r) - Math.max(x.l, y.l) > 1 && Math.min(x.b, y.b) - Math.max(x.t, y.t) > 1));
-        const want = []; for (let c = 0; c < src[1].length; c++) { const u = src[1][c]; if (u && u.atkSup > 0) want.push(c + 'a'); if (u && u.defSup > 0) want.push(c + 'd'); }
+        const want = []; for (let c = 0; c < src[1].length; c++) { const u = src[1][c]; if (u && u.atkSup > 0 && src[0][c] && (R.previewOn || R.phase === 'prep' || u.atkReady)) want.push(c + 'a'); if (u && u.defSup > 0 && document.querySelector('#supAr .sa.d[data-c="' + c + '"]')) want.push(c + 'd'); }   // v5.9.13：効く補助だけ（防御補助の条件は 4 で確かめる）
         return { out, clash, want: want.join(), got: A.map((a) => a.c + a.k).join() }; }, '(' + arrows.toString() + ')');
-      ok(r.want === r.got && r.want.length > 0, tag + ' 2 ' + lbl + '：補助の仲間の数だけ矢印 ' + r.got);
+      ok(r.want === r.got && (r.want.length > 0 || lbl === '先読み'), tag + ' 2 ' + lbl + '：効く補助の数だけ矢印 ' + r.got + ' / ' + r.want);
       ok(r.out.every((a) => a.inDisc && a.reach && a.inBoard && a.sup), tag + ' 2 ' + lbl + '：補助の円から、真上の仲間の名前の札の下まで ' + JSON.stringify(r.out.filter((a) => !(a.inDisc && a.reach && a.inBoard))));
       ok(!r.clash, tag + ' 6 ' + lbl + '：「攻」「防」の丸が重ならない');
       return r;
@@ -47,20 +48,22 @@ const arrows = () => [...document.querySelectorAll('#supAr .sa')].map((g) => { c
     await p.waitForTimeout(400);
     // 3 攻撃補助は剣の数字の金色と一致
     const s3 = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')');
-    ok(s3.length > 0 && s3.every((a) => a.on === a.buf), tag + ' 3 攻撃補助の実線＝剣の数字が金色 ' + JSON.stringify(s3));
+    // v5.9.13：攻撃補助の仲間がいる列ごとに「矢印がある」＝「剣の数字が補助込み」
+    const s3x = await p.evaluate(() => { const g = window.__rb.grid, o = []; for (let c = 0; c < g[1].length; c++) if (g[1][c] && g[1][c].atkSup > 0 && g[0][c]) o.push({ c, on: !!document.querySelector('#supAr .sa.a[data-c="' + c + '"]'), buf: !!document.querySelector('.slot[data-r="0"][data-c="' + c + '"] .dm.buf') }); return o; });
+    ok(s3x.length > 0 && s3x.every((a) => a.on === a.buf), tag + ' 3 攻撃補助の矢印がある＝剣の数字が補助込み ' + JSON.stringify(s3x));
     await p.evaluate(() => { const R = window.__rb; R.grid[1].forEach((u) => { if (u) u.atkReady = true; }); R.render(); });
     // 矢印は次の描画の前に描く（v5.4.0）。決め打ちの0.12秒ではなく、最大2秒まで待って確かめる（v5.5.6：並べて流すと描き直しが遅れて落ちた）
     let s3b = [];
-    for (let k = 0; k < 20; k++) { await p.waitForTimeout(100); s3b = await p.evaluate((fn) => eval(fn)().filter((a) => a.k === 'a').map((a) => ({ on: a.on, buf: !!document.querySelector('.slot[data-r="0"][data-c="' + a.c + '"] .dm.buf') })), '(' + arrows.toString() + ')'); if (s3b.every((a) => a.on === a.buf)) break; }
-    ok(s3b.every((a) => a.on === a.buf), tag + ' 3 補助を戻すと実線（剣の数字も金色） ' + JSON.stringify(s3b));
+    for (let k = 0; k < 20; k++) { await p.waitForTimeout(100); s3b = await p.evaluate(() => { const g = window.__rb.grid, o = []; for (let c = 0; c < g[1].length; c++) if (g[1][c] && g[1][c].atkSup > 0 && g[0][c]) o.push({ c, on: !!document.querySelector('#supAr .sa.a[data-c="' + c + '"]'), buf: !!document.querySelector('.slot[data-r="0"][data-c="' + c + '"] .dm.buf') }); return o; }); if (s3b.length && s3b.every((a) => a.on && a.buf)) break; }
+    ok(s3b.length > 0 && s3b.every((a) => a.on && a.buf), tag + ' 3 補助を戻すと矢印が出る（剣の数字も補助込み） ' + JSON.stringify(s3b));
     // 4 防御補助
     const s4 = await p.evaluate(async (fn) => { const fr = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))); const R = window.__rb, A = eval(fn), g = R.grid; let col = -1, found = false;
       for (let t = 1; t <= 14 && !found; t++) { R.setTurn(t); const a = R.actOf(R.enemy); if (a.pierce) continue; const inc = R.incoming(g, false, false); for (let c = 0; c < g[1].length; c++) if (g[1][c] && g[1][c].defSup > 0 && inc['0,' + c]) { col = c; found = true; break; } }
       if (!found) return null;
-      g[1][col].defReady = true; R.render(); await fr(); const on = A().find((a) => a.k === 'd' && a.c === col).on;
-      g[1][col].defReady = false; R.render(); await fr(); const off = A().find((a) => a.k === 'd' && a.c === col).on;
+      g[1][col].defReady = true; R.render(); await fr(); const on = !!A().find((a) => a.k === 'd' && a.c === col);
+      g[1][col].defReady = false; R.render(); await fr(); const off = !!A().find((a) => a.k === 'd' && a.c === col);
       g[1][col].defReady = true; R.render(); return { col, on, off }; }, '(' + arrows.toString() + ')');
-    if (s4) ok(s4.on === true && s4.off === false, tag + ' 4 狙われて使えるときは実線、使い切ると点線 ' + JSON.stringify(s4));
+    if (s4) ok(s4.on === true && s4.off === false, tag + ' 4 狙われて使えるときは矢印、使い切ると出さない ' + JSON.stringify(s4));
     else ok(true, tag + ' 4 （この敵では、防御補助の仲間の真上が狙われるターンが無かった）');
     // 5 長押しの先読み
     await p.evaluate(() => { window.__rb.setGauge(3); window.__rb.render(); });

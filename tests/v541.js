@@ -26,7 +26,7 @@ const toChoose = async (p) => { for (let k = 0; k < 200; k++) { if (await p.eval
     const g1 = await p.evaluate(() => [...document.querySelectorAll('#supAr .sa.on')].map((g) => g.classList.contains('grow')));
     ok(g1.length > 0 && g1.every(Boolean), '1 陣立てで初めて出る効く矢印は伸びる ' + JSON.stringify(g1));
     await p.waitForTimeout(800);
-    const off = await p.evaluate(() => [...document.querySelectorAll('#supAr .sa.on .bd')].map((l) => parseFloat(getComputedStyle(l).strokeDashoffset) || 0));
+    const off = await p.evaluate(() => [...document.querySelectorAll('#fxLn .sa.on .bd')].map((l) => parseFloat(getComputedStyle(l).strokeDashoffset) || 0));
     ok(off.length > 0 && off.every((v) => Math.abs(v) < 0.01), '1 伸び終わると、線は最後まで描かれている ' + JSON.stringify(off));
     // 2（盤の大きさの合わせ直しが終わってから）
     await p.waitForTimeout(1500);
@@ -59,7 +59,9 @@ const toChoose = async (p) => { for (let k = 0; k < 200; k++) { if (await p.eval
     const beforeRot = await p.evaluate(() => [...document.querySelectorAll('#supAr .sa')].map((g) => g.dataset.c + (g.classList.contains('on') ? 'on' : 'off')).join());
     await p.click('#btnRotate'); await toChoose(p);
     const c3 = await p.evaluate(() => { const g1 = window.__rb.grid[1]; return [...document.querySelectorAll('#supAr .sa')].map((g) => ({ c: +g.dataset.c, on: g.classList.contains('on'), grow: g.classList.contains('grow'), who: g1[+g.dataset.c] && g1[+g.dataset.c].name })); });
-    ok(c3.length > 0 && c3.every((x) => x.grow === x.on), '3 回して補助列に来た仲間の効く矢印は伸び、点線は伸びない ' + JSON.stringify(c3) + ' 回す前 ' + beforeRot);
+    // v5.9.13：効かない補助は矢印を出さない（点線は廃止）ので、回したあと効く補助が無ければ矢印は0本でよい。出ている矢印はすべて伸びる
+    const live3 = await p.evaluate(() => { const g = window.__rb.grid; let n = 0; for (let c = 0; c < g[1].length; c++) if (g[1][c] && g[0][c] && g[1][c].atkSup > 0 && g[1][c].atkReady) n++; return n; });
+    ok(c3.length >= live3 && c3.every((x) => x.on && x.grow), '3 回して補助列に来た仲間の効く矢印は伸び、点線は伸びない ' + JSON.stringify(c3) + ' 回す前 ' + beforeRot);
     ok(!errs.length, '6 ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }

@@ -134,7 +134,7 @@ async function open(b, w, h, kind, node) {
     // C7：補助行の札の数値・C8：ログ
     const { ctx, p } = await open(b, 390, 844, 0, 0);
     // v5.4.0：補助の札は矢印に置き換えた。数値は読み上げ（aria-label）と仲間の詳細に残る
-    const seals = await p.evaluate(() => ({ ar: [...document.querySelectorAll('#supAr .sa text')].map((e) => e.textContent), aria: [...document.querySelectorAll('#board .slot[data-r="1"]')].map((e) => e.getAttribute('aria-label')).join('/') }));
+    const seals = await p.evaluate(() => ({ ar: [...document.querySelectorAll('#supAr .sa > text')].map((e) => e.textContent), aria: [...document.querySelectorAll('#board .slot[data-r="1"]')].map((e) => e.getAttribute('aria-label')).join('/') }));
     ok(seals.ar.length > 0 && seals.ar.every((t) => /^(攻|防)$/.test(t)) && /攻撃補助\+\d+|防御補助-\d+/.test(seals.aria), 'C7 補助行は攻・防の矢印、数値は読み上げに残る ' + JSON.stringify(seals));
     await p.click('#btnStart'); for (let i = 0; i < 400; i++) { if (await p.evaluate(() => !document.getElementById('btnRotate').hidden && getComputedStyle(document.getElementById('dock')).visibility !== 'hidden')) break; await p.waitForTimeout(50); }
     await p.evaluate(() => { const R = window.__rb; for (let i = 0; i < 6; i++) R.say('テスト行' + i); R.render(); });
