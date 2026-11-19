@@ -3030,7 +3030,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.10</p>
+    <p class="c-ver" id="cVer">ver 5.9.11</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3550,7 +3550,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.10';
+  const APP_VERSION = '5.9.11';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -6956,7 +6956,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         { transform: 'translate(' + dx + 'px,' + dy + 'px) rotate(0deg) scale(1)' },
         { transform: 'translate(' + (dx * 0.5 + side) + 'px,' + (dy * 0.5) + 'px) rotate(' + (down ? 10 : -9) + 'deg) scale(1.12)', offset: 0.5 },
         { transform: 'translate(0,0) rotate(0deg) scale(1)' }
-      ], { duration: 420, easing: 'cubic-bezier(.55,0,.2,1)', delay: down ? 0 : 30 });
+      ], { duration: 420, easing: 'cubic-bezier(.55,0,.2,1)', delay: down ? 0 : 30, fill: 'backwards' });   // v5.9.11：待ちの30msのあいだ行き先に一瞬出ていた（上がる仲間がちらつく）。待ちのあいだは元の場所に置く
       anims.push(an);
       jobs.push(an.finished.then(() => { slot.style.zIndex = ''; }).catch(() => { slot.style.zIndex = ''; }));
     });
@@ -9684,7 +9684,20 @@ body.fast #stampOk.on { animation-duration: .5s; }
   // 縦画面の盤をできるだけ大きく。v5.1.46
   //   敵の名前・HP・絵・予告札・三位一体のパネル・記録が収まる範囲で、1マスの大きさを二分探索で決める。横画面は今まで通り
   const WIDE = matchMedia('(min-aspect-ratio: 6/5) and (min-width: 560px)');
+  // v5.9.11：同じ条件で何度も測り直さない。1回の fitBoard は二分探索で画面の組み直しを10回以上させるので、
+  //   戦闘中は render のたびに2回（その場と次の描画）走って、回したあとに画面が止まって見えていた（iPhone で「カクカク・遅い」）。
+  //   盤の大きさ以外で決まる高さ（敵の名前・HP・予告・記録・下のボタン）と画面の大きさが前と同じで、はみ出していなければ、前の答えのまま
+  let fitKey = '';
+  const fitSig = () => { const h = (e) => (e && e.offsetParent !== null ? e.offsetHeight : -1); const st = $('stage');
+    return [innerWidth, innerHeight, WIDE.matches, $('board').className, $('board').querySelectorAll('.slot').length, st.className, h(st.querySelector('.plate')), h(st.querySelector('.ehp')), h($('espd')), h($('ticket')), h($('party')), h($('book')), h($('dock')), h($('foeMore')), $('app').offsetParent === null].join('|'); };
+  let fitRes = '';
+  const fitNow = () => $('board').style.getPropertyValue('--cell') + '|' + $('app').classList.contains('fit');
   function fitBoard() {
+    const sig = fitSig();
+    if (sig === fitKey && fitNow() === fitRes && !(document.documentElement.scrollHeight > innerHeight + 1)) return;
+    fitKey = sig; fitBoard0(); fitRes = fitNow();
+  }
+  function fitBoard0() {
     const b = $('board'), st = $('stage');
     b.style.removeProperty('--cell'); $('app').classList.remove('fit');
     if (WIDE.matches || !b.classList.contains('narrow') || !b.querySelector('.slot') || $('app').offsetParent === null) return;
