@@ -490,3 +490,7 @@
 - 2026-11-19 v5.9.11：Web Animations の delay は、fill を付けないと待ちのあいだ「動く前の位置」でなく素の位置（行き先）を描く。FLIP（元の位置から戻す動き）に delay を付けるなら fill: 'backwards' が要る
 - 2026-11-19 v5.9.11：「カクカクする」の調べは、毎コマ getBoundingClientRect で位置を記録すると、その測り方自体が重さの3割を占めた。重さを測るときはコマの時刻だけ記録し、中身は Profiler と Performance.getMetrics（LayoutCount・RecalcStyleDuration）で見る
 - 2026-11-19 v5.9.11：このコンテナの Chromium は GPU なしでばらつきが大きく、コマ数の比較では差が出なかった。組み直しの回数（LayoutCount）のように揺れない数で比べる
+
+## v5.9.12（勝利画面の一番上が切れる）
+- `.result { padding: 16px }` が、前の行の `padding-top: max(24px, env(safe-area-inset-top))` を上書きしていた。PCのブラウザでは安全な余白が0なので気づけない。
+- Playwright では env(safe-area-inset-*) を再現できない。CSS変数（--sat・--sab）を経由させると、テストで html に値を入れて iPhone を再現できる。
