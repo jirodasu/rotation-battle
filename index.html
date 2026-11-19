@@ -4785,7 +4785,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
      数はすべて解決側と同じ関数（incoming・startHp・expDmg・foeHit・hitText）から取る。バランス・行動順・結果には触れない */
   const FX_STEP = { sup: 0, guard: 1, entry: 2, relic: 3, heal: 4 };   // 解決順：補助→守り→突入→レリック・灯→回復
   function fxPlan() { return showGhost() ? 'rot' : 'stay'; }
+  // 同じ状態なら計算し直さない（描画のたびに incoming を数え直すと重い。v5.9.13）
+  let fxMemo = { k: '', v: null };
   function fxList(plan) {
+    const mk = plan + '|' + phase + '|' + turn + '|' + gauge + '|' + combo + '|' + lamp + '|' + stayN + '|' + (run && run.relics ? run.relics.join() : '') + '|' + (enemy ? (enemy.party ? enemy.party.map((F) => F.hp + ':' + (F.defUp || 0)).join() : enemy.hp) + '|' + tgtId : '') + '|' + grid.map((row) => row.map((u) => (u ? u.uid + ':' + u.hp + ':' + u.max + ':' + (u.atkReady ? 1 : 0) + (u.defReady ? 1 : 0) + ':' + (u.entry ? 1 : 0) : '-')).join(',')).join('/');
+    if (fxMemo.k === mk) return fxMemo.v;
+    const v = fxListRaw(plan); fxMemo = { k: mk, v }; return v;
+  }
+  function fxListRaw(plan) {
     const out = [];
     if (phase !== 'choose' && phase !== 'prep') return out;
     const rot = plan === 'rot', src = rot ? previewGrid() : grid, fresh = rot || phase === 'prep', entering = rot;
