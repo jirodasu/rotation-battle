@@ -59,7 +59,7 @@ const toChoose = async (p) => { for (let k = 0; k < 200; k++) { if (await p.eval
     const beforeRot = await p.evaluate(() => [...document.querySelectorAll('#supAr .sa')].map((g) => g.dataset.c + (g.classList.contains('on') ? 'on' : 'off')).join());
     await p.click('#btnRotate'); await toChoose(p);
     const c3 = await p.evaluate(() => { const g1 = window.__rb.grid[1]; return [...document.querySelectorAll('#supAr .sa')].map((g) => ({ c: +g.dataset.c, on: g.classList.contains('on'), grow: g.classList.contains('grow'), who: g1[+g.dataset.c] && g1[+g.dataset.c].name })); });
-    ok(c3.every((x) => x.grow === x.on), '3 回して補助列に来た仲間の効く矢印は伸び、効かない補助は描かない（v5.9.12：点線をやめた。効く矢印が無い並びでは描かないことだけ確かめる） ' + JSON.stringify(c3) + ' 回す前 ' + beforeRot);
+    ok(c3.every((x) => x.grow === x.on), '3 回して補助列に来た仲間の効く矢印は伸び、効かない補助は描かない（v5.9.13：点線をやめた。効く矢印が無い並びでは描かないことだけ確かめる） ' + JSON.stringify(c3) + ' 回す前 ' + beforeRot);
     ok(!errs.length, '6 ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }
