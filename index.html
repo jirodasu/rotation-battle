@@ -2354,6 +2354,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .fc-act { display: flex; align-items: center; justify-content: center; gap: 3px; min-height: 17px; padding: 0 3px; border-radius: 9px; font-size: 11px; font-weight: 700; background: rgba(229, 96, 77, 0.16); white-space: nowrap; overflow: hidden; }
 .fc-act.big { background: var(--danger); color: #fff; }
 .fc-act .fc-g { font-style: normal; font-size: 11px; }
+.fc-act .fc-g svg { width: 13px; height: 13px; vertical-align: -2px; }   /* v5.9.7 技の種類の絵 */
 .fc-act b { font-weight: 800; font-size: 12px; }
 .fc-dmg { display: flex; align-items: baseline; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 11px; font-weight: 700; line-height: 1.15; }
 .fc-dmg b { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -2845,6 +2846,8 @@ body.tip-on #dock button { opacity: .45; transition: opacity .2s; }
 
 /* ===== C 報酬カード：効き目は金の数字の札。説明は札で足りないもの（レリックの条件）だけ残す（v5.1.60） ===== */
 .rv-card.hd .rv-d { display: none; }
+#rvSub.ph-gone, #rvHealNote.ph-gone { visibility: hidden; }   /* v5.9.8 報酬を選ぶ段では勝利のまとめを消す（場所は残す。名簿の位置を動かさない v5.8.16） */
+.rv-card.hd { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }   /* 長押しで説明（v5.9.8）。文字選びのメニューを出さない */
 .rv-tags .tg-st { background: color-mix(in srgb, var(--gold) 20%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 65%, transparent); color: var(--ink); font-size: 12.5px; font-weight: 800; padding: 3px 8px 4px; }
 
 /* ===== D 大技をしのいだ判（v5.1.60） ===== */
@@ -3000,7 +3003,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.5</p>
+    <p class="c-ver" id="cVer">ver 5.9.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3520,7 +3523,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.5';
+  const APP_VERSION = '5.9.8';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4912,7 +4915,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     mid: () => ['補助列を狙う技', '<em>補助列（真ん中）の全員</em>に当たる。攻撃列がいても届き、防御補助は効かない。HPの少ない仲間を真ん中に置かないように。'],
     pierce: () => ['防無効の攻撃（防御補助を無視）', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
-    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。3体は<em>毎ターン同じ技</em>だけを使う。像は一番前の列の全員に' + foeById('statue').pattern[0].dmg + '、祈り手は傷ついた敵を' + foeById('priest').pattern[0].heal + '回復、断罪者はHPのいちばん低い仲間に' + foeById('judge').pattern[0].dmg + '。パネルの「与」が、いまの並びで与えられるダメージ。どれから倒すかで戦いが変わる。']
+    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>して、攻撃する敵を選ぶ。どれから倒すかで戦いが変わる。']   // v5.9.7：3体の技の説明はパネルと敵の詳細にある。ヒントは操作だけ（以前は約200字）
   };
   let tipKey = null;
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
@@ -4961,6 +4964,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (tipKey) return;
     // 演出の数字（ダメージなど）が残っている間は出さない。落ち着いてから（v5.3.7）
     if (document.querySelector('#fx .pop, #fx .fly')) { clearTimeout(tipsCheck.t); tipsCheck.t = setTimeout(() => tipsCheck(curAct()), 450); return; }
+    { const w = chapLeft(); if (w) { clearTimeout(tipsCheck.t); tipsCheck.t = setTimeout(() => tipsCheck(curAct()), w + 150); return; } }   // 帯と重ねない（v5.9.6）
     const seen = tipSeen();
     let k = null;
     if (enemy.party && !seen.trinity) k = 'trinity';
@@ -5011,6 +5015,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     return c.join('');
   };
+  // 敵の技の種類を1文字の漢字（腕・癒・断など）ではなく絵で（v5.9.7。Slay the Spire の予告の絵と同じ考え）
+  const actIcon = (a) => (a.dmg ? ICON.sword : a.rule === 'mend' ? ICON.heart : a.rule === 'guard' || a.rule === 'aid' ? ICON.shield : a.rule === 'charge' ? ICON.bolt : a.glyph);
   function foeDealt(F) {
     const gh = showGhost(), src = gh ? previewGrid() : grid;
     let t = 0;
@@ -5036,7 +5042,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       let foeTxt = '';
       if (!tut && !dead) {
         const live2 = phase === 'prep' || phase === 'choose', h = live2 && a.dmg ? actHit(F, a) : null;
-        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : a.rule === 'back' ? '後' : a.rule === 'mid' ? '中' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? '?' : '';
+        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全員' : a.rule === 'back' ? '回復列' : a.rule === 'mid' ? '補助列' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? 'だれか' : '';   // v5.9.7：1文字（全・後・中・?）では伝わらないので言葉で
         if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : (h && h.lo !== h.hi ? '' : '<small>受ける</small>') + '<b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>'   /* 幅が「1〜5」で足りなくなるので、幅のある数字のときは「受ける」を省く（v5.6.5：像が毎ターンなぎはらいになり、375幅ではみ出した） */ + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
         else if (a.rule === 'mend') foeTxt = '<small>回復</small><b>+' + a.heal + '</b>';
         else if (a.rule === 'guard' || a.rule === 'aid') foeTxt = '<small>防御</small><b>+' + a.def + '</b>';
@@ -5051,7 +5057,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
         '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i>' + (dl > 0 ? '<s class="fc-loss" style="left:' + Math.max(0, Math.round((F.hp - Math.min(dl, F.hp)) / F.max * 100)) + '%;width:' + Math.round(Math.min(dl, F.hp) / F.max * 100) + '%"></s>' : '') + '<u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
-        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i>' + (tut ? '<span>' + brief + '</span>' + dmgTxt : foeTxt) + '</span>' +
+        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + actIcon(a) + '</i>' + (tut ? '<span>' + brief + '</span>' + dmgTxt : foeTxt) + '</span>' +
         (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>' + (tut ? '与' : '与える') + '</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half && sel ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '') +
         '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
@@ -5675,7 +5681,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (tut || !EXPM() || !run || run.node !== 0 || !firstRun()) return;
     if (fgRun !== run) { fgRun = run; fgDone = {}; }
     if (phase !== 'prep' && fgDone.prep === 1) { fgDone.prep = 2; hideBubble('firstGuide'); }   // 戦闘が始まったら、隊列の案内は消す
-    if (phase === 'prep' && !fgDone.prep) { fgDone.prep = 1; setTimeout(() => { if (phase === 'prep') bubble('上から攻撃・補助・回復の列。\nまずは「戦闘開始」', $('btnStart'), 4500, 'firstGuide'); }, 500); }
+    if (phase === 'prep' && !fgDone.prep) { fgDone.prep = 1; const fgP = () => { const w = chapLeft(); if (w) { setTimeout(fgP, w + 150); return; } if (phase === 'prep' && $('tip').hidden) bubble('まずは「戦闘開始」', $('btnStart'), 4500, 'firstGuide'); }; setTimeout(fgP, 500); }   // 帯が消えてから（v5.9.6）
     else if (phase === 'choose' && !fgDone.ch) {
       fgDone.ch = 1; hideBubble('firstGuide');
       // 気力などの説明（tip）が開いているあいだは出さず、閉じてから出す（説明は少し遅れて開くので、出す前にもう一度確かめる）
@@ -7221,11 +7227,15 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const c = $('chapter');
     $('chSmall').textContent = run ? (run.mode === 'exp' ? '第' + (expCh(run.node + 1) + 1) + '章　' + chName(expCh(run.node + 1)) + '　地点' + (run.node + 1) : '騎士団 ' + run.year + '年目') : CHAP[battleIdx];
     $('chName').textContent = enemy.name;
-    c.hidden = false;
+    c.hidden = false; chapEnd = Date.now() + 1950;
+    if (tipKey) { const k = tipKey; tipKey = null; delete tipSession[k]; $('tip').hidden = true; document.body.classList.remove('tip-on'); clearTimeout(tipsCheck.t); tipsCheck.t = setTimeout(() => tipsCheck(curAct()), 2100); }   // 準備に入った瞬間に出たヒントは、帯のあとに出し直す（v5.9.6。既読にはしない）
     SFX.chapter();
     c.style.animation = 'none'; void c.offsetWidth; c.style.animation = '';
     setTimeout(() => { c.hidden = true; }, 1950);
   }
+  // 敵の名前の帯（章・地点）が出ている間は、ヒントや案内の吹き出しを重ねない（v5.9.6）。帯が消えてから出す
+  let chapEnd = 0;
+  const chapLeft = () => ($('chapter').hidden ? 0 : Math.max(0, chapEnd - Date.now()));
   // あそびかたは3段：はじめに（まずはこれだけ）・しくみ・くわしく。開くたびに前に見ていた段を出す（初回は「はじめに」）
   let helpTier = 0;
   const setHelpTier = (t, focus) => { helpTier = t; for (let i = 0; i < 3; i++) { const on = i === t; $('hTab' + i).setAttribute('aria-selected', on ? 'true' : 'false'); $('hTab' + i).tabIndex = on ? 0 : -1; $('hTier' + i).hidden = !on; }
@@ -8312,6 +8322,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return '<details class="rv-log"><summary>' + list[0] + '　<em>ほか' + (list.length - 1) + '件 ▸</em></summary><div>' + list.slice(1).map((e) => '<p>' + e + '</p>').join('') + '</div></details>';
   }
   function rvShow(o) {
+    hideBubble('rvDetail');   // 長押しの説明（v5.9.8）を次の画面に残さない
     // 戦闘の数字・吹き出し（「-11」「とどめ！」「サギリ 12 − 防御1」）が報酬の画面に残って文字に重ならないよう、さっと消す（v5.7.0）
     $('fx').querySelectorAll('.pop').forEach((e) => { e.style.transition = 'opacity .15s'; e.style.opacity = '0'; setTimeout(() => e.remove(), 160); });
     // 区切り（·）ごとに折り返さないまとまりにする（「地点 10 /」で割れないように）
@@ -8319,7 +8330,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     sceneCh();
     $('rvTitle').textContent = o.title;
     { const sx = $('rvStars'); sx.hidden = o.stars == null; sx.innerHTML = o.stars == null ? '' : [0, 1, 2].map((i) => '<i class="' + (i < o.stars ? 'on' : '') + '" style="animation-delay:' + (0.2 + i * 0.15) + 's">' + STAR + '</i>').join(''); if (o.stars != null) sx.setAttribute('aria-label', '★' + o.stars + ' / 3'); }
-    $('rvSub').textContent = o.sub || '';
+    $('rvSub').textContent = o.sub || ''; $('rvSub').classList.remove('ph-gone'); $('rvHealNote').classList.remove('ph-gone');
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '', o.heal && o.heal.gain[m.uid] > 0 ? '<i class="rv-heal" aria-label="HP+' + o.heal.gain[m.uid] + '回復">+' + o.heal.gain[m.uid] + '</i>' : '')).join('');
     // B（v5.1.60）：回復は文章ではなく、HP棒が伸びて「+N」が浮かぶ反応で返す（棒の伸びは、増えた仲間だけ）
     if (o.heal && o.heal.from) { const ms = (o.roster || (run ? run.members : [])); [...$('rvRoster').querySelectorAll('.rv-m')].forEach((el, i) => { const m = ms[i], bar = el.querySelector('.hpb i'); if (!m || !bar || !(o.heal.gain[m.uid] > 0)) return; el.classList.add('healed'); bar.style.setProperty('--from', Math.max(0, Math.round(o.heal.from[m.uid] / m.max * 100)) + '%'); countHeal(el.querySelector('.rv-heal'), o.heal.gain[m.uid]); }); }
@@ -8331,7 +8342,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
     $('rvEvents').innerHTML = o.body || eventsHTML(o.events || [], o.openLog);
-    $('rvCards').innerHTML = (o.pick ? '<p class="rv-pick">報酬を1つ選ぶ<small>（遠征のあいだ隊に残る）</small></p>' : '') + o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
+    $('rvCards').innerHTML = (o.pick ? '<p class="rv-pick">報酬を1つ選ぶ<small>（遠征のあいだ隊に残る' + (o.cards.some((c) => c.hideD && c.d) ? '・長押しで説明' : '') + '）</small></p>' : '') + o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
       (o.aux ? '<div class="rv-btnrow">' : '') + (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') + (o.aux ? '<button type="button" class="btn rv-skip rv-aux" data-i="-2">' + o.aux + '</button></div>' : '') +
       (o.map && EXPM() ? '<button type="button" class="rv-more" id="rvMore" aria-expanded="false">詳しく</button>' : '') +
       (o.map ? '<button type="button" class="btn primary rv-go" id="rvGo" data-go="1"></button>' : '');
@@ -8381,6 +8392,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const v = $('runv');
     if (v.classList.contains('goal-first') && g.indexOf($('rvCards')) >= 0) { v.classList.remove('goal-first', 'show-goal'); $('rvHelp').setAttribute('aria-expanded', 'false'); }
     g.forEach((e) => { e.classList.remove('ph-wait'); void e.offsetWidth; e.classList.add('ph-show'); });
+    if (g.indexOf($('rvCards')) >= 0 && !$('rvStars').hidden) { $('rvSub').classList.add('ph-gone'); $('rvHealNote').classList.add('ph-gone'); }   // v5.9.8：報酬を選ぶ段では、勝利のまとめ（○ターンで撃破…）と回復の説明を消す。前の段で読んだので
     rvTapHint(false); rvQText = 'タップで次へ';
     if (rvQ.length) rvQT = setTimeout(() => rvTapHint(true), 450);
   }
@@ -8406,6 +8418,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     SFX.page(); routeRefresh(); }
   $('rvTrack').addEventListener('click', (ev) => { if (rvEat()) return; const n = ev.target.closest('[data-pick]'); if (n && $('rvCards').__on) routePick(+n.dataset.pick); });
   $('rvTrack').addEventListener('keydown', (ev) => { const n = ev.target.closest && ev.target.closest('[data-pick]'); if (n && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if ($('rvCards').__on) routePick(+n.dataset.pick); } });
+  // 報酬の札の長押しで、隠している説明の文を吹き出しで見せる（v5.9.8）。長押しのあとの指を離したクリックでは選ばない
+  let rvLpT = 0, rvLpEat = false;
+  const rvLpOff = () => clearTimeout(rvLpT);
+  $('rvCards').addEventListener('pointerdown', (ev) => { rvLpOff(); rvLpEat = false; const b = ev.target.closest('.rv-card.hd'); const d = b && b.querySelector('.rv-d'); if (!d || !d.textContent.trim()) return;
+    rvLpT = setTimeout(() => { rvLpEat = true; bubble(d.textContent.trim(), b, 3500, 'rvDetail'); vib(8); }, 450); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => $('rvCards').addEventListener(t, rvLpOff));
+  $('rvCards').addEventListener('contextmenu', (ev) => { if (ev.target.closest('.rv-card.hd')) ev.preventDefault(); });
+  $('rvCards').addEventListener('click', (ev) => { if (rvLpEat) { rvLpEat = false; ev.stopImmediatePropagation(); ev.preventDefault(); } }, true);
   $('rvCards').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-i],[data-go]'); if (!b || b.disabled) return;
     const on = $('rvCards').__on; if (!on) return;
@@ -9164,7 +9184,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expReward(pre) {
     const cards = [], free = relFree();
-    if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
+    if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), hideD: !!(r.tag || { shield: 1, incense: 1, bell: 1, stance: 1 }[r.id]) /* v5.9.8：札が出せるレリックは札だけ（説明の文は長押し） */, act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
     // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(EXP.upHp ? [{ k: 'st', t: '最大HP+' + EXP.upHp }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (EXP.upHp ? '・最大HP+' + EXP.upHp : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）

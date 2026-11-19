@@ -100,7 +100,7 @@ async function auto(p, order) {
     const r = await p.evaluate(() => { const R = window.__rb; const out = []; for (let t = 1; t <= 4; t++) { R.setTurn(t); out.push({ w: R.foeWarn(), tk: getComputedStyle(document.getElementById('ticket')).display, acts: ['statue', 'priest', 'judge'].map((id) => { const c = document.querySelector('#party .fc[data-f="' + id + '"]'); return c ? c.textContent : ''; }) }); } return { pat: R.TRI.foes.map((f) => f.pattern.length + ':' + f.pattern[0].rule), out }; });
     ok(r.pat.join() === '1:all,1:mend,1:lowhp', '3体とも技は1つ（像＝全員・祈り手＝回復・断罪者＝HP最低） ' + r.pat.join());
     ok(r.out.every((o) => !o.w || !o.w.seen), '大技の予告は出ない');
-    ok(r.out.every((o) => /なぎはらい|腕/.test(o.acts[0]) && /回復|癒/.test(o.acts[1]) && /断/.test(o.acts[2])), '1〜4ターン目、どのターンもパネルの技は同じ');
+    ok(r.out.every((o) => /なぎはらい|腕|全員/.test(o.acts[0]) && /回復|癒/.test(o.acts[1]) && /断/.test(o.acts[2])), '1〜4ターン目、どのターンもパネルの技は同じ');
     ok(!p.__errs.length, 'ページのエラーなし');
     await ctx.close();
   }
