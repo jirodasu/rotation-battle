@@ -2846,6 +2846,8 @@ body.tip-on #dock button { opacity: .45; transition: opacity .2s; }
 
 /* ===== C 報酬カード：効き目は金の数字の札。説明は札で足りないもの（レリックの条件）だけ残す（v5.1.60） ===== */
 .rv-card.hd .rv-d { display: none; }
+#rvSub.ph-gone, #rvHealNote.ph-gone { display: none; }   /* v5.9.8 報酬を選ぶ段では勝利のまとめを消す */
+.rv-card.hd { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }   /* 長押しで説明（v5.9.8）。文字選びのメニューを出さない */
 .rv-tags .tg-st { background: color-mix(in srgb, var(--gold) 20%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 65%, transparent); color: var(--ink); font-size: 12.5px; font-weight: 800; padding: 3px 8px 4px; }
 
 /* ===== D 大技をしのいだ判（v5.1.60） ===== */
@@ -3001,7 +3003,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.7</p>
+    <p class="c-ver" id="cVer">ver 5.9.8</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3521,7 +3523,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.7';
+  const APP_VERSION = '5.9.8';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8320,6 +8322,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     return '<details class="rv-log"><summary>' + list[0] + '　<em>ほか' + (list.length - 1) + '件 ▸</em></summary><div>' + list.slice(1).map((e) => '<p>' + e + '</p>').join('') + '</div></details>';
   }
   function rvShow(o) {
+    hideBubble('rvDetail');   // 長押しの説明（v5.9.8）を次の画面に残さない
     // 戦闘の数字・吹き出し（「-11」「とどめ！」「サギリ 12 − 防御1」）が報酬の画面に残って文字に重ならないよう、さっと消す（v5.7.0）
     $('fx').querySelectorAll('.pop').forEach((e) => { e.style.transition = 'opacity .15s'; e.style.opacity = '0'; setTimeout(() => e.remove(), 160); });
     // 区切り（·）ごとに折り返さないまとまりにする（「地点 10 /」で割れないように）
@@ -8327,7 +8330,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     sceneCh();
     $('rvTitle').textContent = o.title;
     { const sx = $('rvStars'); sx.hidden = o.stars == null; sx.innerHTML = o.stars == null ? '' : [0, 1, 2].map((i) => '<i class="' + (i < o.stars ? 'on' : '') + '" style="animation-delay:' + (0.2 + i * 0.15) + 's">' + STAR + '</i>').join(''); if (o.stars != null) sx.setAttribute('aria-label', '★' + o.stars + ' / 3'); }
-    $('rvSub').textContent = o.sub || '';
+    $('rvSub').textContent = o.sub || ''; $('rvSub').classList.remove('ph-gone'); $('rvHealNote').classList.remove('ph-gone');
     $('rvRoster').innerHTML = o.noRoster ? '' : (o.roster || (run ? run.members : [])).map((m) => portrait(m, m.fate ? ' gone f-' + m.fate : '', o.heal && o.heal.gain[m.uid] > 0 ? '<i class="rv-heal" aria-label="HP+' + o.heal.gain[m.uid] + '回復">+' + o.heal.gain[m.uid] + '</i>' : '')).join('');
     // B（v5.1.60）：回復は文章ではなく、HP棒が伸びて「+N」が浮かぶ反応で返す（棒の伸びは、増えた仲間だけ）
     if (o.heal && o.heal.from) { const ms = (o.roster || (run ? run.members : [])); [...$('rvRoster').querySelectorAll('.rv-m')].forEach((el, i) => { const m = ms[i], bar = el.querySelector('.hpb i'); if (!m || !bar || !(o.heal.gain[m.uid] > 0)) return; el.classList.add('healed'); bar.style.setProperty('--from', Math.max(0, Math.round(o.heal.from[m.uid] / m.max * 100)) + '%'); countHeal(el.querySelector('.rv-heal'), o.heal.gain[m.uid]); }); }
@@ -8339,7 +8342,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     $('rvTrack').hidden = !o.map; $('rvTrack').innerHTML = o.map ? trackHTML() : '';
     const nx = o.map ? nextHTML() : ''; $('rvNext').hidden = !nx; $('rvNext').innerHTML = nx;
     $('rvEvents').innerHTML = o.body || eventsHTML(o.events || [], o.openLog);
-    $('rvCards').innerHTML = (o.pick ? '<p class="rv-pick">報酬を1つ選ぶ<small>（遠征のあいだ隊に残る）</small></p>' : '') + o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
+    $('rvCards').innerHTML = (o.pick ? '<p class="rv-pick">報酬を1つ選ぶ<small>（遠征のあいだ隊に残る' + (o.cards.some((c) => c.hideD && c.d) ? '・長押しで説明' : '') + '）</small></p>' : '') + o.cards.map((c, i) => '<button type="button" class="rv-card' + (c.hideD ? ' hd' : '') + (o.map && routeSel === i ? ' sel' : '') + '" data-i="' + i + '"' + (o.map ? ' aria-pressed="' + (routeSel === i) + '"' : '') + (c.disabled ? ' disabled' : '') + '><span class="rv-ico">' + (c.ico || '') + '</span><span class="rv-txt"><b class="disp">' + c.t + '</b>' + (o.map && c.k ? '<span class="rv-k">' + c.k.map((x) => '<i>' + x[0] + '<em>' + x[1] + '</em></i>').join('') + '</span>' : '') + '<span class="rv-d">' + c.d + '</span>' + (c.tags ? '<span class="rv-tags">' + c.tags.map((g) => '<em class="tg-' + g.k + '">' + g.t + '</em>').join('') + '</span>' : '') + '</span></button>').join('') +
       (o.aux ? '<div class="rv-btnrow">' : '') + (o.skip ? '<button type="button" class="btn rv-skip" data-i="-1">' + o.skip + '</button>' : '') + (o.aux ? '<button type="button" class="btn rv-skip rv-aux" data-i="-2">' + o.aux + '</button></div>' : '') +
       (o.map && EXPM() ? '<button type="button" class="rv-more" id="rvMore" aria-expanded="false">詳しく</button>' : '') +
       (o.map ? '<button type="button" class="btn primary rv-go" id="rvGo" data-go="1"></button>' : '');
@@ -8389,6 +8392,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const v = $('runv');
     if (v.classList.contains('goal-first') && g.indexOf($('rvCards')) >= 0) { v.classList.remove('goal-first', 'show-goal'); $('rvHelp').setAttribute('aria-expanded', 'false'); }
     g.forEach((e) => { e.classList.remove('ph-wait'); void e.offsetWidth; e.classList.add('ph-show'); });
+    if (g.indexOf($('rvCards')) >= 0 && !$('rvStars').hidden) { $('rvSub').classList.add('ph-gone'); $('rvHealNote').classList.add('ph-gone'); }   // v5.9.8：報酬を選ぶ段では、勝利のまとめ（○ターンで撃破…）と回復の説明を消す。前の段で読んだので
     rvTapHint(false); rvQText = 'タップで次へ';
     if (rvQ.length) rvQT = setTimeout(() => rvTapHint(true), 450);
   }
@@ -8414,6 +8418,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
     SFX.page(); routeRefresh(); }
   $('rvTrack').addEventListener('click', (ev) => { if (rvEat()) return; const n = ev.target.closest('[data-pick]'); if (n && $('rvCards').__on) routePick(+n.dataset.pick); });
   $('rvTrack').addEventListener('keydown', (ev) => { const n = ev.target.closest && ev.target.closest('[data-pick]'); if (n && (ev.key === 'Enter' || ev.key === ' ')) { ev.preventDefault(); if ($('rvCards').__on) routePick(+n.dataset.pick); } });
+  // 報酬の札の長押しで、隠している説明の文を吹き出しで見せる（v5.9.8）。長押しのあとの指を離したクリックでは選ばない
+  let rvLpT = 0, rvLpEat = false;
+  const rvLpOff = () => clearTimeout(rvLpT);
+  $('rvCards').addEventListener('pointerdown', (ev) => { rvLpOff(); rvLpEat = false; const b = ev.target.closest('.rv-card.hd'); const d = b && b.querySelector('.rv-d'); if (!d || !d.textContent.trim()) return;
+    rvLpT = setTimeout(() => { rvLpEat = true; bubble(d.textContent.trim(), b, 3500, 'rvDetail'); vib(8); }, 450); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => $('rvCards').addEventListener(t, rvLpOff));
+  $('rvCards').addEventListener('contextmenu', (ev) => { if (ev.target.closest('.rv-card.hd')) ev.preventDefault(); });
+  $('rvCards').addEventListener('click', (ev) => { if (rvLpEat) { rvLpEat = false; ev.stopImmediatePropagation(); ev.preventDefault(); } }, true);
   $('rvCards').addEventListener('click', (ev) => {
     const b = ev.target.closest('[data-i],[data-go]'); if (!b || b.disabled) return;
     const on = $('rvCards').__on; if (!on) return;
@@ -9172,7 +9184,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   }
   function expReward(pre) {
     const cards = [], free = relFree();
-    if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
+    if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), hideD: !!(r.tag || { shield: 1, incense: 1, bell: 1, stance: 1 }[r.id]) /* v5.9.8：札が出せるレリックは札だけ（説明の文は長押し） */, act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
     // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
     cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(EXP.upHp ? [{ k: 'st', t: '最大HP+' + EXP.upHp }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (EXP.upHp ? '・最大HP+' + EXP.upHp : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）
