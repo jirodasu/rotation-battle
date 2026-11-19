@@ -2354,6 +2354,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .fc-act { display: flex; align-items: center; justify-content: center; gap: 3px; min-height: 17px; padding: 0 3px; border-radius: 9px; font-size: 11px; font-weight: 700; background: rgba(229, 96, 77, 0.16); white-space: nowrap; overflow: hidden; }
 .fc-act.big { background: var(--danger); color: #fff; }
 .fc-act .fc-g { font-style: normal; font-size: 11px; }
+.fc-act .fc-g svg { width: 13px; height: 13px; vertical-align: -2px; }   /* v5.9.7 技の種類の絵 */
 .fc-act b { font-weight: 800; font-size: 12px; }
 .fc-dmg { display: flex; align-items: baseline; justify-content: center; gap: 3px; flex-wrap: wrap; font-size: 11px; font-weight: 700; line-height: 1.15; }
 .fc-dmg b { font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums; }
@@ -3000,7 +3001,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.6</p>
+    <p class="c-ver" id="cVer">ver 5.9.7</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3520,7 +3521,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.6';
+  const APP_VERSION = '5.9.7';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4912,7 +4913,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     mid: () => ['補助列を狙う技', '<em>補助列（真ん中）の全員</em>に当たる。攻撃列がいても届き、防御補助は効かない。HPの少ない仲間を真ん中に置かないように。'],
     pierce: () => ['防無効の攻撃（防御補助を無視）', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
-    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>すると、そこが攻撃対象（狙い）になる。3体は<em>毎ターン同じ技</em>だけを使う。像は一番前の列の全員に' + foeById('statue').pattern[0].dmg + '、祈り手は傷ついた敵を' + foeById('priest').pattern[0].heal + '回復、断罪者はHPのいちばん低い仲間に' + foeById('judge').pattern[0].dmg + '。パネルの「与」が、いまの並びで与えられるダメージ。どれから倒すかで戦いが変わる。']
+    trinity: () => ['敵は3体。攻撃対象を選ぼう', '敵のパネルを<em>タップ</em>して、攻撃する敵を選ぶ。どれから倒すかで戦いが変わる。']   // v5.9.7：3体の技の説明はパネルと敵の詳細にある。ヒントは操作だけ（以前は約200字）
   };
   let tipKey = null;
   function tipSeen() { try { return JSON.parse(localStorage.getItem('rb-tips') || '{}') || {}; } catch (e) { return {}; } }
@@ -5012,6 +5013,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     return c.join('');
   };
+  // 敵の技の種類を1文字の漢字（腕・癒・断など）ではなく絵で（v5.9.7。Slay the Spire の予告の絵と同じ考え）
+  const actIcon = (a) => (a.dmg ? ICON.sword : a.rule === 'mend' ? ICON.heart : a.rule === 'guard' || a.rule === 'aid' ? ICON.shield : a.rule === 'charge' ? ICON.bolt : a.glyph);
   function foeDealt(F) {
     const gh = showGhost(), src = gh ? previewGrid() : grid;
     let t = 0;
@@ -5037,7 +5040,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       let foeTxt = '';
       if (!tut && !dead) {
         const live2 = phase === 'prep' || phase === 'choose', h = live2 && a.dmg ? actHit(F, a) : null;
-        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全' : a.rule === 'back' ? '後' : a.rule === 'mid' ? '中' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? '?' : '';
+        const tg0 = targetInfo(a, showGhost() ? previewGrid() : grid, F), col = a.rule === 'all' ? '全員' : a.rule === 'back' ? '回復列' : a.rule === 'mid' ? '補助列' : tg0.cols && tg0.cols.length ? colN(tg0.cols[0]) : a.rule === 'random' ? 'だれか' : '';   // v5.9.7：1文字（全・後・中・?）では伝わらないので言葉で
         if (a.dmg) foeTxt = live2 && !h ? '<small>受けない</small>' : (h && h.lo !== h.hi ? '' : '<small>受ける</small>') + '<b>' + (h ? h.txt : a.dmg * (a.hits || 1)) + '</b>'   /* 幅が「1〜5」で足りなくなるので、幅のある数字のときは「受ける」を省く（v5.6.5：像が毎ターンなぎはらいになり、375幅ではみ出した） */ + (col ? '<i class="fc-to" title="狙う列">→' + col + '</i>' : '');
         else if (a.rule === 'mend') foeTxt = '<small>回復</small><b>+' + a.heal + '</b>';
         else if (a.rule === 'guard' || a.rule === 'aid') foeTxt = '<small>防御</small><b>+' + a.def + '</b>';
@@ -5052,7 +5055,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         '<span class="fc-art">' + PARTY_ART[F.art] + '</span>' +
         '<b class="fc-nm disp">' + (sel ? '<i class="fc-aim" title="攻撃対象">◎</i>' : '') + F.name + '</b>' +
         '<span class="fc-hp' + (F.hp / F.max <= 0.35 ? ' low' : '') + '"><i style="width:' + p + '%"></i>' + (dl > 0 ? '<s class="fc-loss" style="left:' + Math.max(0, Math.round((F.hp - Math.min(dl, F.hp)) / F.max * 100)) + '%;width:' + Math.round(Math.min(dl, F.hp) / F.max * 100) + '%"></s>' : '') + '<u>' + F.hp + '<small>/' + F.max + '</small></u></span>' +
-        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + a.glyph + '</i>' + (tut ? '<span>' + brief + '</span>' + dmgTxt : foeTxt) + '</span>' +
+        '<span class="fc-act' + (a.big || F.charged ? ' big' : '') + (tut ? '' : ' slim') + '"' + ' data-n="' + brief + '"' + (tgt2 ? ' title="' + tgt2 + '"' : '') + '><i class="fc-g disp">' + actIcon(a) + '</i>' + (tut ? '<span>' + brief + '</span>' + dmgTxt : foeTxt) + '</span>' +
         (live ? '<span class="fc-dmg' + (kill ? ' kill' : '') + '"><span>' + (tut ? '与' : '与える') + '</span><b>' + (dl ? '−' + dl : '—') + '</b>' + (half && sel ? '<small>半減後</small>' : '') + (kill ? '<em>倒せる</em>' : '') + '</span>' : '') +
         '<span class="fc-sub"><span class="fc-def fc-spd" title="素早さ（これより速い仲間が先に動く）"><small>速</small>' + F.spd + '</span><span class="fc-def" title="防御（与えるダメージ-' + foeDef(F) + '）"><small>防</small>' + foeDef(F) + '</span><span class="fc-st">' + FOE_ST(F) + '</span></span>' +
         '</button>';
