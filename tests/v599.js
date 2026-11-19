@@ -4,7 +4,7 @@
 //  2 戦闘中の気づきは帯で出て、押さなくても3.2秒以内に消える。帯は1行（高さ 60px 以内）で40字以内
 //  3 「戦闘開始」の手順では攻撃列に出たサムライの剣の数字が光る。「回す」の手順では点線の矢印が3本出る。手順が終わると両方消える
 //  4 チュートリアルを最後（基本はここまで）まで進められる。320・375・390px で撮る（tests/out/v599_*.png）。ページのエラーなし
-//  5 勢いの鐘：攻撃列に入る2人（2本撃つ突入技と、攻撃+の突入技）で、鐘ありと鐘なしの与えたダメージの差は 4+4=8（2本とも乗ると12）
+//  5 勢いの鐘：攻撃列に入る仲間（1人目は2本撃つ突入技、2人目がいれば攻撃+の突入技）で、鐘ありと鐘なしの与えたダメージの差は 入る人数×4（2本とも乗ると、1人目の分が8になる）
 const { launch, testPage } = require('./_env');
 const path = require('path');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -72,7 +72,7 @@ const ACT = { '仲間を動かす ①': '.slot[data-r="2"][data-c="1"]', '仲間
     return { who, d: hp0 !== null && hp1 !== null ? hp0 - hp1 : null, errs };
   };
   const a = await dealt([]), c = await dealt(['bell']);
-  ok(a.d !== null && c.d !== null && c.d - a.d === 8, '5 鐘ありと鐘なしの差 ' + (c.d - a.d) + '（8）：入る2人 ' + a.who.join('・') + '／鐘なし ' + a.d + '・鐘あり ' + c.d);
+  ok(a.d !== null && c.d !== null && c.d - a.d === 4 * a.who.length, '5 鐘ありと鐘なしの差 ' + (c.d - a.d) + '（入る' + a.who.length + '人×4＝' + 4 * a.who.length + '。1人目は2本撃つ突入技）：入る ' + a.who.join('・') + '／鐘なし ' + a.d + '・鐘あり ' + c.d);
   ok(!a.errs.length && !c.errs.length, '5 ページのエラーなし ' + a.errs.concat(c.errs).join(' / '));
   await b.close(); console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
 })();
