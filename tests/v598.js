@@ -32,10 +32,10 @@ const VIS = () => { let n = 0; const w = document.createTreeWalker(document.getE
     for (let k = 0; k < 4 && await p.evaluate(() => !!document.querySelector('#runv .ph-wait')); k++) { await p.mouse.click(w / 2, h * 0.2); await p.waitForTimeout(350); }
     await p.waitForTimeout(500);
     const s2 = await p.evaluate(() => { const cards = [...document.querySelectorAll('#rvCards .rv-card')]; const rel = cards.find((c) => /回転レリック/.test(c.textContent));
-      return { sub: getComputedStyle(document.getElementById('rvSub')).display, rel: rel ? { d: getComputedStyle(rel.querySelector('.rv-d')).display, tags: !!rel.querySelector('.rv-tags em') } : null, n: cards.length, inView: cards.every((c) => { const r = c.getBoundingClientRect(); return r.right <= innerWidth + 1 && r.left >= -1; }), pick: (document.querySelector('.rv-pick') || {}).textContent };
+      return { sub: getComputedStyle(document.getElementById('rvSub')).visibility, rel: rel ? { d: getComputedStyle(rel.querySelector('.rv-d')).display, tags: !!rel.querySelector('.rv-tags em') } : null, n: cards.length, inView: cards.every((c) => { const r = c.getBoundingClientRect(); return r.right <= innerWidth + 1 && r.left >= -1; }), pick: (document.querySelector('.rv-pick') || {}).textContent };
     });
     const chars = await p.evaluate(VIS);
-    ok(s2.sub === 'none', tag + ' 2 報酬の段：勝利のまとめは消える');
+    ok(s2.sub === 'hidden', tag + ' 2 報酬の段：勝利のまとめは消える');
     ok(!s2.rel || (s2.rel.d === 'none' && s2.rel.tags), tag + ' 1 レリックは札だけ ' + JSON.stringify(s2.rel));
     ok(chars <= 170, tag + ' 4 報酬の段の文字 ' + chars + '字（170字以内）');
     ok(s2.inView, tag + ' 5 札が画面の横に収まる');

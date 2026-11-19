@@ -2846,7 +2846,7 @@ body.tip-on #dock button { opacity: .45; transition: opacity .2s; }
 
 /* ===== C 報酬カード：効き目は金の数字の札。説明は札で足りないもの（レリックの条件）だけ残す（v5.1.60） ===== */
 .rv-card.hd .rv-d { display: none; }
-#rvSub.ph-gone, #rvHealNote.ph-gone { display: none; }   /* v5.9.8 報酬を選ぶ段では勝利のまとめを消す */
+#rvSub.ph-gone, #rvHealNote.ph-gone { visibility: hidden; }   /* v5.9.8 報酬を選ぶ段では勝利のまとめを消す（場所は残す。名簿の位置を動かさない v5.8.16） */
 .rv-card.hd { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }   /* 長押しで説明（v5.9.8）。文字選びのメニューを出さない */
 .rv-tags .tg-st { background: color-mix(in srgb, var(--gold) 20%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gold) 65%, transparent); color: var(--ink); font-size: 12.5px; font-weight: 800; padding: 3px 8px 4px; }
 
