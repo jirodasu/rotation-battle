@@ -85,7 +85,7 @@ async function measure(p, need) {
     const p2 = await ctx.newPage(); p2.on('pageerror', (e) => errs.push(e.message));
     await p2.goto(url); await p2.waitForTimeout(600); await p2.click('#cover'); await p2.waitForTimeout(400);
     await p2.click('#beginTut'); await p2.waitForTimeout(1500);
-    for (let k = 0; k < 3; k++) { await p2.click('#coNext').catch(() => {}); await p2.waitForTimeout(450); }
+    for (let k = 0; k < 1; k++) { await p2.click('#coNext').catch(() => {}); await p2.waitForTimeout(450); }   // v5.9.9：手順を削ったので、1つ進めて「敵の予告」（前と同じ画面）
     const tutShot = async (screen, need) => { await p2.screenshot({ path: path.join(dir, name + '-' + screen + '.png') }); const m = await measure(p2, need); failCount += m.fails.length; report.push({ size: name, screen, ...m }); };
     // 解説と光っている所が重ならないか
     const overlap = await p2.evaluate(() => { const a = document.getElementById('coach').getBoundingClientRect(), s = document.getElementById('spot'); if (s.hidden) return 0; const b = s.getBoundingClientRect(); return Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)) * Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top)) / Math.max(1, b.width * b.height); });

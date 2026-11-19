@@ -52,13 +52,12 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     const p = await ctx.newPage(); const errs = []; p.on('pageerror', (e) => errs.push(e.message));
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(400); await p.click('#beginTut'); await p.waitForTimeout(1500);
     const got = [];
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 2; i++) {   // v5.9.9：「ようこそ」「4人の仲間」を削った。最初は攻撃列→敵の予告
       got.push(await p.evaluate(() => { const R = (e) => e.getBoundingClientRect(), c = R(document.getElementById('coach')), s = document.getElementById('spot'), sp = s.hidden ? null : R(s);
         return { t: document.getElementById('coTitle').textContent, x: document.getElementById('coText') ? document.getElementById('coText').textContent : '', spot: !!sp, ov: sp ? Math.max(0, Math.min(c.bottom, sp.bottom) - Math.max(c.top, sp.top)) * Math.max(0, Math.min(c.right, sp.right) - Math.max(c.left, sp.left)) : 0 }; }));
       await p.click('#coNext'); await p.waitForTimeout(400);
     }
-    ok(got[0].t === 'ようこそ' && got[1].t === '4人の仲間' && got[1].spot, w + '×' + h + ' チュートリアル：ようこその次に「4人の仲間」1枚 ' + JSON.stringify(got.map((g) => g.t)));
-    ok(got[2].t === '攻撃列が最前線' && got[3].t === '敵の予告', w + '×' + h + ' 続いて攻撃列→敵の予告（細かい仕組みは後回し）');
+    ok(got[0].t === '攻撃列が最前線' && got[0].spot && got[0].ov === 0 && got[1].t === '敵の予告', w + '×' + h + ' チュートリアル：攻撃列（光っている所を隠さない）→敵の予告 ' + JSON.stringify(got.map((g) => g.t + ' ' + Math.round(g.ov))));
     ok(!errs.length, 'ページのエラーなし ' + errs.join('/'));
     await ctx.close();
   }

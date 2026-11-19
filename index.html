@@ -937,6 +937,17 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
   animation: spotpulse 1.5s ease-in-out infinite;
 }
 @keyframes spotpulse { 50% { outline-color: #fff; } }
+/* v5.9.9 チュートリアル：押さずに消える帯・回る向きの点線の矢印・剣の数字を光らせる */
+.tut-band { position: fixed; left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + 54px); z-index: 43; width: min(calc(100% - 32px), 420px); margin: 0 auto; padding: 10px 16px; border-radius: 999px; background: var(--ink); color: var(--paper); font-size: 15px; font-weight: 700; line-height: 1.4; text-align: center; box-shadow: 0 10px 24px -10px var(--shadow); opacity: 0; transform: translateY(-8px); transition: opacity 0.18s, transform 0.18s; cursor: pointer; }
+.tut-band.on { opacity: 1; transform: none; }
+.tut-band[hidden] { display: none; }
+.tut-arrows { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 41; pointer-events: none; overflow: visible; }
+.tut-arrows[hidden] { display: none; }
+.tut-arrows path:not([fill]) { fill: none; stroke: #fff; stroke-width: 3; stroke-dasharray: 7 6; stroke-linecap: round; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); animation: taflow 0.9s linear infinite; }
+@keyframes taflow { to { stroke-dashoffset: -26; } }
+.tut-glow .slot[data-r="0"][data-c="1"] .dm { animation: dmglow 0.9s ease-in-out infinite alternate; }
+@keyframes dmglow { from { filter: none; transform: none; } to { filter: drop-shadow(0 0 6px #ffd84a) brightness(1.25); transform: scale(1.15); } }
+@media (prefers-reduced-motion: reduce) { .tut-arrows path:not([fill]) { animation: none; } .tut-glow .slot[data-r="0"][data-c="1"] .dm { animation: none; filter: drop-shadow(0 0 6px #ffd84a); } }
 .coach {
   position: fixed; left: 0; right: 0; z-index: 42; width: min(calc(100% - 24px), 496px); margin: 0 auto; padding: 12px 16px 12px;
   border-radius: 20px; background: var(--paper); color: var(--ink); box-shadow: 0 6px 0 var(--paper-line), 0 20px 36px -12px var(--shadow);
@@ -2973,6 +2984,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
 <div class="sheet" id="logSheet" role="dialog" aria-label="これまでの出来事" hidden><div class="ls-head"><b class="disp">これまでの出来事</b><button class="ls-x" id="logX" type="button" aria-label="閉じる">×</button></div><div class="ls-list" id="logList"></div></div>
 
 <div class="spot" id="spot" hidden aria-hidden="true"></div>
+<div class="tut-band" id="tutBand" role="status" aria-live="polite" hidden></div>
+<svg class="tut-arrows" id="tutArrows" aria-hidden="true" hidden></svg>
 <div class="coach pos-top" id="coach" hidden role="dialog" aria-live="polite" aria-label="チュートリアル">
   <div class="co-head"><span class="co-step" id="coStep"></span><button class="co-quit" id="coQuit" type="button">終了</button></div>
   <b class="co-title disp" id="coTitle"></b>
@@ -3003,7 +3016,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.8</p>
+    <p class="c-ver" id="cVer">ver 5.9.9</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3523,7 +3536,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.8';
+  const APP_VERSION = '5.9.9';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4493,9 +4506,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const R = RX();
     let power = r === 0 ? u.atk : u.ranged;
     const ue = entryFor(u, entering);
-    const ue1 = r === 0 && entering && R.entry && ue && ue.atk && ue.hits ? ue.atk : 0;   // 速射の強化（v5.9.4・案A）：攻撃+は1本目の矢だけ
+    let ue1 = r === 0 && entering && R.entry && ue && ue.atk && ue.hits ? ue.atk : 0;   // 速射の強化（v5.9.4・案A）：攻撃+は1本目の矢だけ
     if (r === 0 && entering && R.entry && ue && ue.atk && !ue.hits) power += ue.atk;
-    if (r === 0 && entering && R.entry && u.entry && relOn('bell')) power += relD('bell').entryAtk;
+    if (r === 0 && entering && R.entry && u.entry && relOn('bell')) { if (ue && ue.hits) ue1 += relD('bell').entryAtk; else power += relD('bell').entryAtk; }   // 勢いの鐘も、2本撃つ突入技では1本目の矢だけ（v5.9.9）
     if (r === 0) power += stanceAtk(entering ? 0 : stayFc()) + relN('whet', 'atk') + lampAtk(entering ? EXP.lampCfg.after : lampFc());
     const hitsN = (u.hits || 1) + ((r === 0 && entering && R.entry && ue && ue.hits) || 0);
     let sup = 0;
@@ -6527,7 +6540,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       }
     }
     if (!any) return;
-    await tutNote('heal', '回復列で休む', '回復列の仲間は、休んで自分のHPを回復する。神官・僧侶は、回復列のほかの仲間もまとめて回復する（本人は含まない）。', () => bd().querySelector('.strip.r2'), 'top');
+    await tutBand('heal', '回復列の仲間は、HPが回復する');
   }
 
 
@@ -6542,23 +6555,23 @@ body.fast #stampOk.on { animation-duration: .5s; }
       SFX.buff();
       await flySeal(tokEl(1, c), tokEl(0, c), '攻', 'atk');
       renderBoard();
-      await tutNote('atkSup', '攻撃補助', grid[1][c].name + 'の「攻」が' + u.name + 'に乗った。ダメージ+' + sup + '。使うと灰色になる。これが「使い切り」。', () => [tokEl(1, c), tokEl(0, c)], 'bottom');
+      await tutBand('atkSup', '「攻」でダメージ+' + sup + '。1回で使い切り');
     }
     if (!sup && r === 0) {
       const m2 = grid[1][c];
-      if (m2 && m2.atkSup > 0 && !m2.atkReady) await tutNote('atkUsed', '補助が乗らない', m2.name + 'の「攻」は使い切り。今回は乗らないので、ダメージが小さい。', () => [tokEl(1, c), tokEl(0, c)], 'bottom');
+      if (m2 && m2.atkSup > 0 && !m2.atkReady) await tutBand('atkUsed', '使い切った「攻」は乗らない');
     }
-    if (r === 1) await tutNote('ranged', '補助列も攻撃する', u.name + 'のような間接攻撃の仲間は、補助列からでも攻撃できる。', () => tokEl(1, c), 'top');
+    if (r === 1) await tutBand('ranged', u.name + 'は、補助列からでも攻撃できる');
     const en = r === 0 ? entryNow[u.uid] : null, R = RX();
     if (r === 0) {
       if (en && en.atk && !en.hits) power += en.atk;   // 速射（2本撃つ技）の強化の攻撃+は、1本目の矢だけ（v5.9.4・案A。下の en1）
-      if (en && relOn('bell')) power += relD('bell').entryAtk;
+      if (en && relOn('bell') && !en.hits) power += relD('bell').entryAtk;
     }
     const hitsN = (u.hits || 1) + ((en && en.hits) || 0);
     const T = targetFoe(), half = foeShare(T) < 1, dfn = foeDef(T);
     const rp = relAtk(u, r, !!en, stayN, T, r === 0 && !!u.entered);   // 効いたレリック（表示だけ。v5.8.14）
     let total = 0; const hs = [];   // hs：1発ごとのダメージ（表示の内訳だけに使う。合計の計算は今までどおり）
-    const en1 = en && en.atk && en.hits ? en.atk : 0;
+    const en1 = (en && en.atk && en.hits ? en.atk : 0) + (r === 0 && en && en.hits && relOn('bell') ? relD('bell').entryAtk : 0);   // 勢いの鐘も1本目の矢だけ（v5.9.9）
     for (let i = 0; i < hitsN; i++) { const d = foeHit(power + (i === 0 ? sup + en1 : 0), T, r === 0 && !!u.entered); hs.push(d); total += d; }
     T.hp = Math.max(0, T.hp - total); syncParty();
     if (stats) { stats.dealt[u.uid] = (stats.dealt[u.uid] || 0) + total; stats.who[u.uid] = u; if (u.dealt != null) u.dealt += total; }
@@ -6630,7 +6643,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       SFX.guard();
       await flySeal(tokEl(1, col), tokEl(0, col), '防', 'def');
       const gm = grid[1][col];
-      await tutNote('guard', '防御補助', gm.name + 'の「防」が働いた。受けるダメージが' + gm.defSup + '減る。これも1回で使い切り。', () => [tokEl(1, col), tokEl(0, col)], 'bottom');
+      await tutBand('guard', '「防」でダメージ-' + gm.defSup + '。1回で使い切り');
     }
     v.hp = Math.max(0, v.hp - d);
     if (stats) stats.taken += d;
@@ -6682,7 +6695,6 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (act.rule !== 'charge' && !sup && (F.charged || act.big)) anim(ec, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(-12px) scale(0.93)', offset: 0.42, easing: 'cubic-bezier(.6,0,.9,.5)' }, { transform: 'translateY(22px) scale(1.12)', offset: 0.62 }, { transform: 'translateY(0) scale(1)' }], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
     else anim(ec, [{ transform: 'translateY(0) scale(1)' }, { transform: 'translateY(16px) scale(1.07)', offset: 0.4 }, { transform: 'translateY(0) scale(1)' }], { duration: 420, easing: 'cubic-bezier(.3,.7,.3,1)' });
     await wait(420);
-    await tutNote('enemyAct', '敵の番', '予告どおりに、敵が一番前の列の仲間を攻撃してくる。', () => $('ticket'), 'bottom');
     if (act.rule === 'guard') {
       F.defNext = (F.defNext || 0) + act.def;
       SFX.buff(); popAt(ec, '防+' + act.def + '（次ターン）', 'sub', -30, 0);
@@ -6789,7 +6801,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await wait(320);
     if (turn > 1) await healPhase();
     await entryPhase();
-    await tutNote('turn1', '戦闘は自動で進む', '戦闘が始まった。味方と敵は、素早さの高い順に自動で行動する。', null, 'bottom');
+    await tutBand('turn1', '素早い順に、自動で動く');
     const actors = actorList(grid);
     order = actors; orderIdx = -1;
     for (const a of actors) {
@@ -6844,7 +6856,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       }
       renderBoard(); renderBook();
       await wait(RM ? 60 : 520);
-      await tutNote('entry', '突入技', x.u.name + 'が「' + en.name + '」を出した（' + en.desc + '）。回して攻撃列に入った仲間は、そのターンだけ職業の技を出す。', () => tokEl(0, x.c), 'bottom');
+      await tutBand('entry', '前に出た' + x.u.name + 'の突入技「' + en.name + '」');
     }
   }
   function entryGuard(col) {
@@ -6938,7 +6950,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     await Promise.all(jobs);
     if (tapOn) { document.removeEventListener('pointerdown', onTap, true); if (tapped) setTimeout(() => document.removeEventListener('click', onTap, true), 400); else document.removeEventListener('click', onTap, true); }
     if (!RM) ic.remove();
-    await tutNote('rotated', '回った', '隊列が回った。補助の「攻」「防」が、すべて復活している。', () => $('board'), 'top');
+    await tutBand('rotated', '回ると「攻」「防」が戻る');
     runTurn();
   }
 
@@ -7101,29 +7113,25 @@ body.fast #stampOk.on { animation-duration: .5s; }
   const bd = () => $('board');
   // チュートリアル（v5.3.0 段階化）：最初は「並び・予告・動かす・回す/維持」だけ。説明は「やる直前」に1つずつ。
   //   回復列・補助の届き方・突入技などは、戦闘中にその場面が来たとき（tutNote）に出す。敵の詳細・2手先は最後に一言だけ
+  // v5.9.9 チュートリアルを短く（2026-11-19 通しプレイの指摘 4）：押して進む画面は25→11。1画面の文は30字前後。
+  //   見れば分かること（ようこそ・4人の仲間・攻撃列に出た・敵の番・札を見比べる）は削り、気力は「回す」に、回る向きは点線の矢印に、
+  //   戦闘中の気づき（補助・回復・回った）は押さずに消える帯（tutNote の帯）にした
   const STEPS = [
-    { t: 'ようこそ', x: 'ここは地の底の大聖堂「環廊」。隊列を回して、敵の大技をしのぎながら奥へ進む。動かしながら覚えよう。', pos: 'bottom', next: true },
-    // 仲間の紹介（v5.2.3 → v5.3.0 で1枚に）：役目だけを短く。人ごとの細かい話は、仲間をタップした詳細で
-    { t: '4人の仲間', x: '戦士は隊の盾。魔女は仲間を支え、神官は傷を癒やす。サムライは一撃が重いが、打たれ弱い。', pos: 'bottom', spot: () => bd(), next: true },
-    { t: '攻撃列が最前線', x: '隊列は「攻撃列」「補助列」「回復列」の3段。敵と戦うのも、敵に狙われるのも、いちばん上の攻撃列だけ。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
-    { t: '敵の予告', x: '敵は次の行動を予告する。赤い枠の仲間が狙われ、赤い数字のダメージを受ける。', pos: 'bottom', spot: () => [$('ticket'), document.querySelector('.beam.on')].filter(Boolean), next: true },
-    { t: '敵を調べる', x: '敵の名前の横の「i」を押すと、敵の技の一覧と「その次」の行動が見られる。押してみよう。', pos: 'bottom', spot: () => document.querySelector('.plate'), expect: { foe: true }, hint: '光っている「i」を押す' },
-    { t: '技の一覧', x: '「次」がこのターンの行動、その下が「その次」。大技が来る前に、ここで確かめよう。', pos: 'bottom', cls: 'over-sheet', expect: { foeClose: true }, hint: '右上の × で閉じる' },
-    { t: '仲間を動かす ①', x: 'サムライは回復列で休んでいて、今は戦えない。タップして選ぼう。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
-    { t: '仲間を動かす ②', x: '次に、攻撃列の空きマスをタップ。選んだ仲間がそこへ移る。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
-    { t: '攻撃列に出た', x: 'サムライに剣マークの数字が出た。次に与えるダメージの見込み。攻撃列に出れば戦える。', pos: 'bottom', spot: () => slotEl(0, 1), next: true },
-    { t: '戦闘開始', x: '準備ができたら「戦闘開始」を押そう。1ターン目が自動で進む。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true },
-    { t: '1ターン終了', x: 'ここからは毎ターン、隊列を「回す」か「維持」するかを選ぶ。2つの札に、それを選んだときの結果が出ている。', pos: 'top', spot: () => $('dock'), next: true },
-    { t: '気力', x: '回すには気力2が要る。気力は毎ターン1たまる（最大3）。「回す」ボタンの●が気力。', pos: 'top', spot: () => $('btnRotate'), next: true },
-    { t: '札を見比べる', x: '敵の技・受けるダメージ・仲間の攻撃・敵の残りHPを、2つの札で見比べて決めよう。', pos: 'top', spot: () => $('dock'), next: true },
-    { t: '回すと', x: '攻撃列は回復列へ、補助列は攻撃列へ、回復列は補助列へ。前に出た仲間が、次の攻撃を受ける。「回す」を長押しすると、回した後の並びが盤に点線で出る。', pos: 'top', spot: () => bd(), next: true },
-    { t: 'まず「維持」', x: '今回は「維持」を押して、何も回さなかった場合を見てみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
-    { t: '維持のあと', x: '魔女の「攻」「防」は使い切りで、維持しても戻らない。戻すには回す必要がある。', pos: 'top', spot: () => slotEl(1, 0), next: true },
-    { t: '回す', x: '今度は「回す」を押して、隊列を回してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true },
-    { t: '基本はここまで', x: 'あとは自由に。敵の「i」を押せば、いつでも技の一覧が見られる。新しい仕掛けは、出てきたときに案内する。', pos: 'bottom', next: true, last: true }
+    { t: '攻撃列が最前線', x: '戦うのも狙われるのも、いちばん上の攻撃列だけ。', pos: 'bottom', spot: () => bd().querySelector('.strip.r0'), next: true },
+    { t: '敵の予告', x: '赤い数字が、次に受けるダメージ。', pos: 'bottom', spot: () => [$('ticket'), document.querySelector('.beam.on')].filter(Boolean), next: true },
+    { t: '敵を調べる', x: '「i」を押すと、敵の技が見られる。', pos: 'bottom', spot: () => document.querySelector('.plate'), expect: { foe: true }, hint: '光っている「i」を押す' },
+    { t: '技の一覧', x: '「次」と「その次」が分かる。×で閉じよう。', pos: 'bottom', cls: 'over-sheet', expect: { foeClose: true }, hint: '右上の × で閉じる' },
+    { t: '仲間を動かす ①', x: '休んでいるサムライをタップ。', pos: 'top', spot: () => slotEl(2, 1), expect: { slot: [2, 1] }, hint: '光っているマスをタップ' },
+    { t: '仲間を動かす ②', x: '攻撃列の空きマスをタップ。', pos: 'bottom', spot: () => slotEl(0, 1), expect: { slot: [0, 1] }, hint: '光っているマスをタップ' },
+    { t: '戦闘開始', x: '「戦闘開始」を押そう。', pos: 'top', spot: () => $('btnStart'), expect: { btn: 'btnStart' }, hint: '光っているボタンを押す', runs: true, glow: true },
+    { t: '1ターン終了', x: '毎ターン「回す」か「維持」。札に結果が出ている。', pos: 'top', spot: () => $('dock'), next: true },
+    { t: 'まず「維持」', x: 'まず「維持」を押してみよう。', pos: 'top', spot: () => $('btnStay'), expect: { btn: 'btnStay' }, hint: '光っているボタンを押す', runs: true },
+    { t: '回す', x: '回すには●2つ。押してみよう。', pos: 'top', spot: () => $('btnRotate'), expect: { btn: 'btnRotate' }, hint: '光っているボタンを押す', runs: true, arrows: true },
+    { t: '基本はここまで', x: 'あとは自由に。「i」でいつでも技が見られる。', pos: 'bottom', next: true, last: true }
   ];
 
   function placeSpot() {
+    drawArrows();
     const sp = $('spot');
     if (!tut || !tut.spotFn || $('coach').hidden) { sp.hidden = true; coachSide(null); return; }
     let t = null;
@@ -7165,7 +7173,21 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function hideCoach() {
     $('coach').hidden = true;
     $('spot').hidden = true;
-    if (tut) tut.spotFn = null;
+    if (tut) { tut.spotFn = null; tut.arrows = false; }
+    document.body.classList.remove('tut-glow'); drawArrows();
+  }
+  // 回る向きの点線の矢印（v5.9.9）：攻撃列→回復列（右側を下へ）、補助列→攻撃列・回復列→補助列（左側を上へ）
+  function drawArrows() {
+    const sv = $('tutArrows'); if (!sv) return;
+    const st = [0, 1, 2].map((r) => bd().querySelector('.strip.r' + r));
+    if (!tut || !tut.arrows || $('coach').hidden || st.some((x) => !x)) { sv.setAttribute('hidden', ''); return; }   // svg は .hidden が効かないので属性で
+    const q = st.map((x) => x.getBoundingClientRect()), cy = (k) => q[k].top + q[k].height / 2;
+    const L = q[0].left + 10, R = q[0].right - 10;
+    const arc = (x, y1, y2, dx) => 'M' + x + ' ' + y1 + ' C' + (x + dx) + ' ' + y1 + ' ' + (x + dx) + ' ' + y2 + ' ' + x + ' ' + y2;
+    const ds = [arc(R, cy(0), cy(2), 26), arc(L, cy(1), cy(0) + 6, -22), arc(L, cy(2), cy(1) + 6, -22)];
+    sv.setAttribute('viewBox', '0 0 ' + innerWidth + ' ' + innerHeight);
+    sv.innerHTML = '<defs><marker id="taH" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#fff"/></marker></defs>' + ds.map((d) => '<path d="' + d + '" marker-end="url(#taH)"/>').join('');
+    sv.removeAttribute('hidden');
   }
   function tutRefresh() {
     ['btnStart', 'btnRotate', 'btnStay', 'btnPreview'].forEach((id) => {
@@ -7179,6 +7201,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const st = STEPS[i];
     tut.expect = st.expect || null;
     showCoach(Object.assign({ label: 'STEP ' + (i + 1) + ' / ' + STEPS.length }, st));
+    document.body.classList.toggle('tut-glow', !!st.glow);   // v5.9.9：攻撃列に出たサムライの剣の数字を光らせる（「攻撃列に出た」の手順の代わり）
+    tut.arrows = !!st.arrows; placeSpot();   // v5.9.9：「回す」の手順では、並びが回る向きを点線の矢印で見せる（「回すと」の手順の代わり）
     tutRefresh();
   }
   function tutAdvance() {
@@ -7192,8 +7216,23 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!tut || tut.free) return;
     tut.stage += 1;
     // 何ターン目の「選ぶ」で、どの手順を見せるか（番号ではなく見出しで引く。手順を足してもずれない）
-    const map = { 1: '1ターン終了', 2: '維持のあと', 3: '基本はここまで' }, at = map[tut.stage] ? STEPS.findIndex((x) => x.t === map[tut.stage]) : -1;
+    const map = { 1: '1ターン終了', 2: '回す', 3: '基本はここまで' }, at = map[tut.stage] ? STEPS.findIndex((x) => x.t === map[tut.stage]) : -1;
     if (at >= 0) tutShow(at);
+  }
+  // 押さずに消える帯（v5.9.9）：戦闘中の気づきは1行で出し、2.5秒で消える。押すとすぐ消える。そのあいだ戦闘は待つ
+  const BAND_MS = 2500;
+  function tutBand(key, text) {
+    if (!tut || tut.free || tut.seen[key]) return Promise.resolve();
+    tut.seen[key] = true;
+    const b = $('tutBand');
+    return new Promise((resolve) => {
+      let done = false;
+      const end = () => { if (done) return; done = true; clearTimeout(t); b.classList.remove('on'); b.onclick = null; setTimeout(() => { if (!b.classList.contains('on')) b.hidden = true; }, 200); if (tut) tut.expect = null; tutRefresh(); setTimeout(resolve, RM ? 0 : 180); };
+      tut.expect = { note: true }; tutRefresh();
+      b.textContent = text; b.hidden = false; void b.offsetWidth; b.classList.add('on');
+      b.onclick = end;
+      const t = setTimeout(end, BAND_MS);
+    });
   }
   function tutNote(key, title, text, spotFn, pos) {
     if (!tut || tut.free || tut.seen[key]) return Promise.resolve();
@@ -7768,7 +7807,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     relics: [
       { id: 'shield', name: '先陣の盾', desc: '回すたび、攻撃列に入った仲間はそのターン受けるダメージ-2', guard: 2 },
       { id: 'incense', name: '休息の香', desc: '回すたび、回復列に下がった仲間のHP+6', backHeal: 6 },
-      { id: 'bell', name: '勢いの鐘', desc: '突入技の攻撃+4', entryAtk: 4 },
+      { id: 'bell', name: '勢いの鐘', desc: '突入技の攻撃+4（速射は1本目だけ）', entryAtk: 4 },
       { id: 'stance', name: '不動の構え', desc: '維持するたび、攻撃列の攻撃+2（最大+6。回すと消える）', stayAtk: 2, stayMax: 6 },
       // v5.8.0（提案F）：遠征を重ねるほど、見つかる回転レリックが増える（unlock：遠征の回数 runs・最深 best・踏破 clears のどれかに届けば出る）
       { id: 'whet', name: '研ぎ石', desc: '攻撃列の攻撃+2', atk: 2, tag: ['攻撃列 攻+2'], unlock: { runs: 1 } },
