@@ -206,7 +206,7 @@ body.boss-stage .sky { background: radial-gradient(120% 60% at 70% 30%, rgba(160
 body.boss-stage .sun { box-shadow: 0 0 0 10px rgba(184, 245, 106, 0.22), 0 0 0 24px rgba(184, 245, 106, 0.1), 0 0 60px 20px rgba(140, 230, 80, 0.35); }
 body.boss-stage .cloud { background: rgba(150, 70, 190, 0.45); filter: none; }
 body.boss-stage .hills { filter: drop-shadow(0 -3px 0 rgba(180, 255, 110, 0.25)); }
-body.boss-stage .plate small, body.boss-stage .plate b, body.boss-stage .espd, body.boss-stage .ehpn { color: #f4ecff; text-shadow: 0 2px 0 rgba(20, 6, 34, 0.55); }
+body.boss-stage .plate small, body.boss-stage .plate b, body.boss-stage .espd, body.boss-stage .ehpn, body.boss-stage .ehpm { color: #f4ecff; text-shadow: 0 2px 0 rgba(20, 6, 34, 0.55); }
 body.boss-stage .stage .eart svg { filter: drop-shadow(0 0 14px rgba(150, 240, 80, 0.45)); }
 .miasma { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s; }
 body.boss-stage .miasma { opacity: 1; }
@@ -252,6 +252,8 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .ebar b { background: #fff; opacity: 0.92; transition: width 0.7s cubic-bezier(.3, .7, .3, 1) 0.45s; }
 .ebar i { background: var(--danger); transition: width 0.35s cubic-bezier(.3, .7, .3, 1); }
 .ehpn { font-size: 13px; font-weight: 700; min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+.ehpm { margin-left: -6px; font-family: var(--serif); font-size: 13px; font-weight: 700; opacity: 0.62; white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; }   /* v5.9.19：最大HP（「53 / 81」の「/ 81」）。今のHPより小さく薄く */
+.ehpm:empty { display: none; }
 .espd { position: absolute; left: 2px; top: 86px; z-index: 2; font-size: 11px; color: var(--ink); opacity: 0.85; }
 .eart { position: absolute; right: -10px; bottom: 58px; top: 30px; aspect-ratio: 4 / 3; max-width: 240px; z-index: 1; animation: bobW 4.8s ease-in-out infinite; will-change: transform; }   /* 待機の揺れは絵（svg）でなく外の枠で動かす（v5.9.18）：svg 自身の動きは毎フレーム描き直しになるため */
 .eart svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)); }
@@ -680,7 +682,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 #btnPrepRot { flex: none; padding: 0 16px; gap: 6px; }
 #btnPrepRot svg { width: 22px; height: 22px; }
 #btnPrepRot .pr-l { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; }
-#btnPrepRot .pr-l small { margin-top: 2px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.78; }   /* v5.8.22：戦闘前の回転は無料（気力を使わない）ことを、ボタンの中で常に示す */
+#btnPrepRot .pr-l small { margin-top: 2px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.78; }   /* v5.8.22：戦闘前の回転は無料（気力を使わない）ことを、ボタンの中で常に示す */
 #btnStay { flex: 0.8; }
 /* 選んだときに受けるダメージ（v5.3.0）：盤の赤い数字と同じ色・同じ書き方で、ボタンの右肩に */
 .dock .btn { position: relative; }
@@ -1175,9 +1177,9 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .prepban small { display: block; font-size: 12px; line-height: 1.4; font-weight: 700; color: var(--accent-text); }
 .prepban small.warn { color: var(--danger-strong); }
 /* 背の低い画面（はじめの3戦は行動順の枠も出る）：陣立ての印を省いて詰め、「戦闘開始」の札を画面に収める（v5.3.8） */
-@media (max-height: 620px) { .prepban .pb-ico { display: none; } .prepban { gap: 0; } .prepban b { font-size: 14px; line-height: 1.15; } .prepban small { font-size: 11.5px; line-height: 1.3; } #book { row-gap: 2px; } }
-.prepban .pb-how { margin-left: 10px; font: 700 11.5px/1 var(--sans, sans-serif); font-style: normal; color: var(--ink-soft); letter-spacing: 0; white-space: nowrap; }
-@media (max-width: 360px) { .prepban .pb-how { margin-left: 6px; font-size: 10.5px; } }
+@media (max-height: 620px) { .prepban .pb-ico { display: none; } .prepban { gap: 0; } .prepban b { font-size: 14px; line-height: 1.15; } .prepban small { font-size: 12px; line-height: 1.3; } #book { row-gap: 2px; } }
+.prepban .pb-how { margin-left: 10px; font: 700 13px/1 var(--sans, sans-serif); font-style: normal; color: var(--ink-soft); letter-spacing: 0; white-space: nowrap; }
+@media (max-width: 360px) { .prepban .pb-how { margin-left: 6px; font-size: 12px; } }   /* v5.9.19：12px未満にしない */
 .board.prep .slot { touch-action: none; }
 .board.prep .slot:not(.sel) .tok[data-id] { animation: bob 2.6s ease-in-out infinite; animation-delay: calc(var(--bi, 0) * -0.37s); }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
@@ -2430,7 +2432,7 @@ html[data-text="lg"] .dm, html[data-text="lg"] .inc { font-size: 16px; height: 2
 .ls-list { max-height: 52vh; overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 .ls-list p { margin: 0; padding: 5px 0; font-size: 14px; line-height: 1.5; border-top: 1px solid var(--paper-line); color: var(--ink); }
 .ls-list p:first-child { border-top: 0; }
-.inc-n { position: absolute; left: 4px; bottom: calc(100% + 2px); padding: 1px 5px 2px; border-radius: 6px; background: rgba(20, 12, 10, 0.86); color: #ffd2c6; font-size: 11px; font-weight: 800; line-height: 1.2; white-space: nowrap; pointer-events: none; }   /* あと何発で倒れるか（3発以内だけ。赤い数字の上に出す：下だと狭い画面で名前の札に重なる。v5.4.7） */
+.inc-n { position: absolute; left: 4px; bottom: calc(100% + 2px); padding: 1px 5px 2px; border-radius: 6px; background: rgba(20, 12, 10, 0.86); color: #ffd2c6; font-size: 12px; font-weight: 800; line-height: 1.2; white-space: nowrap; pointer-events: none; }   /* あと何発で倒れるか（3発以内だけ。赤い数字の上に出す：下だと狭い画面で名前の札に重なる。v5.4.7） */
 .inc-n.n1 { background: #7a2016; color: #fff; animation: n1pulse 1.4s ease-in-out infinite; }   /* v5.5.7：「倒」より一段弱く（暗い赤・ゆっくり）。危なさの順に強さをそろえる */   /* あと2発＝このターンを受けると、次の1発で倒れる：速い脈打ちで知らせる（v5.4.9。「あと1発」は「倒」として出る） */
 @keyframes n1pulse { 50% { box-shadow: 0 0 0 2px rgba(229, 96, 77, 0.35); } }
 @media (prefers-reduced-motion: reduce) { .inc-n.n1 { animation: none; } }
@@ -2783,7 +2785,11 @@ body:has(#help:not([hidden])) .rb-bubble, body:has(#settings:not([hidden])) .rb-
   background: radial-gradient(circle at 38% 32%, var(--gold-hi), var(--gold) 65%, var(--gold-lo)); color: var(--accent-ink);
   box-shadow: inset 0 0 0 2px rgba(255, 245, 210, .45), 0 0 0 1px var(--gold-lo), 0 0 0 4px rgba(190, 52, 34, .35); }
 .t-ico.t-cd b { font-size: 26px; line-height: .9; font-weight: 900; font-variant-numeric: lining-nums; }
-.t-ico.t-cd small { font-size: 9px; font-weight: 800; letter-spacing: -.02em; line-height: 1; margin-top: 1px; white-space: nowrap; }
+.t-ico.t-cd small { font-size: 12px; font-weight: 800; letter-spacing: -.06em; line-height: 1; margin-top: 2px; white-space: nowrap; }   /* v5.9.19：判断に使う文字は12px以上（以前は9px）。入るように丸を56pxにする（下） */
+.ticket:not(.p):has(.t-cd) { grid-template-columns: 58px 1fr auto; }
+.ticket:not(.p) .t-ico.t-cd { width: 56px; height: 56px; }
+.ticket:not(.p) .t-ico.t-cd b { font-size: 24px; }
+@media (max-width: 360px) { .ticket:not(.p):has(.t-cd) { gap: 6px; padding-left: 6px; padding-right: 10px; } }   /* 狭い画面：丸を広げた分、すき間を詰めて予告の文字の幅を前と同じだけ残す（「狙い 〜仲間」の最後の1字だけが2行目に落ちないように） */
 .ticket.p .t-ico.t-cd b { font-size: 20px; } .ticket.p .t-ico.t-cd small { display: none; }
 .t-dmg.nx b { color: var(--danger-strong); opacity: .78; }
 .t-dmg small:empty { display: none; }
@@ -3010,7 +3016,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
 
   <section class="stage" id="stage" aria-label="敵（タップで詳細）" role="button" tabindex="0">
     <div class="plate"><small><span id="chap">第一章</span><span class="einfo" aria-hidden="true">i</span></small><b class="disp" id="ename">—</b></div>
-    <div class="ehp" aria-label="敵のHP"><div class="ebar"><b id="ebarLag"></b><i id="ebar"></i></div><span class="ehpn" id="ehpn"></span><span class="e-ord" id="eOrd" hidden></span></div>
+    <div class="ehp" aria-label="敵のHP"><div class="ebar"><b id="ebarLag"></b><i id="ebar"></i></div><span class="ehpn" id="ehpn"></span><span class="ehpm" id="ehpm"></span><span class="e-ord" id="eOrd" hidden></span></div>
     <div class="espd" id="espd"></div>
     <div class="eart" id="eart"></div>
     <div class="foes" id="party" role="group" aria-label="敵の3体（タップで攻撃対象を選ぶ）"></div>
@@ -3090,7 +3096,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.18</p>
+    <p class="c-ver" id="cVer">ver 5.9.19</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3611,7 +3617,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.18';
+  const APP_VERSION = '5.9.19';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5083,6 +5089,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     // 章の名前と「章の主」は、それぞれ途中で折り返さない（狭い画面で「最後の／主」と割れないように）
     $('chap').innerHTML = chapLabel().split('　').map((x) => '<span class="nw">' + x + '</span>').join('　');
     $('ename').classList.toggle('long', enemy.name.length >= 8);   // 長い名前は少し小さく、i と1行に収める（v5.3.6）
+    $('ehpm').textContent = enemy.party ? '' : '/ ' + enemy.max;   // v5.9.19：最大HPを添える（群れは仲間ごとに出すので添えない）
     if (enemy.party) { $('ename').textContent = enemy.name; return; }
     if (vkeys(enemy.variant).length > 1) {   // 深さ3（v5.6.7）：亜種が2つ重なると名前が長いので、前に付く亜種は小さく添える
       const pre = vkeys(enemy.variant).map((k) => VARIANTS[k].pre).join('');
