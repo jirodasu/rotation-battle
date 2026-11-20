@@ -2965,6 +2965,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
   .oc-r.oc-l b { font-size: 14px; }
 }
 @media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l[data-k="hurt"] { grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } }
+
+/* v5.9.17 背景の動きをオフ（設定）：背景の常に動いている飾りだけを、いまの形のまま止める（消す・暗くする・差し替えはしない） */
+html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, html.bg-still .miasma b, html.bg-still .st-lamp { animation-play-state: paused !important; }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -3142,6 +3145,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="set-row"><label for="setBgm"><b>BGM</b><output id="setBgmV">100</output></label><input type="range" id="setBgm" min="0" max="100" step="5" value="100"></div>
       <div class="set-row"><label for="setSfx"><b>効果音</b><output id="setSfxV">100</output></label><input type="range" id="setSfx" min="0" max="100" step="5" value="100"></div>
       <div class="set-row inline"><span><b>すべての音</b><small>右上の ♪ ボタンと同じ</small></span><button class="set-sw" id="setAll" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
+      <div class="set-row inline"><span><b>背景の動き</b><small>ろうそく・波・霧などの揺らぎ。仲間・敵・演出は動きます</small></span><button class="set-sw" id="setBg" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>振動</b><small id="setVibNote">攻撃を受けたときなど</small></span><button class="set-sw" id="setVib" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>文字の大きさ</b><small>説明・報酬・練習の文</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
     </div>
@@ -3663,13 +3667,16 @@ body.fast #stampOk.on { animation-duration: .5s; }
      テーマ「ひと回り」＝ F・A・C の3音（攻撃列・補助列・回復列）。
      ローテーションのたびに、3音の並びが一つずつ回る。 */
   // 設定（v5.1.38）：BGM・効果音の音量、振動、文字の大きさ。保存は rb-set（足しただけ。既存の保存には触らない）
-  const SET = { bgm: 1, sfx: 1, vib: true, text: 0 };
+  const SET = { bgm: 1, sfx: 1, vib: true, text: 0, bg: true };   // bg：背景の動き（v5.9.17）
   try {
     const o = JSON.parse(localStorage.getItem('rb-set') || '{}'), cl = (v) => Math.max(0, Math.min(1, +v));
     if (isFinite(o.bgm)) SET.bgm = cl(o.bgm); if (isFinite(o.sfx)) SET.sfx = cl(o.sfx);
-    if (o.vib === false) SET.vib = false; if (o.text === 1) SET.text = 1;
+    if (o.vib === false) SET.vib = false; if (o.text === 1) SET.text = 1; if (o.bg === false) SET.bg = false;
   } catch (e) { /* 保存できない環境・壊れた保存は初期値のまま */ }
   const setSave = () => { try { localStorage.setItem('rb-set', JSON.stringify(SET)); } catch (e) { /* 保存できない環境 */ } };
+  // 背景の動き（v5.9.17）：オフのときは背景の常に動いている飾り（章の背景のろうそく・波、毒竜の霧と泡、物語の灯）をその場で止める。見た目の位置・色・明るさは同じ。仲間・敵・演出の動きは止めない
+  const bgApply = () => document.documentElement.classList.toggle('bg-still', !SET.bg);
+  bgApply();
   let sndOn = true, ac = null, bus = null, noiseBuf = null, rotIdx = 0;
   try { if (localStorage.getItem('rb-snd') === '0') sndOn = false; } catch (e) { /* 保存できない環境 */ }
   const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -7686,7 +7693,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   function setUi() {
     $('setBgm').value = Math.round(SET.bgm * 100); $('setBgmV').textContent = Math.round(SET.bgm * 100);
     $('setSfx').value = Math.round(SET.sfx * 100); $('setSfxV').textContent = Math.round(SET.sfx * 100);
-    swSet($('setAll'), sndOn); swSet($('setVib'), vibOk && SET.vib);
+    swSet($('setAll'), sndOn); swSet($('setVib'), vibOk && SET.vib); swSet($('setBg'), SET.bg);
     $('setVib').disabled = !vibOk; $('setVibNote').textContent = vibOk ? '攻撃を受けたときなど' : 'この端末（iPhoneなど）は振動に対応していません';
     document.querySelectorAll('.set-seg button').forEach((b) => b.setAttribute('aria-pressed', String(+b.dataset.text === SET.text)));
     $('setVer').textContent = '灯を継ぐ隊列 -LAST ROTATION-　ver ' + APP_VERSION;
@@ -7703,6 +7710,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   $('setSfx').addEventListener('input', () => { SET.sfx = $('setSfx').value / 100; $('setSfxV').textContent = $('setSfx').value; applySet(); setSave(); });
   $('setSfx').addEventListener('change', () => { SFX.page(); });
   $('setAll').addEventListener('click', toggleSnd);
+  $('setBg').addEventListener('click', () => { SET.bg = !SET.bg; swSet($('setBg'), SET.bg); bgApply(); setSave(); SFX.tap(); });
   $('setVib').addEventListener('click', () => { if (!vibOk) return; SET.vib = !SET.vib; swSet($('setVib'), SET.vib); setSave(); if (SET.vib) vib(30); });
   document.querySelectorAll('.set-seg button').forEach((b) => b.addEventListener('click', () => { SET.text = +b.dataset.text; applySet(); setUi(); setSave(); SFX.tap(); }));
   applySet(); setUi();
