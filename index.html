@@ -2928,6 +2928,43 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
 @media (max-width: 360px) { .fc-act.slim .fc-g { display: none; } .fc-act.slim { gap: 3px; padding: 0 2px; } .fc-act.slim small { font-size: 10px; } }
 #firstGuide { white-space: pre-line; }   /* 初戦の案内（v5.8.7）：文の切れ目で行を分ける（320px で「休／む」と切れていた） */
+
+/* ---------- v5.9.15 戦闘画面の見直し（案1〜3） ---------- */
+/* 案2：行動順は名前の札の左の番号と、敵のHPの横の「行動順」。いま動く人の番号が光る */
+/* 番号は名札の左の外にぶら下げる（名札の幅は変えない：狭い画面で名札どうしが重なった。絵の左下・右下は「倒」の札や灯と重なった） */
+.tok .nm .odn { position: absolute; right: calc(100% - 3px); top: 50%; transform: translateY(-50%); z-index: 1; display: grid; place-items: center; min-width: 17px; height: 17px; padding: 0 3px; border-radius: 9px; background: #2b3550; color: #f3e6c4; box-shadow: 0 0 0 1.5px rgba(243, 230, 196, .6); font: 800 12px/1 var(--serif); font-style: normal; font-variant-numeric: tabular-nums; pointer-events: none; }
+.tok .nm .odn[hidden] { display: none; }
+.odn.now { background: var(--gold, #d4a548); color: #1b2132; box-shadow: 0 0 0 2px rgba(255, 220, 140, .55); }
+.odn.done { opacity: .45; }
+.e-ord { position: absolute; left: calc(100% + 6px); top: 50%; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; padding: 2px 6px 2px 7px; border-radius: 10px; background: rgba(20, 26, 40, .78); color: #f3e6c4; }
+.e-ord[hidden] { display: none; }
+.e-ord small { font-size: 12px; font-weight: 700; opacity: .85; }
+.e-ord .odn { display: inline-grid; place-items: center; min-width: 17px; height: 17px; border-radius: 9px; background: #7e1d14; color: #fff; font: 800 12px/1 var(--serif); font-style: normal; }
+.e-ord .odn.now { background: var(--gold, #d4a548); color: #1b2132; }
+#party .odn { position: absolute; left: 2px; top: 2px; z-index: 3; display: grid; place-items: center; min-width: 17px; height: 17px; border-radius: 9px; background: #7e1d14; color: #fff; font: 800 12px/1 var(--serif); font-style: normal; pointer-events: none; }
+#party .odn.now { background: var(--gold, #d4a548); color: #1b2132; }
+/* 案1：案内の吹き出しを敵の絵の上に逃がしたときは、矢印を出さない */
+.rb-bubble.free::after { display: none; }
+/* 案3：判断に使う小さな文字を12px以上に */
+#espd, #espd small { font-size: 12px; }
+.t-main b .pierce, .pierce { font-size: 12px; }
+.inc s { font-size: 12px; width: 16px; height: 16px; }
+.oc-r.oc-l b.ko::after { font-size: 12px; }
+#book .order .od-l { font-size: 12px; }
+.rv-m b, .r-card .rv-m b { font-size: 12px; }
+.rv-pick small { font-size: 12px; }
+.t-main .t-aim, .t-dmg small { font-size: 12px; }
+.rv-m .rv-hp { display: block; text-decoration: none; font-size: 12px; font-weight: 700; line-height: 1; color: var(--ink); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; white-space: nowrap; }
+.rv-m .rv-hp.low { color: var(--danger-strong); }
+.rv-m.gone .rv-hp, .runv.is-map .rv-hp { display: none; }   /* 地図の画面は読む文字を減らす決まり（v5.5.7）なので、数字は結果の画面だけ */
+.rv-m .rv-heal { font-size: 12px; }
+/* 320px でも「回す」「維持」の札に、いちばん受ける仲間の名前を出す（敵の行は絵で分かるので名前なし） */
+@media (max-width: 359px) {
+  .oc-r.oc-l[data-k="hurt"] i { display: block; max-width: 3.4em; font-size: 12px; }
+  .oc-r.oc-l[data-k="hurt"] { grid-template-columns: 22px minmax(0, auto) minmax(0, 1fr); }
+  .oc-r.oc-l b { font-size: 14px; }
+}
+@media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l[data-k="hurt"] { grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -2969,7 +3006,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
   <section class="stage" id="stage" aria-label="敵（タップで詳細）" role="button" tabindex="0">
     <div class="plate"><small><span id="chap">第一章</span><span class="einfo" aria-hidden="true">i</span></small><b class="disp" id="ename">—</b></div>
-    <div class="ehp" aria-label="敵のHP"><div class="ebar"><b id="ebarLag"></b><i id="ebar"></i></div><span class="ehpn" id="ehpn"></span></div>
+    <div class="ehp" aria-label="敵のHP"><div class="ebar"><b id="ebarLag"></b><i id="ebar"></i></div><span class="ehpn" id="ehpn"></span><span class="e-ord" id="eOrd" hidden></span></div>
     <div class="espd" id="espd"></div>
     <div class="eart" id="eart"></div>
     <div class="foes" id="party" role="group" aria-label="敵の3体（タップで攻撃対象を選ぶ）"></div>
@@ -3049,7 +3086,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.14</p>
+    <p class="c-ver" id="cVer">ver 5.9.15</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3569,7 +3606,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.14';
+  const APP_VERSION = '5.9.15';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4668,7 +4705,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     const up = lampOn() ? lampMul(lamp) > 1 : comboFull(), ent = (fresh && phase === 'choose' && r === 0 && R.entry && u.entry) ? '<i class="ent disp' + (up ? ' up' : '') + '" title="突入技 ' + u.entry.name + (up ? (lampOn() ? '（灯で×' + lampMul(lamp) + '）' : '（一巡りの灯で強化）') : '') + '">突' + (up ? '<b>+</b>' : '') + '</i>' : '';
     return '<span class="tok cb ' + u.cls + (u.phase ? ' ph-' + u.phase : '') + '" data-id="' + u.uid + '" style="--cbd:' + ([...String(u.uid)].reduce((a, ch) => a + ch.charCodeAt(0), 0) % 7 * 0.34).toFixed(2) + '"><span class="disc">' + CB(u) + '</span>' + ent + torch +
       '<svg class="ring" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="val' + (p <= 35 ? ' low' : '') + '" cx="50" cy="50" r="47" stroke-dasharray="' + (p / 100 * CIRC).toFixed(1) + ' ' + CIRC.toFixed(1) + '"/></svg>' + '<i class="hpb' + (p <= 35 ? ' low' : '') + '"><b style="width:' + p + '%"></b></i>' +
-      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.rel && dm.rel.length ? ' hasrl" title="レリック：' + relTxt(dm.rel) : '') + '">' + ICON.sword + dm.val + gemI(dm.rel) + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + (inc.rel && inc.rel.length ? ' hasrl' : '') + '" title="' + (inc.rel && inc.rel.length ? 'レリック：' + relTxt(inc.rel, '-') + '　' : '') + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + gemI(inc.rel) + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm"><b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
+      (dm ? '<i class="dm' + (dm.buf ? ' buf' : '') + (dm.rel && dm.rel.length ? ' hasrl" title="レリック：' + relTxt(dm.rel) : '') + '">' + ICON.sword + dm.val + gemI(dm.rel) + '</i>' : '') + (inc ? '<i class="inc' + (inc.ko ? ' ko' : '') + (inc.rel && inc.rel.length ? ' hasrl' : '') + '" title="' + (inc.rel && inc.rel.length ? 'レリック：' + relTxt(inc.rel, '-') + '　' : '') + (inc.parts.length > 1 ? '内訳 ' + inc.parts.map((x) => x.n + x.d).join('＋') : inc.why === '防' ? '防御補助で軽くなる' : inc.why === '×2' ? '攻撃列が空で2倍' : '') + '">' + (inc.ko ? '<s>倒</s>' : '') + '-' + inc.d + gemI(inc.rel) + (!inc.ko && inc.d > 0 && Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) <= 3 ? '<small class="inc-n' + (Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) === 2 ? ' n1' : '') + '">あと' + Math.ceil(Math.min(u.max, u.hp + (inc.heal || 0)) / inc.d) + '発</small>' : '') + (inc.why ? '<em class="inc-w">' + (inc.why === '防' ? '盾' : '×2') + '</em>' : '') + (inc.parts.length > 1 ? '<small class="inc-bd">' + inc.parts.map((x) => x.d).join('+') + '</small>' : '') + '</i>' : '') + '<span class="seals">' + seals + '</span><span class="nm">' + (orderTok() ? '<i class="odn" hidden></i>' : '') + '<b>' + u.name + '</b><u>' + u.hp + '</u></span></span>';
   }
   const ROWLBL = ['攻撃列', '補助列', '回復列'];
 
@@ -4695,6 +4732,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     }
     if (phase !== 'prep' && phase !== 'choose') { const sv = $('supAr'), ln = $('fxLn'); if (sv && sv.__h) { sv.innerHTML = ''; sv.__h = ''; } if (ln) ln.innerHTML = ''; fxWinClose(); }   // 演出中は、次のコマを待たずにすぐ消す（v5.4.8）
     supArrowsSoon();
+    markOrder();
   }
   // 描画の途中で位置を測らない（盤の大きさの合わせ直しが終わってから、次の描画の前に1回だけ測る）
   let saRaf = 0;
@@ -5590,14 +5628,14 @@ body.fast #stampOk.on { animation-duration: .5s; }
         const pk = $('peek'); if (pk && !pk.hidden && !pk.querySelector('.pk-hint')) pk.insertAdjacentHTML('beforeend', '<p class="pk-hint">' + su.name + 'の入れ替え先をタップ</p>');
         return;
       }
-      b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(su);
+      b.innerHTML = (tut ? orderHTML() : '') + '<p class="hint"></p>' + benchHTML(su);
       b.querySelector('.hint').textContent = su.name + (run && !tut ? 'の入れ替え先をタップ' : 'を選択中。入れ替え先をタップ');
       lockBook();
       return;
     }
     if (phase === 'prep' && benchSel) {
       const bu = benchSel;
-      b.innerHTML = orderHTML() + '<p class="hint"></p>' + benchHTML(null);
+      b.innerHTML = (tut ? orderHTML() : '') + '<p class="hint"></p>' + benchHTML(null);
       b.querySelector('.hint').textContent = bu.name + '（' + bu.jname + '・' + bu.age + '歳・HP' + bu.hp + '）を出撃させる場所をタップ';
       return;
     }
@@ -5616,7 +5654,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
         if (empty || kos) bubble(say, $('btnStart'), 0, 'prepWarn'); else hideBubble('prepWarn');
         return;
       }
-      b.innerHTML = orderHTML() + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b>' + (empty || kos ? '<small class="warn">' + say + '</small>' : '') + '</span></div>') + bh;   // 受けるダメージは「戦闘開始」の札に出るので、ここは警告のときだけ（v5.3.8）
+      b.innerHTML = (tut ? orderHTML() : '') + (bh && !empty ? '' : '<div class="prepban"><span class="pb-ico">' + ICON_SWAP + '</span><span><b class="disp">陣立て<em class="pb-how">タップ→タップで入れ替え</em></b>' + (empty || kos ? '<small class="warn">' + say + '</small>' : '') + '</span></div>') + bh;   // 受けるダメージは「戦闘開始」の札に出るので、ここは警告のときだけ（v5.3.8）
       lockBook();   // 戦闘中に固めた枠の高さを、編成タイムでは外す（外さないと編成タイムの札が下で切れる。v5.1.62）
       return;
     }
@@ -5624,6 +5662,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     if (!tut && phase !== 'prep') {
       b.innerHTML = slimBookHTML(); b.classList.add('slim');
       if (!b.innerHTML) bookFit();
+      markOrder();
       if (phase === 'choose' && previewOn) {
         const pg = previewGrid();
         bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnRotate'), 0, 'pvTip');
@@ -5659,7 +5698,27 @@ body.fast #stampOk.on { animation-duration: .5s; }
   let bookWasEmpty = null;
   function bookFit() { const e = !$('book').innerHTML; $('book').style.removeProperty('height'); $('book').classList.remove('locked'); if (e !== bookWasEmpty) { bookWasEmpty = e; requestAnimationFrame(() => { fitBoard(); setBleed(); }); } }
   // 戦闘中の記録の枠：はじめの数戦（bookOn）だけ行動順を出す。履歴は上の帯のボタンへ移した（v5.3.6）
-  const slimBookHTML = () => (bookOn ? orderHTML() : '');
+  // v5.9.15：戦闘（練習以外）では行動順の帯を出さない。順番は仲間の名前の札の番号と、敵のHPの横の「行動順」で見せる（帯1本ぶん盤を広く）
+  const slimBookHTML = () => '';
+  const orderTok = () => !tut && bookOn;
+  function markOrder() {
+    const on = orderTok() && phase !== 'over', eo = $('eOrd');
+    document.querySelectorAll('#party .odn').forEach((x) => x.remove());
+    if (!on) { if (eo && !eo.hidden) { eo.hidden = true; eo.innerHTML = ''; } return; }
+    const live = phase === 'resolve' && order.length;
+    const list = live ? order : actorList(showGhost() ? previewGrid() : grid, showGhost());
+    const st = (i) => (live ? (i < orderIdx ? ' done' : (i === orderIdx ? ' now' : '')) : '');
+    const mine = {}, foes = [];
+    list.forEach((a, i) => { if (a.kind === 'e') foes.push({ F: a.foe || enemy, n: i + 1, st: st(i) }); else mine[a.u.uid] = { n: i + 1, st: st(i) }; });
+    document.querySelectorAll('#board .tok[data-id]').forEach((t) => { const o = mine[t.dataset.id], el = t.querySelector('.odn'); if (!el) return;
+      if (!o) { el.hidden = true; return; }
+      el.hidden = false; const c = 'odn' + o.st; if (el.className !== c) el.className = c; if (el.textContent !== String(o.n)) el.textContent = String(o.n); });
+    if (enemy && enemy.party) { foes.forEach((f) => { const fe = foeEl(f.F); if (fe) fe.insertAdjacentHTML('beforeend', '<i class="odn foe' + f.st + '" aria-hidden="true">' + f.n + '</i>'); }); if (eo) eo.hidden = true; return; }
+    if (!eo) return;
+    const h = '<small>行動順</small>' + foes.map((f) => '<i class="odn foe' + f.st + '">' + f.n + '</i>').join('');
+    if (eo.innerHTML !== h) eo.innerHTML = h;
+    eo.hidden = !foes.length; eo.setAttribute('aria-label', '敵の行動順 ' + foes.map((f) => f.n + '番目').join('・'));
+  }
   function lockBook() {
     const b = $('book');
     if (tut || phase === 'prep') b.classList.remove('slim');
@@ -5912,22 +5971,69 @@ body.fast #stampOk.on { animation-duration: .5s; }
       setTimeout(show, 1600);
     }
   }
+  /* v5.9.15 判断の場面の吹き出し（初めての人への案内）は、同時に1つだけ。あとから来たものは順番待ちにして、前のが消えてから出す。
+     置き場所は、剣の数字・赤い数字・予告の札・回す/維持の欄に重ならない所を選ぶ（重ならない所がなければ、重なりがいちばん少ない所）。戦闘の計算には触れない */
+  const COACH = { emptyTip: 0, koWarn: 1, saveHint: 1, incTip: 2, numTip: 3, holdTip: 4, firstGuide: 5 };
+  let coachQ = []; const coachLast = {};
+  const bubOn = (id) => { const d = document.getElementById(id); return !!d && !d.hidden && d.classList.contains('on'); };
+  function coachNext() {
+    if (phase !== 'choose') { coachQ = []; return; }
+    if (Object.keys(COACH).some(bubOn)) return;
+    coachQ = coachQ.filter((q) => q.turn === turn);
+    if (!coachQ.length) return;
+    coachQ.sort((a, b) => COACH[a.id] - COACH[b.id]);
+    const q = coachQ.shift();
+    let el = q.el;
+    if (!el.isConnected) el = q.cls ? document.querySelector('#board .tok .' + q.cls) : null;
+    if (el) bubble(q.text, el, q.ms, q.id);
+  }
+  function coachSpot(d, r, w, h) {
+    // 候補：①anchor の上 ②下 ③敵の絵の上（矢印なし）。重さ：剣・赤い数字・予告・下の欄は10、名前の札は1、敵の名前とHPは1
+    const hard = [...document.querySelectorAll('#board .tok .dm, #board .tok .inc, #ticket, #dock')].map((e) => e.getBoundingClientRect()).filter((q) => q.width > 0);
+    const soft = [...document.querySelectorAll('#board .tok .nm, #stage .plate, #stage .ehp')].map((e) => e.getBoundingClientRect()).filter((q) => q.width > 0);
+    const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
+    const stTop = Math.max(4, $('stage').getBoundingClientRect().top + 4);
+    const dk = $('dock').getBoundingClientRect(), inDock = dk.height > 0 && r.top >= dk.top - 1 && r.bottom <= dk.bottom + 1;   // 回す・維持の上に出すときは、欄の上の端より上に（ボタンの上だと欄の縁に7px重なった）
+    const cands = [{ x, y: (inDock ? dk.top : r.top) - h - 10, k: 'up' }, { x, y: r.bottom + 10, k: 'below' }, { x: Math.round((innerWidth - w) / 2), y: stTop, k: 'free' }];
+    const ov = (c, q) => Math.max(0, Math.min(c.x + w, q.right) - Math.max(c.x, q.left)) * Math.max(0, Math.min(c.y + h, q.bottom) - Math.max(c.y, q.top));
+    let best = null, bv = Infinity;
+    for (const c of cands) {
+      if (c.y < 2 || c.y + h > innerHeight - 2) continue;
+      const v = hard.reduce((a, q) => a + ov(c, q) * 10, 0) + soft.reduce((a, q) => a + ov(c, q), 0) + (c.k === 'free' ? 1 : 0);
+      if (v < bv) { bv = v; best = c; }
+    }
+    return best;
+  }
   function bubble(text, el, ms, id) {
     if (!el || !text) return;
+    if (id in COACH && phase === 'choose') {
+      const others = Object.keys(COACH).filter((k) => k !== id && bubOn(k));
+      // 大事な方（数の小さい方：攻撃列が空・倒れる注意・回せば助かる）が来たら、出ている軽い案内を下げて順番待ちに戻す。同じか軽いものは順番待ち
+      if (others.length && others.every((k) => COACH[k] > COACH[id])) {
+        others.forEach((k) => { const L = coachLast[k]; hideBubble(k); if (L) { coachQ = coachQ.filter((q) => q.id !== k); coachQ.push(Object.assign({}, L, { turn })); } });
+      } else if (others.length) {
+        coachQ = coachQ.filter((q) => q.id !== id);
+        coachQ.push({ text, el, ms, id, turn, cls: el.closest('#board') ? el.classList[0] : '' });
+        return;
+      }
+      coachLast[id] = { text, el, ms, id, cls: el.closest('#board') ? el.classList[0] : '' };
+    }
     let d = document.getElementById(id);
     if (!d) { d = document.createElement('div'); d.id = id; d.className = 'rb-bubble'; d.setAttribute('role', 'status'); document.body.appendChild(d); }
     d.textContent = text; d.classList.remove('on'); d.style.visibility = 'hidden'; d.hidden = false;
     const r = el.getBoundingClientRect(), w = d.offsetWidth, h = d.offsetHeight;
     const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
-    const below = r.top - h - 12 < 4;
+    let below = r.top - h - 12 < 4;
     d.style.left = x + 'px'; d.style.top = (below ? r.bottom + 10 : r.top - h - 10) + 'px';
     d.style.setProperty('--ax', Math.max(12, Math.min(w - 12, r.left + r.width / 2 - x)) + 'px');
+    d.classList.remove('free');
+    if (id in COACH && phase === 'choose') { const c = coachSpot(d, r, w, h); if (c) { below = c.k === 'below'; d.style.left = c.x + 'px'; d.style.top = c.y + 'px'; d.style.setProperty('--ax', Math.max(12, Math.min(w - 12, r.left + r.width / 2 - c.x)) + 'px'); d.classList.toggle('free', c.k === 'free'); } }
     d.classList.toggle('below', below);
     d.style.visibility = ''; void d.offsetWidth; d.classList.add('on');
     clearTimeout(bubbleT[id]);
     if (ms) bubbleT[id] = setTimeout(() => hideBubble(id), ms);
   }
-  function hideBubble(id) { const d = document.getElementById(id); if (!d) return; clearTimeout(bubbleT[id]); d.classList.remove('on'); bubbleT[id] = setTimeout(() => { d.hidden = true; }, 220); }
+  function hideBubble(id) { if (id in COACH) setTimeout(coachNext, 260); const d = document.getElementById(id); if (!d) return; clearTimeout(bubbleT[id]); d.classList.remove('on'); bubbleT[id] = setTimeout(() => { d.hidden = true; }, 220); }
   /* 赤い数字の説明（v5.1.58）：常に案内文を出さず、最初の3ターンだけ、盤の赤い数字を点滅させて一言を添える。覚えたら出さない */
   let teachKey = '';
   function teachInc() {
@@ -8405,7 +8511,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     run.choices = routeChoices();
     run.nextChoices = null;
   }
-  const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span>'; };
+  const hpBar = (m) => { const p = Math.max(0, Math.round(m.hp / m.max * 100)); return '<span class="hpb" aria-label="HP ' + m.hp + '/' + m.max + '"><i class="' + (p <= 35 ? 'low' : '') + '" style="width:' + p + '%"></i></span><u class="rv-hp' + (p <= 35 ? ' low' : '') + '" aria-hidden="true">' + m.hp + '/' + m.max + '</u>'; };   // v5.9.15：HPの数字を棒の下に（12px。報酬の手当てを選ぶ材料）
   const portrait = (m, extra, tag) => '<span class="rv-m ph-' + m.phase + (extra || '') + '"><span class="uc-disc c-' + m.cls + '">' + face(m) + '</span><b>' + m.name + '</b><small>' + (m.fate === 'fallen' ? '戦死' : m.fate === 'retired' ? '引退' : m.fate === 'left' ? '離隊' : EXPM() ? m.jname : m.age + '歳') + '</small>' + (m.fate ? '' : hpBar(m)) + (EXPM() && !m.fate && upsOf(m) ? '<i class="rv-up" aria-label="技の強化' + upsOf(m) + '回">技' + upsOf(m) + '</i>' : '') + (tag || '') + '</span>';
   const placeLabel = (n) => '地点 ' + n + ' / ' + RUN.nodes;
   const HIST_G = { battle: '戦', rest: '休', inherit: '継' };

@@ -141,7 +141,8 @@ async function open(b, w, h, kind, node) {
     // v5.1.58：戦闘中の記録の枠は、行動順と「履歴」ボタンだけ（ログの文章・案内文は常に出さない）
     const lg = await p.evaluate(() => { const bk = document.getElementById('book'); return { ps: bk.querySelectorAll('p').length, order: !!bk.querySelector('.order .od'), btn: !!bk.querySelector('.lb-btn'), txt: bk.innerText.replace(/\s+/g, ' ') }; });
     // v5.3.6：履歴は上の帯のボタンへ移した。枠は行動順だけ（はじめの3戦）
-    ok(lg.ps === 0 && lg.order && !lg.btn && !/テスト行|回す？/.test(lg.txt), '記録の枠は行動順だけ（' + lg.txt + '）');
+    // v5.9.15：行動順の帯もやめた（名前の札の番号へ）。戦闘中の枠にはログも案内も行動順も出ない
+    ok(lg.ps === 0 && !lg.order && !lg.btn && !/テスト行|回す？/.test(lg.txt) && await p.evaluate(() => !document.getElementById('eOrd').hidden), '記録の枠は出さず、行動順は敵の横と名前の札（v5.9.15）（' + lg.txt + '）');
     await p.click('#logBtn'); await p.waitForTimeout(150);
     const op = await p.evaluate(() => { const l = document.getElementById('logList'); return { open: !document.getElementById('logSheet').hidden, n: l.querySelectorAll('p').length, total: window.__rb.log.length, scroll: l.scrollHeight >= l.clientHeight, last: l.lastElementChild.textContent }; });
     ok(op.open && op.n === op.total && /テスト行5/.test(op.last), 'C8 履歴を押すと全履歴が開く（' + op.n + '/' + op.total + '行、最後 ' + op.last + '）');

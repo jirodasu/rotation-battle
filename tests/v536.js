@@ -3,7 +3,7 @@
 //  1. 上の「地点・ターン」の札と、敵の名前の上の章は、戦闘画面に出ない。i は敵の名前の横に出る
 //  2. i（敵）を押した詳細に、章・地点・ターン（★のターン数）が出る
 //  3. 敵の行動の印（牙など）は予告の札に出ない（大技までのカウントダウンは残す）。行動順の敵は小さな絵。縛りの「縛」の印も出ない
-//  4. 記録の枠（行動順）は、はじめの3戦だけ。4戦目からは枠が消え、盤が広くなる。履歴は上の帯のボタンから開ける
+//  4. 記録の枠（行動順）は戦闘中は出さない（v5.9.15：はじめの3戦の行動順は名前の札の番号と敵の横の「行動順」へ）。履歴は上の帯のボタンから開ける
 //  5. 枠が無いとき：攻撃列が空・倒れるときの警告は「戦闘開始」の上の吹き出し。仲間を選ぶと「入れ替え先をタップ」の吹き出し
 //  6. 画面からはみ出さない（393×759・320×568）、ページのエラーなし
 const { launch, testPage } = require('./_env');
@@ -56,8 +56,11 @@ const vis = (p, sel) => p.evaluate((s) => { const e = document.querySelector(s);
     // 3 予告の札・行動順
     const t = await p.evaluate(() => ({ ico: [...document.querySelectorAll('#ticket .t-ico')].filter((e) => !e.classList.contains('t-cd')).length, cd: !!document.querySelector('#ticket .t-cd'), noico: document.getElementById('ticket').classList.contains('noico'), od: [...document.querySelectorAll('.od.foe')].map((e) => ({ art: !!e.querySelector('.od-art svg'), txt: e.textContent.trim() })) }));
     ok(t.ico === 0 && (t.cd || t.noico), tag + ' 3 予告の札に行動の印がない ' + JSON.stringify({ ico: t.ico, cd: t.cd }));
-    if (!n) ok(t.od.length > 0 && t.od.every((x) => x.art && !x.txt), tag + ' 3 行動順の敵は小さな絵 ' + JSON.stringify(t.od));
-    ok(n ? !(await vis(p, '#book')) : await vis(p, '#book'), tag + ' 4 戦闘中も枠は' + (n ? '出ない' : '出る'));
+    // v5.9.15：行動順の帯をやめ、はじめの数戦は名前の札の番号と敵のHPの横の「行動順」で出す（Jiro さん承認の案2）。戦闘中の枠は出ない
+    const eo = await p.evaluate(() => { const e = document.getElementById('eOrd'); return { on: !!e && !e.hidden, txt: e ? e.textContent : '', odn: [...document.querySelectorAll('#board .odn')].filter((x) => !x.hidden).length }; });
+    if (!n) ok(eo.on && /行動順/.test(eo.txt) && eo.odn > 0, tag + ' 3 行動順は敵のHPの横と名前の札の番号（v5.9.15） ' + JSON.stringify(eo));
+    else ok(!eo.on && eo.odn === 0, tag + ' 3 4戦目からは行動順の番号も出ない（v5.9.15） ' + JSON.stringify(eo));
+    ok(!(await vis(p, '#book')), tag + ' 4 戦闘中は枠を出さない（v5.9.15：帯をやめた）');
     // 縛り
     await p.evaluate(() => { const R = window.__rb; R.enemy.bound = true; R.render(); });
     const bd = await p.evaluate(() => ({ before: getComputedStyle(document.getElementById('btnRotate'), '::before').display, block: document.getElementById('btnRotate').dataset.block }));
