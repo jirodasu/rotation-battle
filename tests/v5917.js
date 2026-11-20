@@ -11,10 +11,10 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"combo":1,"hmIntro":1,"bench":1,"lamp":1,"stayed":1,"mid":1,"highhp":1,"gate":1,"doom":1,"rel":1,"einfo":1}';
 const BG = ['candle', 'tide', 'bubble', 'fog', 'stFlick'];
 const ANIMS = (bg) => document.getAnimations().filter((a) => a.animationName).map((a) => ({ n: a.animationName, s: a.playState })).filter((x) => bg.includes(x.n) || x.n === 'cbIdle' || x.n === 'bob');
-const LOOK = () => { const c = document.querySelector('.chl.c' + (document.body.dataset.ch || 0)), cs = c && getComputedStyle(c), ca = c && getComputedStyle(c, '::after'); return { op: cs && cs.opacity, bg: cs && cs.backgroundImage.slice(0, 60), aop: ca && ca.opacity }; };
-async function open(b, q, rm, keep) {
+const LOOK = () => { const c = document.querySelector('.chl.c' + (document.body.dataset.ch || 0)), cs = c && getComputedStyle(c), ca = c && getComputedStyle(c, '::after'); return { op: cs && cs.opacity, bg: cs && cs.backgroundImage.slice(0, 60), an: ca && ca.animationName + ' ' + ca.animationDuration, ain: ca && +ca.opacity >= 0.66 && +ca.opacity <= 0.86 }; };   // ::after の不透明度はろうそくの揺らぎの途中の値なので、揺らぎの幅（0.66〜0.86）の中かで比べる
+async function open(b, q, rm, keep, set) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: rm ? 'reduce' : 'no-preference' }); const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));
-  await p.addInitScript(([t, keep]) => { if (keep) return; localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-story', '1'); }, [TIPS, !!keep]);
+  await p.addInitScript(([t, keep, set]) => { if (keep || localStorage.getItem('rb-tips')) return; localStorage.setItem('rb-tips', t); localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-story', '1'); if (set) localStorage.setItem('rb-set', set); }, [TIPS, !!keep, set || '']);
   await p.goto(testPage() + (q || '')); await p.waitForTimeout(1500);
   return { ctx, p };
 }
@@ -43,22 +43,25 @@ async function toggle(p) {
     ok(bgOff.length >= 3 && bgOff.every((x) => x.s === 'paused') && chara.length >= 1 && chara.every((x) => x.s === 'running'), '2 オフのとき、背景の常時アニメは全部止まり、仲間・敵は動く ' + JSON.stringify([...new Set(off.map((x) => x.n + ':' + x.s))]));
     ok(JSON.stringify(lookOn) === JSON.stringify(lookOff), '5 オフでも背景の明るさ・色の基準は同じ ' + JSON.stringify({ lookOn, lookOff }));
     ok(!p.__errs.length, '6 ページのエラーなし ' + p.__errs.join(' / '));
-    // 開き直す（保存は残す）
+    await ctx.close();
+  }
+  // 1 開き直してもオフのまま（?qa は設計どおり保存を本物に書かないので、普通に開いて確かめる）
+  {
+    const { ctx, p } = await open(b, '');
+    await toggle(p);
+    const saved = await p.evaluate(() => JSON.parse(localStorage.getItem('rb-set') || '{}').bg);
     await p.reload(); await p.waitForTimeout(1500);
-    const re = await p.evaluate(() => ({ cls: document.documentElement.classList.contains('bg-still'), sw: document.getElementById('setBg').getAttribute('aria-checked') }));
-    await p.evaluate(() => { document.getElementById('settings').hidden = false; }); await p.waitForTimeout(100);
-    const re2 = await p.evaluate(() => document.getElementById('setBg').getAttribute('aria-checked'));
-    ok(re.cls, '1 開き直してもオフのまま ' + JSON.stringify(re));
+    const re = await p.evaluate(() => ({ cls: document.documentElement.classList.contains('bg-still'), sw: document.getElementById('setBg').getAttribute('aria-checked'), set: JSON.parse(localStorage.getItem('rb-set') || '{}').bg }));
+    ok(saved === false && re.cls && re.sw === 'false' && re.set === false, '1 開き直してもオフのまま ' + JSON.stringify({ saved, re }));
     // 記録のリセットで設定が消えない（消す鍵の決まりを確かめる）
     const keep = await p.evaluate(() => /^rb-(set|snd|fast|skin|tune|tune-css)$/.test('rb-set'));
     ok(keep, '1 記録をリセットしても rb-set（設定）は残る決まり');
+    ok(!p.__errs.length, '6 ページのエラーなし（普通の起動） ' + p.__errs.join(' / '));
     await ctx.close();
   }
   // 第1章・第2章の背景（ろうそく・波）もオフで止まる
   for (const q of ['?qa&ch=1&loc=2', '?qa&ch=2&loc=4']) {
-    const { ctx, p } = await open(b, q);
-    await p.evaluate(() => { const r = JSON.parse(localStorage.getItem('rb-set') || '{}'); r.bg = false; localStorage.setItem('rb-set', JSON.stringify(r)); });
-    await p.reload(); await p.waitForTimeout(1500);
+    const { ctx, p } = await open(b, q, false, false, JSON.stringify({ bg: false }));
     const a = await p.evaluate(ANIMS, BG); const bgA = a.filter((x) => BG.includes(x.n));
     ok(bgA.length >= 1 && bgA.every((x) => x.s === 'paused'), q + ' 2 章の背景（ろうそく・波）もオフで止まる ' + JSON.stringify([...new Set(bgA.map((x) => x.n + ':' + x.s))]));
     ok(!p.__errs.length, q + ' 6 ページのエラーなし ' + p.__errs.join(' / '));
