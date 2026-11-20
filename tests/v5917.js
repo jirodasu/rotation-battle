@@ -10,7 +10,7 @@ const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"combo":1,"hmIntro":1,"bench":1,"lamp":1,"stayed":1,"mid":1,"highhp":1,"gate":1,"doom":1,"rel":1,"einfo":1}';
 const BG = ['candle', 'tide', 'bubble', 'fog', 'stFlick'];
-const ANIMS = (bg) => document.getAnimations().filter((a) => a.animationName).map((a) => ({ n: a.animationName, s: a.playState })).filter((x) => bg.includes(x.n) || x.n === 'cbIdle' || x.n === 'bob');
+const ANIMS = (bg) => document.getAnimations().filter((a) => a.animationName).map((a) => ({ n: a.animationName, s: a.playState })).filter((x) => bg.includes(x.n) || x.n === 'cbIdle' || x.n === 'bob' || x.n === 'cbIdleW' || x.n === 'bobW');
 const LOOK = () => { const c = document.querySelector('.chl.c' + (document.body.dataset.ch || 0)), cs = c && getComputedStyle(c), ca = c && getComputedStyle(c, '::after'); return { op: cs && cs.opacity, bg: cs && cs.backgroundImage.slice(0, 60), an: ca && ca.animationName + ' ' + ca.animationDuration, ain: ca && +ca.opacity >= 0.66 && +ca.opacity <= 0.86 }; };   // ::after の不透明度はろうそくの揺らぎの途中の値なので、揺らぎの幅（0.66〜0.86）の中かで比べる
 async function open(b, q, rm, keep, set) {
   const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: rm ? 'reduce' : 'no-preference' }); const p = await ctx.newPage(); p.__errs = []; p.on('pageerror', (e) => p.__errs.push(e.message));

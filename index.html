@@ -253,9 +253,10 @@ body.fast .ebar i { transition-duration: 0.18s; }
 .ebar i { background: var(--danger); transition: width 0.35s cubic-bezier(.3, .7, .3, 1); }
 .ehpn { font-size: 13px; font-weight: 700; min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
 .espd { position: absolute; left: 2px; top: 86px; z-index: 2; font-size: 11px; color: var(--ink); opacity: 0.85; }
-.eart { position: absolute; right: -10px; bottom: 58px; top: 30px; aspect-ratio: 4 / 3; max-width: 240px; z-index: 1; }
-.eart svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)); animation: bob 4.8s ease-in-out infinite; will-change: transform; }
-.eart.enter { animation: enter 0.7s cubic-bezier(.2, .8, .2, 1); }
+.eart { position: absolute; right: -10px; bottom: 58px; top: 30px; aspect-ratio: 4 / 3; max-width: 240px; z-index: 1; animation: bobW 4.8s ease-in-out infinite; will-change: transform; }   /* 待機の揺れは絵（svg）でなく外の枠で動かす（v5.9.18）：svg 自身の動きは毎フレーム描き直しになるため */
+.eart svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)); }
+.eart.enter { animation: enter 0.7s cubic-bezier(.2, .8, .2, 1), bobW 4.8s ease-in-out infinite; }
+@keyframes bobW { 0%, 100% { translate: 0 0; } 50% { translate: 0 -3px; } }   /* 以前の bob（後ろの定義が効いて幅3px）と同じ幅・速さ */
 @keyframes bob { 50% { transform: translateY(-5px); } }
 @keyframes enter { from { transform: translateX(80px); opacity: 0; } to { transform: none; opacity: 1; } }
 
@@ -627,7 +628,7 @@ body.boss-stage .en-u b { color: var(--ink); }
 .ticket.charge .t-ico { background: var(--accent); color: var(--accent-ink); animation: kopulse 0.9s ease-in-out infinite; }
 .ticket.big .t-ico { background: #7e1d14; }
 .pierce { display: inline-block; vertical-align: 3px; margin-left: 6px; padding: 1px 7px 2px; border-radius: 8px; background: #7e1d14; color: #fff; font-family: "Zen Maru Gothic", "Hiragino Maru Gothic ProN", "Noto Sans JP", sans-serif; font-style: normal; font-size: 11px; font-weight: 700; }
-.stage.charged .eart svg { animation: bob 4.8s ease-in-out infinite, chg 0.8s ease-in-out infinite; }
+.stage.charged .eart svg { animation: chg 0.8s ease-in-out infinite; }
 @keyframes chg { 50% { filter: drop-shadow(0 0 14px #ffb03a) drop-shadow(0 4px 0 rgba(35, 49, 74, 0.22)); } }
 .r-stats { width: min(300px, 74vw); margin: 2px 0 10px; }
 .r-stars { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
@@ -1057,7 +1058,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
   .coach { animation: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .spin, .o-art, .orbit .core, .beam, .eart svg { animation: none; }
+  .spin, .o-art, .orbit .core, .beam, .eart svg, .eart { animation: none; }
   .eart.enter, .r-card, .slot.sel .tok { animation: none; }
   .chapter { animation: none; }
   .slot.sel .tok { transform: translateY(-5px); }
@@ -2291,8 +2292,8 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .tok.cb .disc, .tok.cb.ph-young .disc, .tok.cb.ph-prime .disc, .tok.cb.ph-vet .disc, .tok.cb.ph-old .disc, .slot.ghost .tok.cb .disc { outline: none; }
 .slot.hover .tok.cb .disc { outline: none; filter: drop-shadow(0 0 6px var(--accent)); }
 @media (prefers-reduced-motion: no-preference) {
-  .tok.cb .disc svg { animation: cbIdle 2.4s ease-in-out infinite; animation-delay: calc(var(--cbd, 0) * -1s); will-change: transform; }   /* 揺れは合成だけで（描き直さない） */
-  @keyframes cbIdle { 50% { transform: translateY(-1.5%) scaleY(1.02); } }
+  .tok.cb .disc { animation: cbIdleW 2.4s ease-in-out infinite; animation-delay: calc(var(--cbd, 0) * -1s); transform-origin: 50% 96%; will-change: transform; }   /* 揺れは絵（svg）を包む枠で（v5.9.18）：svg 自身の動きは合成で済まず、毎フレーム描き直しになっていた。.disc と svg は同じ大きさなので、幅・中心は以前と同じ */
+  @keyframes cbIdleW { 50% { translate: 0 -1.5%; scale: 1 1.02; } }
 }
 /* 新しく始める確認（v5.1.41）：「続きから」があるときだけ出す。押し間違いを防ぐため、やめるが既定 */
 .confirm { z-index: 48; }
@@ -2967,7 +2968,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
 @media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l[data-k="hurt"] { grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } }
 
 /* v5.9.17 背景の動きをオフ（設定）：背景の常に動いている飾りだけを、いまの形のまま止める（消す・暗くする・差し替えはしない） */
-html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, html.bg-still .miasma b, html.bg-still .st-lamp { animation-play-state: paused !important; }
+html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, html.bg-still .miasma b, html.bg-still .st-lamp, html.bg-still .spin, html.bg-still .o-art, html.bg-still .orbit .core, html.bg-still .orbit .crest .spinner { animation-play-state: paused !important; }   /* タイトルの紋章の回転も止める（v5.9.18） */
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -3089,7 +3090,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.17</p>
+    <p class="c-ver" id="cVer">ver 5.9.18</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3145,7 +3146,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="set-row"><label for="setBgm"><b>BGM</b><output id="setBgmV">100</output></label><input type="range" id="setBgm" min="0" max="100" step="5" value="100"></div>
       <div class="set-row"><label for="setSfx"><b>効果音</b><output id="setSfxV">100</output></label><input type="range" id="setSfx" min="0" max="100" step="5" value="100"></div>
       <div class="set-row inline"><span><b>すべての音</b><small>右上の ♪ ボタンと同じ</small></span><button class="set-sw" id="setAll" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
-      <div class="set-row inline"><span><b>背景の動き</b><small>ろうそく・波・霧の揺らぎ</small></span><button class="set-sw" id="setBg" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
+      <div class="set-row inline"><span><b>背景の動き</b><small>ろうそく・霧・紋章など</small></span><button class="set-sw" id="setBg" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>振動</b><small id="setVibNote">攻撃を受けたときなど</small></span><button class="set-sw" id="setVib" type="button" role="switch" aria-checked="true"><i></i><em>オン</em></button></div>
       <div class="set-row inline"><span><b>文字の大きさ</b><small>説明・報酬・練習の文</small></span><span class="set-seg" role="group" aria-label="文字の大きさ"><button type="button" data-text="0" aria-pressed="true">標準</button><button type="button" data-text="1" aria-pressed="false">大</button></span></div>
     </div>
@@ -3610,7 +3611,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.17';
+  const APP_VERSION = '5.9.18';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
