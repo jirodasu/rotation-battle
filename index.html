@@ -6154,7 +6154,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
     p.style.left = (c.x + (dx || 0)) + 'px';
     p.style.top = y + 'px';
     $('fx').appendChild(p);
-    const hw = p.offsetWidth / 2, vw = document.documentElement.clientWidth;
+    // v5.9.17：数字は幅1pxの箱からはみ出して描いているので、箱の幅ではなく文字の実際の幅（縁取りと、出だしの拡大1.25〜1.4倍を含む）で画面の内側に寄せる（iPhone で右端の敵の「-19」が切れていた）
+    let tw = p.offsetWidth; const tx = p.querySelector('svg text');
+    if (tx) { try { tw = Math.max(tw, tx.getBBox().width + 8); } catch (e) { /* 測れない */ } }
+    const hw = tw * (/\bbig\b/.test(cls || '') ? 1.4 : tx ? 1.25 : 1) / 2, vw = document.documentElement.clientWidth;
     if (hw > 0) p.style.left = Math.min(Math.max(c.x + (dx || 0), hw + 8), vw - hw - 8) + 'px';
     if (/\bdmg\b/.test(cls || '')) countPop(p, text);
     setTimeout(() => p.remove(), (/big|sub/.test(cls || '') ? 1400 : 1000) / SPD);
