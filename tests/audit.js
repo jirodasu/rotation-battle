@@ -370,9 +370,12 @@ async function open(b, w, h, kind, node) {
     const { ctx, p } = await open(b, 390, 844, 0, 2);
     await p.evaluate(() => { const R = window.__rb; R.run.members.forEach((m) => { m.max = 999; m.hp = 999; }); R.enemy.pattern[0] = Object.assign({}, R.enemy.pattern[0], { dmg: 5 }); R.enemy.charged = true; });
     await p.click('#btnStart');
+    // v5.9.17：「しのいだ」の判は出さない（Jiro さん）。音（SFX.buff）だけ鳴る
+    await p.evaluate(() => { window.__buff = 0; const S = window.__rb.SFX, f = S.buff; S.buff = function () { window.__buff += 1; return f && f.apply(this, arguments); }; });
     let seen = false;
-    for (let k = 0; k < 300 && !seen; k++) { seen = await p.evaluate(() => { const d = document.getElementById('stampOk'); return !!d && d.classList.contains('on'); }); await p.waitForTimeout(40); }
-    ok(seen, 'D 大技を誰も倒れずにしのぐと、「しのいだ」の判が出る');
+    for (let k = 0; k < 300; k++) { if (await p.evaluate(() => { const d = document.getElementById('stampOk'); return !!d && d.classList.contains('on'); })) seen = true; if (await p.evaluate(() => window.__rb.phase === 'choose' && window.__rb.turn > 1)) break; await p.waitForTimeout(40); }
+    const bf = await p.evaluate(() => window.__buff);
+    ok(!seen && bf >= 1, 'D 大技を誰も倒れずにしのいでも「しのいだ」の判は出ない・音は鳴る（v5.9.17） ' + JSON.stringify({ seen, bf }));
     ok(!p.__errs.length, 'ページのエラーなし ' + p.__errs.join('/')); await ctx.close();
   }
   /* ---- v5.1.61 表紙：3段の実演はなく、続きからを含む全ボタンが1画面に収まる（スクロールなし） ---- */

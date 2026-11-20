@@ -5,6 +5,7 @@
 //  3. ページのエラーなし
 //  4. 「しのいだ！」：維持なら倒れる見込みの仲間がいて、回した先では誰も倒れない見込みのとき、回すとターンの終わりにその仲間の上に「しのいだ！」が出る
 //     v5.7.1：そのとき専用の音（SFX.save）が1回鳴る
+//     v5.9.17：「しのいだ！」の文字は出さなくなった（Jiro さん）。専用の音が1回鳴ることで確かめる
 //  5. 回した先で別の仲間が倒れる見込みのときは出さない（誰かの代わりに誰かが倒れるのは「しのいだ」ではない）
 const { launch, testPage } = require('./_env');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
@@ -44,7 +45,7 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
     await q.evaluate(() => { window.__saves = []; new MutationObserver((ms) => ms.forEach((m) => m.addedNodes.forEach((n) => { if (n.classList && n.classList.contains('save')) window.__saves.push(n.textContent); }))).observe(document.getElementById('fx'), { childList: true }); });
     await q.click('#btnRotate'); await toChoose(); await q.waitForTimeout(500);
     const got = await q.evaluate(() => window.__saves.slice()), snd = await q.evaluate(() => window.__snd);
-    ok(pre.stayKo && pre.rotKo === !sturdy && (got.length > 0) === want && (!want || got[0] === 'しのいだ！') && snd === (want ? 1 : 0) && !qe.length, tag + '（音 ' + snd + '回）' + JSON.stringify({ pre, got, err: qe }));
+    ok(pre.stayKo && pre.rotKo === !sturdy && got.length === 0 && snd === (want ? 1 : 0) /* v5.9.17：「しのいだ！」の文字は出さない。音で確かめる */ && !qe.length, tag + '（音 ' + snd + '回）' + JSON.stringify({ pre, got, err: qe }));
     await q.close();
   }
   await b.close();

@@ -6281,7 +6281,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     anim(art, [{ filter: 'brightness(1)', transform: 'scale(1)', opacity: 1 }, { filter: 'brightness(2.6)', transform: 'scale(1.06)', opacity: 1, offset: 0.3 }, { filter: 'brightness(3.2)', transform: 'scale(1.28)', opacity: 0 }], { duration: 520, easing: 'ease-out', fill: 'forwards' });
     const c = center(ea);
     sparks(c.x, c.y, '#ffffff', 26); sparks(c.x, c.y, '#9fb2c8', 12);   // 白と青灰（金は「回す」と主ボタンだけに使う。v5.4.4）
-    popAt(ea, 'とどめ！', 'sub fin', -52, 0);
+    // v5.9.17：「とどめ！」の文字は出さない（Jiro さん）。光って砕ける演出・音・振動はそのまま
     await hitStop(90);
     await wait(430);
   }
@@ -7115,13 +7115,9 @@ body.fast #stampOk.on { animation-duration: .5s; }
      うまくいったときだけ出す（成功に応じた反応）。ダメージ・順番・保存には触れない */
   async function bigSurvived(fallen0) {
     if (phase === 'over' || tut || stats.fallen !== fallen0) return;
-    let d = $('stampOk');
-    if (!d) { d = document.createElement('div'); d.id = 'stampOk'; d.setAttribute('role', 'status'); d.innerHTML = '<b class="disp">しのいだ</b><small>誰も倒れなかった</small>'; $('stage').appendChild(d); }
-    d.classList.remove('on'); void d.offsetWidth; d.classList.add('on');
+    // v5.9.17：「しのいだ」の判（文字）は出さない（Jiro さん）。音と振動の短い手応えだけ残す。判を見せるための待ち（0.8秒）もなくした
     try { SFX.buff(); } catch (e) { /* 音が出せなくても進行は止めない */ }
     vib(20);
-    await wait(RM ? 500 : 800);
-    d.classList.remove('on');
   }
 
   let saveMark = null, saveN = 0;   // 回して救った仲間と、回す前の盤の人数（v5.7.0）
@@ -7158,7 +7154,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     tutOnChoose();
     if (saveMark && saveMark.length) {
       const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
-      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { popAt(el, 'しのいだ！', 'sub save', -34); if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } boardPress(3, el); }, 120 + i * 160); });
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } boardPress(3, el); }, 120 + i * 160); });   // v5.9.17：仲間の上の「しのいだ！」の文字は出さない（Jiro さん）。音・振動・盤の沈み・履歴の1行は残す
       if (live.length) { savedN += 1; say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。'); }
     }
   }
