@@ -2931,7 +2931,8 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
 /* ---------- v5.9.15 戦闘画面の見直し（案1〜3） ---------- */
 /* 案2：行動順は名前の札の左の番号と、敵のHPの横の「行動順」。いま動く人の番号が光る */
-.tok .nm .odn { align-self: center; display: inline-grid; place-items: center; min-width: 15px; height: 15px; padding: 0 2px; border-radius: 8px; background: #2b3550; color: #f3e6c4; font: 800 12px/1 var(--serif); font-style: normal; font-variant-numeric: tabular-nums; }
+/* 番号は名札の左の外にぶら下げる（名札の幅は変えない：狭い画面で名札どうしが重なった。絵の左下・右下は「倒」の札や灯と重なった） */
+.tok .nm .odn { position: absolute; right: calc(100% - 3px); top: 50%; transform: translateY(-50%); z-index: 1; display: grid; place-items: center; min-width: 17px; height: 17px; padding: 0 3px; border-radius: 9px; background: #2b3550; color: #f3e6c4; box-shadow: 0 0 0 1.5px rgba(243, 230, 196, .6); font: 800 12px/1 var(--serif); font-style: normal; font-variant-numeric: tabular-nums; pointer-events: none; }
 .tok .nm .odn[hidden] { display: none; }
 .odn.now { background: var(--gold, #d4a548); color: #1b2132; box-shadow: 0 0 0 2px rgba(255, 220, 140, .55); }
 .odn.done { opacity: .45; }

@@ -3,7 +3,7 @@
 //  1 札が出せるレリックの報酬は、説明の文を出さず札だけ（強化・手当て・仲間と同じ）
 //  2 報酬を選ぶ段では、勝利のまとめ（○ターンで撃破…）が消える。星の段では見える
 //  3 札を長押し（0.6秒）すると説明の文の吹き出しが出て、その報酬は選ばれない。ふつうに押すと選ばれる
-//  4 報酬を選ぶ段の見えている文字は、v5.9.5 の通しプレイ（平均 約230字）より少ない 170字以内
+//  4 報酬を選ぶ段の見えている文字は、v5.9.5 の通しプレイ（平均 約230字）より少ない 170字以内（v5.9.15：名簿のHPの数字は数えない）
 //  5 320・375・390px で札が画面に収まる。撮る（tests/out/v598_*.png）。ページのエラーなし
 process.env.RB_PHASE_HOLD = '1';
 const { launch, testPage } = require('./_env');
@@ -11,7 +11,7 @@ const path = require('path');
 let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m); if (!c) fails++; };
 const OUT = path.join(__dirname, 'out');
 const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"stamina":1,"trinity":1,"combo":1,"hmIntro":1,"einfo":1,"bench":1}';
-const VIS = () => { let n = 0; const w = document.createTreeWalker(document.getElementById('runv'), NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) { const el = t.parentElement, s = t.textContent.replace(/\s+/g, ''); if (!s || !el) continue; const r = el.getBoundingClientRect(), cs = getComputedStyle(el); if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || el.closest('[hidden]')) continue; let a = el, op = 1; while (a) { op *= +getComputedStyle(a).opacity; a = a.parentElement; } if (op < 0.15) continue; n += s.length; } return n; };
+const VIS = () => { let n = 0; const w = document.createTreeWalker(document.getElementById('runv'), NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) { const el = t.parentElement, s = t.textContent.replace(/\s+/g, ''); if (!s || !el || el.closest('.rv-hp')) continue; /* v5.9.15：名簿のHPの数字（muse の指摘で足した判断材料）は数えない */ const r = el.getBoundingClientRect(), cs = getComputedStyle(el); if (r.width < 1 || r.height < 1 || cs.visibility === 'hidden' || el.closest('[hidden]')) continue; let a = el, op = 1; while (a) { op *= +getComputedStyle(a).opacity; a = a.parentElement; } if (op < 0.15) continue; n += s.length; } return n; };
 (async () => {
   const b = await launch();
   for (const [w, h] of [[390, 844], [375, 667], [320, 568]]) {
