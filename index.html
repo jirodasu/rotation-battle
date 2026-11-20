@@ -3086,7 +3086,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.15</p>
+    <p class="c-ver" id="cVer">ver 5.9.16</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3606,7 +3606,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.15';
+  const APP_VERSION = '5.9.16';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -6154,7 +6154,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     p.style.left = (c.x + (dx || 0)) + 'px';
     p.style.top = y + 'px';
     $('fx').appendChild(p);
-    // v5.9.17：数字は幅1pxの箱からはみ出して描いているので、箱の幅ではなく文字の実際の幅（縁取りと、出だしの拡大1.25〜1.4倍を含む）で画面の内側に寄せる（iPhone で右端の敵の「-19」が切れていた）
+    // v5.9.16：数字は幅1pxの箱からはみ出して描いているので、箱の幅ではなく文字の実際の幅（縁取りと、出だしの拡大1.25〜1.4倍を含む）で画面の内側に寄せる（iPhone で右端の敵の「-19」が切れていた）
     let tw = p.offsetWidth; const tx = p.querySelector('svg text');
     if (tx) { try { tw = Math.max(tw, tx.getBBox().width + 8); } catch (e) { /* 測れない */ } }
     const hw = tw * (/\bbig\b/.test(cls || '') ? 1.4 : tx ? 1.25 : 1) / 2, vw = document.documentElement.clientWidth;
@@ -6284,7 +6284,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     anim(art, [{ filter: 'brightness(1)', transform: 'scale(1)', opacity: 1 }, { filter: 'brightness(2.6)', transform: 'scale(1.06)', opacity: 1, offset: 0.3 }, { filter: 'brightness(3.2)', transform: 'scale(1.28)', opacity: 0 }], { duration: 520, easing: 'ease-out', fill: 'forwards' });
     const c = center(ea);
     sparks(c.x, c.y, '#ffffff', 26); sparks(c.x, c.y, '#9fb2c8', 12);   // 白と青灰（金は「回す」と主ボタンだけに使う。v5.4.4）
-    // v5.9.17：「とどめ！」の文字は出さない（Jiro さん）。光って砕ける演出・音・振動はそのまま
+    // v5.9.16：「とどめ！」の文字は出さない（Jiro さん）。光って砕ける演出・音・振動はそのまま
     await hitStop(90);
     await wait(430);
   }
@@ -7118,7 +7118,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
      うまくいったときだけ出す（成功に応じた反応）。ダメージ・順番・保存には触れない */
   async function bigSurvived(fallen0) {
     if (phase === 'over' || tut || stats.fallen !== fallen0) return;
-    // v5.9.17：「しのいだ」の判（文字）は出さない（Jiro さん）。音と振動の短い手応えだけ残す。判を見せるための待ち（0.8秒）もなくした
+    // v5.9.16：「しのいだ」の判（文字）は出さない（Jiro さん）。音と振動の短い手応えだけ残す。判を見せるための待ち（0.8秒）もなくした
     try { SFX.buff(); } catch (e) { /* 音が出せなくても進行は止めない */ }
     vib(20);
   }
@@ -7157,7 +7157,7 @@ body.fast #stampOk.on { animation-duration: .5s; }
     tutOnChoose();
     if (saveMark && saveMark.length) {
       const live = units().length < saveN ? [] : saveMark.filter((u) => u.hp > 0); saveMark = null;   // このターンに誰かが倒れたら出さない
-      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } boardPress(3, el); }, 120 + i * 160); });   // v5.9.17：仲間の上の「しのいだ！」の文字は出さない（Jiro さん）。音・振動・盤の沈み・履歴の1行は残す
+      live.forEach((u, i) => { const el = $('board').querySelector('.tok[data-id="' + u.uid + '"]'); if (el) setTimeout(() => { if (i === 0) try { SFX.save(); vib(12); } catch (e) { /* */ } boardPress(3, el); }, 120 + i * 160); });   // v5.9.16：仲間の上の「しのいだ！」の文字は出さない（Jiro さん）。音・振動・盤の沈み・履歴の1行は残す
       if (live.length) { savedN += 1; say(live.map((u) => u.name).join('・') + 'は、回したおかげで倒れずにすんだ。'); }
     }
   }

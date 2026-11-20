@@ -1,7 +1,7 @@
 // v5.7.4 最初の戦闘（提案A）・初回の地点1・2は亜種なし（提案D）
 // 合格の基準（測る前に決めたもの）：
 //  1. 初めての遠征：地点1・2の戦闘は亜種なし。地点1は灯喰いネズミ（HP81、かみつき→サムライ、ためる、のしかかり16）
-//  2. 地点1を「倒」を見て回して戦う → 3ターン目に「回せば、倒れずにすむ」が出て、「しのいだ！」が1回以上、誰も倒れずに勝つ（v5.9.17：「しのいだ！」の文字は出さない。救ったことは履歴の1行「回したおかげで倒れずにすんだ」で確かめる）
+//  2. 地点1を「倒」を見て回して戦う → 3ターン目に「回せば、倒れずにすむ」が出て、「しのいだ！」が1回以上、誰も倒れずに勝つ（v5.9.16：「しのいだ！」の文字は出さない。救ったことは履歴の1行「回したおかげで倒れずにすんだ」で確かめる）
 //  3. 地点1を一度も回さずに戦う → 3ターン目の判断で「維持」に「倒」が付いている（回さないと危ないことが見える）
 //  4. 2回目の遠征（遠征1回）：地点1は専用の戦闘ではない（通常の敵）。ページのエラーなし
 const { launch, testPage } = require('./_env');
@@ -39,7 +39,7 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
       await p.waitForTimeout(50); }
     await p.waitForFunction(() => !document.getElementById('runv').hidden, null, { timeout: 4000 }).catch(() => {});   // 決着の直後は勝利の画面が出る前のことがある（機械が遅いと不安定だった）
     const r = await p.evaluate(() => ({ saved: window.__rb.log.filter((l) => /回したおかげで倒れずにすんだ/.test(l)).length, fell: window.__rb.log.filter((l) => /が倒れた/.test(l)).length, ev: window.__ev, win: !document.getElementById('runv').hidden && /勝利/.test(document.getElementById('runv').innerText) }));
-    if (pol === 'smart') ok(r.win && r.fell === 0 && r.ev.includes('hint') && r.ev.filter((x) => x === 'save').length === 0 && r.saved >= 1 /* v5.9.17：「しのいだ！」の文字は出さない。救ったことは履歴の1行で確かめる */, '2 「倒」を見て回す：勝利・倒れた ' + r.fell + '・演出 ' + JSON.stringify(r.ev));
+    if (pol === 'smart') ok(r.win && r.fell === 0 && r.ev.includes('hint') && r.ev.filter((x) => x === 'save').length === 0 && r.saved >= 1 /* v5.9.16：「しのいだ！」の文字は出さない。救ったことは履歴の1行で確かめる */, '2 「倒」を見て回す：勝利・倒れた ' + r.fell + '・演出 ' + JSON.stringify(r.ev));
     else ok(t3 && t3.sk && t3.badge && !t3.rk, '3 回さない：3ターン目の判断で維持に「倒」、回せば助かる ' + JSON.stringify(t3) + '（倒れた ' + r.fell + '）');
     ok(!errs.length, (pol === 'smart' ? '2' : '3') + ' ページのエラーなし ' + errs.join(' / ')); await ctx.close();
   }
