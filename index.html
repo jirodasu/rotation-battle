@@ -3096,7 +3096,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.19</p>
+    <p class="c-ver" id="cVer">ver 5.9.20</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3617,7 +3617,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.19';
+  const APP_VERSION = '5.9.20';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -8140,7 +8140,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     bless: { hp: 5, ward: 0.75 },
     // 出来事（v5.8.1・提案E）：地点2から、休息の地点の一部（rate）が「出来事」になる。どれも「得るものと失うもの」の札と、安全な札（全員HP+safe割）の2択。章の主は強くならない
     event: { rate: 0.4, safe: 0.3, cost: { ember: 0.2, cask: 0.15 }, shrineRests: 2, caskHp: 4 },
-    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, pairRate: { 3: 0.35, 4: 0.5, 5: 0.5 },   // pairRate：亜種を2つ重ねる戦闘の割合（v5.8.21。深さ3の敵のHP・技の底上げ deepMul はやめた。自動対戦400回で深さ3の標準の踏破率 約41%）
+    swap: true, swapBonus: { ups: 1, hp: 0 }, upHp: 7, upHpN: 2, pairRate: { 3: 0.35, 4: 0.5, 5: 0.5 },   // pairRate：亜種を2つ重ねる戦闘の割合（v5.8.21。深さ3の敵のHP・技の底上げ deepMul はやめた。自動対戦400回で深さ3の標準の踏破率 約41%）
+        // v5.9.20：強化の最大HP+upHp は1人につき最初の upHpN 回だけ（入れ替えで来た仲間の「強化済み」も1回に数える）。重ねたとき攻め役が盾役より硬くなるのを防ぐ（Jiro さん承認・A案。tools/expsim.mjs 400回で踏破率の差は1ポイント前後）
         // v5.6.2：報酬の差を縮める（突入技の強化 30.5%→46.8%・入れ替え 50.0%→42.5%。tools/expsim.mjs 400回）。強化した仲間の最大HP+upHp、入れ替えの仲間の最大HP+はなし
       refill: true, refillBonus: false, refillMax: 0.7,   // refill：仲間が欠けているときは「入れ替え」ではなく「補充」（誰も抜けずに空きマスへ加わる）。補充の仲間は見習い：強化なし・最大HPは7割
       // 報酬「仲間の入れ替え」：いまの隊にいない職業の仲間と1人入れ替える。新しい仲間は突入技の強化1回（v5.6.2 から最大HP+はなし）
@@ -9475,6 +9476,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   /* 隊の育ち（v5.3.1）：「強くなり方がわからない」への答え。報酬で増えたものを、地図と名簿で数えて見せる。数値・計算は変えない
      技の強化＝突入技の強化の回数（入れ替えで来た仲間の「強化済み」も数える）、最大HP＝手当ての回数×EXP.healMax */
   const upsOf = (m) => Object.keys(m.up || {}).reduce((a, k) => a + Math.round((m.up[k] || 0) / (EXP.up[k] || 1)), 0);
+  const upHpOf = (m) => (EXP.upHp && upsOf(m) < (EXP.upHpN || Infinity) ? EXP.upHp : 0);   // 次の強化で増える最大HP（v5.9.20：3回目からは0）
   function growLine() {
     const ups = run.members.reduce((a, m) => a + upsOf(m), 0), tend = +run.tend || 0, parts = [];
     if (run.relics.length) parts.push('レリック' + run.relics.map((id) => '「' + relD(id).name + '」').join(''));
@@ -9576,7 +9578,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, tags: (r.tag || { shield: ['回すと 被ダメ-2'], incense: ['回すと 後ろへ HP+6'], bell: ['突入技 攻+4'], stance: ['維持で 攻+2', '最大+6'] }[r.id] || []).map((x) => ({ k: 'st', t: x })), hideD: !!(r.tag || { shield: 1, incense: 1, bell: 1, stance: 1 }[r.id]) /* v5.9.8：札が出せるレリックは札だけ（説明の文は長押し） */, act: () => { const msg = relGet(r.id); SFX.buff(); return msg; } }); }
     // 上限に届いた突入技（踏み込み）は、強化の候補から外す（効かない報酬を出さない。v5.4.3）
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
-    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(EXP.upHp ? [{ k: 'st', t: '最大HP+' + EXP.upHp }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (EXP.upHp ? '・最大HP+' + EXP.upHp : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (upHpOf(m) ? '最大HP+' + upHpOf(m) + '。' : ''), hideD: true, tags: [{ k: 'st', t: expUpDesc(m).replace('ダメージ', 'ダメ') }].concat(upHpOf(m) ? [{ k: 'st', t: '最大HP+' + upHpOf(m) }] : []).concat([{ k: 'st', t: '強化 ' + (upsOf(m) + 1) + '回目' }]), act: () => { const d = expUpDesc(m), uh = upHpOf(m); m.bonus.hp = (m.bonus.hp || 0) + uh; expUpgrade(m); m.hp = Math.min(m.max, m.hp + uh); SFX.buff(); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + (uh ? '・最大HP+' + uh : '') + '）。'; } });   // 強化した仲間は最大HPも増える（v5.6.2。入れ替えの「強化済み」には付かない＝自動対戦と同じ）
     cards.push({ ico: ICON.heart, t: '手当て', d: '全員のHPが全快し、最大HP+' + EXP.healMax + '。', hideD: true, tags: [{ k: 'st', t: '全員 全快' }, { k: 'st', t: '最大HP+' + EXP.healMax + ((+run.tend || 0) ? '（合計+' + ((+run.tend || 0) + 1) * EXP.healMax + '）' : '') }], act: () => { run.tend = (+run.tend || 0) + 1; run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + EXP.healMax; applyAge(x, true); }); SFX.heal(); return '手当てをした。全員のHPが全快し、最大HP+' + EXP.healMax + '。'; } });
     // 仲間の入れ替え：いまの隊にいない職業から1人。経験を積んでいて、突入技の強化1回・最大HP+ が付く
     if (EXP.swap) {
@@ -9712,8 +9714,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (free.length) { const r = pick(free); cards.push({ ico: '<i class="gemc">' + ICON.gem + '</i>', t: '回転レリック　' + r.name, d: r.desc, act: () => relGet(r.id) }); }
     cards.push({ ico: ICON.heart, t: '灯の油', d: '全員の最大HP+' + B.hp + '（HPも同じだけ増える）。', act: () => { run.members.forEach((x) => { x.bonus.hp = (x.bonus.hp || 0) + B.hp; applyAge(x, true); }); return '灯の油で、全員の最大HP+' + B.hp + '。'; } });
     const upOk = run.members.filter((x) => !(x.entry && x.entry.cap && x.entry.atk >= x.entry.cap)), m = pick(upOk.length ? upOk : run.members);
-    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (EXP.upHp ? '最大HP+' + EXP.upHp + '。' : ''),
-      act: () => { const d = expUpDesc(m); m.bonus.hp = (m.bonus.hp || 0) + (EXP.upHp || 0); expUpgrade(m); m.hp = Math.min(m.max, m.hp + (EXP.upHp || 0)); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
+    cards.push({ ico: '<span class="uc-disc c-' + m.cls + '">' + face(m) + '</span>', t: '突入技の強化　' + m.name, d: m.jname + 'の「' + m.entry.name + '」が強くなる（' + expUpDesc(m) + '）。' + (upHpOf(m) ? '最大HP+' + upHpOf(m) + '。' : ''),
+      act: () => { const d = expUpDesc(m), uh = upHpOf(m); m.bonus.hp = (m.bonus.hp || 0) + uh; expUpgrade(m); m.hp = Math.min(m.max, m.hp + uh); return m.name + 'の「' + m.entry.name + '」が強くなった（' + d + '）。'; } });
     if (weak) cards.push({ ico: ICON.heart, t: '灯の加護', d: '第1章の敵のHPが' + Math.round((1 - B.ward) * 100) + '%少なくなる（章の主も）。前の隊の灯が、道を照らす。', act: () => { run.ward = 1; return '灯の加護。第1章の敵が弱まった。'; } });
     rvShow({ small: '環廊' + xTag() + '　·　出発の前に', title: '灯の祝福', sub: '前の隊の灯が、ひとつだけ応える。1つ選ぶ（この遠征のあいだ続く）。', cards,
       on: (i) => { const msg = cards[i].act(); try { SFX.buff(); } catch (e) { /* */ } run.events.push('出発　' + msg); grid = runGrid(); run.enemy = expEnemy(1, null, 0); toPrep(false); expSave(); then(); } });

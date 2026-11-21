@@ -238,10 +238,10 @@ export function playRun(seed, policy, strat = {}, over = {}) {
         const pw = (m) => m.hp * (m.atk + (m.heal || 0) * 2 + (m.defSup || 0) + 4);
         const out = strat.swapOut ? strat.swapOut(members, job, R) : members.reduce((a, b) => (pw(b) < pw(a) ? b : a));
         const nm = member(job, out.r, out.c, 'w' + step, cfg); members[members.indexOf(out)] = nm;
-        if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
+        if (cfg.swapBonus) { for (let k = 0; k < cfg.swapBonus.ups; k++) upgrade(nm, cfg.up); nm.ups = cfg.swapBonus.ups; nm.max += cfg.swapBonus.hp; nm.hp = nm.max; }   // 新しい仲間は経験を積んでいる
         if (cfg.swapKeep) { for (let k = 0; k < (out.ups || 0); k++) upgrade(nm, cfg.up); nm.ups = out.ups || 0; nm.max += (out.max - JOBS.find((j) => j.id === out.job).hp) ; nm.hp = nm.max; }   // 去る仲間の強化（突入技・最大HP）を引き継ぐ
       } else if (t === 'relic') { const r = pick(free); relics.push(r.id); if (r.hp) members.forEach((m) => { m.max += r.hp; m.hp += r.hp; }); }   // 灯の石：手に入れたとき全員の最大HP+
-      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; if (cfg.upHp) { m.max += cfg.upHp; m.hp += cfg.upHp; } }   // upHp：強化した仲間の最大HPも増やす（ゲームの EXP.upHp と同じ。v5.6.2）
+      else if (t === 'up') { const m = pick(members); upgrade(m, cfg.up); m.ups = (m.ups || 0) + 1; if (cfg.upHp && (!cfg.upHpN || m.ups <= cfg.upHpN)) { m.max += cfg.upHp; m.hp += cfg.upHp; } }   // upHpN：最大HPが増えるのは1人につき最初の upHpN 回だけ（ゲームの EXP.upHpN と同じ。v5.9.20）   // upHp：強化した仲間の最大HPも増やす（ゲームの EXP.upHp と同じ。v5.6.2）
       else members.forEach((m) => { m.max += cfg.healMax || 0; m.hp = m.max; });   // 手当て：全快（＋最大HP）
   };
   for (let step = 1; step <= cfg.nodes; step++) {
