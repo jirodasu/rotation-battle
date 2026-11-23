@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1520">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<title>灯を継ぐ隊列 -LAST ROTATION-</title>
+<style>
+/* v5.9.22：PC など横に広い画面の入れ物。中央にスマホと同じ縦長の枠でゲーム（index.html）を読み、左右は大聖堂の絵を暗くぼかした壁紙にする */
+html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d12; }
+.wall { position: fixed; inset: -48px; background: #0b0d12 url("img/bg_wide.webp") center 30% / cover no-repeat; filter: blur(16px) brightness(0.36) saturate(0.85); }
+.wall::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.55) 100%); }
+#game { position: fixed; top: 0; left: 50%; transform: translateX(-50%); border: 0; display: block; background: #0b0d12;
+  box-shadow: 0 0 0 1px rgba(216, 182, 96, 0.18), 0 0 48px rgba(0, 0, 0, 0.75); }
+</style>
+</head>
+<body>
+<div class="wall" aria-hidden="true"></div>
+<iframe id="game" title="灯を継ぐ隊列 -LAST ROTATION-" allow="autoplay; fullscreen"></iframe>
+<script>
+(function () {
+  var f = document.getElementById('game');
+  // 枠の大きさ：高さは画面いっぱい、幅は iPhone と同じくらいの縦長（高さ×0.462）。320〜430px に収め、画面より広くはしない
+  function fit() {
+    var w = window.innerWidth, h = window.innerHeight, W = Math.round(h * 0.462);
+    W = Math.max(320, Math.min(430, W));
+    if (w / h <= 0.62 || W > w) W = w;
+    f.style.width = W + 'px'; f.style.height = h + 'px';
+  }
+  window.addEventListener('resize', fit); fit();
+  var q = location.search;
+  f.src = 'index.html' + (q ? q + '&' : '?') + 'in=1' + location.hash;
+  f.addEventListener('load', function () { try { f.contentWindow.focus(); } catch (e) { /* 読めない */ } });
+})();
+</script>
+</body>
+</html>
