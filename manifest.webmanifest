@@ -10,7 +10,7 @@
     "fullscreen",
     "standalone"
   ],
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#2e1c10",
   "theme_color": "#2e1c10",
   "categories": [

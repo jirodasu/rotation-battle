@@ -2,6 +2,22 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
+<script>
+/* v5.9.22：画面はスマホの縦向きだけで作る。PC など横に広い画面では frame.html（左右に壁紙、中央に縦長の枠でこのページを読む）へ移る。
+   横持ちのスマホ（背が低く指で操作する画面）は移らず、「縦にしてください」を出す（#rotTip）。
+   枠の中（window.top でない）・?noframe・自動テスト（navigator.webdriver。tests/v5922.js だけは __rbFrameTest で本番と同じに動かす）は移らない */
+(function () {
+  try {
+    var auto = navigator.webdriver && !window.__rbFrameTest;
+    if (auto || /[?&]noframe/.test(location.search)) { document.documentElement.classList.add('noframe'); return; }
+    if (window.top !== window.self) return;
+    var w = window.innerWidth, h = window.innerHeight;
+    if (!w || !h) return;
+    if (window.matchMedia && matchMedia('(orientation: landscape) and (max-height: 540px) and (pointer: coarse)').matches) return;
+    if (w / h > 0.62) location.replace('frame.html' + location.search + location.hash);
+  } catch (e) { /* 移れなければ、そのまま遊べる */ }
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f1520">
 <meta name="mobile-web-app-capable" content="yes">
@@ -2983,9 +2999,23 @@ body.fast #stampOk.on { animation-duration: .5s; }
 
 /* v5.9.17 背景の動きをオフ（設定）：背景の常に動いている飾りだけを、いまの形のまま止める（消す・暗くする・差し替えはしない） */
 html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, html.bg-still .miasma b, html.bg-still .st-lamp, html.bg-still .spin, html.bg-still .o-art, html.bg-still .orbit .core, html.bg-still .orbit .crest .spinner { animation-play-state: paused !important; }   /* タイトルの紋章の回転も止める（v5.9.18） */
+
+/* v5.9.22：横持ちのスマホは「縦にしてください」で覆う（縦に戻せば消え、続きから遊べる）。PC は frame.html の縦長の枠で読むので出ない */
+#rotTip { display: none; }
+@media (orientation: landscape) and (max-height: 540px) and (pointer: coarse) {
+  html:not(.noframe) #rotTip { display: flex; position: fixed; inset: 0; z-index: 2147483000; align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(ellipse at 50% 40%, #2a1c12 0%, #0b0d12 70%); color: #ece6d6; padding: 16px; }
+}
+#rotTip .rt-phone { width: 46px; height: 78px; margin: 0 auto 18px; border: 3px solid #d8b660; border-radius: 9px; position: relative; animation: rtTurn 2.4s ease-in-out infinite; }
+#rotTip .rt-phone::after { content: ""; position: absolute; left: 50%; bottom: 5px; width: 10px; height: 3px; margin-left: -5px; border-radius: 2px; background: #d8b660; }
+#rotTip p { margin: 0; font: 800 20px/1.5 var(--serif, serif); letter-spacing: .06em; }
+#rotTip small { display: block; margin-top: 6px; font-size: 13px; opacity: .75; }
+@keyframes rtTurn { 0%, 25% { transform: rotate(-90deg); } 55%, 100% { transform: rotate(0deg); } }
+@media (prefers-reduced-motion: reduce) { #rotTip .rt-phone { animation: none; } }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
+<div id="rotTip" role="alert" aria-live="polite"><div><div class="rt-phone" aria-hidden="true"></div><p>スマホを縦にしてください</p><small>縦に戻すと、続きから遊べます</small></div></div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
   <symbol id="crest" viewBox="0 0 100 120"><path d="M50 4 92 14V52C92 84 72 104 50 116 28 104 8 84 8 52V14Z" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><path d="M50 11 85 19.5V52C85 80 67.5 97.5 50 108 32.5 97.5 15 80 15 52V19.5Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".7"/><g class="spinner"><path d="M55.1 37.6A21 21 0 0 1 70.2 63.8M65.1 72.6A21 21 0 0 1 34.9 72.6M29.8 63.8A21 21 0 0 1 44.9 37.6" fill="none" stroke="currentColor" stroke-width="4.6" stroke-linecap="round"/><path d="M75 65.2 68.4 70 65.4 62.4ZM31.3 76.1 30.4 67.9 38.5 69.1ZM43.7 32.8 51.2 36.1 46.1 42.5Z" fill="currentColor" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/></g><circle cx="50" cy="58" r="4" fill="currentColor"/></symbol>
 </defs></svg>
@@ -3104,7 +3134,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.21</p>
+    <p class="c-ver" id="cVer">ver 5.9.22</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3625,7 +3655,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.21';
+  const APP_VERSION = '5.9.22';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4393,11 +4423,16 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     };
   })();
   // 端末が音を止めたら（着信・他アプリ・画面ロックなど）、次のタップで必ず鳴らし直す
+  const ROT_Q = '(orientation: landscape) and (max-height: 540px) and (pointer: coarse)';
+  const rotNow = () => { try { return !document.documentElement.classList.contains('noframe') && matchMedia(ROT_Q).matches; } catch (e) { return false; } };   // v5.9.22：「縦にしてください」が出ている
   function wake() {
-    if (!ac || !sndOn || document.hidden) return;
+    if (!ac || !sndOn || document.hidden || rotNow()) return;
     if (ac.state !== 'running') { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); }
   }
   ['pointerdown', 'touchend', 'keydown'].forEach((ev) => document.addEventListener(ev, wake, { capture: true, passive: true }));
+  // v5.9.22：横持ちのスマホで「縦にしてください」が出ている間は、音も止める
+  try { const rotMQ = matchMedia(ROT_Q), onRot = () => { if (!ac) return; if (rotNow()) { const pr = ac.suspend(); if (pr && pr.catch) pr.catch(() => {}); } else wake(); };
+    if (rotMQ.addEventListener) rotMQ.addEventListener('change', onRot); else if (rotMQ.addListener) rotMQ.addListener(onRot); } catch (e) { /* matchMedia が無い */ }
   document.addEventListener('visibilitychange', () => {
     if (!ac) return;
     if (document.hidden) { const pr = ac.suspend(); if (pr && pr.catch) pr.catch(() => {}); }

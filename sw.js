@@ -1,6 +1,6 @@
 /* 灯を継ぐ隊列 -LAST ROTATION-（旧名：ローグライク・ローテーションバトル） — オフラインでも遊べるようにするためのサービスワーカー */
-const VERSION = 'rb-5.9.21';
-const SHELL = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png', './img/bg_tall.webp', './img/bg_wide.webp', './img/btn_gold.webp', './img/btn_dark.webp', './fonts/ShipporiMincho-700.woff', './fonts/ShipporiMincho-800.woff', './fonts/ZenKaku-500.woff', './fonts/ZenKaku-700.woff', './fonts/ZenKaku-900.woff'];
+const VERSION = 'rb-5.9.22';
+const SHELL = ['./', './index.html', './frame.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './icon-maskable-512.png', './apple-touch-icon.png', './favicon-32.png', './img/bg_tall.webp', './img/bg_wide.webp', './img/btn_gold.webp', './img/btn_dark.webp', './fonts/ShipporiMincho-700.woff', './fonts/ShipporiMincho-800.woff', './fonts/ZenKaku-500.woff', './fonts/ZenKaku-700.woff', './fonts/ZenKaku-900.woff'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -19,7 +19,9 @@ self.addEventListener('fetch', (e) => {
   if (url.pathname.includes('/classic/')) return;
   // ページ本体は新しい版を優先し、オフラインなら保存済みの版を使う
   if (req.mode === 'navigate') {
-    e.respondWith(fetch(req).then((res) => { caches.open(VERSION).then((c) => c.put('./index.html', res.clone())); return res; }).catch(() => caches.match('./index.html')));
+    // v5.9.22：PC の入れ物（frame.html）は別に保存する。以前は、どのページも index.html として保存していた
+    const key = /\/frame\.html$/.test(url.pathname) ? './frame.html' : './index.html';
+    e.respondWith(fetch(req).then((res) => { caches.open(VERSION).then((c) => c.put(key, res.clone())); return res; }).catch(() => caches.match(key)));
     return;
   }
   e.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
