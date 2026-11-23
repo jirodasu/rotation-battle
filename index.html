@@ -751,9 +751,6 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 .oc-r.oc-l b { text-align: right; font-size: 19px; }
 @media (max-width: 419px) { .oc-r.oc-l b { font-size: 19px; } }
 @media (max-width: 359px) { .oc-r.oc-l b { font-size: 17px; } }
-.t-aim .t-who { font-weight: 800; }
-.t-main .t-aim { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.t-main .t-aim .t-who { display: inline; font-size: inherit; }
 /* 背の低い画面（700px 未満）も、2行を詰めて札の高さを従来の2行と同じに（v5.5.1。盤とチュートリアルの案内の場所を減らさない） */
 @media (max-height: 700px) { .dock .btn.oc { gap: 2px; } .oc-b:not(:empty) { min-height: calc(2 * 17px + 1px); gap: 1px; } .oc-r.oc-l { min-height: 17px; gap: 4px; grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } .oc-ico.uc-disc { width: 16px; height: 16px; } .oc-r.oc-l b { font-size: 14px; line-height: 1; } }
 @media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l { grid-template-columns: 16px minmax(0, 1fr); } }
@@ -5418,17 +5415,6 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     });
     document.querySelectorAll('.ctag').forEach((g) => g.classList.remove('hit'));   // 赤は「当たる仲間」だけに出す。列の札（一・二）は光らせない（v5.3.0：「2列目まで来る」と読まれたため）
   }
-  // v5.9.21：予告の札の2段目。盤の赤い枠と同じ targetInfo の結果から、狙われる仲間の名前と位置を出す（札と盤が同じ人を指す）
-  const ROWN = ['攻撃', '補助', '回復'];
-  function aimLine(act, info, g) {
-    if (!act || !act.dmg) return '';
-    if (act.rule === 'random') return '<span class="t-aim">狙い 一番前の列からランダム</span>';
-    const row = info.row != null ? info.row : frontRow(g);
-    const us = (info.cols || []).map((c) => ({ c, u: g[row] && g[row][c] })).filter((x) => x.u);
-    if (!us.length) return '';
-    const where = '（' + (ROWN[row] || '') + '列' + (us.length === 1 ? '・' + colN(us[0].c) : '') + '）';
-    return '<span class="t-aim">狙い <span class="t-who">' + us.map((x) => x.u.name).join('・') + '</span>' + where + '</span>';
-  }
   function renderTicket() {
     if (enemy.party) { const g = showGhost(); renderPartyTicket(g, g ? previewGrid() : grid); return; }
     $('ticket').classList.remove('p', 'off'); $('stage').classList.remove('noticket'); $('foeMore').hidden = true;
@@ -5451,7 +5437,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
         '<span class="t-main"><b class="disp">' + act.name + '</b>' + (aimOf(nx) ? '<span class="t-aim">狙い ' + aimOf(nx) + '</span>' : '') + '</span>' +
         '<span class="t-dmg nx"><b class="disp">' + nx.dmg * (nx.hits || 1) + '</b><small>次に大技</small></span>';
     } else t.innerHTML = '' +   // 印は出さない（v5.3.6）
-      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + (slim && !chg && !doomIn(enemy) ? aimLine(act, info, gh ? previewGrid() : grid) : '') + (doomIn(enemy) ? '<span class="t-aim t-doom">終の刻まで あと' + doomIn(enemy) + 'ターン</span>' : '') + '</span>' +
+      '<span class="t-main"><b class="disp">' + act.name + (act.pierce ? '<em class="pierce">防無効</em>' : '') + (enemy.charged && !chg ? '<em class="pierce">大技</em>' : '') + '</b>' + (slim ? '' : '<span>' + info.desc + '</span>') + (doomIn(enemy) ? '<span class="t-aim t-doom">終の刻まで あと' + doomIn(enemy) + 'ターン</span>' : '') + '</span>' +
       (chg ? '<span class="t-dmg"><b class="disp" style="font-size:18px">' + (bnd ? '縛り' : 'ため') + '</b><small>攻撃なし</small></span>'
         : (() => { const fr2 = frontRow(gh ? previewGrid() : grid), dbl = fr2 > 0 && act.rule !== 'random', raw = (dbl ? act.dmg * 2 : act.dmg) * (act.hits || 1), h = act.rule === 'random' ? null : actHit(enemy, act), cut = !!h && h.hi < raw;   // 味方ごとに違うときは範囲を出さない（味方カードの個別の予測に一本化）。全員が軽くなるとき（静けさの衣など。v5.8.0）は、いちばん大きい数字を「軽減後」で出す
           return '<span class="t-dmg' + (dbl ? ' dbl' : '') + (cut ? ' cut' : '') + '"><b class="disp">' + (cut ? String(h.hi) : (dbl ? act.dmg * 2 : act.dmg) + (act.hits > 1 ? '<small>×' + act.hits + '</small>' : '')) + '</b><small>' + (cut && h && h.rel ? gemI([1], 'tk') : '') + (cut ? (slim ? '元' + raw : '軽減後（元' + raw + '）') : dbl ? (slim ? '2倍' : '2倍ダメージ') : slim ? '' : 'ダメージ') + '</small></span>'; })());
