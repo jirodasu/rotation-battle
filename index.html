@@ -611,8 +611,8 @@ body.boss-stage .en-u b { color: var(--ink); }
 .ep-d b { font-size: 20px; color: var(--danger); }
 .ep-d small { display: block; font-size: 10.5px; color: var(--ink-soft); margin-top: 2px; }
 .ep-badge { display: inline-block; vertical-align: 2px; margin-right: 6px; font-style: normal; padding: 1px 7px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-size: 11px; font-weight: 700; box-shadow: 0 1.5px 0 var(--accent-deep); }
-.inc {   /* 受けるダメージの札。顔に重ならないよう、肖像の左の縁から4割外に出し、首もとの高さに置く（v5.6.2。v562 で確かめる） */
-  position: absolute; left: -6px; bottom: 20%; translate: -40% 0; z-index: 3; display: inline-flex; align-items: center; gap: 3px; height: 21px; padding: 0 7px; border-radius: 11px;
+.inc {   /* 受けるダメージの札。v5.9.21：その仲間の足もとの中央（名前の札のすぐ上）に置く。左の縁の外（v5.6.2）だと、右の列では隣との間に落ちて誰の札か迷うため。顔には重ならない（v562 で確かめる） */
+  position: absolute; left: 50%; bottom: 17%; translate: -50% 0; z-index: 3; display: inline-flex; align-items: center; gap: 3px; height: 21px; padding: 0 7px; border-radius: 11px;
   background: var(--danger-strong); color: var(--on-danger); font-style: normal; font-size: 12px; font-weight: 700; line-height: 1; box-shadow: 0 2px 0 rgba(35, 49, 74, 0.25);
 }
 .inc.ko { background: #c0281b; color: #fff; box-shadow: 0 0 0 2px #fff, 0 2px 0 rgba(35, 49, 74, 0.25); animation: kopulse 0.6s ease-in-out infinite; }   /* 倒＝このターンで倒れる。いちばん強く（明るい赤・白い縁・速い脈打ち）。v5.5.7：「あと2発」より弱く見えていた */
@@ -747,6 +747,10 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 /* 幅の狭い画面：「HP」の字を省き、名前は顔のアイコンに任せて短く切る（数字は必ず全部見せる） */
 @media (max-width: 419px) { .oc-r.oc-l b small:not(.oc-more) { display: none; } .oc-r.oc-l { gap: 5px; } .oc-r.oc-l b { font-size: 15px; } .oc-r.oc-l i { max-width: 3.2em; } }
 @media (max-width: 359px) { .oc-r.oc-l i { display: none; } .oc-r.oc-l { grid-template-columns: 22px minmax(0, 1fr); } .dock .btn.oc { padding-left: 10px; padding-right: 10px; } }
+/* v5.9.21：見通しの数字は判断の答えなので、右にそろえて大きく（名前は左、数字は右。回すと維持の2枚で同じ行の数字が縦にそろう） */
+.oc-r.oc-l b { text-align: right; font-size: 19px; }
+@media (max-width: 419px) { .oc-r.oc-l b { font-size: 19px; } }
+@media (max-width: 359px) { .oc-r.oc-l b { font-size: 17px; } }
 /* 背の低い画面（700px 未満）も、2行を詰めて札の高さを従来の2行と同じに（v5.5.1。盤とチュートリアルの案内の場所を減らさない） */
 @media (max-height: 700px) { .dock .btn.oc { gap: 2px; } .oc-b:not(:empty) { min-height: calc(2 * 17px + 1px); gap: 1px; } .oc-r.oc-l { min-height: 17px; gap: 4px; grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } .oc-ico.uc-disc { width: 16px; height: 16px; } .oc-r.oc-l b { font-size: 14px; line-height: 1; } }
 @media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l { grid-template-columns: 16px minmax(0, 1fr); } }
@@ -2972,6 +2976,10 @@ body.fast #stampOk.on { animation-duration: .5s; }
   .oc-r.oc-l b { font-size: 14px; }
 }
 @media (max-height: 700px) and (max-width: 359px) { .oc-r.oc-l[data-k="hurt"] { grid-template-columns: 16px minmax(0, auto) minmax(0, 1fr); } }
+/* v5.9.21：背の低い画面・狭い画面でも、見通しの数字を行の高さに収まる範囲で大きく（14px → 17px・16px）。横向きのごく低い画面は14pxのまま */
+@media (max-height: 700px) { .oc-r.oc-l b { font-size: 17px; } }
+@media (max-width: 359px) { .oc-r.oc-l b { font-size: 15px; } }
+@media (max-height: 460px) { .oc-r.oc-l b { font-size: 14px; } }
 
 /* v5.9.17 背景の動きをオフ（設定）：背景の常に動いている飾りだけを、いまの形のまま止める（消す・暗くする・差し替えはしない） */
 html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, html.bg-still .miasma b, html.bg-still .st-lamp, html.bg-still .spin, html.bg-still .o-art, html.bg-still .orbit .core, html.bg-still .orbit .crest .spinner { animation-play-state: paused !important; }   /* タイトルの紋章の回転も止める（v5.9.18） */
@@ -3096,7 +3104,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.9.20</p>
+    <p class="c-ver" id="cVer">ver 5.9.21</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3617,7 +3625,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.9.20';
+  const APP_VERSION = '5.9.21';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
