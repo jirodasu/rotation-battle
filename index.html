@@ -3483,7 +3483,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     // 人は全員同じ縮尺（帽子の高さで体の大きさが変わらないように）。足（ft）を foot に、足もとの中心を cx に置く
     const hum = C.rig === 'human', S = hum ? fitH / 2.1 : Math.min(fitH / (bb[3] - bb[1]), fitW / (bb[2] - bb[0]));
     const tx = hum ? cx : cx - S * (bb[0] + bb[2]) / 2, ty = foot - S * (C.ft != null ? C.ft : bb[3]);
-    let h = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" aria-hidden="true" class="mimu" data-mimu="' + key + '">' + (shadow || '') + '<g filter="url(#' + filt + ')"><g transform="translate(' + tx.toFixed(2) + ' ' + ty.toFixed(2) + ') scale(' + S.toFixed(3) + ')">';
+    // 人の素材は左向き。盤の仲間は右上の敵の方を向くよう左右を反転する
+    let h = '<svg viewBox="0 0 ' + VW + ' ' + VH + '" aria-hidden="true" class="mimu" data-mimu="' + key + '">' + (shadow || '') + '<g filter="url(#' + filt + ')"><g transform="translate(' + tx.toFixed(2) + ' ' + ty.toFixed(2) + ') scale(' + (hum ? -S : S).toFixed(3) + ' ' + S.toFixed(3) + ')">';
     C.parts.forEach((p) => {
       const m = A && A.m[p.k];
       h += '<g data-m="' + p.k + '"' + (m ? ' style="transform:' + mx6(m, 0) + '"' : '') + (p.vis === false ? ' visibility="hidden"' : '') + '>';
