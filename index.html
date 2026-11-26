@@ -1571,6 +1571,13 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
 .ctag.hit { background: var(--danger-strong); color: #fff3e0; box-shadow: 0 0 0 2px rgba(150, 44, 28, 0.25); }
 .beam { border-radius: 10px; background: repeating-linear-gradient(135deg, var(--danger-a) 0 3px, transparent 3px 10px); box-shadow: inset 0 0 0 1.5px var(--danger-strong); }
 @keyframes beam { to { background-position: 0 28.3px; } }
+/* 重さの対策（v5.10 試作）：狙いの帯の縞は、背景の位置を毎こま描き直すのをやめ、縞の層を transform で流す（描き直しなし）。帯が出ていない間は止める */
+.beam { animation: none; position: relative; overflow: hidden; background: none; }
+.beam::before { content: ""; position: absolute; left: 0; right: 0; top: -29px; bottom: 0; background: repeating-linear-gradient(135deg, var(--danger-a) 0 3px, transparent 3px 10px); animation: beamT 1.3s linear infinite; will-change: transform; }
+.beam:not(.on):not(.maybe)::before { animation: none; }
+@keyframes beamT { to { transform: translateY(28.3px); } }
+.strip .lamp, .lampf .lf { will-change: opacity; }
+@media (prefers-reduced-motion: reduce) { .beam::before { animation: none; } }
 .disc { box-shadow: 0 0 0 1.5px rgba(42, 28, 16, 0.55), 0 3px 4px -1px rgba(46, 28, 10, 0.35); }
 .ring .trk { stroke: rgba(42, 28, 16, 0.14); }
 .tok .nm { border-radius: 3px; background: var(--paper); box-shadow: inset 0 0 0 1px var(--rule-a), 0 1px 2px rgba(46, 28, 10, 0.15); padding: 1px 7px 2px; }
@@ -3500,12 +3507,15 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const C = MIMU.chars[svg.dataset.mimu]; if (!C) return 0;
     const R = MIMU.rigs[C.rig], nm = name === 'atk' ? C.atk : name, A = R[nm] || R.idle; if (!A) return 0;
     const loop = nm === 'idle', dur = ms || Math.max(A.dur * 1000, loop ? 900 : 0);
+    // 重さの対策（v5.10 試作）：盤と敵の絵は、部品ごとの待機の動きをしない（約90本のアニメが毎こま見た目を計算し直していた）。息づかいは包む枠の揺れ（cbIdleW・bobW）が受け持つ。
+    //   大きく見せる画面（会話・図鑑。data-idle を付ける）だけ部品ごとに動かす
+    if (loop && !svg.closest('[data-idle]')) { (svg.__ma || []).forEach((x) => { try { x.cancel(); } catch (e) { /* 終わっている */ } }); svg.__ma = []; return 0; }
     (svg.__ma || []).forEach((a) => { try { a.cancel(); } catch (e) { /* 終わっている */ } });
     const list = [], opt = { duration: dur, iterations: loop ? Infinity : 1, fill: loop ? 'none' : 'forwards' };
     const steps = (seq, val) => { const kf = seq.map((x) => ({ offset: Math.min(1, Math.max(0, x[0])), opacity: val(x[1]), easing: 'steps(1, end)' })); if (kf[0].offset > 0) kf.unshift(Object.assign({}, kf[0], { offset: 0 })); if (kf[kf.length - 1].offset < 1) kf.push(Object.assign({}, kf[kf.length - 1], { offset: 1 })); return kf; };
     svg.querySelectorAll('g[data-m]').forEach((g) => {
       const k = g.dataset.m, m = A.m[k];
-      if (m) { const kf = []; for (let i = 0; i < A.n; i++) kf.push({ transform: mx6(m, i) }); list.push(g.animate(kf, opt)); }
+      if (m) { const kf = []; for (let i = 0; i < A.n; i++) kf.push(loop ? { transform: mx6(m, i), easing: 'steps(1, end)' } : { transform: mx6(m, i) }); list.push(g.animate(kf, opt)); }   // 待機は焼いたこま（24こま/秒）ごとに切り替え、毎こまの補間をしない（重さの対策）
       const lab = A.lab && A.lab[k], ims = g.querySelectorAll('image[data-l]');
       if (lab && ims.length > 1) {
         const have = new Set([...ims].map((x) => x.dataset.l)), part = C.parts.find((p) => p.k === k), d = part ? part.d : ims[0].dataset.l;
