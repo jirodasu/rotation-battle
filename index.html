@@ -3110,7 +3110,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
 .tk-ch.r svg { transform: scaleX(-1); }
 .tk-ch.on { transform: scale(1.05); filter: none; z-index: 2; }
 .tk-ch.off { transform: scale(.94); filter: brightness(.65) saturate(.6); }
-.tk-box { position: absolute; left: 12px; right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 56px)); height: 146px; padding: 28px 20px 0; box-sizing: border-box; border-radius: 6px;
+.tk-box { position: absolute; z-index: 4; left: 12px; right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 56px)); height: 146px; padding: 28px 20px 0; box-sizing: border-box; border-radius: 6px;
   background: linear-gradient(#17120ef2, #0e0b09f5); border: 1px solid #7a6038; box-shadow: 0 0 0 3px #0008, inset 0 0 0 1px #2c2318, 0 10px 30px #000a; }
 .tk-box::before, .tk-box::after { content: ""; position: absolute; width: 14px; height: 14px; border: 1.5px solid #c9a24d; opacity: .8; }
 .tk-box::before { left: 5px; top: 5px; border-right: 0; border-bottom: 0; } .tk-box::after { right: 5px; bottom: 5px; border-left: 0; border-top: 0; }
