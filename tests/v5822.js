@@ -171,9 +171,9 @@ const phaseIs = async (p, list, n) => { for (let i = 0; i < (n || 400); i++) { c
     const s1 = { resume: await p.evaluate(() => !document.getElementById('resume').hidden), rg: await gold('resume'), bg: await gold('begin') };
     ok(s1.resume && s1.rg && !s1.bg, '5 保存あり：「続きから」が金、「環廊へ」は暗い板 ' + JSON.stringify(s1));
     const sb = await p.evaluate(() => !document.getElementById('storyBtn').hidden);
-    if (sb) { await p.click('#storyBtn'); await p.waitForTimeout(400); const st = await p.evaluate(() => !document.getElementById('story').hidden); await p.click('#stSkip'); await p.waitForTimeout(500);
+    if (sb) { await p.click('#storyBtn'); await p.waitForTimeout(300); await p.click('#slList .sl-item[data-k="open"]'); await p.waitForTimeout(400); const st = await p.evaluate(() => !document.getElementById('story').hidden); await p.click('#stSkip'); await p.waitForTimeout(500);
       const back2 = await p.evaluate(() => document.getElementById('story').hidden && !document.getElementById('cover').hidden && !document.getElementById('resume').hidden);
-      ok(st && back2, '5 物語を開いて「とばす」でタイトルに戻る'); }
+      ok(st && back2, '5 物語（一覧の「環廊の物語」）を開いて「とばす」でタイトルに戻る'); }
     else ok(false, '5 物語のボタンが出ていない');
     await p.click('#resume'); await p.waitForTimeout(700);
     ok(await p.evaluate(() => !!window.__rb.run && document.getElementById('cover').hidden), '5 戻ったあとも「続きから」で再開できる');

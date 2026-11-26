@@ -3036,6 +3036,117 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   transform: perspective(160px) rotateX(38deg); transform-origin: 50% 0; }
 .board .strip .stone { display: none; }
 .board .strip::after { box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .55), inset 0 0 0 3px rgba(255, 255, 255, .07), inset 0 6px 10px rgba(0, 0, 0, .35) !important; }
+
+/* ===== 図鑑（v5.10 試作）：仲間7人と敵。一覧（3列）から1体を選ぶと、その1体だけの頁になる ===== */
+.c-pair { display: flex; gap: 12px; }
+.c-pair > .btn { flex: 1 1 0; min-width: 0; min-height: 54px; }
+.cover .c-btns .c-pair .btn::after { right: 15px; }
+.zk { position: fixed; inset: 0; z-index: 92; display: flex; flex-direction: column; padding: max(14px, env(safe-area-inset-top)) max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+  background: radial-gradient(ellipse 90% 60% at 50% 30%, #2c241d 0%, #16120f 60%, #0b0907 100%); color: #efe6d0; overflow: hidden; }
+.zk[hidden] { display: none; }
+.zk-head { display: flex; align-items: center; justify-content: space-between; min-height: 44px; }
+.zk-head b { font-size: 22px; letter-spacing: .2em; color: #f2deae; }
+.zk-x { width: 44px; height: 44px; border-radius: 50%; border: 1px solid #8a6f3c; background: rgba(10,10,15,.4); color: #e4d3a8; font: 700 22px/1 var(--sans); cursor: pointer; }
+.zk-tabs { display: flex; gap: 8px; margin-top: 8px; }
+.zk-tabs button { flex: 1; min-height: 44px; border-radius: 8px; border: 1px solid #5a4830; background: rgba(20,16,12,.6); color: #bfb39a; font: 700 15px var(--sans); letter-spacing: .1em; cursor: pointer; }
+.zk-tabs button.on { background: linear-gradient(#4a3a22, #2e2416); border-color: #c9a24d; color: #f6dfa4; }
+.zk-count { margin: 10px 2px 6px; font-size: 13px; color: #a99c80; letter-spacing: .06em; }
+.zk-count b { color: #f2c46a; font-size: 15px; }
+.zk-grid { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; padding: 2px 2px 12px; -webkit-overflow-scrolling: touch; }
+.zk-card { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 4px 8px; border-radius: 8px; border: 1px solid #3e3226; background: linear-gradient(#1e1813, #120e0b); color: inherit; font: inherit; cursor: pointer; min-width: 0; }
+.zk-card .zk-art { width: 100%; aspect-ratio: 4 / 3; }
+.zk-card .zk-art svg { width: 100%; height: 100%; display: block; }
+.zk-card b { font-size: 12px; line-height: 1.35; text-align: center; color: #efe2c4; word-break: keep-all; overflow-wrap: anywhere; }
+.zk-card small { font-size: 11px; color: #8f846d; }
+.zk-card.unk .zk-art svg, .zk-big.unk svg { filter: brightness(0) opacity(.55); }
+.zk-card.unk b { color: #7d7462; letter-spacing: .2em; }
+.zk-sec { grid-column: 1 / -1; margin: 6px 2px 0; font-size: 12px; letter-spacing: .2em; color: #b89a5c; }
+.zk-detail { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 4px 16px; }
+.zk-detail[hidden] { display: none; } .zk-grid[hidden], .zk-count[hidden] { display: none; }
+.zk-back { min-height: 44px; padding: 0 12px; border: 0; background: none; color: #e4d3a8; font: 700 14px var(--sans); cursor: pointer; }
+.zk-big { position: relative; height: min(240px, 32vh); margin: 4px 0 6px; background: radial-gradient(ellipse 45% 50% at 50% 60%, rgba(216,182,96,.14), transparent 70%); }
+.zk-big svg { width: 100%; height: 100%; display: block; }
+.zk-big small { position: absolute; right: 6px; bottom: 4px; font-size: 11px; color: #8f846d; }
+.zk-name { font-size: 22px; letter-spacing: .08em; color: #f2deae; }
+.zk-sub { margin: 2px 0 10px; font-size: 13px; color: #b3a68b; }
+.zk-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; font-size: 13px; color: #cbbf9f; font-variant-numeric: tabular-nums; }
+.zk-stats b { color: #f6e7c2; font-size: 16px; margin-left: 4px; }
+.zk-gim { margin: 0 0 12px; padding: 10px 12px; border-left: 2px solid #c9a24d; background: rgba(201,162,77,.08); font-size: 14px; line-height: 1.7; }
+.zk-sk { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.zk-sk li { display: flex; align-items: baseline; gap: 10px; font-size: 14px; padding: 7px 10px; border-radius: 6px; background: rgba(255,255,255,.04); }
+.zk-sk li i { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-family: var(--serif); font-weight: 800; font-size: 14px; background: #3a2c1c; color: #f2c46a; align-self: center; }
+.zk-sk li span { flex: 1; min-width: 0; }
+.zk-sk li em { font-style: normal; color: #b3a68b; font-size: 12px; }
+.zk-line { margin: 12px 0 0; font-family: var(--serif); font-weight: 700; font-size: 16px; line-height: 1.8; color: #f1e6cc; }
+.zk-note { margin: 10px 0 0; font-size: 12px; color: #8f846d; }
+
+/* ===== 会話パート（v5.10 試作）：見本（2026-11-26 sr-1・sr-2 で決定）と同じ見た目 ===== */
+.tk { position: fixed; inset: 0; z-index: 95; overflow: hidden; color: #efe6d0; font-family: var(--sans); cursor: pointer; -webkit-user-select: none; user-select: none;
+  background: radial-gradient(ellipse 90% 60% at 50% 38%, #3a2c22 0%, #1d1612 55%, #0b0907 100%); }
+.tk[hidden] { display: none; }
+.tk:focus { outline: none; }
+.tk .st-arch { opacity: .22; } .tk .st-arch path { stroke: #d8b660; }
+.tk-head { position: absolute; top: max(18px, env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; z-index: 3; }
+.tk-ttl { display: flex; flex-direction: column; gap: 2px; }
+.tk-ttl small { font: 500 11px var(--sans); letter-spacing: .3em; color: #a58c5c; }
+.tk-ttl b { font-family: var(--serif); font-weight: 800; font-size: 18px; letter-spacing: .08em; color: #f2deae; }
+.tk-skip { position: relative; min-height: 36px; padding: 6px 14px; border-radius: 999px; border: 1px solid #8a6f3c; background: rgba(10,10,15,.4); color: #e4d3a8; font: 700 13px var(--sans); cursor: pointer; }
+.tk-skip::after { content: ""; position: absolute; inset: -6px -2px; }
+.tk-win { position: absolute; left: 50%; top: 84px; width: min(232px, 60vw); transform: translateX(-50%); opacity: .46; filter: saturate(.8); }
+.tk-win svg { width: 100%; height: auto; display: block; }
+.tk-ray { position: absolute; top: 140px; left: 50%; width: min(420px, 110vw); height: calc(100% - 380px); transform: translateX(-50%); pointer-events: none; mix-blend-mode: screen; }
+.tk-ray i { position: absolute; top: 0; width: 46%; height: 100%; background: linear-gradient(rgba(240,210,140,.24), rgba(216,182,96,.08) 55%, transparent); filter: blur(6px); transition: opacity .3s; }
+.tk-ray i.l { left: 4%; clip-path: polygon(70% 0, 100% 0, 60% 100%, 0 100%); } .tk-ray i.r { right: 4%; clip-path: polygon(0 0, 30% 0, 100% 100%, 40% 100%); }
+.tk.sp-l .tk-ray i.r, .tk.sp-r .tk-ray i.l { opacity: .18; }
+.tk-glow { position: absolute; bottom: 250px; width: 280px; height: 280px; transform: translateX(-50%); background: radial-gradient(circle, rgba(216,182,96,.20) 0%, rgba(216,182,96,.07) 40%, transparent 68%); transition: left .3s ease-out; left: 30%; }
+.tk.sp-r .tk-glow { left: 70%; }
+.tk-cand { position: absolute; bottom: 236px; width: 34px; height: 120px; } .tk-cand.l { left: 6px; } .tk-cand.r { right: 6px; }
+.tk-cand svg { width: 100%; height: 100%; overflow: visible; }
+.tk-stage { position: absolute; left: 0; right: 0; bottom: 232px; height: 470px; pointer-events: none; }
+.tk-floor { position: absolute; left: 0; right: 0; bottom: -18px; height: 90px; background: linear-gradient(#0000, #2a1f17 40%, #120d0a); border-top: 1px solid #5a452c66; }
+.tk-ch { position: absolute; bottom: 0; height: min(252px, calc(100% - 0px), calc(100vh - 300px)); aspect-ratio: 230 / 300; transform-origin: center bottom; transition: transform .2s ease-out, filter .2s ease-out; }
+.tk-ch svg { width: 100%; height: 100%; overflow: visible; }
+.tk-ch.l { left: calc(50% - 178px); } .tk-ch.r { right: calc(50% - 178px); }
+.tk-ch.r svg { transform: scaleX(-1); }
+.tk-ch.on { transform: scale(1.05); filter: none; z-index: 2; }
+.tk-ch.off { transform: scale(.94); filter: brightness(.65) saturate(.6); }
+.tk-box { position: absolute; left: 12px; right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 56px)); height: 146px; padding: 28px 20px 0; box-sizing: border-box; border-radius: 6px;
+  background: linear-gradient(#17120ef2, #0e0b09f5); border: 1px solid #7a6038; box-shadow: 0 0 0 3px #0008, inset 0 0 0 1px #2c2318, 0 10px 30px #000a; }
+.tk-box::before, .tk-box::after { content: ""; position: absolute; width: 14px; height: 14px; border: 1.5px solid #c9a24d; opacity: .8; }
+.tk-box::before { left: 5px; top: 5px; border-right: 0; border-bottom: 0; } .tk-box::after { right: 5px; bottom: 5px; border-left: 0; border-top: 0; }
+.tk-edge { position: absolute; top: -1px; height: 2px; width: 46%; background: linear-gradient(90deg, transparent, #d8b660, transparent); }
+.tk.sp-l .tk-edge { left: 4%; } .tk.sp-r .tk-edge { right: 4%; }
+.tk-name { position: absolute; top: -17px; padding: 6px 18px 5px; border-radius: 3px; background: linear-gradient(#4a3a22, #2e2416); border: 1px solid #c9a24d; font-family: var(--serif); font-weight: 800; font-size: 16px; letter-spacing: .2em; color: #f6dfa4; }
+.tk-name small { font: 500 10px var(--sans); letter-spacing: .1em; color: #c7b083; margin-left: 8px; }
+.tk-name i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; box-shadow: 0 0 6px currentColor; }
+.tk-name.l { left: 16px; } .tk-name.r { right: 16px; }
+.tk-txt { margin: 0; font-family: var(--serif); font-weight: 700; font-size: clamp(15px, 4.5vw, 17.5px); line-height: 1.75; letter-spacing: .01em; line-break: strict; text-shadow: 0 2px 8px #000; }
+.tk-txt em { font-style: normal; color: #f2c46a; }
+.tk-foot { position: absolute; right: 14px; bottom: 9px; display: flex; align-items: center; gap: 10px; font: 500 11px var(--sans); color: #7f7663; letter-spacing: .1em; }
+.tk-foot b { font: 700 13px var(--sans); color: #d8b660; letter-spacing: .12em; }
+.tk-next { width: 0; height: 0; border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 9px solid #f2c46a; animation: tkBob 2s ease-in-out infinite; }
+@keyframes tkBob { 50% { transform: translateY(4px); } }
+@media (max-height: 700px) { .tk-win { width: min(170px, 46vw); top: 74px; } .tk-cand { display: none; } }
+@media (prefers-reduced-motion: reduce) { .tk-next { animation: none; } .tk-ch, .tk-glow, .tk-ray i { transition: none; } }
+/* 勝ったあとの「会話が開いた」札 */
+.tc { position: fixed; inset: 0; z-index: 94; display: grid; place-items: center; padding: 16px; background: rgba(6,5,4,.62); }
+.tc[hidden] { display: none; }
+.tc-card { width: min(340px, 100%); padding: 20px 20px 16px; border-radius: 10px; background: linear-gradient(#211a14, #120e0b); border: 1px solid #8a6f3c; box-shadow: 0 12px 40px #000c; text-align: center; color: #efe6d0; }
+.tc-card small { display: block; font-size: 12px; letter-spacing: .3em; color: #c9a24d; }
+.tc-card b { display: block; margin: 8px 0 4px; font-family: var(--serif); font-weight: 800; font-size: 20px; color: #f2deae; }
+.tc-card p { margin: 0 0 16px; font-size: 13px; color: #b3a68b; }
+.tc-btns { display: flex; gap: 10px; } .tc-btns .btn { flex: 1; min-height: 48px; } .tc-btns .btn:not(.primary) { background: linear-gradient(#3a2e22, #241c15); border-color: #6b5636; color: #e4d3a8; }
+/* 物語の一覧 */
+.sl { position: fixed; inset: 0; z-index: 93; display: flex; flex-direction: column; padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
+  background: radial-gradient(ellipse 90% 60% at 50% 30%, #2c241d 0%, #16120f 60%, #0b0907 100%); color: #efe6d0; }
+.sl[hidden] { display: none; }
+.sl-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 10px 2px; }
+.sl-item { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 16px; border-radius: 8px; border: 1px solid #5a4830; background: linear-gradient(#211a14, #140f0c); color: inherit; font: inherit; text-align: left; cursor: pointer; min-height: 64px; }
+.sl-item b { font-family: var(--serif); font-weight: 800; font-size: 16px; color: #f2deae; letter-spacing: .06em; }
+.sl-item small { font-size: 12px; color: #a99c80; line-height: 1.5; }
+.sl-item small em { font-style: normal; color: #f2c46a; }
+.sl-item.lock { cursor: default; border-color: #3a3026; opacity: .75; }
+.sl-item.lock b { color: #8f846d; }
 </style>
 </head>
 <body class="is-cover" data-ch="0">
@@ -3166,7 +3277,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <button class="btn primary big stack" id="resume" type="button" hidden><b class="disp">続きから</b><small id="resumeSub"></small></button>
       <button class="btn primary big stack" id="begin" type="button"><b class="disp">環廊へ</b><small id="beginSub">4人で下る</small></button>
       <button class="btn set-open" id="setBtn" type="button">設定</button>
-      <button class="btn st-open" id="storyBtn" type="button" hidden>物語</button>
+      <div class="c-pair"><button class="btn st-open" id="storyBtn" type="button" hidden>物語</button><button class="btn zk-open" id="zukanBtn" type="button">図鑑</button></div>
       <button class="btn" id="installBtn" type="button" hidden>ホーム画面に追加して全画面で遊ぶ</button>
       <p class="install" id="installIos">全画面で遊ぶには、Safariの<b>共有</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 12v8h14v-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>から<b>「ホーム画面に追加」</b></p>
       <button class="btn big stack" id="beginTut" type="button"><b class="disp">チュートリアル</b><small id="tutSub">操作しながら一つずつ覚える</small></button>
@@ -3255,6 +3366,21 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   </div>
 </div>
 
+<div class="tc" id="talkCard" role="dialog" aria-modal="true" aria-label="会話が開いた" hidden><div class="tc-card"><small>会話が開いた</small><b id="tcTitle"></b><p id="tcWho"></p><div class="tc-btns"><button class="btn" id="tcLater" type="button">あとで</button><button class="btn primary" id="tcGo" type="button">見る</button></div></div></div>
+<div class="sl" id="storyList" role="dialog" aria-modal="true" aria-label="物語" hidden><div class="zk-head"><b class="disp">物語</b><button class="zk-x" id="slX" type="button" aria-label="閉じる">×</button></div><div class="sl-list" id="slList"></div></div>
+<div class="tk" id="talkView" role="dialog" aria-modal="true" aria-label="会話" tabindex="-1" data-idle hidden>
+  <svg class="st-arch" viewBox="0 0 320 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="#c9a24d" stroke-width="1.2"><path d="M18 560V220Q88 90 158 220V560"/><path d="M162 560V220Q232 90 302 220V560"/><path d="M38 560V236Q88 150 138 236V560"/><path d="M182 560V236Q232 150 282 236V560"/></g></svg><div class="tk-glow"></div><div class="tk-win"><svg viewBox="0 0 300 300"><defs><radialGradient id="wg" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#f3d78c" stop-opacity=".35"/><stop offset=".7" stop-color="#b98a3a" stop-opacity=".1"/><stop offset="1" stop-color="#3a2a18" stop-opacity="0"/></radialGradient></defs><circle cx="150" cy="150" r="150" fill="url(#wg)"/><circle cx="150" cy="150" r="124" fill="#14100a"/><g><path d="M150.0 110.0 L150.0 58.0 A92 92 0 0 1 185.2 65.0 L165.3 113.0 A40 40 0 0 0 150.0 110.0Z" fill="#6a2424"/><path d="M165.3 113.0 L185.2 65.0 A92 92 0 0 1 215.1 84.9 L178.3 121.7 A40 40 0 0 0 165.3 113.0Z" fill="#22365c"/><path d="M178.3 121.7 L215.1 84.9 A92 92 0 0 1 235.0 114.8 L187.0 134.7 A40 40 0 0 0 178.3 121.7Z" fill="#7a5a22"/><path d="M187.0 134.7 L235.0 114.8 A92 92 0 0 1 242.0 150.0 L190.0 150.0 A40 40 0 0 0 187.0 134.7Z" fill="#2c4a3a"/><path d="M190.0 150.0 L242.0 150.0 A92 92 0 0 1 235.0 185.2 L187.0 165.3 A40 40 0 0 0 190.0 150.0Z" fill="#6a2424"/><path d="M187.0 165.3 L235.0 185.2 A92 92 0 0 1 215.1 215.1 L178.3 178.3 A40 40 0 0 0 187.0 165.3Z" fill="#22365c"/><path d="M178.3 178.3 L215.1 215.1 A92 92 0 0 1 185.2 235.0 L165.3 187.0 A40 40 0 0 0 178.3 178.3Z" fill="#7a5a22"/><path d="M165.3 187.0 L185.2 235.0 A92 92 0 0 1 150.0 242.0 L150.0 190.0 A40 40 0 0 0 165.3 187.0Z" fill="#2c4a3a"/><path d="M150.0 190.0 L150.0 242.0 A92 92 0 0 1 114.8 235.0 L134.7 187.0 A40 40 0 0 0 150.0 190.0Z" fill="#6a2424"/><path d="M134.7 187.0 L114.8 235.0 A92 92 0 0 1 84.9 215.1 L121.7 178.3 A40 40 0 0 0 134.7 187.0Z" fill="#22365c"/><path d="M121.7 178.3 L84.9 215.1 A92 92 0 0 1 65.0 185.2 L113.0 165.3 A40 40 0 0 0 121.7 178.3Z" fill="#7a5a22"/><path d="M113.0 165.3 L65.0 185.2 A92 92 0 0 1 58.0 150.0 L110.0 150.0 A40 40 0 0 0 113.0 165.3Z" fill="#2c4a3a"/><path d="M110.0 150.0 L58.0 150.0 A92 92 0 0 1 65.0 114.8 L113.0 134.7 A40 40 0 0 0 110.0 150.0Z" fill="#6a2424"/><path d="M113.0 134.7 L65.0 114.8 A92 92 0 0 1 84.9 84.9 L121.7 121.7 A40 40 0 0 0 113.0 134.7Z" fill="#22365c"/><path d="M121.7 121.7 L84.9 84.9 A92 92 0 0 1 114.8 65.0 L134.7 113.0 A40 40 0 0 0 121.7 121.7Z" fill="#7a5a22"/><path d="M134.7 113.0 L114.8 65.0 A92 92 0 0 1 150.0 58.0 L150.0 110.0 A40 40 0 0 0 134.7 113.0Z" fill="#2c4a3a"/><circle cx="150" cy="150" r="38" fill="#c9a24d"/><circle cx="150" cy="150" r="24" fill="#f0d488"/></g><g stroke="#14100a" stroke-width="3.2"><line x1="190.0" y1="150.0" x2="242.0" y2="150.0"/><line x1="187.0" y1="165.3" x2="235.0" y2="185.2"/><line x1="178.3" y1="178.3" x2="215.1" y2="215.1"/><line x1="165.3" y1="187.0" x2="185.2" y2="235.0"/><line x1="150.0" y1="190.0" x2="150.0" y2="242.0"/><line x1="134.7" y1="187.0" x2="114.8" y2="235.0"/><line x1="121.7" y1="178.3" x2="84.9" y2="215.1"/><line x1="113.0" y1="165.3" x2="65.0" y2="185.2"/><line x1="110.0" y1="150.0" x2="58.0" y2="150.0"/><line x1="113.0" y1="134.7" x2="65.0" y2="114.8"/><line x1="121.7" y1="121.7" x2="84.9" y2="84.9"/><line x1="134.7" y1="113.0" x2="114.8" y2="65.0"/><line x1="150.0" y1="110.0" x2="150.0" y2="58.0"/><line x1="165.3" y1="113.0" x2="185.2" y2="65.0"/><line x1="178.3" y1="121.7" x2="215.1" y2="84.9"/><line x1="187.0" y1="134.7" x2="235.0" y2="114.8"/></g><circle cx="150" cy="150" r="92" fill="none" stroke="#14100a" stroke-width="4"/><circle cx="150" cy="150" r="40" fill="none" stroke="#14100a" stroke-width="4"/><circle cx="258.0" cy="150.0" r="13" fill="#6a2424" stroke="#14100a" stroke-width="3"/><circle cx="243.5" cy="204.0" r="13" fill="#22365c" stroke="#14100a" stroke-width="3"/><circle cx="204.0" cy="243.5" r="13" fill="#7a5a22" stroke="#14100a" stroke-width="3"/><circle cx="150.0" cy="258.0" r="13" fill="#6a2424" stroke="#14100a" stroke-width="3"/><circle cx="96.0" cy="243.5" r="13" fill="#22365c" stroke="#14100a" stroke-width="3"/><circle cx="56.5" cy="204.0" r="13" fill="#7a5a22" stroke="#14100a" stroke-width="3"/><circle cx="42.0" cy="150.0" r="13" fill="#6a2424" stroke="#14100a" stroke-width="3"/><circle cx="56.5" cy="96.0" r="13" fill="#22365c" stroke="#14100a" stroke-width="3"/><circle cx="96.0" cy="56.5" r="13" fill="#7a5a22" stroke="#14100a" stroke-width="3"/><circle cx="150.0" cy="42.0" r="13" fill="#6a2424" stroke="#14100a" stroke-width="3"/><circle cx="204.0" cy="56.5" r="13" fill="#22365c" stroke="#14100a" stroke-width="3"/><circle cx="243.5" cy="96.0" r="13" fill="#7a5a22" stroke="#14100a" stroke-width="3"/><circle cx="150" cy="150" r="124" fill="none" stroke="#8a6d3a" stroke-width="3"/></svg></div><div class="tk-ray"><i class="l"></i><i class="r"></i></div><div class="tk-dust"></div><div class="tk-cand l"><svg viewBox="0 0 34 120"><ellipse cx="17" cy="12" rx="17" ry="22" fill="#f3c46a" opacity=".16"/><path d="M17 3c4 6 4 10 0 14c-4-4-4-8 0-14z" fill="#ffd98a"/><rect x="12" y="17" width="10" height="56" rx="2" fill="#e9dcc0"/><path d="M4 73h26l-4 8H8z" fill="#8a6a3a"/><rect x="15" y="81" width="4" height="31" fill="#6b5232"/><path d="M6 112h22v6H6z" fill="#6b5232"/></svg></div><div class="tk-cand r"><svg viewBox="0 0 34 120"><ellipse cx="17" cy="12" rx="17" ry="22" fill="#f3c46a" opacity=".16"/><path d="M17 3c4 6 4 10 0 14c-4-4-4-8 0-14z" fill="#ffd98a"/><rect x="12" y="17" width="10" height="56" rx="2" fill="#e9dcc0"/><path d="M4 73h26l-4 8H8z" fill="#8a6a3a"/><rect x="15" y="81" width="4" height="31" fill="#6b5232"/><path d="M6 112h22v6H6z" fill="#6b5232"/></svg></div>
+  <div class="tk-head"><div class="tk-ttl"><small id="tkSmall"></small><b id="tkTitle"></b></div><button class="tk-skip" id="tkSkip" type="button">とばす ›</button></div>
+  <div class="tk-stage"><div class="tk-floor"></div><div class="tk-ch l" id="tkL"></div><div class="tk-ch r" id="tkR"></div></div>
+  <div class="tk-box"><i class="tk-edge"></i><span class="tk-name l" id="tkName"></span><p class="tk-txt" id="tkTxt" aria-live="polite"></p><div class="tk-foot"><span id="tkN"></span><b>タップで次へ</b><i class="tk-next"></i></div></div>
+</div>
+<div class="zk" id="zukan" role="dialog" aria-modal="true" aria-label="図鑑" hidden>
+  <div class="zk-head"><b class="disp">図鑑</b><button class="zk-x" id="zkX" type="button" aria-label="閉じる">×</button></div>
+  <div class="zk-tabs" role="tablist"><button id="zkT0" type="button" role="tab" aria-selected="true" class="on">仲間</button><button id="zkT1" type="button" role="tab" aria-selected="false">敵</button></div>
+  <p class="zk-count" id="zkCount"></p>
+  <div class="zk-grid" id="zkGrid"></div>
+  <div class="zk-detail" id="zkDetail" data-idle hidden></div>
+</div>
 <div class="story" id="story" role="dialog" aria-modal="true" aria-label="環廊の物語" tabindex="-1" hidden>
   <svg class="st-arch" viewBox="0 0 320 560" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><g fill="none" stroke="#c9a24d" stroke-width="1.2"><path d="M18 560V220Q88 90 158 220V560"/><path d="M162 560V220Q232 90 302 220V560"/><path d="M38 560V236Q88 150 138 236V560"/><path d="M182 560V236Q232 150 282 236V560"/></g></svg>
   <button class="st-skip" id="stSkip" type="button">とばす ›</button>
@@ -6830,6 +6956,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       enemy.party = edef.party.map((m) => Object.assign({}, m, { pattern: m.pattern.map((a) => Object.assign({}, a)), max: m.hp, charged: false, defUp: 0, defNext: 0 }));
       enemy.def = 0; enemy.spd = Math.max.apply(null, enemy.party.map((f) => f.spd)); syncParty(); enemy.max = enemy.hp;
     }
+    if (run && run.mode === 'exp' && !tut && edef.zk) zkSet((z) => { zkKeys(edef).forEach((k) => { z.seen[k] = 1; }); });   // 図鑑：会った敵
     const lastFight = !!(run && !tut && enemy.boss);
     document.body.classList.toggle('boss-stage', lastFight);
     Music.boss(lastFight);
@@ -7542,7 +7669,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       if (!tut && run && EXPM() && !last && !window.__rbKeepWinPanel && !qaOn) {   // QAでは報酬へ進まず、勝利パネルで止める   // __rbKeepWinPanel：テストの一部だけが使う（以前の勝利パネル）
         let mv = null; Object.keys(stats.dealt).forEach((id) => { if (!mv || stats.dealt[id] > stats.dealt[mv]) mv = id; });
         expWin = { stars: gotStars, sub: turn + 'ターンで撃破' + (savedN ? '・しのいだ' + savedN + '回' : '') + (mv && stats.who[mv] ? '・いちばん活躍 ' + stats.who[mv].name : '') + '。' };
-        setTimeout(() => { if (phase !== 'over' || lastResult !== 'win' || !$('result').hidden || !$('runv').hidden) return; const ev = expAfterBattle(true); expReward(ev); }, RM ? 0 : 650);
+        setTimeout(() => { if (phase !== 'over' || lastResult !== 'win' || !$('result').hidden || !$('runv').hidden) return; const ev = expAfterBattle(true); talkGate(() => expReward(ev)); }, RM ? 0 : 650);
         return;
       }
     } else {
@@ -7564,7 +7691,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (tut) { if (lastResult === 'win') askNewRun(); else beginTutorial(); return; }
     if (EXPM()) {
       $('result').hidden = true;
-      if (lastResult === 'win') { const ev = expAfterBattle(true); if (run.node + 1 >= EXP.nodes) expEnd(true, ev); else expReward(ev); }
+      if (lastResult === 'win') { const ev = expAfterBattle(true); talkGate(() => { if (run.node + 1 >= EXP.nodes) expEnd(true, ev); else expReward(ev); }); }
       else expEnd(false, expAfterBattle(false));
       return;
     }
@@ -9428,6 +9555,19 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     { id: 'honor', t: '隊の誉れ', d: '3つの隊で踏破する', un: 'twin', ok: (S, x) => Object.keys(x.won).filter((k) => x.won[k] > 0).map((k) => k.split(':')[0]).filter((v, i, a) => a.indexOf(v) === i).length >= 3 }
   ];
   const xObj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
+  // 図鑑の記録（v5.10・2026-11-26 承認）：rb-exp に zk＝{ seen:{敵:1}, kill:{敵:倒した数}, talk:{深さ:1開いた/2読んだ} } を足す。前の版の記録には無いので、
+  //   どれかの深さを踏破していれば、第1〜3章で必ず会う敵を「会った」にする（倒した数は0から）
+  const ZK_BASE = ['rat', 'binder', 'giant', 'oddnose', 'statue', 'priest', 'judge', 'lizard', 'chorus', 'dragon'];
+  function zkGet(mm) {
+    const m = mm || expMeta(), z = xObj(m.zk), o = { seen: Object.assign({}, xObj(z.seen)), kill: Object.assign({}, xObj(z.kill)), talk: Object.assign({}, xObj(z.talk)) };
+    if (!m.zk && (+m.clears > 0 || Object.keys(xObj(m.won)).length)) ZK_BASE.forEach((k) => { o.seen[k] = 1; });
+    return o;
+  }
+  function zkSet(fn) {
+    const m = expMeta(), z = zkGet(m); fn(z); m.zk = z;
+    try { localStorage.setItem(EXP_META, JSON.stringify(m)); } catch (e) { /* 保存できない環境 */ }
+  }
+  const zkKeys = (e) => (!e || !e.zk ? [] : e.zk === 'trinity' ? ['statue', 'priest', 'judge'] : [e.zk]);
   function xmeta(mm) {
     const m = mm || expMeta(), x = { ach: Object.assign({}, xObj(m.ach)), won: Object.assign({}, xObj(m.won)), bought: Object.assign({}, xObj(m.bought)), spent: +m.spent || 0, pick: xObj(m.pick) };
     if (+m.clears > 0) x.ach.first = 1;      // これまでの踏破は「初めての突破」に数える
@@ -9599,8 +9739,9 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const nr = chief && !(run && (run.relics || []).includes('chart')) ? (rests == null ? (run && (run.chRests != null ? run.chRests : run.rests)) || 0 : rests) : 0, kh = 1 + EXP.restPen.hp * nr, kd = 1 + EXP.restPen.dmg * nr;
     const base = k === 'first' ? firstFoe() : k === 'boss' ? BOSS : typeof k === 'number' ? ENEMIES[k] : EXP[k] || ENEMIES[0], art = k === 'first' ? 0 : k === 'boss' ? BOSS.art : typeof k === 'number' ? k : base.art;
     const vs = vkeys(vkey), v = vs.length ? vs.reduce((o, k) => { const x = VARIANTS[k]; return { pre: o.pre + x.pre, hp: o.hp * (x.hp || 1), dmg: o.dmg * (x.dmg || 1), def: o.def + (x.def || 0), f: [o.f, x.f].filter(Boolean).join(' '), eat: o.eat || x.eat, starve: o.starve || x.starve, layer: o.layer || x.layer }; }, { pre: '', hp: 1, dmg: 1, def: 0, f: '' }) : null;   // 亜種は1つか2つ（深さ3）。重ねるときは掛け合わせる
-    if (base.party) return { name: base.name, party: base.party, chief: false, ch, variant: null, vf: null, art: 0, boss: false, restUp: 0, par: base.par, allowFallen: base.allowFallen, hp: base.party.reduce((a, f) => a + f.hp, 0), spd: 0, def: 0, voice: 'club', pattern: [{ name: '三位一体', glyph: '三', rule: 'party' }] };
+    if (base.party) return { zk: 'trinity', name: base.name, party: base.party, chief: false, ch, variant: null, vf: null, art: 0, boss: false, restUp: 0, par: base.par, allowFallen: base.allowFallen, hp: base.party.reduce((a, f) => a + f.hp, 0), spd: 0, def: 0, voice: 'club', pattern: [{ name: '三位一体', glyph: '三', rule: 'party' }] };
     return Object.assign({}, base, {
+      zk: k === 'first' ? 'rat' : k === 'boss' ? 'dragon' : typeof k === 'number' ? (['rat', 'giant', 'oddnose'][k] || 'rat') : k,
       name: (v ? v.pre : '') + (k === 'binder' ? BINDER_NAME : base.name), chief, ch, variant: v ? vkey : null, vf: v ? v.f : base.f || null, art, def: base.def + ((v && v.def) || 0),
       eat: (v && v.eat) || null, starve: !!(v && v.starve), layer: !!(v && v.layer),
       hp: Math.round(base.hp * EXP.hp[t] * kh * ((v && v.hp) || 1) * (run && run.ward && ch === 0 ? EXP.bless.ward : 1) * (lampOn() ? EXP.lampCfg.hpMul : 1)), boss: k === 'boss', restUp: nr,
@@ -9696,7 +9837,9 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   function expAfterBattle(win) {
     if (snapshot) runSaveForm(snapshot.filter((x) => x.u.hp > 0));
     if (win && ((enemy && enemy.party) || (run.enemy && run.enemy.party))) run.triWon = true;   // 実績「三位一体を討つ」
+    if (win && run.enemy && run.enemy.zk) zkSet((z) => { zkKeys(run.enemy).forEach((k) => { z.seen[k] = 1; z.kill[k] = (+z.kill[k] || 0) + 1; }); });   // 図鑑：倒した数
     const dead = run.members.filter((m) => m.hp <= 0);
+    if (win) run.talkNew = talkCheck(run.enemy, dead.length) || run.talkNew || null;   // 会話パートの条件（v5.10）
     dead.forEach((m) => { m.lastWord = lastWordOf(m); run.gone.push(Object.assign(m, { fate: 'fallen' })); run.events.push('地点' + (run.node + 1) + '　' + m.name + '（' + m.jname + '）が倒れた「' + m.lastWord + '」'); });
     if (dead.length) setTimeout(() => SFX.fallen(), 250);
     run.members = run.members.filter((m) => m.hp > 0);
@@ -10068,12 +10211,198 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   $('story').addEventListener('click', (ev) => { if (ev.target.closest('#stSkip, #stGo')) return; if (stI < stPages.length - 1) { storyShow(stI + 1); stSfx(stI); } });   // ページごとの音（v5.6.0）
   $('stSkip').addEventListener('click', () => { SFX.tap(); closeStory(true); });
   $('stGo').addEventListener('click', () => { if (stThen && !stEnd) SFX.start(); else SFX.tap(); closeStory(true); });   // 「遠征へ」は出発の音
-  $('storyBtn').addEventListener('click', () => { SFX.tap(); stPages = story2Seen() ? STORY_OPEN.concat(STORY_CONT) : STORY_OPEN; openStory(null); });
+  $('storyBtn').addEventListener('click', () => { SFX.tap(); storyList(); });   // 物語：冒頭の物語と会話の一覧（v5.10）
   document.addEventListener('keydown', (ev) => { if ($('story').hidden) return;
     if (ev.key === 'Escape') { ev.preventDefault(); closeStory(true); return; }
     if ((ev.key === 'Enter' || ev.key === ' ' || ev.key === 'ArrowRight') && document.activeElement !== $('stSkip') && document.activeElement !== $('stGo')) { ev.preventDefault(); if (stI < stPages.length - 1) { storyShow(stI + 1); stSfx(stI); } }
     else if (ev.key === 'ArrowLeft' && stI > 0) { ev.preventDefault(); storyShow(stI - 1); $('story').focus(); } });   // 開いたときは物語そのものに焦点（Enter で「とばす」が押されないように・v5.6.0）。← で1枚戻る
   $('storyBtn').hidden = !storySeen();
+  /* ===== 図鑑（v5.10 試作・2026-11-26 承認）：仲間7人と本編の敵13体。一覧から1体を選ぶと、その1体だけの頁（1画面に判断は1つ）。
+     会っていない敵は影と「？？？」、使える隊のない仲間は影と「〇〇で会える」。大きな絵だけ部品ごとに待機の動きをし、絵を押すと攻撃の動き */
+  const ZK_PARTY = [
+    { job: 'warrior', line: '前は任せろ。灯をかじる奴に、遠慮はいらない。' },
+    { job: 'knight', line: '騎士の役目だ。前が崩れなければ、後ろは崩れない。' },
+    { job: 'samurai', line: '拙者の刃は、誰よりも先に届く。' },
+    { job: 'witch', line: 'ふふ……起きている間の一刻は、大事にしたいの。' },
+    { job: 'cleric', line: '誰かの傷が癒えるなら、それで十分ですよ。' },
+    { job: 'monk', line: '喝！　踏ん張るのが、拙僧の修行です。' },
+    { job: 'archer', line: '風が教えてくれるから、的は外さないよ。' }];
+  const ZK_JOB_ART = { warrior: 'warrior', knight: 'knight', samurai: 'samurai', witch: 'witch', cleric: 'cleric', monk: 'monk', archer: 'archer' };
+  const ZK_FOES = [
+    { sec: '第1章　祈りの間' },
+    { k: 'rat', art: 'rat', def: () => ENEMIES[0], where: '第1章の戦闘', gim: 'ためてから大技を出す。いちばん最初に戦う敵。' },
+    { k: 'binder', art: 'spider', def: () => Object.assign({}, EXP.binder, { name: BINDER_NAME }), where: '第1章・第2章の戦闘', gim: '糸で縛られた仲間は、次のターンに回せない。' },
+    { k: 'giant', art: 'cyclope', def: () => ENEMIES[1], where: '第1章の主', gim: '騎士を狙う。ためたあとの大技をしのぐ。' },
+    { k: 'sentinel', art: 'orc', def: () => EXP.sentinel, where: '深さ4から・第1章', gim: 'HPがいちばん多い仲間を狙う（同じなら左）。' },
+    { sec: '第2章　貝殻の書庫' },
+    { k: 'oddnose', art: 'goblin', def: () => ENEMIES[2], where: '第2章の主', gim: '速い。3回の打撃と、防御を無視する大技を持つ。' },
+    { k: 'statue', art: 'f_statue', tri: 0, where: '第2章の三位一体', gim: () => '生きているあいだ、ほかの2体が受けるダメージを' + (TRI.share === 0.5 ? '半分' : Math.round(TRI.share * 100) + '%') + 'にする。' },
+    { k: 'priest', art: 'f_priest', tri: 1, where: '第2章の三位一体', gim: '放っておくと、ほかの2体を癒す。' },
+    { k: 'judge', art: 'f_judge', tri: 2, where: '第2章の三位一体', gim: 'いちばん弱った仲間を狙う。' },
+    { k: 'gate', art: 'slime', def: () => EXP.gate, where: '深さ4から・第2章', gim: () => 'この敵と戦うあいだ、回すのに気力' + (EXP.gate.rotCost || 3) + 'が要る。' },
+    { sec: '第3章　' + EXP_CH[2] },
+    { k: 'lizard', art: 'worm', def: () => EXP.lizard, where: '第3章の戦闘', gim: 'いちばん後ろの列（回復列）の全員を払う。' },
+    { k: 'chorus', art: 'ghost', def: () => EXP.chorus, where: '第3章の戦闘', gim: '回して入ったばかりの仲間を狙う。' },
+    { k: 'hourglass', art: 'crow', def: () => EXP.hourglass, where: '深さ4から・第3章', gim: '8ターン目に、全員へ防御を無視する大技「終の刻」。' },
+    { k: 'dragon', art: 'demon', def: () => BOSS, where: '第3章の主・最後の戦い', gim: '防御を無視する息吹の前に、元気な列を前へ出す。' }];
+  const zkAim = (a) => ({ all: '全員', lowhp: 'HPがいちばん低い仲間', highhp: 'HPがいちばん多い仲間', back: '回復列の全員', mid: '補助列の全員', random: 'ランダム', charge: '次の大技のためにためる', bind: '縛る（次のターン回せない）', mend: 'ほかの敵を回復', job: '' })[a.rule] != null
+    ? (a.rule === 'job' ? a.job + 'を狙う' : ({ all: '全員', lowhp: 'HPがいちばん低い仲間', highhp: 'HPがいちばん多い仲間', back: '回復列の全員', mid: '補助列の全員', random: 'ランダム', charge: '次の大技のためにためる', bind: '縛る（次のターン回せない）', mend: 'ほかの敵を回復' })[a.rule]) : '';
+  const zkFoeDef = (f) => (f.tri != null ? TRI.foes[f.tri] : f.def());
+  const zkArt = (key, big) => (MIMU && MIMU.chars[key] ? mimuSVG(key, 240, 180, 120, 172, big ? 160 : 150, big ? 220 : 210, 'mimuOLe', '') : '');
+  let zkTab = 0;
+  function zkSquadOf(job) { const x = xmeta(); return XSQ.filter((q) => q.party.some((p) => p[0] === job)).map((q) => ({ q, open: xSqOpen(q.id, x) })); }
+  function zkList() {
+    const z = zkGet(), g = $('zkGrid'); $('zkDetail').hidden = true; g.hidden = false; $('zkCount').hidden = false;
+    $('zkT0').classList.toggle('on', zkTab === 0); $('zkT1').classList.toggle('on', zkTab === 1);
+    $('zkT0').setAttribute('aria-selected', String(zkTab === 0)); $('zkT1').setAttribute('aria-selected', String(zkTab === 1));
+    if (zkTab === 0) {
+      const met = ZK_PARTY.filter((p) => zkSquadOf(p.job).some((x) => x.open)).length;
+      $('zkCount').innerHTML = '会える仲間 <b>' + met + '</b> / ' + ZK_PARTY.length;
+      g.innerHTML = ZK_PARTY.map((p, i) => { const J = JOBS.find((j) => j.id === p.job), ok = zkSquadOf(p.job).some((x) => x.open);
+        return '<button class="zk-card' + (ok ? '' : ' unk') + '" type="button" data-i="' + i + '"><span class="zk-art">' + zkArt(ZK_JOB_ART[p.job]) + '</span><b>' + (ok ? HOUSE[p.job] : '？？？') + '</b><small>' + J.name + '</small></button>'; }).join('');
+    } else {
+      const all = ZK_FOES.filter((f) => f.k), n = all.filter((f) => z.seen[f.k]).length;
+      $('zkCount').innerHTML = '会った敵 <b>' + n + '</b> / ' + all.length;
+      g.innerHTML = ZK_FOES.map((f, i) => { if (f.sec) return '<p class="zk-sec">' + f.sec + '</p>'; const ok = !!z.seen[f.k];
+        return '<button class="zk-card' + (ok ? '' : ' unk') + '" type="button" data-i="' + i + '"><span class="zk-art">' + zkArt(f.art) + '</span><b>' + (ok ? zkFoeDef(f).name : '？？？') + '</b></button>'; }).join('');
+    }
+    g.scrollTop = 0;
+  }
+  function zkShow(i) {
+    const z = zkGet(), d = $('zkDetail'); let h = '<button class="zk-back" id="zkBack" type="button">‹ 一覧へ</button>';
+    if (zkTab === 0) {
+      const p = ZK_PARTY[i], J = JOBS.find((j) => j.id === p.job), sq = zkSquadOf(p.job), ok = sq.some((x) => x.open);
+      h += '<div class="zk-big' + (ok ? '' : ' unk') + '" id="zkBig">' + zkArt(ZK_JOB_ART[p.job], true) + (ok ? '<small>絵を押すと攻撃</small>' : '') + '</div>';
+      if (!ok) h += '<b class="zk-name disp">？？？</b><p class="zk-sub">' + J.name + '　·　' + sq.map((x) => x.q.name).join('・') + 'で会える</p>';
+      else h += '<b class="zk-name disp">' + HOUSE[p.job] + '</b><p class="zk-sub">' + J.name + '　·　' + ROLE[J.cls] + '　·　' + sq.filter((x) => x.open).map((x) => x.q.name).join('・') + '</p>' +
+        '<div class="zk-stats"><span>HP<b>' + J.hp + '</b></span><span>攻撃<b>' + J.atk + '</b></span><span>速さ<b>' + J.spd + '</b></span>' + (J.heal ? '<span>回復<b>' + J.heal + '</b></span>' : '') + '</div>' +
+        '<p class="zk-gim">突入技「' + J.entry.name + '」　' + J.entry.desc + '</p><p class="zk-line">「' + p.line + '」</p>';
+    } else {
+      const f = ZK_FOES[i], ok = !!z.seen[f.k], e = zkFoeDef(f), gim = typeof f.gim === 'function' ? f.gim() : f.gim;
+      h += '<div class="zk-big' + (ok ? '' : ' unk') + '" id="zkBig">' + zkArt(f.art, true) + (ok ? '<small>絵を押すと攻撃</small>' : '') + '</div>';
+      if (!ok) h += '<b class="zk-name disp">？？？</b><p class="zk-sub">' + f.where + 'で会える</p>';
+      else h += '<b class="zk-name disp">' + e.name + '</b><p class="zk-sub">' + f.where + '　·　倒した数 ' + (+z.kill[f.k] || 0) + '</p>' +
+        '<div class="zk-stats"><span>HP<b>' + e.hp + '</b></span><span>速さ<b>' + e.spd + '</b></span><span>防御<b>' + (e.def || 0) + '</b></span></div>' +
+        '<p class="zk-gim">' + gim + '</p><ul class="zk-sk">' + e.pattern.map((a) => '<li><i>' + (a.glyph || '・') + '</i><span>' + a.name + (a.pierce ? '（防御無効）' : '') + '<br><em>' + zkAim(a) + (a.dmg ? '　' + a.dmg + (a.hits ? '×' + a.hits : '') : '') + '</em></span></li>').join('') + '</ul>' +
+        '<p class="zk-note">数値は基礎の値。深い地点ほど強くなる。</p>';
+    }
+    d.innerHTML = h; d.hidden = false; $('zkGrid').hidden = true; $('zkCount').hidden = true; d.scrollTop = 0;
+    $('zkBack').addEventListener('click', () => { SFX.tap(); zkList(); });
+    const big = $('zkBig'); if (big && !big.classList.contains('unk')) big.addEventListener('click', () => { mimuPlay(big.querySelector('svg.mimu'), 'atk'); });
+  }
+
+  /* ===== 会話パート（v5.10 試作・2026-11-26 承認）：深さごとに1つ。その深さ・その隊で、ある敵をある倒し方で倒すと開き、勝ったあと報酬の前に1回だけ出る。
+     「あとで」でも、タイトルの「物語」からいつでも読める。開いた・読んだは図鑑の記録（zk.talk）に残す */
+  const TALKS = [
+    { d: 1, title: '灯を継ぐ理由', sq: 'std', who: ['warrior', 'cleric'], foe: 'rat', turns: 6, cond: '標準の隊で、灯喰いネズミを6ターン以内に倒す', lines: [
+      ['r', 'Idle', 'お見事。ネズミが逃げる間もありませんでしたね。'], ['l', 'Idle', '灯をかじる奴に、遠慮はいらない。'],
+      ['r', 'Idle', 'ここまで来た冒険者は、たいてい財宝の話をします。'], ['l', 'Idle', '財宝が目当てなら、引き返せ。拾いに来たのは、<em>消えかけた灯</em>だ。'],
+      ['r', 'Angry', 'ふふ、頼もしいこと。……昔の私も、そう言いました。'], ['l', 'Idle', '昔？'],
+      ['r', 'Idle', 'いいえ。年寄りの独り言ですよ。'], ['l', 'Idle', '……先へ行こう。灯が待ってる。']] },
+    { d: 2, title: '矢と刃', sq: 'fast', who: ['samurai', 'archer'], foe: 'giant', turns: 8, cond: '速攻の隊で、一つ目の巨人を8ターン以内に倒す', lines: [
+      ['r', 'Idle', '見た？　わたしの矢のほうが先に刺さったよね。'], ['l', 'Idle', '否。拙者の刃が先に届いておった。'],
+      ['r', 'Sad', 'えー、絶対わたしだって。風がそう言ってたもん。'], ['l', 'Idle', '風は口をきかぬ。'],
+      ['r', 'Idle', 'きくよ。サギリが聞いてないだけ。'], ['l', 'Idle', '……ならば、次の巨人で確かめるとしよう。'],
+      ['r', 'Idle', 'いいね。負けたほうが、帰り道の荷物持ち！'], ['l', 'Idle', '心得た。……荷は軽くしておくことだ。'],
+      ['r', 'Sad', 'それ、負ける気まんまんじゃない？'], ['l', 'Idle', '勝つ者は驕らぬものでござる。']] },
+    { d: 3, title: '背中と踏ん張り', sq: 'guard', who: ['knight', 'monk'], foe: 'oddnose', noFall: true, cond: '堅守の隊で、鼻曲がりの書守を誰も倒れずに倒す', lines: [
+      ['r', 'Happy', '喝！　誰も倒れずに済みましたな。'], ['l', 'Idle', 'あの突進をよく受け止めた。'],
+      ['r', 'Idle', '拙僧は踏ん張っただけ。背中を守ったのは、カスガイ殿です。'], ['l', 'Idle', '騎士の役目だ。前が崩れなければ、後ろは崩れない。'],
+      ['r', 'Idle', '前とは、拙僧のことで？'], ['l', 'Idle', 'そうだ。前に回ったお前が倒れぬから、私は盾を構えていられる。'],
+      ['r', 'Idle', '……修行が報われた気がします。合掌。'], ['l', 'Idle', '礼は底に着いてからでいい。'],
+      ['r', 'Happy', 'では、底まで踏ん張りましょう。喝！']] },
+    { d: 4, title: '時を告げる鴉', sq: 'twin', who: ['witch', 'warrior'], foe: 'hourglass', turns: 7, cond: '双魔の隊で、時告げの大鴉を7ターン以内に倒す', lines: [
+      ['r', 'Idle', '鴉が鳴く前に片づいたな。'], ['l', 'Idle', 'ふふ……八つ目の刻まで待つなんて、退屈でしょう？'],
+      ['r', 'Idle', 'いつも眠そうなのに、時間にだけはうるさいな。'], ['l', 'Idle', '眠いのは、起きている時間を魔法に食べられるからよ。'],
+      ['l', 'Idle', 'だから、起きている間の一刻は大事にしたいの。'], ['r', 'Idle', '……そうか。なら、無駄にはさせない。'],
+      ['l', 'Happy', 'あら、優しいこと。じゃあ次は、もっと早く倒して。'], ['r', 'Idle', '注文が多いな。'],
+      ['l', 'Idle', '実験には注文がつきものなのよ。……ふぁ。']] }];
+  const TALK_ROLE = { tank: '#e0705a', atk: '#e0705a', sup: '#7fa6e0', heal: '#7fc79a' };
+  // 勝った戦闘で、まだ開いていない会話の条件を満たしたか（ルール・数値は変えない。戦闘が持っている値を読むだけ）
+  function talkCheck(e, fell) {
+    if (!run || run.mode !== 'exp' || !e || !e.zk) return null;
+    const z = zkGet(), t = TALKS.find((x) => x.d === (run.depth || 1) && x.sq === run.sq && zkKeys(e).includes(x.foe));
+    if (!t || z.talk[t.d]) return null;
+    if (t.turns && turn > t.turns) return null;
+    if (t.noFall && fell > 0) return null;
+    zkSet((zz) => { zz.talk[t.d] = 1; });
+    return t;
+  }
+  // 勝ったあと報酬の前に、開いた会話の札を出す。見る→会話→次へ／あとで→次へ
+  function talkGate(next) {
+    const t = run && run.talkNew; if (!t) { next(); return; }
+    if (navigator.webdriver && !window.__rbTalk) { run.talkNew = null; next(); return; }   // 自動テストでは札を出さない（会話は開いたまま記録）。札のテストは __rbTalk を立てる
+    run.talkNew = null;
+    const c = $('talkCard');
+    $('tcTitle').textContent = '深さ' + t.d + '「' + t.title + '」';
+    $('tcWho').textContent = t.who.map((j) => HOUSE[j]).join('と') + 'の会話';
+    c.hidden = false; try { $('tcGo').focus(); } catch (e) { /* */ }
+    const done = (see) => { c.hidden = true; $('tcGo').onclick = $('tcLater').onclick = null; if (see) talkPlay(t, next); else next(); };
+    $('tcGo').onclick = () => { SFX.tap(); done(true); };
+    $('tcLater').onclick = () => { SFX.tap(); done(false); };
+  }
+  let tkCur = null;
+  function talkPlay(t, then) {
+    const v = $('talkView');
+    const art = (j) => (MIMU && MIMU.chars[j] ? mimuSVG(j, 230, 300, 115, 292, 270, 230, 'mimuOL', '') : '');
+    $('tkL').innerHTML = art(t.who[0]); $('tkR').innerHTML = art(t.who[1]);
+    $('tkSmall').textContent = '深さ' + t.d + 'の会話'; $('tkTitle').textContent = t.title;
+    tkCur = { t, i: 0, then }; v.hidden = false; talkStep();
+    try { v.focus(); } catch (e) { /* */ }
+  }
+  function talkFace(side, face) {
+    $(side === 'l' ? 'tkL' : 'tkR').querySelectorAll('g[data-m$="Face"] image[data-l]').forEach((im) => {
+      im.getAnimations && im.getAnimations().forEach((a) => a.cancel());
+      im.setAttribute('opacity', im.dataset.l === face ? '1' : '0');
+    });
+  }
+  function talkStep() {
+    const { t, i } = tkCur, [side, face, txt] = t.lines[i], job = t.who[side === 'l' ? 0 : 1], J = JOBS.find((x) => x.id === job);
+    const v = $('talkView'); v.classList.toggle('sp-l', side === 'l'); v.classList.toggle('sp-r', side === 'r');
+    $('tkL').classList.toggle('on', side === 'l'); $('tkL').classList.toggle('off', side !== 'l');
+    $('tkR').classList.toggle('on', side === 'r'); $('tkR').classList.toggle('off', side !== 'r');
+    const nm = $('tkName'); nm.className = 'tk-name ' + side;
+    nm.innerHTML = '<i style="color:' + TALK_ROLE[J.cls] + ';background:' + TALK_ROLE[J.cls] + '"></i>' + HOUSE[job] + '<small>' + J.name + '</small>';
+    $('tkTxt').innerHTML = txt; $('tkN').textContent = (i + 1) + ' / ' + t.lines.length;
+    // 待機の動きが表情を上書きしないよう、少し待ってから表情を付ける
+    setTimeout(() => talkFace(side, face), 30);
+  }
+  function talkEnd() {
+    if (!tkCur) return;
+    const { t, then } = tkCur; tkCur = null;
+    zkSet((z) => { z.talk[t.d] = 2; });
+    $('talkView').hidden = true; $('tkL').innerHTML = ''; $('tkR').innerHTML = '';
+    if (then) then();
+  }
+  let tkLock = 0;
+  $('talkView').addEventListener('click', (ev) => {
+    if (!tkCur || ev.target.closest('#tkSkip')) return;
+    const now = performance.now(); if (now < tkLock) return; tkLock = now + 220;   // 続けて押しても2枚進まない
+    SFX.tap();
+    if (tkCur.i + 1 >= tkCur.t.lines.length) talkEnd(); else { tkCur.i += 1; talkStep(); }
+  });
+  $('tkSkip').addEventListener('click', (ev) => { ev.stopPropagation(); SFX.tap(); talkEnd(); });
+  // タイトルの「物語」：冒頭の物語と、深さ1〜4の会話の一覧
+  function storyList() {
+    const z = zkGet(), x = xmeta(), L = $('slList');
+    L.innerHTML = '<button class="sl-item" type="button" data-k="open"><b>環廊の物語</b><small>はじまりの物語</small></button>' +
+      TALKS.map((t) => { const open = !!z.talk[t.d], dOpen = xDepthOpen(t.d, x);
+        return '<button class="sl-item' + (open ? '' : ' lock') + '" type="button" data-k="' + t.d + '"' + (open ? '' : ' aria-disabled="true"') + '><b>深さ' + t.d + '　' + (open ? t.title : '？？？') + '</b><small>' +
+          (open ? t.who.map((j) => HOUSE[j]).join('・') + (z.talk[t.d] === 1 ? '　·　<em>まだ読んでいない</em>' : '') : dOpen ? '会話：' + t.cond : '深さ' + t.d + 'で開く') + '</small></button>'; }).join('');
+    $('storyList').hidden = false;
+  }
+  $('slX').addEventListener('click', () => { SFX.tap(); $('storyList').hidden = true; try { $('storyBtn').focus(); } catch (e) { /* */ } });
+  $('slList').addEventListener('click', (ev) => {
+    const b = ev.target.closest('.sl-item'); if (!b || b.classList.contains('lock')) return; SFX.tap();
+    if (b.dataset.k === 'open') { $('storyList').hidden = true; stPages = story2Seen() ? STORY_OPEN.concat(STORY_CONT) : STORY_OPEN; openStory(null); return; }
+    const t = TALKS.find((x) => x.d === +b.dataset.k); if (t) talkPlay(t, () => storyList());
+  });
+  $('zukanBtn').addEventListener('click', () => { SFX.tap(); zkTab = 0; $('zukan').hidden = false; zkList(); try { $('zkX').focus(); } catch (e) { /* */ } });
+  $('zkX').addEventListener('click', () => { SFX.tap(); $('zukan').hidden = true; try { $('zukanBtn').focus(); } catch (e) { /* */ } });
+  $('zkT0').addEventListener('click', () => { SFX.tap(); zkTab = 0; zkList(); });
+  $('zkT1').addEventListener('click', () => { SFX.tap(); zkTab = 1; zkList(); });
+  $('zkGrid').addEventListener('click', (ev) => { const c = ev.target.closest('.zk-card'); if (!c) return; SFX.tap(); zkShow(+c.dataset.i); });
+
 
   function askNewRun() {
     const sv = expSaved();
