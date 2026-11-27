@@ -1,9 +1,9 @@
 // v5.9.2 表紙の絵：7人の仲間が描かれた背景（縦・横）に差し替え、表紙の紋（丸い3つの顔）を隠す（2026-11-18 ユーザー承認）
 // 合格の基準（測る前に決めたもの）：
-//  1 縦の画面は bg_tall、横の画面は bg_wide を読み込めている（幅 1024 / 1536）
+//  （v5.10.2 で表紙を bg_title.webp の1枚と MiMU の仲間に差し替え。1・3・4 を新しい表紙の基準に置き換え）
+//  1 どの画面も bg_title を読み込めている（幅 1024）
 //  2 紋は見えない（visibility: hidden）。場所は残るので、題字・キャッチコピー・ボタンの縦の並びは重ならない
-//  3 縦に長い画面（390×844・430×932）だけ絵を 7vh 下げる。375×667・320×568 は下げない
-//  4 横持ちのスマホ（844×390）は縦 25% の位置、タブレットの横持ち（1024×768）は左寄せで 16vh 下げる
+//  3・4 絵の中の前列の足もと（y=778）が、隠した紋の下端とそろう（±1.5px）
 //  5 どの画面もページのエラーなし
 const { launch, testPage } = require('./_env');
 const path = require('path');
@@ -22,16 +22,18 @@ const DIR = path.join(__dirname, 'out');
       const loaded = await new Promise((res) => { const im = new Image(); im.onload = () => res(im.naturalWidth); im.onerror = () => res(0); im.src = url; });
       const box = (s) => { const e = document.querySelector(s); if (!e || getComputedStyle(e).display === 'none' || !e.offsetParent) return null; const q = e.getBoundingClientRect(); return { t: q.top, b: q.bottom, l: q.left, r: q.right }; };
       const layers = cs.backgroundImage.split(/,\s*(?=linear-gradient|radial-gradient|url|none)/), ui = layers.findIndex((x) => /^url/.test(x));
-      return { url, loaded, pos: cs.backgroundPosition.split(',')[ui].trim(), orbit: getComputedStyle(document.querySelector('.orbit')).visibility, title: box('.c-title'), tag: box('.c-tag'), btns: box('.c-btns'), vh: innerHeight };
+      const sz = parseFloat(cs.backgroundSize.split(',')[ui]); const orbB = document.querySelector('.orbit').getBoundingClientRect().bottom;
+      return { sz, orbB, url, loaded, pos: cs.backgroundPosition.split(',')[ui].trim(), orbit: getComputedStyle(document.querySelector('.orbit')).visibility, title: box('.c-title'), tag: box('.c-tag'), btns: box('.c-btns'), vh: innerHeight };
     });
     const tag = w + '×' + h;
     const land = w > h;
-    ok((land ? /bg_wide\.webp$/ : /bg_tall\.webp$/).test(r.url) && r.loaded === (land ? 1536 : 1024), tag + ' 1 背景の絵（' + r.url.split('/').pop() + '・幅' + r.loaded + '）');
+    ok(/bg_title\.webp$/.test(r.url) && r.loaded === 1024, tag + ' 1 背景の絵（' + r.url.split('/').pop() + '・幅' + r.loaded + '）');
     const stacked = !land ? (r.title && r.btns && r.title.b <= r.btns.t + 1 && (!r.tag || r.tag.b <= r.btns.t + 1)) : (r.title && r.btns && r.title.r <= r.btns.l + 1);
     ok(r.orbit === 'hidden' && stacked, tag + ' 2 紋は見えず、題字とボタンは重ならない（' + r.orbit + '）');
     const last = r.pos;   // 絵（url の層）の位置。上を暗くつなぐグラデーションの層は見ない
-    const want = { tall7: (s) => /^50% /.test(s) && Math.abs(parseFloat(s.split(' ')[1]) - r.vh * 0.07) < 1.5, top: (s) => s === '50% 0%', phoneL: (s) => s === '50% 25%', tabL: (s) => /^0% /.test(s) && Math.abs(parseFloat(s.split(' ')[1]) - r.vh * 0.16) < 1.5 }[kind];
-    ok(want(last), tag + ' ' + (kind === 'tall7' || kind === 'top' ? '3' : '4') + ' 絵の位置（' + kind + '）：' + last);
+    const foot = parseFloat(last.split(' ')[1]) + 778 * r.sz / 1024;
+    const want = () => Math.abs(foot - r.orbB) < 1.5;
+    ok(want(last), tag + ' ' + (kind === 'tall7' || kind === 'top' ? '3' : '4') + ' 絵の足もとが紋の下端にそろう（' + foot.toFixed(1) + '／' + r.orbB.toFixed(1) + '）');
     ok(!errs.length, tag + ' 5 ページのエラーなし ' + errs.join(' / '));
     await p.screenshot({ path: path.join(DIR, 'v592_' + w + 'x' + h + '.png') });
     await ctx.close();
