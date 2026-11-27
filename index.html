@@ -741,7 +741,7 @@ body:has(#stage.trio) .dock .btn.oc { gap: 2px; padding-top: 6px; padding-bottom
 @keyframes ocAlarm { 0%, 100% { filter: none; } 40% { filter: brightness(1.5) drop-shadow(0 0 4px rgba(255, 110, 80, 0.75)); } }
 @media (prefers-reduced-motion: reduce) { .oc-r b.roll, .oc-r b.roll.alarm { animation: none; } }
 .oc-r b.bad { color: var(--danger-strong); } .oc-r b.ko { color: var(--danger-strong); text-decoration: underline; text-underline-offset: 2px; } .oc-r b.good { color: #3f8f55; }
-.oc-r b.why { grid-column: 1 / -1; font-weight: 700; }
+.oc-r b.why { grid-column: 1 / -1; font-weight: 700; white-space: normal; overflow: visible; text-overflow: clip; word-break: keep-all; overflow-wrap: anywhere; line-height: 1.3; }   /* v5.10.1：1行に収まらず左右が切れていたので、・の所で2行に折る */
 .btn.primary .oc-r b.bad, .btn.primary .oc-r b.ko { color: #8a1d0e; } .btn.primary .oc-r b.good { color: #24582f; }
 :root[data-skin="goth"] .dock .btn:not(.primary) .oc-r b.good { color: #8fd49c; }
 #btnRotate.oc .rot-meter { justify-self: start; }
@@ -1237,6 +1237,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .tip.tight { padding: 8px 10px 8px 12px; }
 .tip.tight b::before { display: none; }
 .tip.tight p { font-size: 12px; line-height: 1.45; }
+.tip p.sq { letter-spacing: -.06em; }
 .tip button { grid-row: 1 / span 2; grid-column: 2; min-height: 44px; min-width: 56px; padding: 0 14px; }
 .ico.rs { color: var(--accent); }
 .tip[data-k="stars"] b::before { content: "このゲームの目標"; }
@@ -2374,8 +2375,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .set-about { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule-a); display: grid; gap: 6px; }
 .set-about h3 { margin: 0; font-size: 16px; color: var(--ink); }
 .set-about p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); }
-.set-about dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
-.set-about dt { color: var(--ink); font-weight: 700; }
+.set-about dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+.set-about dt { color: var(--ink); font-weight: 700; margin-top: 6px; white-space: nowrap; }   /* v5.10.1：項目名は1行、内容はその下（横に並べると項目名の列が細くなり「キャラク／ター」と折れた） */
+.set-about dt:first-child { margin-top: 0; }
 .set-about dd { margin: 0; }
 .set-contact { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
 .set-contact b { color: var(--ink); }
@@ -2803,6 +2805,9 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 /* 画面の上に重なる窓（あそびかた・設定・敵の詳細・履歴）が開いている間は、吹き出しを出さない（v5.3.7） */
 body:has(#help:not([hidden])) .rb-bubble, body:has(#settings:not([hidden])) .rb-bubble, body:has(#logSheet:not([hidden])) .rb-bubble, body:has(#foeSheet:not([hidden])) .rb-bubble { display: none !important; }
 .rb-bubble { text-wrap: pretty; }
+.jw { word-break: keep-all; overflow-wrap: anywhere; line-break: strict; }   /* v5.10.1：jaWrap() で <wbr> を入れた文は、その切れ目だけで折る */
+#help, .set-about, .zk-detail, .tut-band { word-break: auto-phrase; line-break: strict; }   /* v5.10.1：<wbr> を入れていない所も、Chrome は文節で・Safari は長音や小さい字を行頭にしない */
+@media (orientation: portrait) { .rv-card { word-break: auto-phrase; line-break: strict; } }   /* v5.10.1：横の画面では文節で折ると行が増え、突破の画面の「とばす」が下にはみ出した（縦の画面だけ） */
 .rb-bubble { position: fixed; z-index: 90; max-width: min(78vw, 300px); padding: 8px 12px; border-radius: 10px; background: #1b2132; color: #f3e6c4; font-size: 14px; font-weight: 700; line-height: 1.45; box-shadow: 0 0 0 1px rgba(230, 184, 76, .55), 0 8px 18px rgba(0, 0, 0, .45); pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .18s, transform .18s; }
 .rb-bubble.on { opacity: 1; transform: none; }
 .rb-bubble::after { content: ""; position: absolute; left: var(--ax, 50%); top: 100%; width: 10px; height: 10px; margin-left: -5px; margin-top: -5px; background: inherit; transform: rotate(45deg); box-shadow: 1px 1px 0 rgba(230, 184, 76, .55); }
@@ -3071,6 +3076,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
 .zk-sub { margin: 2px 0 10px; font-size: 13px; color: #b3a68b; }
 .zk-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; font-size: 13px; color: #cbbf9f; font-variant-numeric: tabular-nums; }
 .zk-stats b { color: #f6e7c2; font-size: 16px; margin-left: 4px; }
+.zk-ent b, .zk-ent span { display: block; } .zk-ent b { font-weight: 700; color: #e8d3a0; } .zk-ent span { word-break: keep-all; overflow-wrap: anywhere; }   /* v5.10.1：技名と効果を別の行に（320pxで「+4」だけ次の行に残っていた） */
 .zk-gim { margin: 0 0 12px; padding: 10px 12px; border-left: 2px solid #c9a24d; background: rgba(201,162,77,.08); font-size: 14px; line-height: 1.7; }
 .zk-sk { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .zk-sk li { display: flex; align-items: baseline; gap: 10px; font-size: 14px; padding: 7px 10px; border-radius: 6px; background: rgba(255,255,255,.04); }
@@ -3079,6 +3085,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
 .zk-sk li em { font-style: normal; color: #b3a68b; font-size: 12px; }
 .zk-line { margin: 12px 0 0; font-family: var(--serif); font-weight: 700; font-size: 16px; line-height: 1.8; color: #f1e6cc; }
 .zk-note { margin: 10px 0 0; font-size: 12px; color: #8f846d; }
+.zk-note.zk-ex { font-size: 13px; color: #d9c79a; }   /* v5.10.1：初回の地点1だけの違い。基礎の注記より読める色で */
 
 /* ===== 会話パート（v5.10 試作）：見本（2026-11-26 sr-1・sr-2 で決定）と同じ見た目 ===== */
 .tk { position: fixed; inset: 0; z-index: 95; overflow: hidden; color: #efe6d0; font-family: var(--sans); cursor: pointer; -webkit-user-select: none; user-select: none;
@@ -3120,7 +3127,9 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
 .tk-name small { font: 500 10px var(--sans); letter-spacing: .1em; color: #c7b083; margin-left: 8px; }
 .tk-name i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; box-shadow: 0 0 6px currentColor; }
 .tk-name.l { left: 16px; } .tk-name.r { right: 16px; }
-.tk-txt { margin: 0; font-family: var(--serif); font-weight: 700; font-size: clamp(15px, 4.5vw, 17.5px); line-height: 1.75; letter-spacing: .01em; line-break: strict; text-shadow: 0 2px 8px #000; }
+.tk-txt.tight { letter-spacing: -.06em; }   /* 文節で折ると3行になる時は、まず字間だけ少し詰める（字の大きさは変えない） */
+.tk-txt.loose { word-break: normal; }
+.tk-txt { word-break: keep-all; overflow-wrap: anywhere; margin: 0; font-family: var(--serif); font-weight: 700; font-size: clamp(15px, 4.5vw, 17.5px); line-height: 1.75; letter-spacing: .01em; line-break: strict; text-shadow: 0 2px 8px #000; }
 .tk-txt em { font-style: normal; color: #f2c46a; }
 .tk-foot { position: absolute; right: 14px; bottom: 9px; display: flex; align-items: center; gap: 10px; font: 500 11px var(--sans); color: #7f7663; letter-spacing: .1em; }
 .tk-foot b { font: 700 13px var(--sans); color: #d8b660; letter-spacing: .12em; }
@@ -3270,7 +3279,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.10.0</p>
+    <p class="c-ver" id="cVer">ver 5.10.1</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3341,8 +3350,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
         <dt>企画・制作</dt><dd>jirodasu</dd>
         <dt>制作協力</dt><dd>Claude（Anthropic）</dd>
         <dt>書体</dt><dd>Shippori Mincho B1／Zen Kaku Gothic New（Google Fonts・SIL Open Font License）</dd>
-        <dt>キャラクターの絵</dt><dd>MiMU STUDIO<br><a href="https://assetstore.unity.com/publishers/1600" target="_blank" rel="noopener noreferrer">https://assetstore.unity.com/publishers/1600</a></dd>
-        <dt>背景・画面の絵と音</dt><dd>このゲームのために、コードで描き、その場で合成しています。</dd>
+        <dt class="jw">キャラクターの<wbr>絵</dt><dd>MiMU STUDIO<br><a href="https://assetstore.unity.com/publishers/1600" target="_blank" rel="noopener noreferrer">https://assetstore.unity.com/publishers/1600</a></dd>
+        <dt class="jw">背景・<wbr>画面の<wbr>絵と<wbr>音</dt><dd>このゲームのために、コードで描き、その場で合成しています。</dd>
       </dl>
       <p class="set-note">進行の記録は、この端末のブラウザの中にだけ保存され、サーバーには送られません。</p>
       <p class="set-contact"><b>不具合・ご意見</b><a href="https://github.com/jirodasu/rotation-battle/issues" target="_blank" rel="noopener noreferrer">GitHub の Issues へ</a></p>
@@ -3437,7 +3446,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   <p class="en-skip" id="enSkip">タップで早送り</p>
 </div>
 
-<div class="tip" id="tip" role="status" hidden><b class="disp" id="tipT"></b><p id="tipB"></p><button class="btn" id="tipOk" type="button">わかった</button></div>
+<div class="tip" id="tip" role="status" hidden><b class="disp" id="tipT"></b><p id="tipB" class="jw"></p><button class="btn" id="tipOk" type="button">わかった</button></div>
 <div class="result runv" id="runv" role="dialog" aria-live="polite" hidden>
   <div class="r-card rv-card">
     <small class="disp" id="rvSmall"></small>
@@ -3864,7 +3873,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.10.0';
+  const APP_VERSION = '5.10.1';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -4794,6 +4803,22 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   }
   const pct = (u) => Math.round(u.hp / u.max * 100);
   const resetFlags = () => roster.forEach((u) => { u.atkReady = true; u.defReady = true; });
+  /* v5.10.1：日本語の折り返しを文節の切れ目に（「来／る」「でし／たね」「職／業」を防ぐ）。
+     ひらがな・句読点のあとで、次がひらがな・閉じ括弧・長音・小さい字でない所にだけ <wbr> を入れる。入れた要素は .jw（keep-all）で、ほかの所では折らない。
+     1語が1行より長い時は overflow-wrap: anywhere で折るので、はみ出さない */
+  const JW_L = /[\u3041-\u309f、。！？」』）・]/, JW_R = /[^\u3041-\u309f、。，．！？!?）」』】〉ー…‥・ぁぃぅぇぉっゃゅょゎァィゥェォッャュョヮ)\]\s0-9０-９+＋\-−]/;   // 数字・符号の前では折らない（「あと／2ターン」を防ぐ）
+  function jaWrap(html) {
+    let last = '';
+    return String(html).split(/(<[^>]*>)/).map((seg) => {
+      if (!seg || seg[0] === '<') { if (/^<br/i.test(seg)) last = ''; return seg; }
+      let out = '';
+      for (const ch of seg) { if (last && JW_L.test(last) && JW_R.test(ch)) out += '<wbr>'; out += ch; last = ch; }
+      return out;
+    }).join('');
+  }
+  // あそびかた（HTMLに書いてある文）も、最初に1回だけ文節の切れ目を入れる
+  document.querySelectorAll('#help li > div, #help p').forEach((el) => { if (el.querySelector('svg, button, input')) return; el.innerHTML = jaWrap(el.innerHTML); el.classList.add('jw'); });
+  const jwEsc = (t) => jaWrap(String(t).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch])));
   const say = (t) => { logLines.push(t); if (logLines.length > 60) logLines.shift(); };
   const slotEl = (r, c) => $('board').querySelector('.slot[data-r="' + r + '"][data-c="' + c + '"]');
   const tokEl = (r, c) => { const s = slotEl(r, c); return s && s.querySelector('.tok'); };
@@ -5042,9 +5067,11 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
         const top = nb ? nb.bottom + 1 : sb.bottom - 6;
         const sc = Math.min(1, dr.width / 95), cx = (dr.left + dr.right) / 2;
         const cbd = !!d1.closest('.tok.cb');   // ちびキャラ（v5.6.9）：札は体の横、胸の高さ（帽子・顔に重ねない）
-        const y0 = dr.top + (cbd ? 52 : 26) * sc, y1 = top, rr = Math.max(9, 10.5 * sc), hw = 4.5, hh = 6, fs = Math.max(10.5, 12 * sc);
+        const mimu = cbd && !!d1.closest('.tok').querySelector('svg.mimu');   // v5.10.1：MiMU の絵は頭（帽子）が大きいので、札は腰の高さ・体の外側へ（ネムリの帽子のつばに重なっていた）
+        const nm1 = mimu && slotEl(1, c).querySelector('.nm'), nb1 = nm1 && box(nm1), rr0 = Math.max(9, 10.5 * sc);
+        const y0 = mimu ? Math.min(dr.top + 80 * sc, nb1 ? nb1.top - 15 - 3 - rr0 - 2 : 1e9) : dr.top + (cbd ? 52 : 26) * sc, y1 = top, rr = Math.max(9, 10.5 * sc), hw = 4.5, hh = 6, fs = Math.max(10.5, 12 * sc);   // MiMU：「あと1回」が自分の名前札にかからない高さまで
         mine.forEach((a, i) => {
-          const x = cx + (cbd ? (mine.length === 1 ? -1 : (i === 0 ? -1 : 1)) * Math.max(rr + 2, 34 * sc) : (mine.length === 1 ? 0 : (i === 0 ? -1 : 1) * Math.max(rr + 2, 21 * sc)));
+          const x = cx + (cbd ? (mine.length === 1 ? -1 : (i === 0 ? -1 : 1)) * Math.max(rr + 2, (mimu ? 44 : 34) * sc) : (mine.length === 1 ? 0 : (i === 0 ? -1 : 1) * Math.max(rr + 2, 21 * sc)));
           const sy = Y(y0 - rr + 1), ey = Y(y1 + hh - 1);
           const key = a.uid + a.k, up = src[0][c], fkey = (a.k === 'a' ? 'atk:' : 'def:') + a.uid + '>' + (up ? up.uid : '-');
           const d = seqD(fkey), grow = !RM && (phase === 'prep' ? !saLive[key] : d >= 0);
@@ -5457,6 +5484,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     el.style.left = ''; el.style.right = ''; el.style.top = ''; el.style.width = '';
     // v5.9.14：横長の画面（盤が右）で、案内が盤の左の空きより広いと、盤にかからないよう下に逃げて「回す」に重なっていた（muse の実プレイ・1024×768）。左の空きに収まる幅にする
     { const bd0 = $('board').getBoundingClientRect(); if (innerWidth > innerHeight && innerWidth >= 640 && bd0.left >= 280) el.style.width = Math.min(440, Math.round(bd0.left - 20)) + 'px'; }
+    // v5.10.1：文節で折る（jw）のは、行が増えないときだけ。増えるときは字間を少し詰め、それでも増えればふつうに折る（行が増えると置き場所が変わり、盤や予告に重なることがある）
+    { const tb = $('tipB'); tb.classList.remove('jw', 'sq'); const h0 = tb.offsetHeight; tb.classList.add('jw'); if (tb.offsetHeight > h0) { tb.classList.add('sq'); if (tb.offsetHeight > h0) tb.classList.remove('jw', 'sq'); } }
     const bk = $('book').getBoundingClientRect(), r0 = { left: el.offsetLeft }, h = el.offsetHeight, w = el.offsetWidth;   // 出てくる動き（tipin の縮小）の途中でも、本来の大きさで測る（v5.5.4：縮んだ高さで置いて、動きが終わると予告の札に0.3px 重なっていた。v537 の揺れの原因）
     // 盤（仲間の列）と予告札は隠さない（v5.2.2）。回す・維持を決めるのに要る情報だから
     // 敵の名前・i・HP も隠さない（v5.3.7：章の行を消して、名前が上の帯のすぐ下に来たため）
@@ -5515,7 +5544,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     tipSession[k] = 1; tipKey = k;
     { const g = document.getElementById('firstGuide'); if (g && !g.hidden && fgShow) { hideBubble('firstGuide'); fgPend = fgShow; } }   // 初戦の案内（v5.8.7）と重ねない
     const [ti, bo] = TIPS[k]();
-    $('tipT').textContent = ti; $('tipB').innerHTML = bo;
+    $('tipT').textContent = ti; $('tipB').innerHTML = jaWrap(bo);
     // 置き場所：ヒントが指す予告札（三位一体は3体のパネルも）を隠さない所。v5.1.43
     //   ①下の行動順カードの上に重ねる（縦画面はほぼここ）②敵の絵の上 ③横画面は右の盤の上。重なりがいちばん少ない所を選ぶ
     const el = $('tip');
@@ -5934,7 +5963,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
         const pg = previewGrid();
         bubble('点線は回した後の配置。補助が再び使える。' + (!pg[0].some(Boolean) ? '攻撃列が空になる。' : ''), $('btnRotate'), 0, 'pvTip');
       } else hideBubble('pvTip');
-      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotTip'); hideBubble('foeTip'); hideBubble('tkTip'); hideBubble('holdTip'); hideBubble('numTip'); hideBubble('emptyTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
+      if (phase !== 'choose') { hideBubble('incTip'); hideBubble('rotWhy'); hideBubble('foeTip'); hideBubble('tkTip'); hideBubble('holdTip'); hideBubble('numTip'); hideBubble('emptyTip'); }   // 決めたら（解決に入ったら）吹き出しは片付ける
       lockBook();
       teachInc(); teachNums(); teachHold();
       return;
@@ -6167,7 +6196,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     let hs = '', hr = '', hp = '';
     if (ch) {
       hs = outlookHTML(outlook(grid, false, false));
-      hr = rb.disabled ? ocRow('', rb.dataset.why || '回せない', 'why') : outlookHTML(outlook(previewGrid(), true, true));
+      hr = rb.disabled ? ocRow('', (rb.dataset.why || '回せない').replace(/・/g, '・<wbr>').replace(/。/g, '。<wbr>'), 'why') : outlookHTML(outlook(previewGrid(), true, true));
     }
     if (pr) hp = outlookHTML(outlook(grid, true, false));
     const key = hs + '|' + hr + '|' + hp; if (key === ocKey) return; ocKey = key;
@@ -6210,7 +6239,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     try { SFX.nope(); } catch (e) { /* 音なし */ }
     vib(25);
     b.classList.remove('deny'); void b.offsetWidth; b.classList.add('deny');
-    if (b.dataset.why) bubble(b.dataset.why, b, 1600, 'rotTip');
+    if (b.dataset.why) bubble(b.dataset.why, b, 1600, 'rotWhy');   // v5.10.1：横持ちの案内（#rotTip）と同じIDだったので、理由が出ず案内の中身を書き換えていた
   }
   /* 吹き出し（v5.1.58）：押した・触ったものの上に、短い一言を重ねて出す。レイアウトは動かさない（上に重ねるだけ）。
      ms=0 なら出しっぱなし（同じ id で hideBubble するまで） */
@@ -6287,7 +6316,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     }
     let d = document.getElementById(id);
     if (!d) { d = document.createElement('div'); d.id = id; d.className = 'rb-bubble'; d.setAttribute('role', 'status'); document.body.appendChild(d); }
-    d.textContent = text; d.classList.remove('on'); d.style.visibility = 'hidden'; d.hidden = false;
+    d.innerHTML = jwEsc(text); d.classList.add('jw'); d.classList.remove('on'); d.style.visibility = 'hidden'; d.hidden = false;
     const r = el.getBoundingClientRect(), w = d.offsetWidth, h = d.offsetHeight;
     const x = Math.max(8, Math.min(innerWidth - w - 8, r.left + r.width / 2 - w / 2));
     let below = r.top - h - 12 < 4;
@@ -8350,7 +8379,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   }
   function goTitle() {
     if (qaOn) { qaExit(); return; }   // QAの途中でタイトルへ戻るときも、?qa を外して普通のタイトルへ
-    dangerEdge(false); ['foeTip', 'tkTip', 'rotTip', 'incTip', 'pvTip', 'holdTip'].forEach(hideBubble);
+    dangerEdge(false); ['foeTip', 'tkTip', 'rotWhy', 'incTip', 'pvTip', 'holdTip'].forEach(hideBubble);
     // 戦闘の途中まで保存してあるなら、タイトルに着いたときにそれを知らせる（v5.1.48）
     const sv0 = !tut && run && EXPM() ? expSaved() : null, bat0 = sv0 && sv0.battle ? sv0.battle : null;
     if (phase === 'resolve' && !(tut && tut.noteDone)) return;
@@ -10231,7 +10260,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   const ZK_JOB_ART = { warrior: 'warrior', knight: 'knight', samurai: 'samurai', witch: 'witch', cleric: 'cleric', monk: 'monk', archer: 'archer' };
   const ZK_FOES = [
     { sec: '第1章　祈りの間' },
-    { k: 'rat', art: 'rat', def: () => ENEMIES[0], where: '第1章の戦闘', gim: 'ためてから大技を出す。いちばん最初に戦う敵。' },
+    { k: 'rat', art: 'rat', def: () => ENEMIES[0], where: '第1章の戦闘', gim: 'ためてから大技を出す。いちばん最初に戦う敵。', note: '初めての遠征の地点1では、『かみつき』はサムライを狙う。' },   // v5.10.1：firstFoe() の かみつき は job:サムライ（通常は戦士）
     { k: 'binder', art: 'spider', def: () => Object.assign({}, EXP.binder, { name: BINDER_NAME }), where: '第1章・第2章の戦闘', gim: '糸で縛られた仲間は、次のターンに回せない。' },
     { k: 'giant', art: 'cyclope', def: () => ENEMIES[1], where: '第1章の主', gim: '騎士を狙う。ためたあとの大技をしのぐ。' },
     { k: 'sentinel', art: 'orc', def: () => EXP.sentinel, where: '深さ4から・第1章', gim: 'HPがいちばん多い仲間を狙う（同じなら左）。' },
@@ -10252,7 +10281,9 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   const zkArt = (key, big) => (MIMU && MIMU.chars[key] ? mimuSVG(key, 240, 180, 120, 172, big ? 160 : 150, big ? 220 : 210, 'mimuOLe', '') : '');
   let zkTab = 0;
   function zkSquadOf(job) { const x = xmeta(); return XSQ.filter((q) => q.party.some((p) => p[0] === job)).map((q) => ({ q, open: xSqOpen(q.id, x) })); }
-  function zkList() {
+  // v5.10.1：1体の頁から「一覧へ」で戻ったら、開く前のスクロール位置に戻す（図鑑を開いた時・タブを替えた時は先頭）
+  let zkScroll = 0;
+  function zkList(keep) {
     const z = zkGet(), g = $('zkGrid'); $('zkDetail').hidden = true; g.hidden = false; $('zkCount').hidden = false;
     $('zkT0').classList.toggle('on', zkTab === 0); $('zkT1').classList.toggle('on', zkTab === 1);
     $('zkT0').setAttribute('aria-selected', String(zkTab === 0)); $('zkT1').setAttribute('aria-selected', String(zkTab === 1));
@@ -10267,9 +10298,10 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       g.innerHTML = ZK_FOES.map((f, i) => { if (f.sec) return '<p class="zk-sec">' + f.sec + '</p>'; const ok = !!z.seen[f.k];
         return '<button class="zk-card' + (ok ? '' : ' unk') + '" type="button" data-i="' + i + '"><span class="zk-art">' + zkArt(f.art) + '</span><b>' + (ok ? zkFoeDef(f).name : '？？？') + '</b></button>'; }).join('');
     }
-    g.scrollTop = 0;
+    g.scrollTop = keep ? zkScroll : 0;
   }
   function zkShow(i) {
+    zkScroll = $('zkGrid').scrollTop;
     const z = zkGet(), d = $('zkDetail'); let h = '<button class="zk-back" id="zkBack" type="button">‹ 一覧へ</button>';
     if (zkTab === 0) {
       const p = ZK_PARTY[i], J = JOBS.find((j) => j.id === p.job), sq = zkSquadOf(p.job), ok = sq.some((x) => x.open);
@@ -10277,7 +10309,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       if (!ok) h += '<b class="zk-name disp">？？？</b><p class="zk-sub">' + J.name + '　·　' + sq.map((x) => x.q.name).join('・') + 'で会える</p>';
       else h += '<b class="zk-name disp">' + HOUSE[p.job] + '</b><p class="zk-sub">' + J.name + '　·　' + ROLE[J.cls] + '　·　' + sq.filter((x) => x.open).map((x) => x.q.name).join('・') + '</p>' +
         '<div class="zk-stats"><span>HP<b>' + J.hp + '</b></span><span>攻撃<b>' + J.atk + '</b></span><span>速さ<b>' + J.spd + '</b></span>' + (J.heal ? '<span>回復<b>' + J.heal + '</b></span>' : '') + '</div>' +
-        '<p class="zk-gim">突入技「' + J.entry.name + '」　' + J.entry.desc + '</p><p class="zk-line">「' + p.line + '」</p>';
+        '<p class="zk-gim zk-ent"><b>突入技「' + J.entry.name + '」</b><span>' + J.entry.desc + '</span></p><p class="zk-line">「' + p.line + '」</p>';
     } else {
       const f = ZK_FOES[i], ok = !!z.seen[f.k], e = zkFoeDef(f), gim = typeof f.gim === 'function' ? f.gim() : f.gim;
       h += '<div class="zk-big' + (ok ? '' : ' unk') + '" id="zkBig">' + zkArt(f.art, true) + (ok ? '<small>絵を押すと攻撃</small>' : '') + '</div>';
@@ -10285,10 +10317,10 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       else h += '<b class="zk-name disp">' + e.name + '</b><p class="zk-sub">' + f.where + '　·　倒した数 ' + (+z.kill[f.k] || 0) + '</p>' +
         '<div class="zk-stats"><span>HP<b>' + e.hp + '</b></span><span>速さ<b>' + e.spd + '</b></span><span>防御<b>' + (e.def || 0) + '</b></span></div>' +
         '<p class="zk-gim">' + gim + '</p><ul class="zk-sk">' + e.pattern.map((a) => '<li><i>' + (a.glyph || '・') + '</i><span>' + a.name + (a.pierce ? '（防御無効）' : '') + '<br><em>' + zkAim(a) + (a.dmg ? '　' + a.dmg + (a.hits ? '×' + a.hits : '') : '') + '</em></span></li>').join('') + '</ul>' +
-        '<p class="zk-note">数値は基礎の値。深い地点ほど強くなる。</p>';
+        (f.note ? '<p class="zk-note zk-ex">' + f.note + '</p>' : '') + '<p class="zk-note">数値は基礎の値。深い地点ほど強くなる。</p>';
     }
     d.innerHTML = h; d.hidden = false; $('zkGrid').hidden = true; $('zkCount').hidden = true; d.scrollTop = 0;
-    $('zkBack').addEventListener('click', () => { SFX.tap(); zkList(); });
+    $('zkBack').addEventListener('click', () => { SFX.tap(); zkList(true); });
     const big = $('zkBig'); if (big && !big.classList.contains('unk')) big.addEventListener('click', () => { mimuPlay(big.querySelector('svg.mimu'), 'atk'); });
   }
 
@@ -10364,7 +10396,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     $('tkR').classList.toggle('on', side === 'r'); $('tkR').classList.toggle('off', side !== 'r');
     const nm = $('tkName'); nm.className = 'tk-name ' + side;
     nm.innerHTML = '<i style="color:' + TALK_ROLE[J.cls] + ';background:' + TALK_ROLE[J.cls] + '"></i>' + HOUSE[job] + '<small>' + J.name + '</small>';
-    $('tkTxt').innerHTML = txt; $('tkN').textContent = (i + 1) + ' / ' + t.lines.length;
+    { const tx = $('tkTxt'); tx.classList.remove('loose'); tx.innerHTML = jaWrap(txt); const lh = parseFloat(getComputedStyle(tx).lineHeight) || 1; const over = () => tx.getBoundingClientRect().height / lh > 2.4; tx.classList.remove('tight'); if (over()) { tx.classList.add('tight'); if (over()) { tx.classList.remove('tight'); tx.classList.add('loose'); } } } $('tkN').textContent = (i + 1) + ' / ' + t.lines.length;   // 文節で折って3行になる幅（320pxなど）は、ふつうの折り方に戻して2行に収める
     // 待機の動きが表情を上書きしないよう、少し待ってから表情を付ける
     setTimeout(() => talkFace(side, face), 30);
   }
@@ -10435,8 +10467,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (sv) li.push('いまの遠征の続き（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '）');
     li.push('これまでの遠征 ' + runs + '回・踏破 ' + won + '回の記録');
     li.push('解放した隊・深さ、実績、星');
-    li.push('物語と操作の説明の既読（もう一度はじめから出ます）');
-    return 'つぎの記録が<b>消えて、元に戻せません</b>。<ul>' + li.map((t) => '<li>' + t + '</li>').join('') + '</ul><span class="rc-keep">音・振動・文字の大きさなどの設定は、そのまま残ります。</span>';
+    li.push('物語と操作の説明の既読<wbr><span class="nw">（もう一度はじめから出ます）</span>');
+    return 'つぎの記録が<b>消えて、元に戻せません</b>。<ul>' + li.map((t) => '<li class="jw">' + t + '</li>').join('') + '</ul><span class="rc-keep">音・振動・文字の大きさなどの設定は、そのまま残ります。</span>';
   }
   function openRst() {
     if (QA_REQ) return;

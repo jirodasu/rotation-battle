@@ -73,7 +73,7 @@ async function winNow(p) {
     await p.evaluate(() => { const R = window.__rb; R.run.node = 0; R.run.enemy = R.expEnemy(2, null, 'binder'); document.getElementById('runv').hidden = true; R.toPrepForTest(); }).catch(() => {});
     const hasBind = await p.evaluate(() => window.__rb.enemy.pattern.some((a) => a.rule === 'bind'));
     if (hasBind) {
-      await p.waitForTimeout(300); await p.click('#stage'); await p.waitForTimeout(400);
+      await p.waitForTimeout(300); if (await vis(p, 'tip')) { await p.click('#tipOk'); await p.waitForTimeout(200); } await p.click('#stage');   // v5.10.1：章の主の案内（einfo）が敵の絵の上に出ることがあるので、閉じてから押す（案内の置き場所は v5.9.14 の決まりどおり） await p.waitForTimeout(400);
       const t = await p.evaluate(() => document.getElementById('foeSheet').innerText);
       ok(!/undefined/.test(t) && /縛る/.test(t) && /—\s*\n?\s*ダメージ/.test(t), '実際に開いた敵詳細で「しっぽで縛る」が「— ダメージ」');
     } else console.log('  --  (binder が作れなかったので実画面の確認は省略)');

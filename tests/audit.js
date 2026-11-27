@@ -155,7 +155,7 @@ async function open(b, w, h, kind, node) {
     ok(g.dis && /^回す/.test(g.btn) && /回せる|縛/.test(g.btn) && !/気力|あと/.test(g.book), '気力不足：回すの札に理由が1行、枠には出ない（ボタン：' + g.btn + '）');
     const rr = await p.evaluate(() => { const x = document.getElementById('btnRotate').getBoundingClientRect(); return [x.left + x.width / 2, x.top + x.height / 2]; });
     await p.mouse.click(rr[0], rr[1]); await p.waitForTimeout(300);
-    const tip = await p.evaluate(() => { const d = document.getElementById('rotTip'); return d && d.classList.contains('on') ? d.textContent : ''; });
+    const tip = await p.evaluate(() => { const d = document.getElementById('rotWhy'); return d && d.classList.contains('on') ? d.textContent : ''; });
     ok(/あと\dターンで回せる|次のターンに回せる/.test(tip), '押せない「回す」を押すと、吹き出しで理由（' + tip + '）');
     await p.evaluate(() => document.getElementById('btnRotate').click()); await p.waitForTimeout(100);
     ok(await p.evaluate((n) => window.__rb.log.length === n, g.n0), 'C8 押せない「回す」を押しても、ログに気力不足の文は増えない');
