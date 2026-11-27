@@ -3289,7 +3289,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.10.2</p>
+    <p class="c-ver" id="cVer">ver 5.10.3</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3887,7 +3887,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.10.2';
+  const APP_VERSION = '5.10.3';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -9248,7 +9248,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const cards = list.map((sq) => {
       const open = squadOpen(sq.id, m), a = ACHS.find((x) => x.squad === sq.id), lead = JOBS.find((j) => j.id === sq.form[0][0]), price = SQUAD_PRICE[sq.id], can = !open && have >= price;
       return {
-        ico: '<span class="uc-disc c-' + lead.cls + '">' + ageArt(lead.id, 'prime') + '</span>',
+        ico: '<span class="uc-disc c-' + lead.cls + '\">' + face({ job: lead.id, phase: 'prime' }) + '</span>',
         t: sq.name, d: open ? sq.desc : '解禁：' + a.d + '。',
         tags: open ? [{ t: sq.tag, k: sq.id === 'veterans' ? 'warn' : 'bt' }].concat(m.won[sq.id] ? [{ t: 'クリア済み', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }, { t: can ? 'タップで勲章' + price + '枚を使って解禁' : 'または勲章' + price + '枚', k: can ? 'calm' : 'foe' }],
         disabled: !open && !can
@@ -9291,7 +9291,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     legacySel = null;
     const cands = m.legacyCands.map((c) => { const j = JOBS.find((x) => x.id === c.job) || JOBS[0]; return { job: c.job, cls: j.cls, name: c.name, phase: AGE_PH.find((p) => c.age <= p.max).key, age: c.age, fate: c.fate === 'retired' ? 'retired' : null, hp: 1, max: 1 }; });
     const show = () => rvShow({ small: '第' + (m.runs + 1) + '代の騎士団', legacy: true, title: '語り継ぐ者を選ぶ', sub: '第' + (m.legacyFrom || m.runs) + '代から1人。能力はそのまま、' + ROGUE.legacyAge + '歳に戻る。', roster: cands, calm: true,
-      cards: [legacySel == null ? { ico: ICON.rot, t: '上の団員から1人を選ぶ', d: '同じ職業の初期団員と入れ替わる。', disabled: true } : { ico: '<span class="uc-disc c-' + cands[legacySel].cls + '">' + ageArt(cands[legacySel].job, 'prime') + '</span>', t: cands[legacySel].name + 'を連れていく', d: legacyNote(m.legacyCands[legacySel]) }],
+      cards: [legacySel == null ? { ico: ICON.rot, t: '上の団員から1人を選ぶ', d: '同じ職業の初期団員と入れ替わる。', disabled: true } : { ico: '<span class="uc-disc c-' + cands[legacySel].cls + '\">' + face({ job: cands[legacySel].job, phase: 'prime' }) + '</span>', t: cands[legacySel].name + 'を連れていく', d: legacyNote(m.legacyCands[legacySel]) }],
       skip: '連れていかない',
       on: (i) => { $('runv').hidden = true; beginMain(sqId, i >= 0 && legacySel != null ? Object.assign({}, m.legacyCands[legacySel], { from: m.legacyFrom || m.runs }) : null); } });
     show();
@@ -9309,7 +9309,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const items = [
       { id: 'heal', ico: ICON.heart, t: '手当て', d: '全員のHPが全快する。', ok: () => run.members.some((m) => m.hp < m.max), act: () => { run.members.forEach((m) => { m.hp = m.max; }); SFX.heal(); return '手当てをした。全員のHPが全快した。'; } },
       eqs.length ? { id: 'equip', ico: ICON.sword, t: '装備　' + eqs[0][0].name, d: eqs[0][1].name + '（' + eqs[0][1].jname + '）に。' + eqs[0][0].desc, ok: () => true, act: () => equipCard(eqs[0]).act() } : null,
-      rec ? { id: 'recruit', ico: '<span class="uc-disc c-' + JOBS.find((j) => j.id === rec.job).cls + '">' + ageArt(rec.job, 'young') + '</span>', t: '入団者を雇う　' + rec.name, d: JOBS.find((j) => j.id === rec.job).name + '・' + rec.age + '歳' + (rec.trait && TRAITS[rec.trait] ? '・素質「' + (TRAITS[rec.trait].name || rec.trait) + '」' : '') + '。', ok: () => !isFull(), act: () => addRecruit(rec) } : null,
+      rec ? { id: 'recruit', ico: '<span class="uc-disc c-' + JOBS.find((j) => j.id === rec.job).cls + '\">' + face({ job: rec.job, phase: 'young' }) + '</span>', t: '入団者を雇う　' + rec.name, d: JOBS.find((j) => j.id === rec.job).name + '・' + rec.age + '歳' + (rec.trait && TRAITS[rec.trait] ? '・素質「' + (TRAITS[rec.trait].name || rec.trait) + '」' : '') + '。', ok: () => !isFull(), act: () => addRecruit(rec) } : null,
       { id: 'train', ico: ICON.rot, t: '稽古', d: '若手の攻撃+' + RUN.restAtk + '。', ok: () => run.members.some((m) => m.phase === 'young'), act: () => trainYoung() || '稽古をした。' }
     ].filter(Boolean);
     const draw = () => {
@@ -9413,7 +9413,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   function runRecruit(after, pre, sub) {
     if (isFull()) { after([]); return; }
     const list = recruitCards(3);
-    rvShow({ title: '入団希望者', sub: (sub || '1人を迎えられる。') + '（団員 ' + run.members.length + ' / ' + RUN.cap + '人）', events: pre || [], cards: list.map((o) => { const j = JOBS.find((x) => x.id === o.job); return { ico: '<span class="uc-disc c-' + j.cls + '">' + ageArt(o.job, 'young') + '</span>', t: o.name + '（' + j.name + '）' + (o.trait ? '<span class="rv-trait">' + TRAITS[o.trait].name + '</span>' : ''), d: o.age + '歳・若手。' + (o.trait ? TRAITS[o.trait].desc : '') + '突入技「' + j.entry.name + '」' }; }),
+    rvShow({ title: '入団希望者', sub: (sub || '1人を迎えられる。') + '（団員 ' + run.members.length + ' / ' + RUN.cap + '人）', events: pre || [], cards: list.map((o) => { const j = JOBS.find((x) => x.id === o.job); return { ico: '<span class="uc-disc c-' + j.cls + '\">' + face({ job: o.job, phase: 'young' }) + '</span>', t: o.name + '（' + j.name + '）' + (o.trait ? '<span class="rv-trait">' + TRAITS[o.trait].name + '</span>' : ''), d: o.age + '歳・若手。' + (o.trait ? TRAITS[o.trait].desc : '') + '突入技「' + j.entry.name + '」' }; }),
       skip: '迎えずに進む', on: (i) => after(i >= 0 ? [addRecruit(list[i])] : []) });
   }
   function inheritPairs() {
@@ -9674,7 +9674,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const mm = expMeta(), x = xmeta(mm), have = xMedals(x);
     const cards = XSQ.map((q) => {
       const open = xSqOpen(q.id, x), can = !open && q.price && have >= q.price, lead = xLead(q), won = Object.keys(x.won).some((k) => k.split(':')[0] === q.id && x.won[k] > 0);
-      return { ico: '<span class="uc-disc c-' + lead.cls + '">' + ageArt(lead.id, 'prime') + '</span>', t: q.name,
+      return { ico: '<span class="uc-disc c-' + lead.cls + '\">' + face({ job: lead.id, phase: 'prime' }) + '</span>', t: q.name,
         d: open ? q.desc : '解禁：' + q.hint + (q.price ? '、または勲章' + q.price + '枚' : '') + '。',
         tags: open ? [{ t: q.tag, k: 'bt' }].concat(won ? [{ t: '踏破済み', k: 'calm' }] : []).concat(x.pick.sq === q.id ? [{ t: '前回', k: 'calm' }] : []) : [{ t: '未解禁', k: 'foe' }].concat(can ? [{ t: 'タップで勲章' + q.price + '枚を使って解禁', k: 'calm' }] : []),
         disabled: !open && !can };
