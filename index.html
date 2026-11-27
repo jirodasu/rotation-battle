@@ -2806,7 +2806,8 @@ body:not(.boss-stage)[data-ch="2"] #runv.is-map .r-card { background-image: line
 body:has(#help:not([hidden])) .rb-bubble, body:has(#settings:not([hidden])) .rb-bubble, body:has(#logSheet:not([hidden])) .rb-bubble, body:has(#foeSheet:not([hidden])) .rb-bubble { display: none !important; }
 .rb-bubble { text-wrap: pretty; }
 .jw { word-break: keep-all; overflow-wrap: anywhere; line-break: strict; }   /* v5.10.1：jaWrap() で <wbr> を入れた文は、その切れ目だけで折る */
-.rv-card, #help, .set-about, .zk-detail, .tut-band { word-break: auto-phrase; line-break: strict; }   /* v5.10.1：<wbr> を入れていない所も、Chrome は文節で・Safari は長音や小さい字を行頭にしない */
+#help, .set-about, .zk-detail, .tut-band { word-break: auto-phrase; line-break: strict; }   /* v5.10.1：<wbr> を入れていない所も、Chrome は文節で・Safari は長音や小さい字を行頭にしない */
+@media (orientation: portrait) { .rv-card { word-break: auto-phrase; line-break: strict; } }   /* v5.10.1：横の画面では文節で折ると行が増え、突破の画面の「とばす」が下にはみ出した（縦の画面だけ） */
 .rb-bubble { position: fixed; z-index: 90; max-width: min(78vw, 300px); padding: 8px 12px; border-radius: 10px; background: #1b2132; color: #f3e6c4; font-size: 14px; font-weight: 700; line-height: 1.45; box-shadow: 0 0 0 1px rgba(230, 184, 76, .55), 0 8px 18px rgba(0, 0, 0, .45); pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .18s, transform .18s; }
 .rb-bubble.on { opacity: 1; transform: none; }
 .rb-bubble::after { content: ""; position: absolute; left: var(--ax, 50%); top: 100%; width: 10px; height: 10px; margin-left: -5px; margin-top: -5px; background: inherit; transform: rotate(45deg); box-shadow: 1px 1px 0 rgba(230, 184, 76, .55); }
