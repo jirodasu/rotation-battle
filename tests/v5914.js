@@ -43,7 +43,7 @@ const SA = () => [...document.querySelectorAll('#supAr .sa')].map((g) => ({ k: g
     let txt = '';
     for (let i = 0; i < 60 && !txt; i++) { txt = await p.evaluate(() => (!document.getElementById('coach').hidden && document.getElementById('coTitle').textContent === '攻撃列が最前線') ? document.getElementById('coach').textContent : ''); if (!txt) await p.waitForTimeout(100); }
     ok(txt.includes('ふだん、戦うのも狙われるのも、いちばん上の攻撃列。') && !txt.includes('攻撃列だけ'), '4 チュートリアル最初の文 ' + txt.slice(0, 60));
-    const help = await p.evaluate(() => document.body.innerHTML.match(/<b>補助列<\/b>[^<]*/)[0]);
+    const help = await p.evaluate(() => document.body.innerHTML.replace(/<wbr>/g, '').match(/<b>補助列<\/b>[^<]*/)[0]);
     ok(!help.includes('点線') && !help.includes('金の矢印') && help.includes('回して入り直すと戻る'), '4 あそびかたの補助列の説明 ' + help);
     ok(!errs.length, '5 ページのエラーなし ' + errs.join(' / '));
     await ctx.close();

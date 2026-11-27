@@ -1237,6 +1237,7 @@ body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none
 .tip.tight { padding: 8px 10px 8px 12px; }
 .tip.tight b::before { display: none; }
 .tip.tight p { font-size: 12px; line-height: 1.45; }
+.tip p.sq { letter-spacing: -.06em; }
 .tip button { grid-row: 1 / span 2; grid-column: 2; min-height: 44px; min-width: 56px; padding: 0 14px; }
 .ico.rs { color: var(--accent); }
 .tip[data-k="stars"] b::before { content: "このゲームの目標"; }
@@ -5482,6 +5483,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     el.style.left = ''; el.style.right = ''; el.style.top = ''; el.style.width = '';
     // v5.9.14：横長の画面（盤が右）で、案内が盤の左の空きより広いと、盤にかからないよう下に逃げて「回す」に重なっていた（muse の実プレイ・1024×768）。左の空きに収まる幅にする
     { const bd0 = $('board').getBoundingClientRect(); if (innerWidth > innerHeight && innerWidth >= 640 && bd0.left >= 280) el.style.width = Math.min(440, Math.round(bd0.left - 20)) + 'px'; }
+    // v5.10.1：文節で折る（jw）のは、行が増えないときだけ。増えるときは字間を少し詰め、それでも増えればふつうに折る（行が増えると置き場所が変わり、盤や予告に重なることがある）
+    { const tb = $('tipB'); tb.classList.remove('jw', 'sq'); const h0 = tb.offsetHeight; tb.classList.add('jw'); if (tb.offsetHeight > h0) { tb.classList.add('sq'); if (tb.offsetHeight > h0) tb.classList.remove('jw', 'sq'); } }
     const bk = $('book').getBoundingClientRect(), r0 = { left: el.offsetLeft }, h = el.offsetHeight, w = el.offsetWidth;   // 出てくる動き（tipin の縮小）の途中でも、本来の大きさで測る（v5.5.4：縮んだ高さで置いて、動きが終わると予告の札に0.3px 重なっていた。v537 の揺れの原因）
     // 盤（仲間の列）と予告札は隠さない（v5.2.2）。回す・維持を決めるのに要る情報だから
     // 敵の名前・i・HP も隠さない（v5.3.7：章の行を消して、名前が上の帯のすぐ下に来たため）
@@ -5502,9 +5505,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (tight) { const hardAt = (c) => { const L = c.left == null ? r0.left : c.left, T = Math.max(TOP0, c.top); return avoid.filter((r, i) => i < 2 || i === di).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0); };
       if (hardAt(best)) { let okC = cands.filter((c) => !hardAt(c)); if (!okC.length && di >= 0) { const d0 = di; di = -1; okC = cands.filter((c) => !hardAt(c)); di = d0; }   // v5.9.14：どこに置いても盤・予告・下の欄のどれかに重なる（320×568＋iPhone の上の安全域）ときは、下の欄より盤・予告を守る（下の欄は案内のあいだ押せない）
         if (okC.length) { best = okC.reduce((x, y) => (ov(y) < ov(x) ? y : x)); bv = ov(best); } } }
-    // どこに置いても予告の札・盤（重み10）に重なるときは、案内を詰めて（見出しの上の小さな字を外し、文字を少し小さく）置き直す（v5.4.8：320×568 で1〜2px 重なっていた）
-    if (!tight) { const L = best.left == null ? r0.left : best.left, T = Math.max(TOP0, best.top), hard = avoid.filter((r, i) => i < 2 || i === di).some((r) => Math.min(L + w, r.right) - Math.max(L, r.left) > 0 && Math.min(T + h, r.bottom) - Math.max(T, r.top) > 0);
-      if (hard || bv > 0) { placeTip(true); return; } }   // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
+  // v5.5.5：どこに置いても敵の名前・HPなどに重なるとき（393×852 の「ため」の案内）も、詰めて置き直す
     el.style.top = Math.round(Math.max(TOP0, best.top)) + 'px';
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
