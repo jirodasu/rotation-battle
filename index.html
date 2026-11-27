@@ -3963,6 +3963,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       if (!A) return null;
       try { ac = new A({ latencyHint: 'interactive' }); } catch (e) { ac = new A(); }
       buildBus();
+      try { AUD.load(); } catch (e) { /* 音源なしでも合成音で鳴る */ }
       try { const u = ac.createBufferSource(); u.buffer = ac.createBuffer(1, 1, 22050); u.connect(ac.destination); u.start(0); } catch (e) { /* 非対応 */ }
     }
     if (ac.state === 'suspended' && sndOn) ac.resume();
@@ -4300,7 +4301,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     } else if (kind === 'club') {
       INST.swish(t, 0.3, 0.2, d, 180, 900);
       INST.wood(t + 0.24, 300, 0.5, d, 0.2);
-    } else {
+    } else if (kind !== '__big') {   // '__big'＝大技の重ねだけ（v5.11.0：声だけ音源が届いたとき）
       // 鼻の獣のいななき。竜はそれを低く長くして、喉のうなりを重ねる
       const dr = kind === 'dragon', len = dr ? 0.85 : 0.45;
       const g = outNode(d, 0.3), lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = dr ? 900 : 1400; lp.connect(g);
@@ -4318,6 +4319,77 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (big) INST.marimba(t + 0.09, 50, 0.35, bus.sfx, 0.25);
   };
 
+  /* --- 録音した音源（v5.11.0〜・ElevenLabs で制作）。AUDIO_FILES に載せた音だけを読み込み、届いていない音は従来の合成音のまま鳴らす ---
+     置き場所：audio/se/<名前>.m4a・audio/bgm/<名前>.m4a（制作元の WAV と ZIP は配信に含めない）。
+     BGM_LOOP：ループの始まりと終わり（秒）。実際の音源の拍を確かめて決める。載っていなければファイル全体をループ */
+  const AUDIO_FILES = [];
+  const BGM_LOOP = {};
+  const BGM_ONCE = { bgm_ending: 1 };   // 単発（ループしない）
+  const AUD = (() => {
+    const bufs = {}, want = new Set(AUDIO_FILES), ready = [];
+    let started = false;
+    const url = (n) => 'audio/' + (n.indexOf('bgm_') === 0 ? 'bgm' : 'se') + '/' + n + '.m4a';
+    function load() {
+      if (started || !ac) return; started = true;
+      AUDIO_FILES.forEach((n) => {
+        fetch(url(n)).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status)))
+          .then((ab) => new Promise((res, rej) => { const p = ac.decodeAudioData(ab, res, rej); if (p && p.then) p.then(res, rej); }))
+          .then((b) => { bufs[n] = b; ready.forEach((f) => { try { f(n); } catch (e) { /* */ } }); })
+          .catch(() => { want.delete(n); });
+      });
+    }
+    // 効果音：semi＝半音（ピッチを上下）、vol＝音量、at＝遅らせる秒
+    function play(n, o) {
+      const b = bufs[n]; if (!b || !ac || !bus) return false; o = o || {};
+      const x = ac.createBufferSource(), g = ac.createGain();
+      x.buffer = b; if (o.semi) x.playbackRate.value = Math.pow(2, o.semi / 12);
+      g.gain.value = o.vol == null ? 1 : o.vol; x.connect(g); g.connect(bus.sfx);
+      x.start(ac.currentTime + 0.005 + (o.at || 0));
+      return true;
+    }
+    return { load, play, has: (n) => !!bufs[n], listed: (n) => want.has(n), buf: (n) => bufs[n] || null, onReady: (f) => ready.push(f), get names() { return Object.keys(bufs); } };
+  })();
+  // 現行の効果音 → 納品ファイル（v5.11.0）。[ファイル名, 半音, 音量, ダッキング[深さ, 秒]]。ファイルが届いていなければ従来の音
+  const SE_MAP = {
+    tap: () => ['se_ui_tap'], page: () => ['se_ui_page'], pick: (r) => ['se_ui_select', [0, 4, 7][r] || 0], nope: () => ['se_ui_nope'],
+    start: () => ['se_ui_start'], chapter: () => ['se_ui_open'],
+    rotate: () => { const i = rotIdx; rotIdx = (rotIdx + 1) % 3; return ['se_rotate', [0, 4, 7][i]]; },
+    swap: () => ['se_swap'], go: () => ['se_battle_go'],
+    combo: (step, fire) => (fire ? ['se_combo_fire'] : ['se_combo_step', Math.max(0, Math.min(3, step - 1)), 1, null, 0.5]),
+    lampPass: () => ['se_combo_step', 1], entry: (c) => ['se_entry', [0, 2, 4, 5][c] || 0, 1, [0.6, 0.35]],
+    heal: () => ['se_heal'], buff: () => ['se_buff'],
+    charge: () => ['se_foe_charge'], smash: () => ['se_smash', 0, 1, [0.5, 0.5]], hurt: () => ['se_hurt'], guard: () => ['se_guard'],
+    down: () => ['se_down'], finish: () => ['se_finish', 0, 1, [0.45, 1.0]], save: () => ['se_save'],
+    win: () => ['se_win', 0, 1, [0.35, 2.2]], lose: () => ['se_lose'], fallen: () => ['se_fallen', 0, 1, [0.35, 2.6]],
+    recruit: () => ['se_recruit'], event: () => ['se_event'], inherit: () => ['se_inherit', 0, 1, [0.55, 1.2]],
+    story: (i) => (i === 1 ? ['se_story_light', 0, 1, [0.6, 1.4]] : i === 2 ? ['se_story_descend'] : i === 3 ? ['se_story_beast', 0, 1, [0.55, 1.2]] : i === 4 ? ['se_inherit', 0, 1, [0.55, 1.2]] : ['se_story_bell', i === 5 ? 7 : i === 6 ? 12 : 0]),
+    ending: (i) => (i === 0 ? ['se_end_bottom', 0, 1, [0.6, 1.4]] : i === 1 ? ['se_end_ring', 0, 1, [0.6, 1.8]] : i === 2 ? ['se_inherit', 0, 1, [0.5, 2.4]] : ['se_end_theme', 0, 1, [0.5, 2.4]]),
+    stay: () => ['se_stay']
+  };
+  SFX.stay = () => {};   // 「維持」：専用の合成音はない（音源が届いたときだけ鳴る）
+  Object.keys(SE_MAP).forEach((k) => {
+    const orig = SFX[k];
+    SFX[k] = function (...a) {
+      if (!can()) return;
+      const m = SE_MAP[k](...a);
+      if (m && AUD.has(m[0])) { if (m[3]) duck(m[3][0], m[3][1]); AUD.play(m[0], { semi: m[1] || 0, vol: m[2] == null ? 1 : m[2], at: m[4] || 0 }); return; }
+      if (k === 'rotate') rotIdx = (rotIdx + 2) % 3;   // 上で進めた巡りを戻して、従来の音に任せる
+      return orig.apply(SFX, a);
+    };
+  });
+  {   // 仲間の攻撃・敵の攻撃
+    const atk0 = SFX.attack, foe0 = SFX.foe;
+    SFX.attack = (id, big) => {
+      const n = 'se_atk_' + (ATK[id] ? id : 'warrior');
+      if (can() && AUD.has(n)) { if (big) duck(0.62, 0.18); AUD.play(n, { vol: big ? 1 : 0.8 }); if (big) AUD.play('se_atk_big_layer', { vol: 0.8 }); return; }
+      return atk0(id, big);
+    };
+    SFX.foe = (kind, big) => {
+      const n = 'se_foe_' + kind;
+      if (can() && AUD.has(n)) { AUD.play(n); if (big && !AUD.play('se_foe_big', { at: 0.15 })) foe0('__big', true); return; }
+      return foe0(kind, big);
+    };
+  }
   /* --- BGM：1曲を層に分け、場面に合わせて重ねる ---
      タイトル：D マイナー 80（聖歌隊とオルガンの和音、鐘の主題）
      戦闘　　：D マイナー 140（ペダルの低音、石の太鼓と鎖、オルガンの旋律） */
@@ -4372,13 +4444,14 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       march: { str: 0.62, drm: 0.42, mel: 0, brs: 0, title: 0 },
       off: { str: 0, drm: 0, mel: 0, brs: 0, title: 0 }
     };
-    let state = 'off', L = null, drone = null, charged = false, only = null, boss = false, era = 1;
+    let fileLP = null, state = 'off', L = null, drone = null, charged = false, only = null, boss = false, era = 1;
     // 騎士団の歴史を音で：1年目は弦と笛が中心、年を重ねるほど太鼓と金管が加わる（era 0〜1）
     const ERA = { drm: (e) => 0.5 + 0.5 * e, brs: (e) => 0.12 + 0.88 * e };
     function layers() {
       if (L) return L;
       L = {};
       ['str', 'drm', 'mel', 'brs', 'title', 'end'].forEach((k) => { const g = ac.createGain(); g.gain.value = 0; g.connect(bus.bgm); L[k] = g; });
+      { const g = ac.createGain(), f = ac.createBiquadFilter(); g.gain.value = 0; f.type = 'lowpass'; f.frequency.value = 20000; g.connect(f); f.connect(bus.bgm); L.file = g; fileLP = f; }   // 録音した BGM の出口
       return L;
     }
     const chordAt = (bars, bar, beat) => { const b = bars[bar]; return CH[b.length > 1 && beat >= 2 ? b[1] : b[0]]; };
@@ -4473,7 +4546,18 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     /* 演奏は毎フレーム合成せず、各パートを一度だけ録音（オフライン合成）してループ再生する。
        ゲーム中の音声処理がほぼゼロになり、音切れ・プチノイズを防ぐ。 */
     const GROUPS = { title: ['title'], battle: ['str', 'drm', 'mel', 'brs'], boss: ['str', 'drm', 'mel', 'brs'], ending: ['end'] };
-    const groupOf = (st) => (st === 'title' ? 'title' : st === 'ending' ? 'ending' : st === 'off' ? null : boss ? 'boss' : 'battle');
+    // v5.11.0：録音した BGM。届いた曲だけ、その場面の曲として流す（同じ曲が続く場面は先頭に戻さない）
+    const FILE_G = { title: 'bgm_title', battle: 'bgm_battle', boss: 'bgm_boss', ending: 'bgm_ending', choice: 'bgm_choice', talk: 'bgm_talk' };
+    const FILE_MIX = { prep: { v: 0.78, lp: 2400 }, choose: { v: 0.9, lp: 9000 }, resolve: { v: 1, lp: 20000 }, march: { v: 0.62, lp: 1600 } };
+    const groupOf = (st) => (st === 'title' ? 'title' : st === 'ending' ? 'ending' : st === 'off' ? null : st === 'talk' ? (AUD.has('bgm_talk') ? 'talk' : null) : st === 'march' && AUD.has('bgm_choice') ? 'choice' : boss ? 'boss' : 'battle');
+    function startFile(fn) {
+      const buf = AUD.buf(fn), x = ac.createBufferSource(), fg = ac.createGain(), t0 = ac.currentTime + 0.05, lp = BGM_LOOP[fn];
+      x.buffer = buf;
+      if (!BGM_ONCE[fn]) { x.loop = true; if (lp) { x.loopStart = lp[0]; x.loopEnd = lp[1]; } }
+      fg.gain.setValueAtTime(0, t0); fg.gain.linearRampToValueAtTime(1, t0 + 0.3);
+      x.connect(fg); fg.connect(L.file); x.start(t0);
+      cur.srcs = [{ x, fg }]; cur.file = fn;
+    }
     const bufs = {}, pend = {};
     let queue = Promise.resolve(), cur = { group: null, srcs: [] }, token = 0;
     // 1小節ずつ小さく録音して重ね合わせる（大きな一括録音より何倍も速い）。余韻はループ頭へ折り返す。
@@ -4576,6 +4660,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       cur.group = g;
       if (!g || !ac) return;
       layers();
+      if (FILE_G[g] && AUD.has(FILE_G[g])) { startFile(FILE_G[g]); applyMix(0.05); return; }
       const keys = GROUPS[g], st = g === 'battle' ? 'resolve' : g;   // 'boss' はそのまま録音名に使う
       let done = false;
       // 録音が 0.8 秒で間に合わなければ、まず従来どおりその場で演奏して無音を作らない
@@ -4613,6 +4698,12 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
         if (charged && k === 'drm') v *= 0.5;
         L[k].gain.cancelScheduledValues(t); L[k].gain.setTargetAtTime(v, t, fade || 0.35);
       });
+      if (cur.file && L.file) {   // 録音した BGM：段階の差は音量とこもらせ方で
+        const fm = (cur.group === 'battle' || cur.group === 'boss') ? (FILE_MIX[state] || FILE_MIX.choose) : { v: 1, lp: 20000 };
+        let v = fm.v, lp = fm.lp; if (charged && (cur.group === 'battle' || cur.group === 'boss')) { v *= 0.85; lp = Math.min(lp, 900); }
+        L.file.gain.cancelScheduledValues(t); L.file.gain.setTargetAtTime(v, t, fade || 0.35);
+        fileLP.frequency.cancelScheduledValues(t); fileLP.frequency.setTargetAtTime(lp, t, (fade || 0.35) * 0.8);
+      }
     }
     function setDrone(on) {
       if (!ac || !bus) return;
@@ -4635,6 +4726,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       set(s) {
         const prev = state; state = s;
         if (!can()) return;
+        AUD.load();
         layers();
         const g = groupOf(s);
         if (g !== cur.group) startGroup(g);
@@ -4648,6 +4740,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       era(v) { era = Math.max(0, Math.min(1, v)); if (can()) applyMix(0.8); },
       warm() { if (can()) warm(); },
       get state() { return state; },
+      get file() { return cur.file || null; },
+      _fileReady(n) { if (!can()) return; layers(); const g = groupOf(state); if (FILE_G[g] === n && cur.file !== n) { startGroup(g); applyMix(0.3); } },
       resume() { if (!can()) return; layers(); startGroup(groupOf(state)); applyMix(0.2); if (charged) setDrone(true); },
       debug() { return { ctx: ac && ac.state, state, era, gains: L ? Object.fromEntries(Object.keys(L).map((k) => [k, +L[k].gain.value.toFixed(2)])) : null, group: cur.group, playing: cur.srcs.length, live: !!live, broken, ready: Object.keys(bufs), bufs }; },
       _break() { broken = true; },
@@ -4655,6 +4749,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     };
   })();
   // 端末が音を止めたら（着信・他アプリ・画面ロックなど）、次のタップで必ず鳴らし直す
+  AUD.onReady((n) => { if (n.indexOf('bgm_') === 0) Music._fileReady(n); });   // 曲が届き次第、いまの場面の曲に切り替える
   const ROT_Q = '(orientation: landscape) and (max-height: 540px) and (pointer: coarse)';
   const rotNow = () => { try { return !document.documentElement.classList.contains('noframe') && matchMedia(ROT_Q).matches; } catch (e) { return false; } };   // v5.9.22：「縦にしてください」が出ている
   function wake() {
@@ -7683,7 +7778,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     battleSave('choose', { commit: rot ? 'rot' : 'stay' });
     enemy.bound = false;
     if (rot) doRotate();
-    else { stayN += 1; saveMark = null; if (lampOn()) { const l0 = lamp; lamp = Math.min(lampMax(), lamp + EXP.lampCfg.gain); if (lamp > l0) try { SFX.combo(lamp, false); } catch (e) { /* 音なし */ } } say('隊列を維持。' + (lampOn() ? '灯が' + lamp + '段に（攻撃列の攻撃+' + lampAtk(lamp) + '）' : relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
+    else { try { SFX.stay(); } catch (e) { /* 音なし */ } stayN += 1; saveMark = null; if (lampOn()) { const l0 = lamp; lamp = Math.min(lampMax(), lamp + EXP.lampCfg.gain); if (lamp > l0) try { SFX.combo(lamp, false); } catch (e) { /* 音なし */ } } say('隊列を維持。' + (lampOn() ? '灯が' + lamp + '段に（攻撃列の攻撃+' + lampAtk(lamp) + '）' : relOn('stance') ? '不動の構え　攻撃+' + stanceAtk(stayN) : '')); runTurn(); }
   }
 
   const STAR = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.9 6 6.6.8-4.9 4.5 1.3 6.5L12 17.2l-5.9 3.2 1.3-6.5L2.5 9.4l6.6-.8z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>';
@@ -10264,7 +10359,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   let stPages = STORY, stEnd = false;
   const stSfx = (i) => { if (stEnd) SFX.ending(i); else SFX.story(i); };
   const endingSeen = () => { try { return !!localStorage.getItem('rb-ending'); } catch (e) { return true; } };
-  function openEnding(fallen, then) { stPages = endingPages(fallen); stEnd = true; $('story').setAttribute('aria-label', '環廊の結末'); openStory(then); }
+  function openEnding(fallen, then) { if (AUD.has('bgm_ending')) { Music.charge(false); Music.set('ending'); } stPages = endingPages(fallen); stEnd = true; $('story').setAttribute('aria-label', '環廊の結末'); openStory(then); }
   let stI = 0, stThen = null;
   const storySeen = () => { try { return !!localStorage.getItem('rb-story'); } catch (e) { return true; } };
   const story2Seen = () => { try { return !!localStorage.getItem('rb-story2'); } catch (e) { return true; } };
@@ -10433,7 +10528,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const art = (j) => (MIMU && MIMU.chars[j] ? mimuSVG(j, 230, 300, 115, 292, 270, 230, 'mimuOL', '') : '');
     $('tkL').innerHTML = art(t.who[0]); $('tkR').innerHTML = art(t.who[1]);
     $('tkSmall').textContent = '深さ' + t.d + 'の会話'; $('tkTitle').textContent = t.title;
-    tkCur = { t, i: 0, then }; v.hidden = false; talkStep();
+    tkCur = { t, i: 0, then, mus: Music.state }; v.hidden = false; talkStep();
+    if (AUD.has('bgm_talk')) Music.set('talk');   // 会話の曲（v5.11.0。届いていなければ、これまでどおり）
     try { v.focus(); } catch (e) { /* */ }
   }
   function talkFace(side, face) {
@@ -10455,7 +10551,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   }
   function talkEnd() {
     if (!tkCur) return;
-    const { t, then } = tkCur; tkCur = null;
+    const { t, then, mus } = tkCur; tkCur = null;
+    if (Music.state === 'talk') Music.set(mus && mus !== 'talk' ? mus : 'off');
     zkSet((z) => { z.talk[t.d] = 2; });
     $('talkView').hidden = true; $('tkL').innerHTML = ''; $('tkR').innerHTML = '';
     if (then) then();

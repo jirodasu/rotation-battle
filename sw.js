@@ -27,5 +27,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(fetch(req).then((res) => { caches.open(VERSION).then((c) => c.put(key, res.clone())); return res; }).catch(() => caches.match(key)));
     return;
   }
+  // v5.11.0：録音した音源（audio/）は、一度取れたら保存して、次からはオフラインでも鳴らす（届いた音は SHELL にも足す）
+  if (url.pathname.includes('/audio/')) {
+    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => { if (res.ok) { const cp = res.clone(); caches.open(VERSION).then((c) => c.put(req, cp)); } return res; })));
+    return;
+  }
   e.respondWith(caches.match(req).then((hit) => hit || fetch(req)));
 });
