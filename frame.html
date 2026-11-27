@@ -22,6 +22,11 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: #0b0d12; }
 <iframe id="game" title="灯を継ぐ隊列 -LAST ROTATION-" allow="autoplay; fullscreen"></iframe>
 <script>
 (function () {
+  // v5.10.2：スマホ（指で操作する小さい画面）でこのページが開かれたら、本体へ戻す（ブックマークなどで直接開いたとき。回したときも）
+  //   判定は index.html と同じ（指で操作する・画面の短い辺が 540 以下）。戻すときは stay=1 を付け、index.html がもう一度ここへ送らないようにする
+  function back() { try { if (window.matchMedia && matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) <= 540) { var q = location.search; location.replace('index.html' + (q ? q + '&' : '?') + 'stay=1' + location.hash); return true; } } catch (e) { /* そのまま */ } return false; }
+  if (back()) return;
+  window.addEventListener('resize', back);
   var f = document.getElementById('game');
   // 枠の大きさ：高さは画面いっぱい、幅は iPhone と同じくらいの縦長（高さ×0.462）。320〜430px に収め、画面より広くはしない
   function fit() {

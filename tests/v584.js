@@ -1,7 +1,7 @@
 // v5.8.4 タイトルを「灯を継ぐ隊列 -LAST ROTATION-」に。表紙を地の底の大聖堂の絵・金の題字・羊皮紙と革の板のボタンに
 // 合格の基準（測る前に決めたもの）：
 //  1 名前：ページの題・ホーム画面の名前・manifest・設定の版表示が新しい名前。古い名前「ローテーションバトル」は画面に出ない
-//  2 表紙の背景は img/bg_tall.webp（縦）・img/bg_wide.webp（横）で、画像が読み込めている（ゴシック調の見た目の背景より優先される）
+//  2 表紙の背景は img/bg_title.webp（v5.10.2 で縦横共通の1枚に差し替え）で、画像が読み込めている
 //  3 ボタンは板の画像（続きから・環廊へ＝金、ほかは革。続きからがあるときは環廊へも革）
 //  4 390×844・320×568・844×390 で、表紙のボタンと題字が画面の横にはみ出さない。横向きでは紋が画面の下に切れない
 //  5 sw.js が img/ の4枚をオフライン用に持ち、そのファイルがある
@@ -34,7 +34,7 @@ const ROOT = path.join(__dirname, '..');
     });
     const tag = w + '×' + h + '（' + r.skin + '）';
     ok(r.title === '灯を継ぐ隊列 -LAST ROTATION-' && r.apple === '灯を継ぐ隊列' && r.h2 === '灯を継ぐ隊列' && r.kick === '-LAST ROTATION-' && !r.old, tag + ' 1 新しい名前（' + r.title + '・' + r.h2 + r.kick + '）');
-    ok(/img\/bg_(tall|wide)\.webp$/.test(r.url) && r.loaded > 0 && (w > h ? /bg_wide/.test(r.url) : /bg_tall/.test(r.url)), tag + ' 2 背景の絵が読み込めている（' + r.url.split('/').pop() + '・幅' + r.loaded + '）');
+    ok(/img\/bg_title\.webp$/.test(r.url) && r.loaded === 1024, tag + ' 2 背景の絵が読み込めている（' + r.url.split('/').pop() + '・幅' + r.loaded + '）');
     ok(/btn_gold\.webp/.test(r.begin) && /btn_dark\.webp/.test(r.set), tag + ' 3 環廊へは金の板、設定は革の板');
     ok(r.over.length === 0, tag + ' 4 ボタンと題字が横にはみ出さない ' + r.over.join(','));
     ok(r.orbBottom <= r.ih + 1, tag + ' 4 紋が画面の下に切れない（下端 ' + r.orbBottom + '／' + r.ih + '）');
