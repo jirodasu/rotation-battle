@@ -10,10 +10,13 @@
   try {
     var auto = navigator.webdriver && !window.__rbFrameTest;
     if (auto || /[?&]noframe/.test(location.search)) { document.documentElement.classList.add('noframe'); return; }
+    if (/[?&]stay=1/.test(location.search)) return;   // v5.10.2：frame.html から戻されたとき（行ったり来たりしない）
     if (window.top !== window.self) return;
     var w = window.innerWidth, h = window.innerHeight;
     if (!w || !h) return;
-    if (window.matchMedia && matchMedia('(orientation: landscape) and (max-height: 540px) and (pointer: coarse)').matches) return;
+    // v5.10.2：指で操作する小さい画面（スマホ）は、縦横の比に関係なく移らない。以前は横持ちだけを除いていたので、背の低い縦画面（375×600 など）が PC の枠に入っていた
+    //   画面の大きさは screen で見る（このスクリプトは viewport の指定より前に動くので、innerWidth や max-width はまだ 980px のことがある）
+    if (window.matchMedia && matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) <= 540) return;
     if (w / h > 0.62) location.replace('frame.html' + location.search + location.hash);
   } catch (e) { /* 移れなければ、そのまま遊べる */ }
 })();
@@ -1757,7 +1760,7 @@ body { font-family: var(--sans); background: var(--vellum); font-feature-setting
     radial-gradient(circle, #d6ac5c 0 2.5px, transparent 3px) bottom 16px left 16px / 6px 6px no-repeat, radial-gradient(circle, #d6ac5c 0 2.5px, transparent 3px) bottom 16px right 16px / 6px 6px no-repeat; }
 .orbit::before { content: ""; position: absolute; inset: -26px; border-radius: 50%; background: radial-gradient(circle, rgba(10, 5, 2, 0.32), transparent 68%); }
 .cover .c-inner { position: relative; z-index: 1; }
-/* v5.10.3：表紙の舞台。背景（ChatGPT で描いた人のいない大聖堂）を JS で舞台の線に合わせて置き、その上に MiMU の7人を立たせる */
+/* v5.10.2：表紙の舞台。背景（ChatGPT で描いた人のいない大聖堂）を JS で舞台の線に合わせて置き、その上に MiMU の7人を立たせる */
 .c-stage { position: absolute; left: 0; top: 0; width: 100%; height: 0; z-index: 1; pointer-events: none; }
 .c-stage .cp, .c-stage .c-lamp { position: absolute; }
 .c-stage .cp svg { display: block; width: 100%; height: 100%; overflow: visible; }
@@ -3286,7 +3289,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       <div class="d-row d-2"><span class="d-lbl">回復</span></div>
       <div class="d-tok" id="dt1" style="--p:0"></div><div class="d-tok" id="dt2" style="--p:1"></div><div class="d-tok" id="dt3" style="--p:2"></div>
     </div>
-    <p class="c-ver" id="cVer">ver 5.10.3</p>
+    <p class="c-ver" id="cVer">ver 5.10.2</p>
     <p class="c-copy">地の底の大聖堂「環廊」。<br>灯を受け渡し、隊列を回して奥へ。</p>
     <button class="c-press" id="press" type="button"><b class="disp">画面をタップしてはじめる</b><small>♪ 音が出ます</small></button>
     <div class="c-btns">
@@ -3884,7 +3887,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   ];
   const DEFAULT_FORM = [['warrior', 0, 0], ['knight', 0, 1], ['samurai', 0, 2], ['witch', 1, 0], ['archer', 1, 1], ['cleric', 2, 0], ['monk', 2, 1]];
   // 戦闘の追加ルール（値は tools/sim.mjs の自動対戦で調整。「一度も回さない」勝率を20%未満に）
-  const APP_VERSION = '5.10.3';
+  const APP_VERSION = '5.10.2';
   const RULES = { entry: true };
   const NORULES = { entry: false };
   const ENEMIES = [
@@ -5474,7 +5477,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     einfo: () => ['章の主の技を見よう', '章の主は技が多い。敵の名前の横の<em>i</em>を押すと、技の一覧と<em>その次の行動</em>が見られる。'],
     highhp: () => ['元気な仲間ほど狙う', 'この技は、前列で<em>HPがいちばん多い仲間</em>に当たる（同じなら左）。いつもと逆なので、HPの多い仲間を前に残すか、回して受け手を選ぶ。'],
     gate: () => ['ねばつく体', 'この戦いのあいだ、<em>回すのに気力3</em>が要る（ふだんは2）。回せる回数が少ないので、大技の前のために気力をためておく。'],
-    doom: () => ['終の刻が近い', '8ターン目に<em>全員へ防御無効の大技</em>「終の刻」が来る。予告に「あと何ターン」と出るので、それまでに倒すか、HPを整えて受ける。'],
+    doom: () => ['終の刻が近い', '8ターン目に<em>一番前の列の全員へ防御無効の大技</em>「終の刻」が来る。予告に「あと何ターン」と出るので、それまでに倒すか、HPを整えて受ける。'],
     mid: () => ['補助列を狙う技', '<em>補助列（真ん中）の全員</em>に当たる。攻撃列がいても届き、防御補助は効かない。HPの少ない仲間を真ん中に置かないように。'],
     pierce: () => ['防無効の攻撃（防御補助を無視）', '防御補助では<em>軽くできない</em>。HPの多い仲間で受けよう。'],
     entry: () => ['突入技', '回して攻撃列に入った仲間は、そのターンだけ<em>職業の技</em>を出す。「回す」を長押しした先読みで「突」が付く。'],
@@ -5524,7 +5527,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (best.left != null) { el.style.left = Math.round(best.left) + 'px'; el.style.right = 'auto'; }
   }
   addEventListener('resize', () => placeTip());
-  // v5.10.3：表紙の舞台。背景の絵の「前の列の足もと」の線を、見えない紋（.orbit）の下端に合わせ、絵の大きさ（s）で7人とランタンを置く。
+  // v5.10.2：表紙の舞台。背景の絵の「前の列の足もと」の線を、見えない紋（.orbit）の下端に合わせ、絵の大きさ（s）で7人とランタンを置く。
   //   s は「横いっぱい」「上が切れない」「下が切れない」の3つのうち大きいもの。背景は local（中身と一緒に動く）
   const CST = { src: 'img/bg_title.webp', W: 1024, H: 1536, foot: 778, lamp: [474, 584, 551, 750], ch: 205, top: 540,
     lampPoly: [[503, 584], [522, 584], [527, 610], [540, 640], [550, 655], [545, 666], [546, 724], [551, 734], [550, 750], [475, 750], [474, 734], [479, 724], [480, 666], [475, 655], [485, 640], [498, 610]],   // ランタンの形（奥の騎士の前に重ねる）
@@ -5551,7 +5554,13 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
       const h = CST.ch * s * w[3], wd = h * 100 / 124;
       Object.assign(e.style, { left: px(L + w[1] * s - wd / 2), top: px(T + w[2] * s - h * 116 / 124), width: px(wd), height: px(h) });
     });
-    if (!st.dataset.on) { st.dataset.on = '1'; st.querySelectorAll('svg.mimu').forEach((g) => mimuPlay(g, 'idle')); }
+    coverIdle(true);
+  }
+  // 表紙の7人の待機の動き：表紙が出ている間だけ動かす（閉じたあとも動き続けると、戦闘の演出の時間がずれた。v596）
+  function coverIdle(on) {
+    const st = $('cStage'); if (!st || !st.firstChild || !!st.dataset.on === on) return;
+    if (on) { st.dataset.on = '1'; st.querySelectorAll('svg.mimu').forEach((g) => mimuPlay(g, 'idle')); }
+    else { delete st.dataset.on; st.querySelectorAll('svg.mimu').forEach((g) => { (g.__ma || []).forEach((a) => { try { a.cancel(); } catch (e) { /* 終わっている */ } }); g.__ma = []; }); }
   }
   addEventListener('resize', () => coverStage());
   try { new ResizeObserver(() => coverStage()).observe(document.querySelector('.cover .c-inner')); } catch (e) { /* 古い端末 */ }
@@ -8113,6 +8122,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     cv.classList.add('out');
     document.body.classList.remove('is-cover');
     Music.charge(false); Music.set('prep');
+    coverIdle(false);
     setTimeout(() => { cv.hidden = true; }, RM ? 0 : 520);
   }
   const EN_LINES = [
@@ -8436,7 +8446,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     const cv = $('cover');
     cv.hidden = false; cv.classList.remove('out');
     document.body.classList.add('is-cover');
-    coverProgress();
+    coverProgress(); cstKey = ''; setTimeout(coverStage, 0);
     Music.charge(false); Music.set('title');
     tutSubSet();
     try { $('begin').focus({ preventScroll: true }); } catch (e) { /* 非対応 */ }
@@ -10316,10 +10326,10 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     { sec: '第3章　' + EXP_CH[2] },
     { k: 'lizard', art: 'worm', def: () => EXP.lizard, where: '第3章の戦闘', gim: 'いちばん後ろの列（回復列）の全員を払う。' },
     { k: 'chorus', art: 'ghost', def: () => EXP.chorus, where: '第3章の戦闘', gim: '回して入ったばかりの仲間を狙う。' },
-    { k: 'hourglass', art: 'crow', def: () => EXP.hourglass, where: '深さ4から・第3章', gim: '8ターン目に、全員へ防御を無視する大技「終の刻」。' },
+    { k: 'hourglass', art: 'crow', def: () => EXP.hourglass, where: '深さ4から・第3章', gim: '8ターン目に、一番前の列の全員へ防御を無視する大技「終の刻」。' },
     { k: 'dragon', art: 'demon', def: () => BOSS, where: '第3章の主・最後の戦い', gim: '防御を無視する息吹の前に、元気な列を前へ出す。' }];
-  const zkAim = (a) => ({ all: '全員', lowhp: 'HPがいちばん低い仲間', highhp: 'HPがいちばん多い仲間', back: '回復列の全員', mid: '補助列の全員', random: 'ランダム', charge: '次の大技のためにためる', bind: '縛る（次のターン回せない）', mend: 'ほかの敵を回復', job: '' })[a.rule] != null
-    ? (a.rule === 'job' ? a.job + 'を狙う' : ({ all: '全員', lowhp: 'HPがいちばん低い仲間', highhp: 'HPがいちばん多い仲間', back: '回復列の全員', mid: '補助列の全員', random: 'ランダム', charge: '次の大技のためにためる', bind: '縛る（次のターン回せない）', mend: 'ほかの敵を回復' })[a.rule]) : '';
+  const zkAim = (a) => ({ all: '一番前の列の全員', lowhp: 'HPがいちばん低い仲間', highhp: 'HPがいちばん多い仲間', back: '回復列の全員', mid: '補助列の全員', random: 'ランダム', charge: '次の大技のためにためる', bind: '縛る（次のターン回せない）', mend: 'ほかの敵を回復', job: '' })[a.rule] != null
+    ? (a.rule === 'job' ? a.job + 'を狙う' : ({ all: '一番前の列の全員', lowhp: 'HPがいちばん低い仲間', highhp: 'HPがいちばん多い仲間', back: '回復列の全員', mid: '補助列の全員', random: 'ランダム', charge: '次の大技のためにためる', bind: '縛る（次のターン回せない）', mend: 'ほかの敵を回復' })[a.rule]) : '';
   const zkFoeDef = (f) => (f.tri != null ? TRI.foes[f.tri] : f.def());
   const zkArt = (key, big) => (MIMU && MIMU.chars[key] ? mimuSVG(key, 240, 180, 120, 172, big ? 160 : 150, big ? 220 : 210, 'mimuOLe', '') : '');
   let zkTab = 0;
