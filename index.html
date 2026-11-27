@@ -2374,8 +2374,9 @@ body.boss-stage .en-sun { background: radial-gradient(circle, #ffe7a3 0 50%, rgb
 .set-about { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule-a); display: grid; gap: 6px; }
 .set-about h3 { margin: 0; font-size: 16px; color: var(--ink); }
 .set-about p { margin: 0; font-size: 12.5px; line-height: 1.6; color: var(--ink-soft); }
-.set-about dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
-.set-about dt { color: var(--ink); font-weight: 700; }
+.set-about dl { margin: 0; display: grid; grid-template-columns: 1fr; gap: 0; font-size: 12.5px; line-height: 1.55; color: var(--ink-soft); }
+.set-about dt { color: var(--ink); font-weight: 700; margin-top: 6px; white-space: nowrap; }   /* v5.10.1：項目名は1行、内容はその下（横に並べると項目名の列が細くなり「キャラク／ター」と折れた） */
+.set-about dt:first-child { margin-top: 0; }
 .set-about dd { margin: 0; }
 .set-contact { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; }
 .set-contact b { color: var(--ink); }
@@ -3124,6 +3125,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
 .tk-name small { font: 500 10px var(--sans); letter-spacing: .1em; color: #c7b083; margin-left: 8px; }
 .tk-name i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: 2px; box-shadow: 0 0 6px currentColor; }
 .tk-name.l { left: 16px; } .tk-name.r { right: 16px; }
+.tk-txt.tight { letter-spacing: -.06em; }   /* 文節で折ると3行になる時は、まず字間だけ少し詰める（字の大きさは変えない） */
 .tk-txt.loose { word-break: normal; }
 .tk-txt { word-break: keep-all; overflow-wrap: anywhere; margin: 0; font-family: var(--serif); font-weight: 700; font-size: clamp(15px, 4.5vw, 17.5px); line-height: 1.75; letter-spacing: .01em; line-break: strict; text-shadow: 0 2px 8px #000; }
 .tk-txt em { font-style: normal; color: #f2c46a; }
@@ -10390,7 +10392,7 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     $('tkR').classList.toggle('on', side === 'r'); $('tkR').classList.toggle('off', side !== 'r');
     const nm = $('tkName'); nm.className = 'tk-name ' + side;
     nm.innerHTML = '<i style="color:' + TALK_ROLE[J.cls] + ';background:' + TALK_ROLE[J.cls] + '"></i>' + HOUSE[job] + '<small>' + J.name + '</small>';
-    { const tx = $('tkTxt'); tx.classList.remove('loose'); tx.innerHTML = jaWrap(txt); const lh = parseFloat(getComputedStyle(tx).lineHeight) || 1; if (tx.getBoundingClientRect().height / lh > 2.4) tx.classList.add('loose'); }   // 文節で折って3行になる幅（320pxなど）は、ふつうの折り方に戻して2行に収める $('tkN').textContent = (i + 1) + ' / ' + t.lines.length;
+    { const tx = $('tkTxt'); tx.classList.remove('loose'); tx.innerHTML = jaWrap(txt); const lh = parseFloat(getComputedStyle(tx).lineHeight) || 1; const over = () => tx.getBoundingClientRect().height / lh > 2.4; tx.classList.remove('tight'); if (over()) { tx.classList.add('tight'); if (over()) { tx.classList.remove('tight'); tx.classList.add('loose'); } } } $('tkN').textContent = (i + 1) + ' / ' + t.lines.length;   // 文節で折って3行になる幅（320pxなど）は、ふつうの折り方に戻して2行に収める
     // 待機の動きが表情を上書きしないよう、少し待ってから表情を付ける
     setTimeout(() => talkFace(side, face), 30);
   }
@@ -10461,8 +10463,8 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
     if (sv) li.push('いまの遠征の続き（地点 ' + Math.min(sv.run.node + 1, EXP.nodes) + ' / ' + EXP.nodes + '）');
     li.push('これまでの遠征 ' + runs + '回・踏破 ' + won + '回の記録');
     li.push('解放した隊・深さ、実績、星');
-    li.push('物語と操作の説明の既読<wbr>（もう一度はじめから出ます）');
-    return 'つぎの記録が<b>消えて、元に戻せません</b>。<ul>' + li.map((t) => '<li class="jw">' + jaWrap(t) + '</li>').join('') + '</ul><span class="rc-keep">音・振動・文字の大きさなどの設定は、そのまま残ります。</span>';
+    li.push('物語と操作の説明の既読<wbr><span class="nw">（もう一度はじめから出ます）</span>');
+    return 'つぎの記録が<b>消えて、元に戻せません</b>。<ul>' + li.map((t) => '<li class="jw">' + t + '</li>').join('') + '</ul><span class="rc-keep">音・振動・文字の大きさなどの設定は、そのまま残ります。</span>';
   }
   function openRst() {
     if (QA_REQ) return;
