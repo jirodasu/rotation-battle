@@ -35,7 +35,7 @@ const TIPS = '{"stars":1,"gauge":1,"bind":1,"entry":1,"charge":1,"pierce":1,"sta
   // 4：タイトルの「物語」は7枚
   await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); }); await p.reload(); await p.waitForTimeout(400);
   if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await p.waitForTimeout(300); }
-  await p.click('#storyBtn'); await p.waitForTimeout(200);
+  await p.click('#storyBtn'); await p.waitForTimeout(200); await p.click('#slList .sl-item[data-k="open"]'); await p.waitForTimeout(200);   // v5.10：物語は一覧（冒頭の物語＋会話）から開く
   const t0 = await st();
   ok(t0.open && t0.n === 7 && t0.num === '一', '4 続きを見たあと、タイトルの「物語」は7枚 ' + JSON.stringify({ n: t0.n, num: t0.num }));
   ok(!errs.length, '4 ページのエラーなし ' + errs.join(' / '));

@@ -17,7 +17,7 @@ let fails = 0; const ok = (c, m) => { console.log((c ? '  OK  ' : '  NG  ') + m)
     p.on('pageerror', (e) => errs.push(e.message));
     await p.addInitScript(() => { try { localStorage.setItem('rb-story', '1'); localStorage.setItem('rb-story2', '1'); localStorage.setItem('rb-swapdemo', '1'); } catch (e) { /* */ } });
     await p.goto(testPage()); await p.waitForTimeout(400); await p.click('#cover').catch(() => {}); await p.waitForTimeout(300);
-    await p.evaluate(() => document.getElementById('storyBtn').click()); await p.waitForTimeout(300);
+    await p.evaluate(() => document.getElementById('storyBtn').click()); await p.waitForTimeout(300); await p.evaluate(() => document.querySelector('#slList .sl-item[data-k="open"]').click()); await p.waitForTimeout(300);   // v5.10：物語は一覧から開く
     const bad = []; let n = 0;
     for (let i = 0; i < 7; i++) {
       const m = await p.evaluate(() => { const t = document.getElementById('stTxt'), r = t.getBoundingClientRect(), s = document.getElementById('story'); return { sw: s.scrollWidth > s.clientWidth, sh: s.scrollHeight > s.clientHeight + 1, l: r.left, r: r.right, b: r.bottom, w: innerWidth, h: innerHeight, dots: document.querySelectorAll('#stDots i').length }; });

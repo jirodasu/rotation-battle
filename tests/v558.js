@@ -43,7 +43,7 @@ const ST = () => { const s = document.getElementById('story'), t = document.getE
     await p.evaluate(() => { localStorage.removeItem('rb-exp-save'); }); await p.reload(); await p.waitForTimeout(400);
     if (await p.evaluate(() => document.getElementById('cover').classList.contains('gate'))) { await p.click('#cover'); await p.waitForTimeout(300); }
     ok(await p.evaluate(() => !document.getElementById('storyBtn').hidden), tag + ' 4 見たあとは、タイトルに「物語」が出る');
-    await p.click('#storyBtn'); await p.waitForTimeout(200);
+    await p.click('#storyBtn'); await p.waitForTimeout(200); await p.click('#slList .sl-item[data-k="open"]'); await p.waitForTimeout(200);   // v5.10：物語は一覧（冒頭の物語＋会話）から開く
     const r0 = await p.evaluate(() => window.__st());
     for (let k = 0; k < 3; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.25)); await p.waitForTimeout(80); }
     const r6 = await p.evaluate(() => window.__st());

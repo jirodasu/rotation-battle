@@ -30,7 +30,7 @@ const clearRun = (fallen) => { const R = window.__rb; R.beginExp('std', 1); cons
     await p.addInitScript('window.__st = ' + ST.toString());
     await p.goto(testPage()); await p.waitForTimeout(300); await p.click('#cover'); await p.waitForTimeout(300);
     // 2（冒頭）：タイトルの「物語」から降りていく灯の絵（v5.7.6：冒頭を4枚に詰めて、続きの1枚目＝5枚目に移った）
-    await p.click('#storyBtn'); await p.waitForTimeout(200);
+    await p.click('#storyBtn'); await p.waitForTimeout(200); await p.click('#slList .sl-item[data-k="open"]'); await p.waitForTimeout(200);   // v5.10：物語は一覧（冒頭の物語＋会話）から開く
     for (let k = 0; k < 4; k++) { await p.mouse.click(Math.round(w / 2), Math.round(h * 0.2)); await p.waitForTimeout(120); }
     const op = await p.evaluate(() => window.__st());
     ok(op.on === 4 && op.lampN >= 5 && op.lampDx <= 6, tag + ' 2 物語の5枚目（降りていく灯）：灯が絵のまんなかに並ぶ（ずれ ' + op.lampDx + 'px・' + op.lampN + '個）');

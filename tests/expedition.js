@@ -57,7 +57,7 @@ async function fight(p, seq) {
   await p.evaluate(() => window.__rb.run.choices.findIndex((x) => x.type === 'battle')).then((i) => p.click('#rvCards .rv-card[data-i="' + i + '"]'));
   await p.click('#rvGo'); await sleep(p, 700);
   const e1 = await p.evaluate(() => ({ name: window.__rb.enemy.name, binds: window.__rb.enemy.pattern.some((a) => a.rule === 'bind') }));
-  ok(/鎖ネズミ/.test(e1.name) && e1.binds, '「縛る」敵と戦える（' + e1.name + '）');
+  ok(/糸縛りの大蜘蛛/.test(e1.name) && e1.binds, '「縛る」敵と戦える（' + e1.name + '）');
   // 縛りのターン：回すボタンが押せない
   await p.click('#btnStart'); let boundSeen = false, tries = 0;
   while (tries++ < 200) {

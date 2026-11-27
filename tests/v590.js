@@ -78,7 +78,7 @@ const hps = (p) => p.evaluate(() => { const R = window.__rb, m = {}; R.units(R.g
     ok(t8.name === '終の刻' && t8.pierce && !/終の刻まで/.test(t8.t), '4 8ターン目は「終の刻」（防無効）で、数えは出ない ' + JSON.stringify(t8));
     ok(!errs.length, '4 エラーなし ' + errs.join(' / ')); await ctx.close(); }
   // 5 ヒント
-  for (const [foe, key, title, turn] of [['sentinel', 'highhp', '元気な仲間ほど狙う', 0], ['gate', 'gate', '重い扉', 0], ['hourglass', 'doom', '終の刻が近い', 5]]) {
+  for (const [foe, key, title, turn] of [['sentinel', 'highhp', '元気な仲間ほど狙う', 0], ['gate', 'gate', 'ねばつく体', 0], ['hourglass', 'doom', '終の刻が近い', 5]]) {
     const t = Object.assign({}, ALL); delete t[key];
     const { ctx, p, errs } = await open(b, '', t);
     await prep(p, 5, foe); await p.click('#btnStart');   // どれも選ぶフェーズで出る（準備は陣立ての案内と重ねない）
@@ -93,7 +93,7 @@ const hps = (p) => p.evaluate(() => { const R = window.__rb, m = {}; R.units(R.g
     await p.addInitScript(() => { try { localStorage.setItem('rb-swapdemo', '1'); localStorage.setItem('rb-ending', '1'); } catch (e) { /* */ } });
     await p.goto(testPage() + '?qa&depth=4&v=none&foe=' + f + '&' + q); await p.waitForTimeout(1200);
     const n = await p.evaluate(() => window.__rb.enemy && window.__rb.enemy.name);
-    ok(n === { sentinel: '重石の番兵', gate: '重い扉の番人', hourglass: '時告げの砂時計' }[f], '6 QA foe=' + f + '：' + n);
+    ok(n === { sentinel: '重石の番兵', gate: '粘りつく大スライム', hourglass: '時告げの大鴉' }[f], '6 QA foe=' + f + '：' + n);
     ok(!errs.length, '6 エラーなし ' + errs.join(' / ')); await ctx.close();
   }
   await b.close(); console.log(fails ? '不合格 ' + fails + ' 件' : '全て合格'); process.exit(fails ? 1 : 0);
