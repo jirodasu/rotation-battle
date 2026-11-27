@@ -5526,9 +5526,9 @@ html.bg-still .chl::before, html.bg-still .chl::after, html.bg-still .miasma i, 
   addEventListener('resize', () => placeTip());
   // v5.10.3：表紙の舞台。背景の絵の「前の列の足もと」の線を、見えない紋（.orbit）の下端に合わせ、絵の大きさ（s）で7人とランタンを置く。
   //   s は「横いっぱい」「上が切れない」「下が切れない」の3つのうち大きいもの。背景は local（中身と一緒に動く）
-  const CST = { src: 'img/bg_title.webp', W: 1024, H: 1536, foot: 778, lamp: [474, 584, 551, 750], ch: 205, top: 470,
+  const CST = { src: 'img/bg_title.webp', W: 1024, H: 1536, foot: 778, lamp: [474, 584, 551, 750], ch: 205, top: 540,
     lampPoly: [[503, 584], [522, 584], [527, 610], [540, 640], [550, 655], [545, 666], [546, 724], [551, 734], [550, 750], [475, 750], [474, 734], [479, 724], [480, 666], [475, 655], [485, 640], [498, 610]],   // ランタンの形（奥の騎士の前に重ねる）
-    who: [['archer', 322, 716, 0.9, 0], ['monk', 702, 716, 0.9, 1], ['knight', 512, 622, 0.76, 0, 1], 'lamp', ['samurai', 262, 784, 1, 0], ['warrior', 386, 784, 1, 0], ['cleric', 638, 784, 1, 1], ['witch', 762, 784, 1, 1]] };   // [職, 足もとx, 足もとy（絵の px）, 大きさ, 左を向く, 奥]
+    who: [['archer', 284, 716, 0.9, 0], ['knight', 418, 716, 0.9, 0], ['monk', 702, 716, 0.9, 1], 'lamp', ['samurai', 262, 784, 1, 0], ['warrior', 386, 784, 1, 0], ['cleric', 638, 784, 1, 1], ['witch', 762, 784, 1, 1]] };   // [職, 足もとx, 足もとy（絵の px）, 大きさ, 左を向く, 奥]
   let cstKey = '';
   function coverStage() {
     const cv = $('cover'), st = $('cStage'), ob = document.querySelector('.cover .orbit');
